@@ -27,10 +27,12 @@ Route::middleware(['auth', 'professor'])->group(function () {
     Route::get('/ciclos', [CycleController::class, 'index'])->name('cycles.index');
     Route::get('/ciclos/crear', [CycleController::class, 'create'])->name('cycles.create');
     Route::post('/ciclos', [CycleController::class, 'store'])->name('cycles.store');
+    Route::patch('/ciclos/{cycle}', [CycleController::class, 'update'])->name('cycles.update');
     Route::get('/ciclos/{cycle}', [CycleController::class, 'show'])->name('cycles.show');
 
     Route::get('/ciclos/{cycle}/grupos/crear', [GroupController::class, 'create'])->name('groups.create');
     Route::post('/ciclos/{cycle}/grupos', [GroupController::class, 'store'])->name('groups.store');
+    Route::patch('/grupos/{group}', [GroupController::class, 'update'])->name('groups.update');
     Route::get('/grupos/{group}', [GroupController::class, 'show'])->name('groups.show');
 
     Route::get('/grupos/{group}/cursos/crear', [CourseAssignmentController::class, 'create'])->name('assignments.create');
