@@ -14,6 +14,7 @@ class HolidayController extends Controller
     public function index(Request $request)
     {
         $professorId = auth()->user()->professor->id;
+        $presentation = $request->input('presentation') === 'calendar' ? 'calendar' : 'list';
         $base = Holiday::where(fn ($query) => $query->whereNull('professor_id')->orWhere('professor_id', $professorId));
 
         $calendarMonth = max(1, min(12, $request->integer('calendar_month', now()->month)));
@@ -69,6 +70,7 @@ class HolidayController extends Controller
         return view('holidays.index', compact(
             'holidays',
             'years',
+            'presentation',
             'calendarMonth',
             'calendarYear',
             'monthStart',
