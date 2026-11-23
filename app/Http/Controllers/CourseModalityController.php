@@ -1,10 +1,11 @@
 <?php
 namespace App\Http\Controllers;
 use App\Models\CourseModality;
+use App\Models\Holiday;
 use App\Services\CalendarService;
 use Illuminate\Http\Request;
 class CourseModalityController extends Controller {
- public function show(CourseModality $modality){ $this->owned($modality); $modality->load(['assignment.course','assignment.group.cycle','schedules','sessions'=>fn($q)=>$q->orderBy('session_date'),'enrollments.student','documents'=>fn($q)=>$q->latest()]); $import=$modality->importBatches()->latest()->first(); return view('modalities.show',compact('modality','import')); }
+ public function show(CourseModality $modality){ $this->owned($modality); $modality->load(['assignment.course','assignment.group.cycle','schedules','sessions'=>fn($q)=>$q->orderBy('session_date'),'enrollments.student','documents'=>fn($q)=>$q->latest()]); $import=$modality->importBatches()->latest()->first(); $holidayDates=Holiday::query()->where('blocks_classes',true)->where(function($q)use($modality){$q->whereNull('professor_id')->orWhere('professor_id',$modality->assignment->group->professor_id);})->pluck('holiday_date')->map(fn($date)=>\Carbon\Carbon::parse($date)->toDateString())->values(); return view('modalities.show',compact('modality','import','holidayDates')); }
  public function update(Request $request,CourseModality $modality,CalendarService $calendar){
   $this->owned($modality);
   $data=$request->validate(['nrc'=>'nullable|string|max:30','start_date'=>'nullable|date','end_date'=>'nullable|date|after_or_equal:start_date','total_hours'=>'nullable|numeric|min:0','days'=>'nullable|array','days.*'=>'integer|min:1|max:7','start_time'=>'nullable|date_format:H:i','end_time'=>'nullable|date_format:H:i','classroom'=>'nullable|string|max:100','schedules'=>'nullable|array','schedules.*.day_of_week'=>'nullable|integer|min:1|max:7','schedules.*.start_time'=>'nullable|date_format:H:i','schedules.*.end_time'=>'nullable|date_format:H:i','schedules.*.classroom'=>'nullable|string|max:100','schedules.*.block_type'=>'nullable|in:CLASS,ASYNC']);

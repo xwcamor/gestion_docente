@@ -44,6 +44,13 @@
                     <div><label for="end_time">Hora de fin</label><input class="field" id="end_time" type="time" name="end_time" value="{{ old('end_time', $modality->schedules->first()?->end_time ? substr($modality->schedules->first()->end_time, 0, 5) : '') }}"></div>
                 </div>
                 <p class="help">Esta pantalla utiliza un horario común para los días seleccionados. Al guardar, el sistema recalcula las sesiones de esta modalidad.</p>
+<div class="calendar-preview" id="calendar-preview" aria-live="polite">
+<div class="calendar-preview-head"><div><strong>Vista previa automática</strong><p class="help">Solo cuenta tus días de clase y excluye feriados.</p></div><span class="badge badge-blue" id="preview-count">Pendiente</span></div>
+<div class="calendar-preview-stats"><div><small>Primera clase</small><strong id="preview-first">—</strong></div><div><small>Última clase efectiva</small><strong id="preview-last">—</strong></div><div><small>Feriados excluidos</small><strong id="preview-holidays">0</strong></div></div>
+<p class="help" id="preview-note">Selecciona las fechas y los días para calcular.</p>
+<button class="btn btn-secondary btn-sm" type="button" id="adjust-end-date" disabled>Usar última clase como fecha final</button>
+<details class="preview-details"><summary>Ver fechas calculadas</summary><div id="preview-dates" class="preview-date-list"></div></details>
+</div>
                 <div class="form-actions"><span class="help">Los documentos anteriores se marcarán para regeneración si cambian los datos.</span><button class="btn" type="submit">Guardar y recalcular calendario</button></div>
             </form>
         </div>
@@ -118,8 +125,74 @@
 </section>
 @endsection
 
+@push('styles')
+<style>
+.calendar-preview{margin-top:18px;padding:16px;border:1px solid #d9e4ef;border-radius:12px;background:#f8fbff}
+.calendar-preview-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.calendar-preview-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:13px 0}
+.calendar-preview-stats>div{padding:11px;background:#fff;border:1px solid #e5ebf2;border-radius:9px}
+.calendar-preview-stats small{display:block;color:#667085;font-size:10px;margin-bottom:5px}
+.calendar-preview-stats strong{font-size:14px;color:#17365d}
+.preview-details{margin-top:12px;border-top:1px solid #e2eaf2;padding-top:10px}
+.preview-details summary{cursor:pointer;font-size:12px;font-weight:700;color:#344054}
+.preview-date-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(135px,1fr));gap:6px;margin-top:10px}
+.preview-date{font-size:11px;padding:7px 8px;border-radius:7px;background:#fff;border:1px solid #e6ebf1}
+.preview-date.holiday{color:#9a5b10;background:#fff8eb;border-color:#f1dfbd}
+@media(max-width:600px){.calendar-preview-stats{grid-template-columns:1fr}.calendar-preview-head{display:block}}
+</style>
+@endpush
+
 @push('scripts')
 <script>
+(() => {
+    const form = document.querySelector('#calendar .panel-body form');
+    if (!form) return;
+    const holidays = new Set(@json($holidayDates));
+    const startInput = form.querySelector('[name="start_date"]');
+    const endInput = form.querySelector('[name="end_date"]');
+    const dayInputs = [...form.querySelectorAll('[name="days[]"]')];
+    const first = document.getElementById('preview-first');
+    const last = document.getElementById('preview-last');
+    const count = document.getElementById('preview-count');
+    const holidayCount = document.getElementById('preview-holidays');
+    const note = document.getElementById('preview-note');
+    const list = document.getElementById('preview-dates');
+    const adjust = document.getElementById('adjust-end-date');
+    let lastTeachingDate = null;
+    const fmt = date => new Intl.DateTimeFormat('es-PE',{day:'2-digit',month:'2-digit',year:'numeric'}).format(date);
+    const parse = value => value ? new Date(value+'T12:00:00') : null;
+    const calculate = () => {
+        list.innerHTML = ''; lastTeachingDate = null;
+        const from = parse(startInput.value), to = parse(endInput.value);
+        const days = new Set(dayInputs.filter(input=>input.checked).map(input=>Number(input.value)));
+        if (!from || !to || from > to || !days.size) {
+            first.textContent='—';last.textContent='—';count.textContent='Pendiente';holidayCount.textContent='0';
+            note.textContent='Indica un rango válido y selecciona al menos un día de clase.';adjust.disabled=true;return;
+        }
+        let sessions=0,blocked=0,firstTeachingDate=null;
+        const cursor=new Date(from);
+        while(cursor<=to){
+            if(days.has(cursor.getDay())){
+                const key=[cursor.getFullYear(),String(cursor.getMonth()+1).padStart(2,'0'),String(cursor.getDate()).padStart(2,'0')].join('-');
+                const item=document.createElement('div');item.className='preview-date';
+                if(holidays.has(key)){blocked++;item.classList.add('holiday');item.textContent=fmt(cursor)+' · Feriado';}
+                else{sessions++;if(!firstTeachingDate)firstTeachingDate=new Date(cursor);lastTeachingDate=new Date(cursor);item.textContent=fmt(cursor)+' · Clase';}
+                list.appendChild(item);
+            }
+            cursor.setDate(cursor.getDate()+1);
+        }
+        first.textContent=firstTeachingDate?fmt(firstTeachingDate):'—';last.textContent=lastTeachingDate?fmt(lastTeachingDate):'—';
+        count.textContent=sessions+' clases';holidayCount.textContent=String(blocked);
+        const endKey=[to.getFullYear(),String(to.getMonth()+1).padStart(2,'0'),String(to.getDate()).padStart(2,'0')].join('-');
+        const endIsClassDay=days.has(to.getDay())&&!holidays.has(endKey);
+        note.textContent=sessions+' sesiones dentro del rango; '+blocked+' feriados excluidos.'+(!endIsClassDay&&lastTeachingDate?' La fecha final no es lectiva: la última clase efectiva será '+fmt(lastTeachingDate)+'.':'');
+        adjust.disabled=!lastTeachingDate||lastTeachingDate.getTime()===to.getTime();
+    };
+    [startInput,endInput,...dayInputs].forEach(input=>input.addEventListener('change',calculate));
+    adjust.addEventListener('click',()=>{if(lastTeachingDate){endInput.value=[lastTeachingDate.getFullYear(),String(lastTeachingDate.getMonth()+1).padStart(2,'0'),String(lastTeachingDate.getDate()).padStart(2,'0')].join('-');calculate();}});
+    calculate();
+})();
+
 (() => {
     const search = document.getElementById('session-search');
     if (!search) return;
