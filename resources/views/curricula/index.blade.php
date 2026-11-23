@@ -68,6 +68,7 @@
                     @foreach($week->contentItems->where('source_kind','AI_SUGGESTION') as $item)
                         @php($target = data_get($item->metadata,'target_modality','BOTH'))
                         <label class="suggestion-row" data-target="{{ $target }}" data-approved="{{ $item->approved ? '1' : '0' }}">
+                            <input type="hidden" name="reviewed_items[]" value="{{ $item->id }}">
                             <input type="checkbox" name="approved_items[]" value="{{ $item->id }}" {{ $item->approved ? 'checked' : '' }}>
                             <span class="suggestion-copy"><span class="suggestion-meta">Bloque {{ $week->week_number }} · <b>{{ $target === 'BOTH' ? 'TEC + TALL' : ($target === 'TEC' ? 'TEORÍA' : 'TALLER') }}</b> · {{ str_replace('_',' ',$item->category) }}</span><strong>{{ $item->content }}</strong></span>
                             <span class="badge {{ $item->approved ? 'badge-green' : '' }}">{{ $item->approved ? 'Aprobada' : 'Pendiente' }}</span>
@@ -123,7 +124,11 @@
     document.getElementById('clearVisible')?.addEventListener('click', () => { visibleRows().forEach(row => row.querySelector('input').checked = false); updateCount(); });
     rows.forEach(row => row.querySelector('input').addEventListener('change', updateCount));
     document.getElementById('approvalForm')?.addEventListener('submit', event => {
-        if (!confirm('¿Guardar el estado de aprobación? Las casillas desmarcadas quedarán pendientes.')) event.preventDefault();
+        if (!confirm('¿Guardar el estado de aprobación de las propuestas visibles? Las propuestas ocultas conservarán su estado actual.')) {
+            event.preventDefault();
+            return;
+        }
+        rows.filter(row => row.hidden).forEach(row => row.querySelectorAll('input').forEach(input => input.disabled = true));
     });
     updateCount();
 })();
