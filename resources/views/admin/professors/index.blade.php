@@ -1,10 +1,6 @@
 @extends('layouts.app')
 @section('title', 'Cuentas')
 @section('content')
-@php
-    $professorCount = $professors->where('role', 'profesor')->count();
-    $adminCount = $professors->where('role', 'admin')->count();
-@endphp
 
 <div class="page-head accounts-head">
     <div>
@@ -38,31 +34,26 @@
             <h2>Personas con acceso</h2>
             <p class="card-description">Cada docente tiene su propio espacio y sus datos académicos.</p>
         </div>
-        <span class="badge">{{ $professors->count() }} cuentas</span>
+        <span class="badge">{{ $professors->total() }} cuentas</span>
     </div>
 
-    <div class="accounts-toolbar">
+    <form method="GET" action="{{ route('admin.professors.index') }}" class="accounts-toolbar">
         <label class="accounts-search">
-            <span aria-hidden="true">⌕</span>
-            <input id="account-search" type="search" placeholder="Buscar por nombre, correo o escuela…" autocomplete="off" aria-label="Buscar cuentas">
+            <x-icon name="search" size="15" />
+            <input name="q" type="search" value="{{ request('q') }}" placeholder="Buscar nombre, correo, escuela o carrera…" aria-label="Buscar cuentas">
         </label>
-        <span class="accounts-counter" id="account-visible-count">{{ $professors->count() }} visibles</span>
-    </div>
+        <button class="btn btn-secondary btn-sm" type="submit"><x-icon name="search" /> Buscar</button>
+        @if(request()->filled('q'))
+            <a class="btn btn-ghost btn-sm" href="{{ route('admin.professors.index') }}"><x-icon name="x" /> Limpiar</a>
+        @endif
+    </form>
 
     <div class="account-grid" id="account-grid">
         @forelse($professors as $user)
             @php
                 $profile = $user->professor;
-                $searchText = mb_strtolower(implode(' ', [
-                    $user->name,
-                    $user->email,
-                    $profile?->institutional_id,
-                    $profile?->school,
-                    $profile?->career,
-                    $user->role,
-                ]));
             @endphp
-            <article class="account-item" data-account-search="{{ $searchText }}">
+            <article class="account-item">
                 <div class="account-item-top">
                     <div class="account-avatar">{{ mb_strtoupper(mb_substr(trim($user->name), 0, 1)) }}</div>
                     <span class="badge {{ $user->role === 'admin' ? 'badge-blue' : 'badge-green' }}">
@@ -87,10 +78,10 @@
             </div>
         @endforelse
     </div>
-    <div class="empty accounts-empty" id="account-no-results" hidden>
-        <strong>No encontramos cuentas.</strong>
-        <span>Prueba con otro nombre, correo o escuela.</span>
-    </div>
+    @if($professors->hasPages())
+        <div class="pagination-summary">Mostrando {{ $professors->firstItem() }}–{{ $professors->lastItem() }} de {{ $professors->total() }} cuentas</div>
+        {{ $professors->links() }}
+    @endif
 </section>
 
 <dialog class="ui-dialog sheet-dialog" id="account-create-dialog" aria-labelledby="account-create-title" data-backdrop-close @if($errors->any()) data-auto-open @endif>
@@ -200,27 +191,3 @@
 </style>
 @endpush
 
-@push('scripts')
-<script>
-(() => {
-    const search = document.getElementById('account-search');
-    const grid = document.getElementById('account-grid');
-    const counter = document.getElementById('account-visible-count');
-    const empty = document.getElementById('account-no-results');
-    if (!search || !grid) return;
-
-    const items = [...grid.querySelectorAll('[data-account-search]')];
-    search.addEventListener('input', () => {
-        const term = search.value.trim().toLocaleLowerCase();
-        let visible = 0;
-        items.forEach(item => {
-            const match = item.dataset.accountSearch.includes(term);
-            item.hidden = !match;
-            if (match) visible++;
-        });
-        counter.textContent = visible + (visible === 1 ? ' visible' : ' visibles');
-        empty.hidden = visible > 0;
-    });
-})();
-</script>
-@endpush
