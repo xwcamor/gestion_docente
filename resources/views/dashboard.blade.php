@@ -3,7 +3,7 @@
 @section('content')
 <div class="page-head">
     <div><p class="eyebrow">Tu espacio de trabajo</p><h1>Hola, {{ auth()->user()->name }}</h1><p class="subhead">Desde aquí puedes continuar con tus ciclos, grupos, cursos y documentos.</p></div>
-    <div class="actions"><a class="btn btn-secondary" href="{{ route('cycles.index') }}">Ver mis ciclos</a><a class="btn" href="{{ route('cycles.create') }}">＋ Crear ciclo</a></div>
+    <div class="actions"><a class="btn btn-secondary" href="{{ route('cycles.index') }}"><x-icon name="calendar-days" /> Ver mis ciclos</a><a class="btn" href="{{ route('cycles.create') }}"><x-icon name="plus" /> Crear ciclo</a></div>
 </div>
 
 <div class="grid grid-4 dashboard-stats" style="margin-bottom:19px">
@@ -25,15 +25,15 @@
 
 <div class="grid grid-2">
     <section class="card">
-        <div class="card-head"><div><h2>Mis ciclos</h2><p class="card-description">Tus periodos académicos más recientes.</p></div><a href="{{ route('cycles.index') }}">Ver todos →</a></div>
+        <div class="card-head"><div><h2>Mis ciclos</h2><p class="card-description">Tus periodos académicos más recientes.</p></div><a href="{{ route('cycles.index') }}"><x-icon name="arrow-right" /> Ver todos</a></div>
         @forelse($cycles->take(5) as $cycle)
-            <div class="list-row"><div><div class="list-title">{{ $cycle->academic_year }} · Ciclo {{ $cycle->cycle_code }}</div><div class="list-meta">{{ $cycle->start_date?->format('d/m/Y') }} – {{ $cycle->end_date?->format('d/m/Y') }} · {{ $cycle->groups_count }} grupos</div></div><a class="btn btn-secondary btn-sm" href="{{ route('cycles.show', $cycle) }}">Abrir</a></div>
+            <div class="list-row"><div><div class="list-title">{{ $cycle->academic_year }} · Ciclo {{ $cycle->cycle_code }}</div><div class="list-meta">{{ $cycle->start_date?->format('d/m/Y') }} – {{ $cycle->end_date?->format('d/m/Y') }} · {{ $cycle->groups_count }} grupos</div></div><a class="btn btn-secondary btn-sm" href="{{ route('cycles.show', $cycle) }}"><x-icon name="arrow-right" /> Abrir</a></div>
         @empty
-            <div class="empty"><strong>Comienza por crear tu primer ciclo.</strong><span>Luego podrás agregar grupos y cursos.</span><div class="mt-16"><a class="btn" href="{{ route('cycles.create') }}">Crear ciclo</a></div></div>
+            <div class="empty"><strong>Comienza por crear tu primer ciclo.</strong><span>Luego podrás agregar grupos y cursos.</span><div class="mt-16"><a class="btn" href="{{ route('cycles.create') }}"><x-icon name="plus" /> Crear ciclo</a></div></div>
         @endforelse
     </section>
     <section class="card">
-        <div class="card-head"><div><h2>Feriados próximos</h2><p class="card-description">Días que pueden modificar el calendario de clases.</p></div><a href="{{ route('holidays.index') }}">Administrar →</a></div>
+        <div class="card-head"><div><h2>Feriados próximos</h2><p class="card-description">Días que pueden modificar el calendario de clases.</p></div><a href="{{ route('holidays.index') }}"><x-icon name="calendar-range" /> Administrar</a></div>
         @forelse($upcoming as $holiday)
             <div class="list-row"><div><div class="list-title">{{ $holiday->name }}</div><div class="list-meta">{{ $holiday->holiday_date->format('d/m/Y') }} · {{ $holiday->scope }}</div></div><span class="badge badge-orange">Bloquea clases</span></div>
         @empty <div class="empty"><strong>No hay feriados próximos registrados.</strong><span>El calendario se mantiene según los días de clase definidos.</span></div> @endforelse
@@ -47,7 +47,7 @@
     @else
         <div class="table-wrap"><table><thead><tr><th>Grupo</th><th>Ciclo</th><th>Cursos</th><th></th></tr></thead><tbody>
             @foreach($groups as $group)
-                <tr><td><strong>{{ $group->name }}</strong></td><td>{{ $group->cycle->academic_year }} · {{ $group->cycle->cycle_code }}</td><td>{{ $group->assignments->count() }}</td><td><a class="btn btn-secondary btn-sm" href="{{ route('groups.show', $group) }}">Abrir grupo →</a></td></tr>
+                <tr><td><strong>{{ $group->name }}</strong></td><td>{{ $group->cycle->academic_year }} · {{ $group->cycle->cycle_code }}</td><td>{{ $group->assignments->count() }}</td><td><a class="btn btn-secondary btn-sm" href="{{ route('groups.show', $group) }}"><x-icon name="arrow-right" /> Abrir grupo</a></td></tr>
             @endforeach
         </tbody></table></div>
     @endif
