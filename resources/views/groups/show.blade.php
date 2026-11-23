@@ -85,8 +85,7 @@
         </div>
         <div class="empty" id="course-empty" hidden><strong>No hay cursos que coincidan.</strong><span>Prueba con otro nombre o modalidad.</span></div>
         @if($assignments->hasPages())
-            <div class="pagination-summary">Mostrando {{ $assignments->firstItem() }}–{{ $assignments->lastItem() }} de {{ $assignments->total() }} cursos</div>
-            {{ $assignments->links() }}
+            <x-pagination :paginator="$assignments" />
         @endif
     @else
         <div class="empty">
