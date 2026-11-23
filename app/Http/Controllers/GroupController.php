@@ -6,6 +6,7 @@ use App\Models\Cycle;
 use App\Models\TeachingGroup;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Validator;
 
 class GroupController extends Controller
 {
@@ -52,7 +53,8 @@ class GroupController extends Controller
         $this->authorizeGroup($group);
         $request->merge(['name' => trim((string) $request->input('name'))]);
 
-        $data = $request->validate(
+        $validator = Validator::make(
+            $request->all(),
             [
                 'name' => [
                     'required',
@@ -67,9 +69,20 @@ class GroupController extends Controller
             ['name.unique' => 'Ya existe otro grupo con ese nombre en este ciclo.']
         );
 
-        $group->update($data);
+        if ($validator->fails()) {
+            return redirect()
+                ->route('cycles.show', [
+                    'cycle' => $group->cycle,
+                    'dialog' => 'edit-group',
+                    'group_id' => $group->id,
+                ])
+                ->withErrors($validator)
+                ->withInput();
+        }
 
-        return redirect()->route('cycles.show', $group->cycle_id)
+        $group->update($validator->validated());
+
+        return redirect()->route('cycles.show', $group->cycle)
             ->with('success', 'Datos del grupo actualizados.');
     }
 
