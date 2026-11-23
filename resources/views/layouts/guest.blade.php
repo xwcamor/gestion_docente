@@ -16,7 +16,7 @@
         .guest-aside{position:relative;display:flex;flex-direction:column;justify-content:space-between;min-height:100vh;padding:42px clamp(28px,6vw,92px);background:#f1f2ef;border-right:1px solid #e4e6e1;overflow:hidden}
         .guest-aside:before,.guest-aside:after{display:none}
         .guest-brand{display:flex;align-items:center;gap:12px;color:#202a36;font-size:14px;font-weight:700;letter-spacing:-.2px}
-        .guest-brand-mark{width:36px;height:36px;display:grid;place-items:center;border:1px solid #cfd5d0;border-radius:9px;background:#fff;color:#203c5c;font:800 13px Manrope,sans-serif;letter-spacing:-.6px}
+        .guest-brand-mark{width:36px;height:36px;display:grid;place-items:center;border:1px solid #cfd5d0;border-radius:9px;background:#fff;color:#40584a;font:800 13px Manrope,sans-serif;letter-spacing:-.6px}
         .guest-brand small{display:block;margin-top:3px;color:#818981;font-size:10px;letter-spacing:.35px;font-weight:500}
         .guest-message{position:relative;z-index:1;max-width:530px;margin:70px 0}
         .guest-kicker{display:block;padding:0;border:0;background:none;color:#647366;font-size:10px;letter-spacing:1.7px;text-transform:uppercase;font-weight:700}
@@ -39,15 +39,15 @@
         .field{display:block;width:100%;height:48px;border:1px solid #d9ded8;border-radius:7px;padding:0 43px 0 40px;font:inherit;font-size:13px;color:#202a36;background:#fff;transition:border-color 140ms ease-out,box-shadow 140ms ease-out}
         .field::placeholder{color:#a6ada6}
         .field:hover{border-color:#aeb9af}
-        .field:focus{outline:0;border-color:#426b91;box-shadow:0 0 0 3px rgba(54,99,140,.10)}
+        .field:focus{outline:0;border-color:#79917e;box-shadow:0 0 0 3px rgba(87,116,94,.10)}
         .field-toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:#65736a;border-radius:5px;padding:7px;cursor:pointer;font-size:10px;font-weight:700}
-        .field-toggle:hover{background:#f0f2ef;color:#294e70}
+        .field-toggle:hover{background:#f0f2ef;color:#40584a}
         .remember-row{display:flex;align-items:center;gap:9px;color:#69756c;font-size:11px;margin:2px 0 22px}
-        .remember-row input{width:15px;height:15px;margin:0;accent-color:#294f72}
-        .btn{width:100%;height:48px;display:flex;align-items:center;justify-content:center;gap:10px;border:1px solid #203e5c;border-radius:7px;background:#203e5c;color:#fff;font:inherit;font-size:12px;font-weight:700;letter-spacing:.1px;cursor:pointer;transition:background 140ms ease-out,border-color 140ms ease-out,transform 100ms ease-out}
-        .btn:hover{background:#2a5277;border-color:#2a5277}
+        .remember-row input{width:15px;height:15px;margin:0;accent-color:#40584a}
+        .btn{width:100%;height:48px;display:flex;align-items:center;justify-content:center;gap:10px;border:1px solid #40584a;border-radius:7px;background:#40584a;color:#fff;font:inherit;font-size:12px;font-weight:700;letter-spacing:.1px;cursor:pointer;transition:background 140ms ease-out,border-color 140ms ease-out,transform 100ms ease-out}
+        .btn:hover{background:#344a3e;border-color:#344a3e}
         .btn:active{transform:scale(.99)}
-        .btn:focus-visible,.field-toggle:focus-visible{outline:3px solid #a8c0d7;outline-offset:3px}
+        .btn:focus-visible,.field-toggle:focus-visible{outline:3px solid #bdcbbd;outline-offset:3px}
         .guest-security{display:flex;align-items:center;justify-content:center;gap:7px;margin:22px 0 0;color:#9aa39a;font-size:10px}
         .alert{padding:11px 13px;border-radius:7px;margin:0 0 18px;font-size:12px;line-height:1.55}
         .alert-error{background:#fff3f1;color:#a52e28;border:1px solid #f0d3cf}
