@@ -1,0 +1,48 @@
+INSTALACIÓN LIMPIA — SQL ÚNICO (ACTUALIZADO)
+
+El proyecto se reinstala desde cero cuando sea necesario. El procedimiento
+recomendado usa un solo archivo:
+
+  database/gestion_docente.sql
+
+ADVERTENCIA: el SQL contiene DROP DATABASE IF EXISTS gestion_docente y elimina
+la base anterior completa. Ejecutarlo solo cuando se quiera reiniciar todo.
+
+CORRECCIÓN DEL ERROR MYSQL 1059
+- El índice de generated_documents usa gd_mod_type_ver_idx.
+- El índice de curriculum_content_items usa cci_week_category_approved_idx.
+- Ambos nombres son explícitos y cortos; se evita que Laravel genere nombres
+  automáticos que superan el límite de 64 caracteres de MySQL.
+- Si una migración previa falló y dejó tablas parciales, elimina la base
+  gestion_docente antes de repetir la instalación limpia.
+
+SQL ÚNICO Y REGISTRO DE MIGRACIONES
+El SQL crea todas las tablas (incluyendo cache, cache_locks, sessions, jobs,
+job_batches y failed_jobs) e inserta en la tabla migrations los 18 nombres de
+migración que corresponden al esquema. Después de importar el SQL puedes
+verificarlo con:
+
+  php artisan migrate --seed
+
+Laravel debe indicar que no hay migraciones pendientes y ejecutar los seeders.
+No ejecutes migrate:fresh después de importar el SQL.
+
+SECUENCIA COMPLETA
+1. Habilitar ZIP en Laragon: Menu / PHP / Extensions / zip; reiniciar Laragon.
+2. Ejecutar composer install.
+3. Copiar .env.example a .env y configurar DB_HOST, DB_PORT, DB_DATABASE,
+   DB_USERNAME y DB_PASSWORD. Mantener CACHE_STORE=file, SESSION_DRIVER=file,
+   QUEUE_CONNECTION=sync en el entorno local.
+4. Importar database/gestion_docente.sql en phpMyAdmin/HeidiSQL.
+5. Ejecutar:
+
+   php artisan key:generate
+   php artisan migrate --seed
+   php artisan gestion:crear-profesor --admin
+   php artisan serve
+
+6. Abrir http://127.0.0.1:8000/login.
+
+Las migraciones permanecen como fuente del esquema y funcionan por separado
+sobre una base vacía. Para la instalación limpia de referencia, importa el
+SQL único y luego ejecuta migrate --seed para que Laravel valide el estado.
