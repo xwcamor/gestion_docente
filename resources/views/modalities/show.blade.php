@@ -12,9 +12,9 @@
     <a href="{{ route('evaluations.index', $modality) }}"><x-icon name="arrow-right" /> Evaluaciones y notas</a>
 </div>
 <div class="grid grid-3" style="margin-bottom:17px">
-    <div class="stat-card"><div class="stat-label">Alumnos matriculados</div><div class="stat">{{ $modality->enrollments->count() }}</div></div>
-    <div class="stat-card"><div class="stat-label">Sesiones calculadas</div><div class="stat">{{ $modality->sessions->where('status', 'scheduled')->count() }}</div></div>
-    <div class="stat-card"><div class="stat-label">Documentos generados</div><div class="stat">{{ $modality->documents->count() }}</div></div>
+    <div class="stat-card"><div class="stat-label">Alumnos matriculados</div><div class="stat">{{ $enrollmentsCount }}</div></div>
+    <div class="stat-card"><div class="stat-label">Sesiones calculadas</div><div class="stat">{{ $scheduledSessionCount }}</div></div>
+    <div class="stat-card"><div class="stat-label">Documentos generados</div><div class="stat">{{ $documentCount }}</div></div>
 </div>
 
 <section class="card" id="calendar">
@@ -62,7 +62,7 @@
 </section>
 
 <section class="card" id="students">
-    <div class="card-head"><div><h2>Alumnos del campus</h2><p class="card-description">Importa el archivo original que recibes de la plataforma. Primero revisarás una vista previa.</p></div><span class="badge">{{ $modality->enrollments->count() }} alumnos</span></div>
+    <div class="card-head"><div><h2>Alumnos del campus</h2><p class="card-description">Importa el archivo original que recibes de la plataforma. Primero revisarás una vista previa.</p></div><span class="badge">{{ $enrollmentsCount }} alumnos</span></div>
     <form method="POST" enctype="multipart/form-data" action="{{ route('students.preview', $modality) }}">
         @csrf
         <label for="roster">Archivo de alumnos (.xls, .xlsx o .csv)</label>
@@ -83,24 +83,27 @@
             </form>
         @endforeach
     </div>
-    @if($modality->documents->isNotEmpty())
+    @if($documentCount > 0)
         <h3 style="margin-top:20px">Archivos generados</h3>
         <div class="table-wrap"><table><thead><tr><th>Documento</th><th>Versión</th><th>Estado</th><th>Fecha</th><th></th></tr></thead><tbody>
-            @foreach($modality->documents as $document)
+            @foreach($documents as $document)
                 <tr><td>{{ $document->filename }}</td><td>{{ $document->version }}</td><td>@if(($document->metadata['stale'] ?? false))<span class="badge badge-orange">Regenerar</span>@else<span class="badge badge-green">Vigente</span>@endif</td><td>{{ $document->created_at?->format('d/m/Y H:i') }}</td><td><a href="{{ route('documents.download', $document) }}"><x-icon name="arrow-right" /> Descargar</a></td></tr>
             @endforeach
         </tbody></table></div>
+        @if($documents->hasPages())
+            <x-pagination :paginator="$documents" />
+        @endif
     @endif
 </section>
 
 <section class="card" id="sessions">
     <div class="card-head"><div><h2>Sesiones del curso</h2><p class="card-description">El calendario se calcula con las fechas, días de clase y feriados. Abre una sesión solo cuando necesites editar su contenido.</p></div><span class="badge">{{ $modality->sessions->count() }} sesiones</span></div>
-    @if($modality->sessions->isEmpty())
+    @if($sessionCount === 0)
         <div class="empty"><strong>Aún no se han calculado sesiones.</strong><span>Configura el periodo y el horario en la sección Calendario.</span><div class="mt-16"><a class="btn btn-secondary btn-sm" href="#calendar"><x-icon name="calendar-days" /> Ir a calendario</a></div></div>
     @else
-        <div class="filter-bar"><input class="filter-input" id="session-search" type="search" placeholder="Buscar por fecha, semana o tema…" aria-label="Buscar sesiones"><span class="help">{{ $modality->sessions->where('status', 'scheduled')->count() }} sesiones programadas</span></div>
+        <div class="filter-bar"><input class="filter-input" id="session-search" type="search" placeholder="Buscar por fecha, semana o tema…" aria-label="Buscar sesiones"><span class="help">{{ $scheduledSessionCount }} sesiones programadas</span></div>
         <div id="session-list">
-            @foreach($modality->sessions as $session)
+            @foreach($sessions as $session)
                 <details class="panel session-item" style="margin-bottom:9px" data-search="{{ strtolower(($session->session_date?->format('d/m/Y') ?? '').' '.$session->session_number.' '.$session->topic.' '.$session->curriculum_week_number) }}">
                     <summary><span><strong>{{ $session->session_date?->format('d/m/Y') }}</strong> · Sesión {{ $session->session_number ?: '—' }} <span class="muted">· {{ $session->duration_minutes }} min</span></span><span class="badge {{ $session->status === 'holiday' ? 'badge-orange' : ($session->status === 'cancelled' ? 'badge-red' : 'badge-green') }}">{{ $session->status }}</span></summary>
                     <div class="panel-body">
@@ -120,6 +123,9 @@
                 </details>
             @endforeach
         </div>
+        @if($sessions->hasPages())
+            <x-pagination :paginator="$sessions" />
+        @endif
         <div class="empty" id="session-empty" hidden><strong>No hay sesiones con ese criterio.</strong><span>Prueba con otra fecha o tema.</span></div>
     @endif
 </section>
