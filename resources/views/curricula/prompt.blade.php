@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title','Prompt para analizar malla')
 @section('content')
-<div class="page-head"><div><h1>Prompt preparado para ChatGPT</h1><p class="subhead">Adjunta el PDF original de la malla a ChatGPT, copia este prompt y pégalo en el mismo chat.</p></div><a class="btn btn-secondary" href="{{ route('curricula.show',$assignment) }}">Volver</a></div>
+<div class="page-head"><div><h1>Prompt preparado para ChatGPT</h1><p class="subhead">Adjunta el PDF original de la malla a ChatGPT, copia este prompt y pégalo en el mismo chat.</p></div><a class="btn btn-secondary" href="{{ route('curricula.show',$assignment) }}"><x-icon name="arrow-left" /> Volver</a></div>
 <div class="grid grid-3">
 <div class="card"><div class="stat-label">Versión del prompt</div><div class="stat" style="font-size:20px">{{ $promptVersion }}</div></div>
 <div class="card"><div class="stat-label">Fecha y hora de generación</div><strong>{{ $promptGeneratedAt->format('d/m/Y H:i:s P') }}</strong></div>
@@ -17,7 +17,7 @@
 </ol>
 <div class="alert alert-info">La malla sirve para TEC y TALL. ChatGPT debe extraer una sola vez los contenidos oficiales y proponer planes separados para teoría/conocimientos tecnológicos y práctica de taller. Las propuestas de IA se importan pendientes de tu aprobación.</div>
 </section>
-<section class="card"><div class="page-head"><h2>Prompt completo</h2><button class="btn btn-secondary" type="button" onclick="navigator.clipboard.writeText(document.getElementById('promptText').value).then(()=>this.innerText='Copiado')">Copiar prompt</button></div>
+<section class="card"><div class="page-head"><h2>Prompt completo</h2><button class="btn btn-secondary" type="button" onclick="navigator.clipboard.writeText(document.getElementById('promptText').value).then(()=>this.innerText='Copiado')"><x-icon name="file-text" /> Copiar prompt</button></div>
 <textarea id="promptText" class="field mono" rows="22" readonly>{{ $prompt }}</textarea>
 <p class="help">Versión: {{ $promptVersion }} · Generado: {{ $promptGeneratedAt->toIso8601String() }}</p>
 </section>
@@ -26,6 +26,6 @@
 <input type="hidden" name="source_token" value="{{ $token }}">
 <label>JSON generado por ChatGPT</label><textarea class="field mono" name="json_content" rows="10" placeholder='Pega aquí el objeto JSON completo, desde la primera llave hasta la última.'></textarea>
 <label>O selecciona un archivo .json (opcional)</label><input class="field" type="file" name="json_file" accept=".json,.txt">
-<button class="btn mt-16" type="submit">Validar y revisar resultado</button>
+<button class="btn mt-16" type="submit"><x-icon name="check" /> Validar y revisar resultado</button>
 </form></section>
 @endsection
