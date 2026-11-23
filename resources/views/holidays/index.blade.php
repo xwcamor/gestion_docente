@@ -72,7 +72,7 @@
                         <span class="badge">{{ $scopeLabels[$holiday->scope] ?? $holiday->scope }}</span>
                     </div>
                     <p class="holiday-meta">
-                        {{ $holiday->holiday_date->translatedFormat('l, d \d\e F \d\e Y') }}
+                        {{ $holiday->holiday_date->format('d/m/Y') }}
                         <span aria-hidden="true">·</span>
                         {{ $holiday->professor_id ? 'Tu calendario' : 'Registro general' }}
                     </p>
