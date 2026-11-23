@@ -46,8 +46,8 @@
 <style>
 .quick-table-wrap{overflow-x:auto;margin-top:14px}
 .quick-table{min-width:1500px;width:100%;border-collapse:separate;border-spacing:0;font-size:12px}
-.quick-table th{position:sticky;top:0;background:#f4f6f9;color:#475467;text-align:left;padding:10px 8px;border-bottom:1px solid #dfe4ea;white-space:nowrap}
-.quick-table td{padding:7px 5px;border-bottom:1px solid #edf0f3;vertical-align:middle}
+.quick-table th{position:sticky;top:0;background:#f7f8f6;color:#566158;text-align:left;padding:10px 8px;border-bottom:1px solid #e2e6e0;white-space:nowrap}
+.quick-table td{padding:7px 5px;border-bottom:1px solid #edf0eb;vertical-align:middle}
 .quick-table .field{min-width:105px;font-size:12px;padding:9px 8px}
 .quick-table td:nth-child(2) .field{min-width:230px}
 .quick-table td:nth-child(3) .field{min-width:170px}
@@ -63,9 +63,9 @@
  .quick-table{min-width:0;width:100%;display:block;border:0}
  .quick-table thead{display:none}
  .quick-table tbody{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
- .quick-table tr.course-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:13px;border:1px solid #e4eaf1;border-radius:14px;background:#fff;box-shadow:0 3px 12px rgba(16,24,40,.035)}
+ .quick-table tr.course-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:13px;border:1px solid #e3e7e0;border-radius:8px;background:#fff;box-shadow:none}
  .quick-table td{display:flex;flex-direction:column;gap:5px;padding:0;border:0;min-width:0}
- .quick-table td:before{font-size:10px;font-weight:750;letter-spacing:.35px;text-transform:uppercase;color:#748094}
+ .quick-table td:before{font-size:10px;font-weight:750;letter-spacing:.35px;text-transform:uppercase;color:#778178}
  .quick-table td:nth-child(1){grid-column:1/-1;display:none}
  .quick-table td:nth-child(2){grid-column:1/-1}
  .quick-table td:nth-child(2):before{content:"Curso"}
@@ -82,7 +82,7 @@
  .quick-table td:nth-child(12){grid-column:1/-1;align-items:flex-end}
  .quick-table td:nth-child(12) .btn{width:100%}
  .quick-table td:nth-child(2) .field,.quick-table td:nth-child(3) .field,.quick-table .field,.quick-table .date-field{min-width:0;width:100%;font-size:13px}
- .quick-actions{position:sticky;bottom:8px;z-index:5;padding:10px;background:rgba(255,255,255,.95);border:1px solid #e4eaf1;border-radius:13px;box-shadow:0 5px 18px rgba(16,24,40,.08)}
+ .quick-actions{position:sticky;bottom:8px;z-index:5;padding:10px;background:#fff;border:1px solid #e3e7e0;border-radius:8px;box-shadow:none}
  .quick-actions .btn{width:100%}
 }
 @media(max-width:380px){.quick-table tr.course-row{grid-template-columns:minmax(0,1fr)}.quick-table td:nth-child(n){grid-column:1/-1}}
