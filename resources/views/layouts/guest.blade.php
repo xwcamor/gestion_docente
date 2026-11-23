@@ -48,7 +48,28 @@
         .alert{padding:13px 15px;border-radius:12px;margin:0 0 19px;font-size:13px;line-height:1.55}.alert-error{background:#fff3f2;color:#a52e28;border:1px solid #f3d1ce}.alert-success{background:#effaf3;color:#22643b;border:1px solid #ccebd5}
         .error-text{color:#b42318;font-size:11px;margin-top:6px}
         @media(max-width:900px){.guest-shell{grid-template-columns:1fr;padding:12px}.guest-aside{min-height:auto;padding:25px 28px;border-radius:20px}.guest-message{margin:35px 0 25px}.guest-message h1{font-size:38px}.guest-features{display:none}.guest-footer{margin-top:0}.guest-main{padding:42px 20px}}
-        @media(max-width:520px){.guest-shell{padding:0;gap:0}.guest-aside{min-height:230px;padding:22px 21px;border-radius:0 0 22px 22px}.guest-brand-mark{width:37px;height:37px}.guest-message{margin:28px 0 8px}.guest-message h1{font-size:31px;letter-spacing:-1.3px;margin:15px 0 8px}.guest-message p{font-size:12px;line-height:1.55}.guest-kicker{font-size:9px;padding:6px 9px}.guest-footer{font-size:10px}.guest-main{padding:34px 22px 40px;align-items:flex-start}.guest-card h2{font-size:28px}.guest-description{margin-bottom:25px}}
+        @media(max-width:520px){
+            body{background:#fff}
+            .guest-shell{min-height:100svh;display:flex;flex-direction:column;padding:0;gap:0;background:#fff}
+            .guest-aside{min-height:0;height:66px;flex:none;padding:0 20px;border-radius:0;background:#fff;color:#172b49;border-bottom:1px solid #edf0f3;justify-content:center}
+            .guest-aside:before,.guest-aside:after,.guest-message,.guest-features,.guest-footer{display:none}
+            .guest-brand{gap:10px;font-size:14px}
+            .guest-brand-mark{width:35px;height:35px;border-radius:10px;background:#17365d;color:#fff;border:0}
+            .guest-brand small{display:none}
+            .guest-main{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:clamp(34px,9vh,76px) 24px 28px}
+            .guest-card{width:100%;max-width:420px}
+            .guest-eyebrow{font-size:10px;margin-bottom:8px;letter-spacing:1.2px}
+            .guest-card h2{font-size:29px;letter-spacing:-1px;margin-bottom:7px}
+            .guest-description{font-size:12px;line-height:1.5;margin:0 0 25px;max-width:310px}
+            .field-group{margin-bottom:16px}
+            .field-label{font-size:12px;margin-bottom:7px}
+            .field{height:52px;border-radius:11px;font-size:16px}
+            .remember-row{margin:2px 0 19px;font-size:12px}
+            .btn{height:52px;border-radius:11px;font-size:14px}
+            .guest-security{display:none}
+            .alert{font-size:12px;padding:11px 12px;margin-bottom:14px}
+        }
+        @media(max-height:700px) and (max-width:520px){.guest-main{padding-top:24px}.guest-description{margin-bottom:18px}.field-group{margin-bottom:13px}.remember-row{margin-bottom:15px}}
         @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;scroll-behavior:auto!important}}
     </style>
 </head>
