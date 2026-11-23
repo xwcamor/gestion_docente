@@ -151,3 +151,19 @@ composer install
 ```
 
 No es un problema de PHP ZIP ni de MySQL. Composer había instalado los paquetes; falló el script Laravel `package:discover` porque faltaba el directorio de caché de arranque.
+
+
+## Crear la primera cuenta de profesor / administrador
+
+Después de importar `database/gestion_docente.sql` y ejecutar `php artisan db:seed`, crea tu cuenta:
+
+```bash
+php artisan gestion:crear-profesor --admin
+```
+
+El asistente solicitará nombre completo, correo, ID institucional (opcional), escuela/carrera (opcionales) y contraseña. La contraseña se introduce de forma oculta y se solicita dos veces. El comando crea un usuario con rol `admin` y su perfil docente asociado para que también pueda usar los módulos académicos.
+
+Para crear una cuenta docente normal, ejecuta `php artisan gestion:crear-profesor` sin `--admin`.
+
+El correo debe ser único. Si ya existe, el comando no duplica ni modifica la cuenta. No guardes contraseñas en el README ni las compartas en capturas.
+

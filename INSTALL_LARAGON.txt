@@ -50,6 +50,10 @@ la base anterior completa. Úsalo solo cuando quieras reiniciar todo.
    php artisan gestion:crear-profesor --admin
    php artisan serve
 
+El comando gestion:crear-profesor abre un asistente para solicitar nombre,
+correo, ID institucional opcional y contraseña. Con --admin crea el rol
+administrador y también su perfil docente asociado.
+
 7. Abre http://127.0.0.1:8000/login.
 
 IMPORTANTE
