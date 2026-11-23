@@ -24,7 +24,7 @@ class HolidayController extends Controller
         }
         if ($request->filled('q')) {
             $term = trim($request->string('q')->toString());
-            $query->where(fn ($builder) => $builder->where('name', 'like', "%{$term}%")->orWhere('source_note', 'like', "%{$term}%"));
+            $query->where('name', 'like', "%{$term}%");
         }
 
         $holidays = $query->paginate(40)->withQueryString();
@@ -41,7 +41,6 @@ class HolidayController extends Controller
             'scope' => 'required|in:NATIONAL,REGIONAL,INSTITUTIONAL,SECTOR',
             'blocks_classes' => 'required|boolean',
             'source_url' => 'nullable|url|max:500',
-            'source_note' => 'nullable|string|max:2000',
         ]);
 
         $data['professor_id'] = auth()->user()->professor->id;
@@ -64,9 +63,9 @@ class HolidayController extends Controller
             }
         }
 
-        $message = 'Excepción de calendario guardada.';
+        $message = 'Fecha registrada correctamente.';
         if ($recalculated) {
-            $message .= " Se recalcularon automáticamente {$recalculated} modalidades afectadas y sus documentos anteriores quedaron marcados para regeneración.";
+            $message .= " Se actualizaron {$recalculated} modalidades afectadas. Los documentos anteriores quedaron marcados para regeneración.";
         }
 
         return back()->with('success', $message);
