@@ -12,6 +12,9 @@
         'SECTOR' => 'Sector',
     ];
     $monthEventCount = collect($calendarDays)->sum(fn ($day) => $day['holidays']->count());
+    $isCalendarView = $presentation === 'calendar';
+    $listViewUrl = route('holidays.index', array_merge(request()->except('page', 'presentation', 'calendar_month', 'calendar_year'), ['presentation' => 'list']));
+    $calendarViewUrl = route('holidays.index', array_merge(request()->only('calendar_month', 'calendar_year'), ['presentation' => 'calendar']));
 @endphp
 
 <div class="page-head holidays-head">
@@ -22,9 +25,20 @@
     </div>
     <div class="actions">
         <button class="btn" type="button" data-modal-open="holiday-create-dialog"><x-icon name="plus" /> Registrar fecha</button>
-    </div>
 </div>
 
+<nav class="holiday-view-switch" aria-label="Presentación de feriados">
+    <a class="holiday-view-option {{ $isCalendarView ? 'active' : '' }}" href="{{ $calendarViewUrl }}" @if($isCalendarView) aria-current="page" @endif>
+        <x-icon name="calendar-days" size="15" />
+        <span>Calendario</span>
+    </a>
+    <a class="holiday-view-option {{ !$isCalendarView ? 'active' : '' }}" href="{{ $listViewUrl }}" @if(!$isCalendarView) aria-current="page" @endif>
+        <x-icon name="file-text" size="15" />
+        <span>Listado</span>
+    </a>
+</nav>
+
+@if($isCalendarView)
 <section class="holiday-summary">
     <div>
         <span class="holiday-summary-label">Fechas en {{ $monthNames[$calendarMonth] }}</span>
@@ -93,7 +107,9 @@
         <p class="calendar-empty-note">No hay feriados ni cierres registrados para este mes.</p>
     @endif
 </section>
+@endif
 
+@unless($isCalendarView)
 <section class="card holiday-card">
     <div class="card-head">
         <div>
@@ -104,6 +120,7 @@
     </div>
 
     <form method="GET" action="{{ route('holidays.index') }}" class="filter-bar holiday-filters">
+        <input type="hidden" name="presentation" value="list">
         <input type="hidden" name="calendar_month" value="{{ $calendarMonth }}">
         <input type="hidden" name="calendar_year" value="{{ $calendarYear }}">
         <input class="filter-input" type="search" name="q" value="{{ request('q') }}" placeholder="Buscar por nombre…" aria-label="Buscar por nombre">
@@ -171,7 +188,9 @@
         <div class="holiday-pagination">{{ $holidays->links() }}</div>
     @endif
 </section>
+@endunless
 
+@if($isCalendarView)
 <dialog class="ui-dialog sheet-dialog" id="calendar-day-dialog" aria-labelledby="calendar-day-title" data-backdrop-close>
     <div class="dialog-head">
         <div>
@@ -193,6 +212,7 @@
         <button class="btn btn-secondary" type="button" data-modal-close>Cerrar</button>
     </div>
 </dialog>
+@endif
 
 <dialog class="ui-dialog sheet-dialog" id="holiday-create-dialog" aria-labelledby="holiday-create-title" data-backdrop-close @if($errors->any()) data-auto-open @endif>
     <div class="dialog-head">
@@ -252,6 +272,10 @@
 
 @push('styles')
 <style>
+.holiday-view-switch{display:inline-flex;align-items:center;gap:3px;margin:0 0 14px;padding:4px;border:1px solid #e2e7e0;border-radius:9px;background:#eef1ed}
+.holiday-view-option{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:36px;padding:8px 14px;border:1px solid transparent;border-radius:6px;color:#657166;font-size:11px;font-weight:650;transition:background .14s ease,color .14s ease,border-color .14s ease,box-shadow .14s ease}
+.holiday-view-option:hover{color:#344a3e;text-decoration:none}
+.holiday-view-option.active{border-color:#dce5da;background:#fff;color:#3c5843;box-shadow:0 1px 2px rgba(26,40,28,.04)}
 .holiday-summary{display:flex;align-items:center;gap:18px;margin:0 0 13px;padding:13px 16px;border:1px solid #e2e6e0;border-radius:8px;background:#fbfcfa}
 .holiday-summary>div:first-child{display:flex;align-items:baseline;gap:10px;flex:none}
 .holiday-summary-label{color:#79847b;font-size:10px}
@@ -309,6 +333,7 @@
 .holiday-empty{margin:4px 0}
 .holiday-pagination{margin-top:13px;padding-top:12px;border-top:1px solid #edf0eb}
 @media(max-width:760px){
+ .holiday-view-switch{display:flex;width:100%}.holiday-view-option{flex:1}
  .holiday-summary{align-items:flex-start;flex-direction:column;gap:7px;padding:11px 12px}
  .holiday-summary-note{padding:0;border:0}
  .calendar-card{padding:11px}
