@@ -5,12 +5,12 @@
     <div>
         <p class="muted small"><a href="{{ route('groups.show',$assignment->group) }}">{{ $assignment->group->name }}</a> / {{ $assignment->course->name }}</p>
         <h1>Control de programación curricular</h1>
-        <p class="subhead">Una sola malla alimenta dos planificaciones independientes: teoría (TEC) y taller/práctica (TALL).</p>
+        <p class="subhead">Una malla alimenta la planificación de teoría y taller por separado.</p>
     </div>
     <a class="btn btn-secondary" href="{{ route('groups.show',$assignment->group) }}"><x-icon name="arrow-left" /> Volver al grupo</a>
 </div>
 <section class="card workflow-card">
-    <div class="workflow-heading"><div><span class="eyebrow">Panel de control</span><h2>Tu avance</h2><p class="muted small">El progreso se calcula con información guardada en el sistema.</p></div><div class="workflow-score">{{ $progress }}<small>%</small></div></div>
+    <div class="workflow-heading"><div><span class="eyebrow">Panel de control</span><h2>Tu avance</h2><p class="muted small">Progreso de la programación actual.</p></div><div class="actions"><button class="btn btn-secondary btn-sm" type="button" data-modal-open="curriculum-help-dialog"><x-icon name="circle-help" /> Cómo funciona</button><div class="workflow-score">{{ $progress }}<small>%</small></div></div></div>
     <div class="progress-track"><span style="width:{{ $progress }}%"></span></div>
     <div class="workflow-stats">
         <div><strong>{{ $activeCurriculum?->weeks->count() ?? 0 }}</strong><span>Bloques de malla</span></div>
@@ -33,18 +33,24 @@
         <div class="actions"><a class="btn btn-secondary btn-sm" href="{{ route('groups.show',$assignment->group) }}"><x-icon name="book-open" /> Ir a cursos</a><a class="btn btn-secondary btn-sm" href="#suggestions" data-filter="TALL"><x-icon name="graduation-cap" /> Revisar taller</a></div>
     </article>
 </section>
-<section class="card">
-    <div class="card-head"><div><h2>Qué falta para terminar</h2><p class="card-description">Accede directamente al siguiente paso.</p></div></div>
-    <div class="step-list">
-        <a class="step-row" href="#upload"><span class="step-number {{ $workflow['has_curriculum'] ? 'complete' : '' }}">{{ $workflow['has_curriculum'] ? '✓' : '1' }}</span><span><strong>Cargar y analizar la malla</strong><small>{{ $workflow['has_curriculum'] ? 'Malla oficial importada' : 'Sube el PDF original para preparar el prompt' }}</small></span><span class="step-action">{{ $workflow['has_curriculum'] ? 'Ver' : 'Comenzar' }} →</span></a>
-        <a class="step-row" href="#suggestions"><span class="step-number {{ $workflow['has_suggestions'] ? 'complete' : '' }}">{{ $workflow['has_suggestions'] ? '✓' : '2' }}</span><span><strong>Revisar teoría y taller</strong><small>{{ $suggestionStats['pending'] }} propuestas pendientes de aprobación</small></span><span class="step-action">Revisar →</span></a>
-        <a class="step-row" href="{{ route('groups.show',$assignment->group) }}"><span class="step-number {{ $workflow['tec_configured'] && $workflow['tall_configured'] ? 'complete' : '' }}">3</span><span><strong>Configurar días y horarios</strong><small>Define fechas de TEC y TALL por separado</small></span><span class="step-action">Configurar →</span></a>
-        <a class="step-row" href="{{ route('groups.show',$assignment->group) }}"><span class="step-number {{ $workflow['has_tec_sessions'] && $workflow['has_tall_sessions'] ? 'complete' : '' }}">4</span><span><strong>Generar sesiones por fecha</strong><small>Comprueba que cada modalidad tenga sesiones calculadas</small></span><span class="step-action">Ver sesiones →</span></a>
-        <div class="step-row"><span class="step-number {{ $workflow['all_approved'] ? 'complete' : '' }}">{{ $workflow['all_approved'] ? '✓' : '5' }}</span><span><strong>Aprobar la programación</strong><small>{{ $workflow['all_approved'] ? 'Todas las propuestas están aprobadas' : 'Aprueba las propuestas que correspondan' }}</small></span><span class="step-action"><a href="#suggestions"><x-icon name="arrow-right" /> Ir</a></span></div>
+<dialog class="ui-dialog sheet-dialog" id="curriculum-help-dialog" aria-labelledby="curriculum-help-title" data-backdrop-close>
+    <div class="dialog-head">
+        <div><p class="eyebrow">Ayuda de malla curricular</p><h2 id="curriculum-help-title">Cómo completar la programación</h2><p>Este resumen te orienta; puedes cerrar y seguir trabajando cuando quieras.</p></div>
+        <button class="dialog-close" type="button" data-modal-close aria-label="Cerrar"><x-icon name="x" /></button>
     </div>
-</section>
+    <div class="dialog-body">
+        <div class="modal-help-grid">
+            <div class="modal-help-item"><span class="workflow-icon"><x-icon name="file-text" /></span><div><strong>Cargar la malla oficial</strong><p>Sube el PDF original para extraer la estructura curricular.</p></div></div>
+            <div class="modal-help-item"><span class="workflow-icon"><x-icon name="sparkles" /></span><div><strong>Revisar propuestas</strong><p>Revisa por separado teoría (TEC) y taller (TALL), y aprueba lo que corresponda.</p></div></div>
+            <div class="modal-help-item"><span class="workflow-icon"><x-icon name="calendar-days" /></span><div><strong>Configurar horarios</strong><p>Define fechas y horarios propios para cada modalidad.</p></div></div>
+            <div class="modal-help-item"><span class="workflow-icon"><x-icon name="clipboard-check" /></span><div><strong>Comprobar sesiones</strong><p>Verifica que las sesiones se hayan generado correctamente.</p></div></div>
+        </div>
+    </div>
+    <div class="dialog-footer"><button class="btn" type="button" data-modal-close>Entendido</button></div>
+</dialog>
+
 <section class="card" id="upload">
-    <div class="card-head"><div><h2>1. Malla curricular</h2><p class="card-description">Sube el PDF oficial. Gestión Docente extrae el texto y prepara el prompt general para ChatGPT.</p></div><span class="badge {{ $workflow['has_curriculum'] ? 'badge-green' : '' }}">{{ $workflow['has_curriculum'] ? 'Importada' : 'Pendiente' }}</span></div>
+    <div class="card-head"><div><h2>Malla curricular</h2><p class="card-description">Sube el PDF oficial. Gestión Docente extrae el texto y prepara el prompt general para ChatGPT.</p></div><span class="badge {{ $workflow['has_curriculum'] ? 'badge-green' : '' }}">{{ $workflow['has_curriculum'] ? 'Importada' : 'Pendiente' }}</span></div>
     <form method="POST" enctype="multipart/form-data" action="{{ route('curricula.extract',$assignment) }}">@csrf
         <label for="curriculum_pdf">Documento PDF de la malla</label><input class="field" id="curriculum_pdf" type="file" name="curriculum_pdf" accept=".pdf,application/pdf" required>
         <div class="actions mt-16"><button class="btn" type="submit"><x-icon name="sparkles" /> Analizar PDF y preparar prompt</button><a class="btn btn-secondary" href="{{ route('curricula.example',$assignment) }}"><x-icon name="file-text" /> Ver JSON de ejemplo</a></div>
@@ -52,7 +58,7 @@
     <p class="help">La malla es la fuente oficial. La IA debe separar teoría y práctica, conservar las horas T/P/V y proponer una planificación independiente para cada modalidad.</p>
 </section>
 <section class="card" id="suggestions">
-    <div class="card-head"><div><h2>2. Control rápido de propuestas</h2><p class="card-description">Filtra, selecciona y aprueba en pocos clics. TEC no se mezcla con TALL.</p></div><span class="badge">{{ $suggestionStats['pending'] }} pendientes</span></div>
+    <div class="card-head"><div><h2>Propuestas de teoría y taller</h2><p class="card-description">Filtra, selecciona y aprueba en pocos clics. TEC no se mezcla con TALL.</p></div><span class="badge">{{ $suggestionStats['pending'] }} pendientes</span></div>
     @if(!$activeCurriculum)
         <div class="empty">Primero importa una malla curricular para habilitar la revisión de propuestas.</div>
     @elseif($suggestionStats['total'] === 0)
