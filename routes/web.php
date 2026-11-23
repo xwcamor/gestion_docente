@@ -14,6 +14,7 @@ use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\AdminProfessorController;
 use App\Http\Controllers\EvaluationController;
 use App\Http\Controllers\CurriculumController;
+use App\Http\Controllers\CourseDistributionImportController;
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1')->name('login.store');

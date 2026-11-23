@@ -113,13 +113,13 @@ class CourseDistributionImportService
         }
 
         $allDates = collect($rows)->flatMap(fn ($row) => collect($row['modalities'])->flatMap(fn ($modality) => array_filter([$modality['start_date'], $modality['end_date']])));
-        $firstCode = collect($rows)->flatMap(fn ($row) => collect($row['modalities'])->pluck('block_code'))->first(fn ($value) => preg_match('/(20\d{2})(\d{2})-PIAD/i', (string) $value));
+        // CODIGO identifica el periodo académico. BLOQUE TEC/TALL puede conservar un periodo interno distinto.
+        $sourceCodes = collect($rows)->pluck('source_code')->filter()->all();
         $cycleMatch = [];
-        if ($firstCode) {
-            preg_match('/(20\d{2})(\d{2})-PIAD/i', $firstCode, $cycleMatch);
-        }
+        preg_match('/(20\d{2})(\d{2})-PIAD/i', implode(' ', $sourceCodes), $cycleMatch);
         if (!$cycleMatch) {
-            preg_match('/(20\d{2})(\d{2})-PIAD/i', implode(' ', array_column($rows, 'code')), $cycleMatch);
+            $blockCodes = collect($rows)->flatMap(fn ($row) => collect($row['modalities'])->pluck('block_code'))->filter()->all();
+            preg_match('/(20\d{2})(\d{2})-PIAD/i', implode(' ', $blockCodes), $cycleMatch);
         }
         if (!$cycleMatch) {
             throw ValidationException::withMessages([

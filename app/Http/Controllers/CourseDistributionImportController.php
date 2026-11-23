@@ -75,17 +75,19 @@ class CourseDistributionImportController extends Controller
                 );
 
                 foreach ($row['modalities'] as $item) {
-                    $modality = CourseModality::updateOrCreate(
-                        ['course_assignment_id' => $assignment->id, 'modality' => $item['type']],
-                        [
-                            'nrc' => $item['nrc'],
-                            'start_date' => $item['start_date'],
-                            'end_date' => $item['end_date'],
-                            'curriculum_start_week' => 1,
-                            'active' => true,
-                            'period_label' => $data['academic_year'].'-'.$data['cycle_code'].'-'.$item['type'],
-                        ]
-                    );
+                    $modality = CourseModality::firstOrNew([
+                        'course_assignment_id' => $assignment->id,
+                        'modality' => $item['type'],
+                    ]);
+                    $modality->fill([
+                        'nrc' => $item['nrc'] ?: $modality->nrc,
+                        'start_date' => $item['start_date'] ?: $modality->start_date?->toDateString(),
+                        'end_date' => $item['end_date'] ?: $modality->end_date?->toDateString(),
+                        'curriculum_start_week' => $modality->curriculum_start_week ?: 1,
+                        'active' => true,
+                        'period_label' => $data['academic_year'].'-'.$data['cycle_code'].'-'.$item['type'],
+                    ]);
+                    $modality->save();
                     // La hoja Cursos no contiene días ni horas: no se crean horarios ficticios.
                 }
             }
