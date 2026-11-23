@@ -3,7 +3,7 @@
 @section('content')
 <div class="breadcrumbs"><a href="{{ route('cycles.index') }}">Ciclos</a><span>›</span><a href="{{ route('groups.show', $modality->assignment->group) }}">{{ $modality->assignment->group->name }}</a><span>›</span><a href="{{ route('modalities.show', $modality) }}">{{ $modality->assignment->course->name }} · {{ $modality->modality }}</a><span>›</span><span class="current">Evaluaciones</span></div>
 <div class="page-head">
-    <div><p class="eyebrow">Gestión de calificaciones</p><h1>Evaluaciones y notas</h1><p class="subhead">{{ $modality->assignment->course->name }} · {{ $modality->modality }} · NRC {{ $modality->nrc ?: 'sin asignar' }} · {{ $modality->enrollments->count() }} alumnos.</p></div>
+    <div><p class="eyebrow">Gestión de calificaciones</p><h1>Evaluaciones y notas</h1><p class="subhead">{{ $modality->assignment->course->name }} · {{ $modality->modality }} · NRC {{ $modality->nrc ?: 'sin asignar' }} · {{ $enrollmentCount }} alumnos.</p></div>
     <a class="btn btn-secondary" href="{{ route('modalities.show', $modality) }}"><x-icon name="arrow-left" /> Volver a modalidad</a>
 </div>
 
@@ -26,7 +26,7 @@
     </details>
 </section>
 
-@if($modality->enrollments->isEmpty())
+@if($enrollmentCount === 0)
     <section class="card"><div class="empty"><strong>Primero importa la lista de alumnos.</strong><span>Regresa a la modalidad, carga el archivo original del campus y confirma la importación.</span><div class="mt-16"><a class="btn btn-secondary" href="{{ route('modalities.show', $modality) }}#students"><x-icon name="users" /> Ir a importar alumnos</a></div></div></section>
 @endif
 
@@ -39,9 +39,10 @@
         @if($modality->enrollments->isNotEmpty())
             <form method="POST" action="{{ route('evaluations.grades', $evaluation) }}">
                 @csrf @method('PUT')
-                <div class="filter-bar"><input class="filter-input grade-search" type="search" placeholder="Buscar alumno por nombre o código…" aria-label="Buscar alumnos"><span class="help">{{ $modality->enrollments->count() }} alumnos en este NRC</span></div>
+                <input type="hidden" name="page" value="{{ $enrollments->currentPage() }}">
+                <div class="filter-bar"><input class="filter-input grade-search" type="search" placeholder="Buscar alumno por nombre o código…" aria-label="Buscar alumnos"><span class="help">{{ $enrollments->count() }} visibles en esta página, de {{ $enrollmentCount }}</span></div>
                 <div class="table-wrap"><table><thead><tr><th>ID alumno</th><th>Alumno</th><th>Nota campus</th><th>Nota de evaluación</th><th>Observación</th></tr></thead><tbody>
-                    @foreach($modality->enrollments as $enrollment)
+                    @foreach($enrollments as $enrollment)
                         @php($grade = $evaluation->grades->firstWhere('enrollment_id', $enrollment->id))
                         <tr class="grade-row" data-student="{{ strtolower($enrollment->student->institutional_id.' '.$enrollment->student->surnames.' '.$enrollment->student->given_names) }}">
                             <td>{{ $enrollment->student->institutional_id }}</td>
@@ -61,6 +62,10 @@
     </section>
 @empty
     <section class="card"><div class="empty"><strong>Aún no has creado evaluaciones.</strong><span>Usa el botón superior para crear la primera evaluación de esta modalidad.</span></div></section>
+
+@if($modality->evaluations->isNotEmpty() && $enrollments->hasPages())
+    <section class="card"><x-pagination :paginator="$enrollments" /></section>
+@endif
 @endforelse
 @endsection
 
