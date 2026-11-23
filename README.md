@@ -1,145 +1,186 @@
 # Gestión Docente
 
-Aplicación para organizar documentación docente por **profesor → año/ciclo → grupo → muchos cursos → modalidad TEC/TALL**. Desarrollada con PHP/Laravel y MySQL para ejecutarse localmente en Laragon.
-
-> Una cuenta por profesor. Un ciclo puede tener varios grupos; cada grupo admite una cantidad ilimitada de cursos. Cada curso puede activar TEC, TALL o ambas modalidades. Los documentos Excel se generan por curso, grupo, NRC y modalidad, sin mezclar listas ni evaluaciones.
+Sistema de gestión académica por profesor, año/ciclo, grupo, curso y modalidad TEC/TALL. Está desarrollado con Laravel 13, PHP 8.3 y MySQL 8, y preparado para ejecutarse en Windows con Laragon.
 
 ## Requisitos
 
-- Windows + Laragon.
+- Windows 10/11 y Laragon.
 - PHP 8.3 o superior.
-- MySQL 8 / InnoDB.
+- MySQL 8 con InnoDB.
 - Composer.
-- Extensiones PHP: pdo_mysql, mbstring, openssl, fileinfo, zip, gd, xml, dom, simplexml, xmlreader, xmlwriter e iconv.
+- Extensiones PHP: `pdo_mysql`, `mbstring`, `openssl`, `fileinfo`, `zip`, `gd`, `xml`, `dom`, `simplexml`, `xmlreader`, `xmlwriter` e `iconv`.
 
-### Activar ZIP en Laragon (paso que tuve que realizar)
+### Activar ZIP en Laragon
 
 1. Abre Laragon.
-2. Entra a **Menu / PHP / Extensions**.
-3. Activa la extensión **zip**.
-4. Reinicia Laragon con **Stop All** y **Start All**.
-5. Comprueba desde Laragon Terminal:
+2. Entra a **Menu → PHP → Extensions** y activa `zip`.
+3. Reinicia Laragon con **Stop All** y **Start All**.
+4. En Laragon Terminal ejecuta `php -m | findstr /I zip`. Debe aparecer `zip`.
 
-   ```bash
-   php -m | findstr /I zip
-   ```
+## Instalación inicial
 
-   Debe aparecer `zip`. Si no aparece, confirma que la terminal usa la misma versión de PHP seleccionada en Laragon.
+Abre **Laragon Terminal** y ejecuta los comandos en este orden.
 
-## Instalación limpia (SQL único)
+### 1. Descargar el proyecto e instalar dependencias
 
-**IMPORTANTE:** este proyecto usa un único SQL para crear el esquema inicial. El SQL contiene `DROP DATABASE IF EXISTS gestion_docente`; elimina por completo la base anterior. Ejecútalo únicamente cuando quieras empezar desde cero.
+Si todavía no tienes el proyecto:
 
-1. Descomprime el proyecto en `C:\\laragon\\www\\gestion_docente`.
-2. Inicia Laragon con **Start All**.
-3. Abre Laragon Terminal:
-
-   ```powershell
-   cd C:\\laragon\\www\\gestion_docente
-   composer install
-   copy .env.example .env
-   ```
-
-4. Configura el archivo `.env`:
-
-   ```dotenv
-   APP_NAME="Gestion Docente"
-   APP_ENV=local
-   APP_DEBUG=true
-   APP_URL=http://127.0.0.1:8000
-
-   DB_CONNECTION=mysql
-   DB_HOST=127.0.0.1
-   DB_PORT=3306
-   DB_DATABASE=gestion_docente
-   DB_USERNAME=root
-   DB_PASSWORD=
-
-   CACHE_STORE=file
-   SESSION_DRIVER=file
-   QUEUE_CONNECTION=sync
-   ```
-
-   Si tu MySQL tiene contraseña, introdúcela en `DB_PASSWORD`.
-
-5. Importa **solamente** `database/gestion_docente.sql` desde phpMyAdmin o HeidiSQL. Crea la base y todas las tablas, índices, relaciones y tablas de caché/sesiones/cola.
-
-6. En Laragon Terminal ejecuta:
-
-   ```powershell
-   php artisan key:generate
-   php artisan db:seed
-   php artisan gestion:crear-profesor --admin
-   php artisan serve
-   ```
-
-7. Abre [http://127.0.0.1:8000/login](http://127.0.0.1:8000/login).
-
-**No ejecutes `php artisan migrate` después de importar el SQL inicial.** Las migraciones se conservan como historial de desarrollo; el procedimiento acordado para instalación limpia es importar un solo archivo SQL.
-
-## Reiniciar desde cero
-
-Cuando quieras reinstalar:
-
-1. Elimina la base de datos `gestion_docente` en phpMyAdmin/HeidiSQL.
-2. Importa otra vez `database/gestion_docente.sql`.
-3. Conserva `storage/app/plantillas/`; contiene las plantillas Excel maestras.
-4. Ejecuta `php artisan db:seed`, `php artisan gestion:crear-profesor --admin` y `php artisan serve`. Si cambiaste de copia del proyecto o borraste el archivo de entorno, repite `composer install`, `copy .env.example .env` y `php artisan key:generate`.
-
-## Funcionalidades
-
-- Login individual por profesor y aislamiento de datos por cuenta.
-- Gestión de años, ciclos y múltiples grupos por ciclo.
-- Cursos ilimitados por grupo; cada curso activa TEC, TALL o ambas.
-- NRC, rango de fechas, horarios, alumnos, sesiones y documentos independientes por modalidad.
-- Calendario de sesiones que excluye feriados nacionales de referencia 2027–2031 y permite registrar cierres adicionales.
-- Importación del archivo original que exporta el campus. No utiliza una plantilla alternativa: detecta las columnas Apellidos, Nombre, Nombre de usuario, ID de estudiante, Último acceso, Disponibilidad y el encabezado variable que comienza por `Calificación general`. El archivo .xls del ejemplo es TSV UTF-16LE.
-- Gestión de evaluaciones y notas por alumno, evaluación y NRC.
-- Generación de Excel separados por curso/grupo/NRC/modalidad y tipo de documento.
-- Malla curricular asistida por prompt: adjuntar el PDF a ChatGPT, pegar el prompt generado, importar el JSON y revisar las propuestas TEC/TALL.
-- Semanas internas consecutivas desde 1; conserva por separado la semana impresa en la malla.
-- Historial/versionado de documentos generados.
-
-## Plantillas Excel y documentación de referencia
-
-- `documentacion/formatos_excel_fuente/`: archivos Excel de referencia institucionales y planes de sesión convertidos desde PDF.
-- `storage/app/plantillas/`: copias utilizadas por el generador.
-- `documentacion/mallas/`: malla PIAD-224 fuente y JSON de ejemplo.
-- `documentacion/prompts/`: prompt maestro y flujo de importación curricular.
-- `database/gestion_docente.sql`: esquema único para instalación limpia.
-
-## Resolución de errores MySQL
-
-El índice de documentos usa el nombre corto `gd_mod_type_ver_idx`, evitando el error MySQL 1059 por identificadores demasiado largos. El SQL único crea también `cache`, `cache_locks`, `sessions`, `jobs`, `job_batches` y `failed_jobs`, evitando el error de tabla `cache` inexistente.
-
-## Validación
-
-Ejecuta las pruebas locales con:
-
-```bash
-php artisan test
+```powershell
+cd C:\laragon\www
+git clone https://github.com/xwcamor/gestion_docente.git
+cd gestion_docente
 ```
 
-`vendor/` y `composer.lock` no se incluyen: `composer install` instala las dependencias en Laragon. Antes de utilizar documentos institucionales reales, comprueba los Excel generados frente a las plantillas oficiales y valida las ponderaciones con el área académica.
+Si ya tienes el proyecto, entra a su carpeta y actualízalo:
 
-## Repositorio
+```powershell
+cd C:\laragon\www\gestion_docente
+git pull origin main
+```
 
-https://github.com/xwcamor/gestion_docente
+Instala las dependencias:
 
+```powershell
+composer install
+```
 
-### Corrección MySQL 1059: índice curricular demasiado largo
+### 2. Configurar el entorno
 
-La migración de `curriculum_content_items` utiliza el nombre corto explícito `cci_week_category_approved_idx`. El esquema SQL usa el mismo nombre. Esto evita el identificador automático `curriculum_content_items_curriculum_week_id_category_approved_index`, que supera el límite de 64 caracteres de MySQL. Si un intento previo dejó una migración incompleta, elimina la base y repite la instalación limpia.
+Crea el archivo `.env`:
 
+```powershell
+copy .env.example .env
+```
 
-**Nota de instalación en mi Laragon:** tuve que activar la extensión ZIP desde `Menu / PHP / Extensions / zip` y reiniciar Laragon para que Composer pudiera trabajar con los archivos comprimidos.
+Abre `.env` y configura la conexión de MySQL. Ejemplo habitual de Laragon:
 
+```dotenv
+APP_NAME="Gestion Docente"
+APP_ENV=local
+APP_DEBUG=true
+APP_URL=http://127.0.0.1:8000
 
-## Solución si Composer indica que falta bootstrap/cache
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=gestion_docente
+DB_USERNAME=root
+DB_PASSWORD=
 
-El repositorio conserva las carpetas de escritura requeridas por Laravel mediante archivos `.gitignore`, ya que Git no versiona carpetas vacías. Después de actualizar el repositorio, comprueba que exista `bootstrap/cache`.
+CACHE_STORE=file
+SESSION_DRIVER=file
+QUEUE_CONNECTION=sync
+```
 
-Si tu copia local ya está clonada y Composer se detuvo con el error:
+Si MySQL tiene contraseña, colócala en `DB_PASSWORD`.
+
+### 3. Crear la base de datos vacía
+
+En phpMyAdmin o HeidiSQL crea una base de datos llamada `gestion_docente`, con cotejamiento `utf8mb4_unicode_ci`.
+
+**Solo crea la base vacía. No importes ningún archivo SQL.** Laravel creará todas las tablas mediante las migraciones.
+
+### 4. Generar la clave de la aplicación
+
+```powershell
+php artisan key:generate
+```
+
+### 5. Crear todas las tablas y cargar los datos iniciales
+
+```powershell
+php artisan migrate:fresh --seed
+```
+
+Este es el comando oficial para construir la base desde cero durante el desarrollo y las pruebas. Ejecuta las migraciones desde la primera hasta la última y luego los seeders (incluidos los feriados definidos por el proyecto).
+
+### 6. Crear tu cuenta de administrador
+
+```powershell
+php artisan gestion:crear-profesor --admin
+```
+
+El comando solicitará nombre, correo, datos institucionales opcionales y contraseña. La contraseña debe tener al menos 10 caracteres.
+
+### 7. Iniciar el sistema
+
+```powershell
+php artisan serve
+```
+
+Abre http://127.0.0.1:8000/login.
+
+---
+
+## Reconstruir la base de datos durante las pruebas
+
+Cada vez que quieras borrar la información de prueba y generar nuevamente todas las tablas, ejecuta desde la carpeta del proyecto:
+
+```powershell
+php artisan migrate:fresh --seed
+```
+
+Después vuelve a crear el usuario administrador, porque también se elimina al reconstruir la base:
+
+```powershell
+php artisan gestion:crear-profesor --admin
+```
+
+No necesitas eliminar la base de datos desde phpMyAdmin ni importar un SQL. `migrate:fresh` elimina las tablas existentes y las vuelve a crear usando las migraciones versionadas del repositorio.
+
+**Advertencia:** `migrate:fresh` elimina todos los datos de la base configurada en `.env`. Úsalo únicamente en desarrollo/pruebas, nunca en una base con información que quieras conservar.
+
+## Actualizar el proyecto sin borrar los datos
+
+Cuando haya cambios nuevos en GitHub:
+
+```powershell
+git pull origin main
+composer install
+php artisan migrate --seed
+php artisan optimize:clear
+```
+
+En este caso usa `migrate`, no `migrate:fresh`: aplica únicamente las migraciones nuevas pendientes y conserva los datos existentes.
+
+## Comandos útiles
+
+| Comando | Para qué sirve |
+|---|---|
+| `php artisan migrate:status` | Ver qué migraciones se ejecutaron. |
+| `php artisan migrate` | Aplicar migraciones pendientes sin borrar datos. |
+| `php artisan migrate:fresh --seed` | Borrar todas las tablas, recrearlas y ejecutar seeders. |
+| `php artisan db:seed` | Ejecutar los seeders sin reconstruir las tablas. |
+| `php artisan gestion:crear-profesor --admin` | Crear una cuenta administradora con perfil docente. |
+| `php artisan optimize:clear` | Limpiar cachés de Laravel. |
+| `php artisan test` | Ejecutar las pruebas automatizadas. |
+
+## Estructura de base de datos y migraciones
+
+- `database/migrations/`: historial de migraciones de Laravel. Es la fuente oficial para crear y modificar la estructura.
+- `database/schema/gestion_docente.sql`: definición SQL de las tablas base utilizada por la migración inicial. No se importa manualmente.
+- `database/seeders/`: datos iniciales del sistema.
+- `database/factories/`: fábricas para pruebas, cuando correspondan.
+
+La migración inicial crea las tablas de usuarios, profesores, ciclos, grupos, cursos, asignaciones, modalidades, horarios, feriados, sesiones, alumnos, matrículas, evaluaciones, notas, documentos, colas y malla curricular. Las modificaciones posteriores deben agregarse como nuevas migraciones; no se debe editar una migración ya aplicada en una instalación que se quiera conservar.
+
+## Funcionalidades principales
+
+- Acceso individual por profesor y gestión de sus datos académicos.
+- Años, ciclos y múltiples grupos por ciclo.
+- Cursos por grupo y modalidades TEC/TALL independientes.
+- NRC, fechas, horarios, alumnos, sesiones y evaluaciones por modalidad.
+- Importación de listados de alumnos exportados desde el campus.
+- Gestión de notas y evaluaciones.
+- Calendario académico con exclusión de feriados registrados.
+- Malla curricular y propuestas de contenido TEC/TALL.
+- Generación y versionado de documentos Excel.
+
+## Solución de problemas
+
+### Composer indica que falta `bootstrap/cache`
+
+Desde la raíz del proyecto ejecuta:
 
 ```powershell
 New-Item -ItemType Directory -Force bootstrap\cache
@@ -150,34 +191,22 @@ New-Item -ItemType Directory -Force storage\logs
 composer install
 ```
 
-No es un problema de PHP ZIP ni de MySQL. Composer había instalado los paquetes; falló el script Laravel `package:discover` porque faltaba el directorio de caché de arranque.
+### MySQL no encuentra la base de datos
 
+Comprueba que MySQL esté iniciado en Laragon y que exista la base vacía `gestion_docente`. Revisa `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME` y `DB_PASSWORD` en `.env`.
 
-## Crear la primera cuenta de profesor / administrador
+### Error de índice demasiado largo (MySQL 1059)
 
-Después de importar `database/gestion_docente.sql` y ejecutar `php artisan db:seed`, crea tu cuenta:
+La estructura usa nombres explícitos y cortos para los índices que podrían superar el límite de 64 caracteres de MySQL, incluido `cci_week_category_approved_idx` para el contenido de la malla curricular.
 
-```bash
-php artisan gestion:crear-profesor --admin
+### Error de tabla `cache` inexistente
+
+La migración inicial también crea `cache`, `cache_locks`, `sessions`, `jobs`, `job_batches` y `failed_jobs`. Si acabas de actualizar el repositorio, ejecuta:
+
+```powershell
+php artisan migrate
 ```
 
-El asistente solicitará nombre completo, correo, ID institucional (opcional), escuela/carrera (opcionales) y contraseña. La contraseña se introduce de forma oculta y se solicita dos veces. El comando crea un usuario con rol `admin` y su perfil docente asociado para que también pueda usar los módulos académicos.
+## Repositorio
 
-Para crear una cuenta docente normal, ejecuta `php artisan gestion:crear-profesor` sin `--admin`.
-
-El correo debe ser único. Si ya existe, el comando no duplica ni modifica la cuenta. No guardes contraseñas en el README ni las compartas en capturas.
-
-
-
-## Solución si `php artisan serve` indica que no existe `public`
-
-El repositorio debe incluir `public/index.php` y `public/.htaccess`. Si ya tienes una copia local, actualízala:
-
-```bash
-git pull origin main
-composer dump-autoload
-php artisan optimize:clear
-php artisan serve
-```
-
-La dirección local por defecto es http://127.0.0.1:8000. No vuelvas a importar el SQL ni recrees el usuario administrador para resolver este error: la cuenta ya creada permanece en MySQL.
+https://github.com/xwcamor/gestion_docente

@@ -1,18 +1,6 @@
--- ==============================================================
--- GESTIÓN DOCENTE | ESQUEMA MYSQL ÚNICO PARA INSTALACIÓN LIMPIA
--- Laragon + PHP 8.3+ + MySQL 8 / InnoDB
--- ADVERTENCIA: DROP DATABASE elimina TODO el contenido anterior.
--- Ejecutar únicamente cuando se desea reiniciar desde cero.
--- ==============================================================
-
-DROP DATABASE IF EXISTS gestion_docente;
-CREATE DATABASE gestion_docente
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
-USE gestion_docente;
-
-SET NAMES utf8mb4;
-SET FOREIGN_KEY_CHECKS = 0;
+-- Esquema base de Gestión Docente.
+-- Este archivo es consumido por la migración inicial de Laravel.
+-- No importar manualmente: ejecutar php artisan migrate:fresh --seed.
 
 CREATE TABLE users (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -426,35 +414,3 @@ CREATE TABLE failed_jobs (
   exception LONGTEXT NOT NULL,
   failed_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
-
-CREATE TABLE migrations (
-  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  migration VARCHAR(255) NOT NULL,
-  batch INT NOT NULL
-) ENGINE=InnoDB;
-
-SET FOREIGN_KEY_CHECKS = 1;
-
--- Esquema completo instalado. Los feriados 2027-2031 se cargan con:
--- php artisan db:seed
-
--- Laravel migrations representadas por este esquema SQL único.
-INSERT INTO migrations (migration, batch) VALUES
-  ('0001_01_01_000000_create_users_table', 1),
-  ('2026_01_01_000001_create_professors_table', 1),
-  ('2026_01_01_000002_create_cycles_table', 1),
-  ('2026_01_01_000003_create_teaching_groups_table', 1),
-  ('2026_01_01_000004_create_courses_table', 1),
-  ('2026_01_01_000005_create_course_assignments_table', 1),
-  ('2026_01_01_000006_create_course_modalities_table', 1),
-  ('2026_01_01_000007_create_modality_schedules_table', 1),
-  ('2026_01_01_000008_create_holidays_table', 1),
-  ('2026_01_01_000009_create_class_sessions_table', 1),
-  ('2026_01_01_000010_create_students_table', 1),
-  ('2026_01_01_000011_create_import_batches_table', 1),
-  ('2026_01_01_000012_create_enrollments_table', 1),
-  ('2026_01_01_000013_create_evaluations_and_grades_tables', 1),
-  ('2026_01_01_000014_create_generated_documents_table', 1),
-  ('2026_01_01_000015_create_cache_and_queue_tables', 1),
-  ('2026_11_23_000016_create_curriculum_tables', 1),
-  ('2026_11_23_000017_add_source_week_number_to_curriculum_weeks', 1);

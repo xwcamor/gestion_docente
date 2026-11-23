@@ -25,7 +25,7 @@ class CrearProfesor extends Command
     {
         if (!Schema::hasTable('users') || !Schema::hasTable('professors')) {
             $this->components->error('No se encontraron las tablas users y professors.');
-            $this->line('Primero importa database/gestion_docente.sql en MySQL y vuelve a ejecutar este comando.');
+            $this->line('Primero ejecuta php artisan migrate --seed para crear las tablas y vuelve a ejecutar este comando.');
             return self::FAILURE;
         }
 
