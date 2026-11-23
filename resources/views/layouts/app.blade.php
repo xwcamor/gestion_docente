@@ -131,7 +131,6 @@
             <div class="nav-label">Espacio de trabajo</div>
             <a class="nav-link {{ request()->routeIs('dashboard*') ? 'active' : '' }}" href="{{ route('dashboard') }}"><span class="nav-dot"></span>Resumen</a>
             <a class="nav-link {{ request()->routeIs('cycles.*','groups.*','assignments.*','modalities.*','evaluations.*','curricula.*','students.*','documents.*','distribution.*') ? 'active' : '' }}" href="{{ route('cycles.index') }}"><span class="nav-dot"></span>Ciclos y cursos</a>
-            <a class="nav-link {{ request()->routeIs('distribution.*') ? 'active' : '' }}" href="{{ route('distribution.create') }}"><span class="nav-dot"></span>Importar carga Excel</a>
             <a class="nav-link {{ request()->routeIs('holidays.*') ? 'active' : '' }}" href="{{ route('holidays.index') }}"><span class="nav-dot"></span>Feriados y cierres</a>
             @if(auth()->user()->isAdmin())
                 <div class="nav-label" style="margin-top:19px">Administración</div>

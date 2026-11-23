@@ -15,7 +15,6 @@ use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\AdminProfessorController;
 use App\Http\Controllers\EvaluationController;
 use App\Http\Controllers\CurriculumController;
-use App\Http\Controllers\CourseDistributionImportController;
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1')->name('login.store');
@@ -26,9 +25,6 @@ Route::middleware(['auth', 'professor'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
 
     Route::get('/ciclos', [CycleController::class, 'index'])->name('cycles.index');
-    Route::get('/carga/importar', [CourseDistributionImportController::class, 'create'])->name('distribution.create');
-    Route::post('/carga/previsualizar', [CourseDistributionImportController::class, 'preview'])->name('distribution.preview');
-    Route::post('/carga/confirmar', [CourseDistributionImportController::class, 'confirm'])->name('distribution.confirm');
     Route::get('/ciclos/crear', [CycleController::class, 'create'])->name('cycles.create');
     Route::post('/ciclos', [CycleController::class, 'store'])->name('cycles.store');
     Route::get('/ciclos/{cycle}', [CycleController::class, 'show'])->name('cycles.show');
