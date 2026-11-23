@@ -75,6 +75,7 @@ class GroupController extends Controller
                     'cycle' => $group->cycle,
                     'dialog' => 'edit-group',
                     'group_id' => $group->id,
+                    'page' => max(1, (int) $request->input('page', 1)),
                 ])
                 ->withErrors($validator)
                 ->withInput();
