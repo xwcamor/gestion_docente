@@ -43,13 +43,24 @@ class AdminProfessorController extends Controller
 
     public function store(Request $request)
     {
+        $request->merge([
+            'full_name' => trim((string) $request->input('full_name')),
+            'email' => mb_strtolower(trim((string) $request->input('email'))),
+            'institutional_id' => filled($request->input('institutional_id'))
+                ? trim((string) $request->input('institutional_id'))
+                : null,
+        ]);
+
         $data = $request->validate([
             'full_name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:10',
-            'institutional_id' => 'nullable|string|max:80',
+            'institutional_id' => ['nullable', 'string', 'max:80', Rule::unique('professors', 'institutional_id')],
             'school' => 'nullable|string|max:255',
             'career' => 'nullable|string|max:255',
+        ], [
+            'email.unique' => 'Ese correo ya está asociado a otra cuenta.',
+            'institutional_id.unique' => 'Ese ID institucional ya está registrado en otro perfil.',
         ]);
 
         DB::transaction(function () use ($data) {
