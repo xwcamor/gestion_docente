@@ -97,7 +97,7 @@
 </section>
 
 <section class="card" id="sessions">
-    <div class="card-head"><div><h2>Sesiones del curso</h2><p class="card-description">El calendario se calcula con las fechas, días de clase y feriados. Abre una sesión solo cuando necesites editar su contenido.</p></div><span class="badge">{{ $modality->sessions->count() }} sesiones</span></div>
+    <div class="card-head"><div><h2>Sesiones del curso</h2><p class="card-description">El calendario se calcula con las fechas, días de clase y feriados. Abre una sesión solo cuando necesites editar su contenido.</p></div><span class="badge">{{ $sessionCount }} sesiones</span></div>
     @if($sessionCount === 0)
         <div class="empty"><strong>Aún no se han calculado sesiones.</strong><span>Configura el periodo y el horario en la sección Calendario.</span><div class="mt-16"><a class="btn btn-secondary btn-sm" href="#calendar"><x-icon name="calendar-days" /> Ir a calendario</a></div></div>
     @else
