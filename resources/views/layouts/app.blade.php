@@ -111,6 +111,70 @@
         @media(max-width:1000px){.app-shell{grid-template-columns:1fr}.sidebar{display:flex;align-items:center;gap:4px;overflow-x:auto;padding:8px 14px;border-right:0;border-bottom:1px solid var(--line)}.nav-label,.sidebar-note{display:none}.nav-link{white-space:nowrap;margin:0}.main{padding:22px}.grid-4{grid-template-columns:repeat(2,minmax(0,1fr))}}
         @media(max-width:680px){.topbar{padding:0 14px}.top-user{display:none}.main{padding:15px}.page-head{display:block}.page-head>.btn{margin-top:13px}.grid-2,.grid-3,.grid-4,.form-row,.form-row-3{grid-template-columns:1fr}.form-actions{align-items:stretch;flex-direction:column-reverse}.form-actions .actions,.form-actions .btn{width:100%}.filter-input{min-width:100%;width:100%}.stepper{gap:5px}.step-line{width:15px}.step{font-size:10px;gap:5px}.card{padding:16px}}
         @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+    
+/* UI refresh: responsive workspace */
+:root{--navy:#182b49;--navy-hover:#24446f;--canvas:#f5f7fb;--line:#e7ebf2;--radius:16px}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:#f5f7fb}
+.topbar{height:72px;padding:0 clamp(16px,3vw,42px);box-shadow:0 2px 14px rgba(16,24,40,.035)}
+.brand-mark{width:38px;height:38px;border-radius:12px;background:linear-gradient(145deg,#1d3558,#426b9c);box-shadow:0 5px 14px rgba(23,54,93,.18)}
+.app-shell{grid-template-columns:252px minmax(0,1fr);min-height:calc(100vh - 72px)}
+.sidebar{padding:26px 16px;background:#fbfcfe}
+.nav-link{padding:12px 13px;border-radius:11px;font-size:13px}
+.nav-link.active{background:#eaf1f9;color:#17365d;box-shadow:inset 3px 0 #315f91}
+.nav-link.active .nav-dot{background:#315f91}
+.main{max-width:1600px;padding:clamp(20px,3vw,42px)}
+h1{font-size:clamp(25px,2.1vw,34px);letter-spacing:-1.1px}
+.card,.stat-card,.course-card{border-radius:16px;box-shadow:0 5px 20px rgba(16,24,40,.035)}
+.card{padding:clamp(17px,2vw,25px);border-color:#e8edf3}
+.stat-card{padding:20px;border-color:#e8edf3}
+.stat{font-size:30px}
+.btn{min-height:42px;border-radius:10px}
+.btn-secondary{background:#fff}
+.field,.filter-input{min-height:44px;border-radius:10px}
+.page-head{align-items:center}
+.page-head .actions{justify-content:flex-end}
+.quick-nav{position:sticky;top:72px;z-index:10;padding:10px;background:rgba(245,247,251,.94);backdrop-filter:blur(12px);border:1px solid #e8edf3;border-radius:14px}
+.quick-nav a{padding:9px 13px;border-radius:10px}
+.course-card{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.course-card:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(16,24,40,.07)}
+@media(max-width:1000px){
+ .app-shell{grid-template-columns:1fr}
+ .sidebar{position:sticky;top:72px;z-index:15;display:flex;gap:6px;overflow-x:auto;white-space:nowrap;padding:9px 14px;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-bottom:1px solid #e7ebf2;scrollbar-width:none}
+ .sidebar>div{display:flex;align-items:center;gap:6px}
+ .sidebar>div>.nav-label,.sidebar-note{display:none}
+ .nav-link{margin:0;padding:9px 12px;border:1px solid transparent}
+ .nav-link.active{box-shadow:none;border-color:#d8e4f1}
+ .main{padding:22px}
+}
+@media(max-width:680px){
+ .topbar{height:62px;padding:0 13px}
+ .brand{font-size:14px}.brand-mark{width:34px;height:34px}
+ .app-shell{min-height:calc(100vh - 62px)}
+ .sidebar{top:62px;padding:8px 10px}
+ .nav-link{font-size:12px;padding:9px 11px}
+ .main{padding:15px 12px 28px}
+ .page-head{display:flex;flex-direction:column;align-items:stretch;gap:13px;margin-bottom:17px}
+ .page-head .actions{justify-content:stretch}
+ .page-head .actions .btn,.page-head>.btn{width:100%}
+ .page-head h1{font-size:25px}
+ .subhead{font-size:13px}
+ .grid-2,.grid-3,.grid-4,.form-row,.form-row-3{grid-template-columns:minmax(0,1fr)}
+ .card{padding:16px;margin-bottom:12px;border-radius:14px}
+ .card-head{align-items:flex-start}
+ .stat-card{padding:15px}
+ .stat{font-size:25px}
+ .actions{gap:7px}
+ .actions .btn{white-space:normal}
+ .list-row{align-items:flex-start;gap:10px}
+ .list-row>.actions{flex-direction:column;align-items:flex-end}
+ .filter-bar{padding:10px}
+ .filter-input{min-width:0;width:100%}
+ .quick-nav{top:62px;overflow-x:auto;flex-wrap:nowrap;white-space:nowrap}
+ .quick-nav a{flex:none}
+ .form-actions{gap:9px}
+}
+@media(prefers-reduced-motion:reduce){.course-card:hover{transform:none}}
+
     </style>
     @stack('styles')
 </head>
