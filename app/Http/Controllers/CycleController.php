@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Cycle;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class CycleController extends Controller
 {
@@ -32,28 +33,40 @@ class CycleController extends Controller
 
     public function create()
     {
-        return view('cycles.create');
+        return redirect()->route('cycles.index', ['nuevo' => 1]);
     }
 
     public function store(Request $request)
     {
+        $professorId = auth()->user()->professor->id;
+
         $data = $request->validate(
             [
-                'academic_year' => 'required|integer|min:2020|max:2100',
-                'cycle_code' => 'required|string|max:20',
-                'start_date' => 'required|date',
-                'end_date' => 'required|date|after_or_equal:start_date',
+                'academic_year' => ['required', 'integer', 'min:2020', 'max:2100'],
+                'cycle_code' => [
+                    'required',
+                    'string',
+                    'max:20',
+                    Rule::unique('cycles', 'cycle_code')->where(
+                        fn ($query) => $query
+                            ->where('professor_id', $professorId)
+                            ->where('academic_year', $request->input('academic_year'))
+                    ),
+                ],
+                'start_date' => ['required', 'date'],
+                'end_date' => ['required', 'date', 'after_or_equal:start_date'],
             ],
             [
+                'cycle_code.unique' => 'Ya tienes registrado un ciclo con ese año y código. Abre el ciclo existente o verifica los datos.',
                 'end_date.after_or_equal' => 'La fecha de fin debe ser igual o posterior a la fecha de inicio.',
             ]
         );
 
-        $data['professor_id'] = auth()->user()->professor->id;
+        $data['professor_id'] = $professorId;
         $cycle = Cycle::create($data);
 
         return redirect()->route('cycles.show', $cycle)
-            ->with('success', 'Ciclo creado. El siguiente paso es registrar los grupos asignados.');
+            ->with('success', 'Ciclo creado. Ahora agrega los grupos que te asignaron.');
     }
 
     public function show(Cycle $cycle)
