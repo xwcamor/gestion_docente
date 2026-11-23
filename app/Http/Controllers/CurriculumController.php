@@ -20,7 +20,44 @@ class CurriculumController extends Controller
             ->where('course_id', $assignment->course_id)
             ->where('professor_id', auth()->user()->professor->id)
             ->orderByDesc('version')->get();
-        return view('curricula.index', compact('assignment','curricula'));
+        $assignment->load(['modalities.schedules', 'modalities.sessions']);
+        $activeCurriculum = $curricula->firstWhere('is_active', true);
+        $suggestions = $activeCurriculum
+            ? $activeCurriculum->weeks->flatMap->contentItems->where('source_kind', 'AI_SUGGESTION')->values()
+            : collect();
+        $suggestionStats = [
+            'total' => $suggestions->count(),
+            'approved' => $suggestions->where('approved', true)->count(),
+            'tec_total' => $suggestions->filter(fn ($item) => in_array(data_get($item->metadata, 'target_modality', 'BOTH'), ['TEC', 'BOTH'], true))->count(),
+            'tec_approved' => $suggestions->filter(fn ($item) => in_array(data_get($item->metadata, 'target_modality', 'BOTH'), ['TEC', 'BOTH'], true) && $item->approved)->count(),
+            'tall_total' => $suggestions->filter(fn ($item) => in_array(data_get($item->metadata, 'target_modality', 'BOTH'), ['TALL', 'BOTH'], true))->count(),
+            'tall_approved' => $suggestions->filter(fn ($item) => in_array(data_get($item->metadata, 'target_modality', 'BOTH'), ['TALL', 'BOTH'], true) && $item->approved)->count(),
+            'pending' => $suggestions->where('approved', false)->count(),
+        ];
+        $modalityStats = $assignment->modalities->mapWithKeys(function ($modality) {
+            return [$modality->modality => [
+                'sessions' => $modality->sessions->where('status', 'scheduled')->count(),
+                'configured' => $modality->start_date && $modality->end_date && $modality->schedules->where('block_type', 'CLASS')->isNotEmpty(),
+            ]];
+        });
+        $totalHoursTheory = $activeCurriculum?->weeks->sum(fn ($week) => (float) ($week->hours_theory ?? 0)) ?? 0;
+        $totalHoursPractice = $activeCurriculum?->weeks->sum(fn ($week) => (float) ($week->hours_practice ?? 0)) ?? 0;
+        $workflow = [
+            'has_curriculum' => (bool) $activeCurriculum,
+            'has_suggestions' => $suggestions->isNotEmpty(),
+            'all_approved' => $suggestions->isNotEmpty() && $suggestions->every(fn ($item) => $item->approved),
+            'tec_configured' => (bool) data_get($modalityStats, 'TEC.configured', false),
+            'tall_configured' => (bool) data_get($modalityStats, 'TALL.configured', false),
+            'has_tec_sessions' => (int) data_get($modalityStats, 'TEC.sessions', 0) > 0,
+            'has_tall_sessions' => (int) data_get($modalityStats, 'TALL.sessions', 0) > 0,
+        ];
+        $completedSteps = (int) $workflow['has_curriculum']
+            + (int) $workflow['has_suggestions']
+            + (int) ($workflow['tec_configured'] || $workflow['tall_configured'])
+            + (int) ($workflow['has_tec_sessions'] || $workflow['has_tall_sessions'])
+            + (int) $workflow['all_approved'];
+        $progress = (int) round(($completedSteps / 5) * 100);
+        return view('curricula.index', compact('assignment','curricula','activeCurriculum','suggestionStats','modalityStats','workflow','progress','totalHoursTheory','totalHoursPractice'));
     }
 
     public function extract(Request $request, CourseAssignment $assignment, CurriculumImportService $service)
