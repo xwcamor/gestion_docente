@@ -109,6 +109,8 @@
         @csrf
         <input type="hidden" name="return_q" value="{{ request('q') }}">
         <input type="hidden" name="return_page" value="{{ request('page', 1) }}">
+        <input type="hidden" name="return_q" value="{{ request('q') }}">
+        <input type="hidden" name="return_page" value="{{ request('page', 1) }}">
         <div class="dialog-body">
             @if($errors->any())
                 <div class="dialog-error" role="alert">
