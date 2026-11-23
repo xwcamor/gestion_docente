@@ -87,6 +87,19 @@
 }
 @media(max-width:380px){.quick-table tr.course-row{grid-template-columns:minmax(0,1fr)}.quick-table td:nth-child(n){grid-column:1/-1}}
 
+
+/* Captura tipo hoja: jerarquía cromática y foco claro por fila */
+.quick-table th{background:#eaf3f8;color:#356a80;border-bottom-color:#cddfe8}
+.quick-table td{border-bottom-color:#e6eef2}
+.quick-table tbody tr:hover{background:#f5fafc}
+.quick-table tr.course-row{border-color:#d5e5ed;background:#fff}
+.quick-table .row-number{color:#397b98}
+.quick-table td:before{color:#4c788b}
+.quick-table .field:focus{border-color:#4b91a9;box-shadow:0 0 0 3px rgba(53,131,158,.13)}
+.quick-table select.field{background-color:#f8fcfd}
+.quick-actions{border-color:#d8e7ed;background:#f0f7fa}
+.quick-actions .help{color:#5d7e8e}
+
 </style>
 @endpush
 @push('scripts')
