@@ -56,6 +56,37 @@
 .quick-table .row-number{color:#667085;font-weight:700;text-align:center}
 .quick-actions{display:flex;align-items:center;gap:12px;margin-top:14px}
 @media(max-width:700px){.quick-actions{align-items:flex-start;flex-direction:column}}
+
+/* En pantallas pequeñas, cada fila de captura se convierte en una ficha editable */
+@media(max-width:760px){
+ .quick-table-wrap{overflow:visible;margin-top:12px}
+ .quick-table{min-width:0;width:100%;display:block;border:0}
+ .quick-table thead{display:none}
+ .quick-table tbody{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+ .quick-table tr.course-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:13px;border:1px solid #e4eaf1;border-radius:14px;background:#fff;box-shadow:0 3px 12px rgba(16,24,40,.035)}
+ .quick-table td{display:flex;flex-direction:column;gap:5px;padding:0;border:0;min-width:0}
+ .quick-table td:before{font-size:10px;font-weight:750;letter-spacing:.35px;text-transform:uppercase;color:#748094}
+ .quick-table td:nth-child(1){grid-column:1/-1;display:none}
+ .quick-table td:nth-child(2){grid-column:1/-1}
+ .quick-table td:nth-child(2):before{content:"Curso"}
+ .quick-table td:nth-child(3):before{content:"Código"}
+ .quick-table td:nth-child(4):before{content:"Modalidad"}
+ .quick-table td:nth-child(5):before{content:"Bloque TEC"}
+ .quick-table td:nth-child(6):before{content:"NRC TEC"}
+ .quick-table td:nth-child(7){grid-column:1/-1}
+ .quick-table td:nth-child(7):before{content:"Referencia bloque TALL"}
+ .quick-table td:nth-child(8):before{content:"Bloque TALL"}
+ .quick-table td:nth-child(9):before{content:"NRC TALL"}
+ .quick-table td:nth-child(10):before{content:"Desde"}
+ .quick-table td:nth-child(11):before{content:"Hasta"}
+ .quick-table td:nth-child(12){grid-column:1/-1;align-items:flex-end}
+ .quick-table td:nth-child(12) .btn{width:100%}
+ .quick-table td:nth-child(2) .field,.quick-table td:nth-child(3) .field,.quick-table .field,.quick-table .date-field{min-width:0;width:100%;font-size:13px}
+ .quick-actions{position:sticky;bottom:8px;z-index:5;padding:10px;background:rgba(255,255,255,.95);border:1px solid #e4eaf1;border-radius:13px;box-shadow:0 5px 18px rgba(16,24,40,.08)}
+ .quick-actions .btn{width:100%}
+}
+@media(max-width:380px){.quick-table tr.course-row{grid-template-columns:minmax(0,1fr)}.quick-table td:nth-child(n){grid-column:1/-1}}
+
 </style>
 @endpush
 @push('scripts')
