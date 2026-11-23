@@ -7,7 +7,7 @@ use App\Models\CourseModality;
 use App\Services\CalendarService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\CarbonPeriod;
+use Carbon\CarbonPeriod;
 
 class HolidayController extends Controller
 {
