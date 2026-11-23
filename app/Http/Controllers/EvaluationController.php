@@ -14,14 +14,24 @@ class EvaluationController extends Controller
     public function index(CourseModality $modality)
     {
         $this->owned($modality);
-        $modality->load([
-            'assignment.course',
-            'assignment.group.cycle',
-            'enrollments.student',
-            'evaluations.grades',
-        ]);
+        $modality->load(['assignment.course', 'assignment.group.cycle']);
 
-        return view('modalities.evaluations', compact('modality'));
+        $enrollmentCount = $modality->enrollments()->count();
+        $enrollments = $modality->enrollments()
+            ->with('student')
+            ->orderBy('id')
+            ->paginate(50)
+            ->withQueryString();
+
+        $enrollmentIds = $enrollments->getCollection()->pluck('id');
+        $evaluations = $modality->evaluations()
+            ->with(['grades' => fn ($query) => $query->whereIn('enrollment_id', $enrollmentIds)])
+            ->orderBy('id')
+            ->get();
+
+        $modality->setRelation('evaluations', $evaluations);
+
+        return view('modalities.evaluations', compact('modality', 'enrollments', 'enrollmentCount'));
     }
 
     public function store(Request $request, CourseModality $modality)
@@ -43,7 +53,7 @@ class EvaluationController extends Controller
         ]);
         $modality->evaluations()->create($data);
 
-        return redirect()->route('evaluations.index', $modality)
+        return redirect()->route('evaluations.index', ['modality' => $modality, 'page' => max(1, (int) $request->input('page', 1))])
             ->with('success', 'Evaluación creada. Ya puedes registrar las calificaciones reales de los alumnos de este NRC.');
     }
 
@@ -59,13 +69,16 @@ class EvaluationController extends Controller
             'observations.*' => 'nullable|string|max:1000',
         ]);
 
-        $enrollments = $modality->enrollments()->pluck('id')->map(fn ($id) => (int) $id)->all();
-        $allowed = array_flip($enrollments);
         $scores = $data['scores'] ?? [];
         $observations = $data['observations'] ?? [];
+        $submittedIds = array_values(array_unique(array_map(
+            'intval',
+            array_merge(array_keys($scores), array_keys($observations))
+        )));
 
-        foreach (array_unique(array_merge(array_keys($scores), array_keys($observations))) as $enrollmentId) {
-            if (!isset($allowed[(int) $enrollmentId])) {
+        if ($submittedIds) {
+            $validCount = $modality->enrollments()->whereIn('id', $submittedIds)->count();
+            if ($validCount !== count($submittedIds)) {
                 throw ValidationException::withMessages(['scores' => 'La lista contiene un alumno que no pertenece a este NRC.']);
             }
         }
