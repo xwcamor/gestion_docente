@@ -69,6 +69,20 @@
                     <div><span>Escuela</span><strong>{{ $profile?->school ?: 'No registrada' }}</strong></div>
                     <div><span>Carrera</span><strong>{{ $profile?->career ?: 'No registrada' }}</strong></div>
                 </div>
+                @if($profile)
+                    <div class="account-actions">
+                        <button class="inline-edit" type="button" data-edit-account
+                            data-user-id="{{ $user->id }}"
+                            data-update-url="{{ route('admin.professors.update', $user) }}"
+                            data-full-name="{{ $profile->full_name }}"
+                            data-email="{{ $user->email }}"
+                            data-institutional-id="{{ $profile->institutional_id }}"
+                            data-school="{{ $profile->school }}"
+                            data-career="{{ $profile->career }}">
+                            <x-icon name="file-text" size="13" /> Editar perfil
+                        </button>
+                    </div>
+                @endif
             </article>
         @empty
             <div class="empty accounts-empty">
