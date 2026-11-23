@@ -6,6 +6,7 @@ use App\Models\Holiday;
 use App\Models\CourseModality;
 use App\Services\CalendarService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Carbon;
 use Carbon\CarbonPeriod;
 
@@ -90,7 +91,21 @@ class HolidayController extends Controller
             'source_url' => 'nullable|url|max:500',
         ]);
 
-        $data['professor_id'] = auth()->user()->professor->id;
+        $professorId = auth()->user()->professor->id;
+        $normalizedName = mb_strtolower(trim($data['name']));
+        $duplicate = Holiday::whereDate('holiday_date', $data['holiday_date'])
+            ->whereRaw('LOWER(name) = ?', [$normalizedName])
+            ->where(fn ($query) => $query->whereNull('professor_id')->orWhere('professor_id', $professorId))
+            ->exists();
+
+        if ($duplicate) {
+            throw ValidationException::withMessages([
+                'name' => 'Ya existe un feriado o cierre con ese nombre en esta fecha.',
+            ]);
+        }
+
+        $data['name'] = trim($data['name']);
+        $data['professor_id'] = $professorId;
         $data['verified'] = false;
         $holiday = Holiday::create($data);
 
