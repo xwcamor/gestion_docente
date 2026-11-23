@@ -16,7 +16,7 @@
 <section class="accounts-overview">
     <div class="account-metric">
         <span>Total de cuentas</span>
-        <strong>{{ $professors->count() }}</strong>
+        <strong>{{ $accountCount }}</strong>
     </div>
     <div class="account-metric">
         <span>Docentes</span>
