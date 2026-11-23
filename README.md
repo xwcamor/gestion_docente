@@ -125,3 +125,8 @@ php artisan test
 ## Repositorio
 
 https://github.com/xwcamor/gestion_docente
+
+
+### Corrección MySQL 1059: índice curricular demasiado largo
+
+La migración de `curriculum_content_items` utiliza el nombre corto explícito `cci_week_category_approved_idx`. El esquema SQL usa el mismo nombre. Esto evita el identificador automático `curriculum_content_items_curriculum_week_id_category_approved_index`, que supera el límite de 64 caracteres de MySQL. Si un intento previo dejó una migración incompleta, elimina la base y repite la instalación limpia.
