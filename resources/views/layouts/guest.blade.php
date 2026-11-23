@@ -83,7 +83,44 @@
         }
         @media(max-height:700px) and (max-width:520px){.guest-main{padding-top:25px}.guest-description{margin-bottom:20px}.field-group{margin-bottom:14px}}
         @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;scroll-behavior:auto!important}}
-    </style>
+    
+        /* Acceso: misma paleta azul petróleo y turquesa del panel */
+        :root{color:#203744;background:#f2f6f9}
+        .guest-shell{background:#f2f6f9}
+        .guest-aside{background:linear-gradient(145deg,#e7f1f7 0%,#eef7f6 100%);border-right-color:#d2e2ea}
+        .guest-brand{color:#244a5d}
+        .guest-brand-mark{border-color:#c7dce6;background:#fff;color:#28677d}
+        .guest-brand small{color:#668493}
+        .guest-kicker{color:#327d86}
+        .guest-message h1{color:#203e4e}
+        .guest-message p{color:#587584}
+        .guest-features{border-top-color:#d0e0e8}
+        .guest-feature strong{color:#315e70}
+        .guest-feature span{color:#668391}
+        .guest-footer{color:#78919d}
+        .guest-main{background:#f8fbfd}
+        .guest-eyebrow{color:#327d86}
+        .guest-card h2{color:#203e4e}
+        .guest-description{color:#65808d}
+        .field-label{color:#3c6273}
+        .field-icon{color:#56879a}
+        .field{border-color:#cbdde6;color:#254657;background:#fff}
+        .field::placeholder{color:#91a6b0}
+        .field:hover{border-color:#9cbfcc}
+        .field:focus{border-color:#4b91a9;box-shadow:0 0 0 3px rgba(53,131,158,.14)}
+        .field-toggle{color:#38758a}
+        .field-toggle:hover{background:#eaf4f8;color:#245f75}
+        .remember-row{color:#607b88}
+        .remember-row input{accent-color:#28677d}
+        .btn{border-color:#28677d;background:#28677d}
+        .btn:hover{border-color:#20566a;background:#20566a}
+        .btn:focus-visible,.field-toggle:focus-visible{outline-color:#9ec7d5}
+        .guest-security{color:#78919d}
+        .alert-error{background:#fff3f1;color:#a74646;border-color:#efd4d2}
+        .alert-success{background:#eaf5ee;color:#28734f;border-color:#cfe7d8}
+        @media(max-width:900px){.guest-aside{border-bottom-color:#d2e2ea}}
+        @media(max-width:520px){.guest-aside{background:#f3f8fa;border-bottom-color:#dce8ed}.guest-main{background:#f8fbfd}}
+</style>
 </head>
 <body>
     <main class="guest-shell">
