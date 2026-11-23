@@ -67,9 +67,9 @@
                                 @endforeach
                             </div>
                             <div class="form-row-3" style="margin-top:10px">
-                                <div><label for="{{ $prefix }}_start_time">Hora de inicio</label><input class="field" id="{{ $prefix }}_start_time" type="time" name="{{ $prefix }}_start_time"></div>
-                                <div><label for="{{ $prefix }}_end_time">Hora de fin</label><input class="field" id="{{ $prefix }}_end_time" type="time" name="{{ $prefix }}_end_time"></div>
-                                <div><label for="{{ $prefix }}_classroom">Aula / ambiente</label><input class="field" id="{{ $prefix }}_classroom" name="{{ $prefix }}_classroom" placeholder="Ej. Lab. 204"></div>
+                                <div><label for="{{ $prefix }}_start_time">Hora de inicio</label><input class="field" id="{{ $prefix }}_start_time" type="time" name="{{ $prefix }}_start_time" value="{{ old($prefix.'_start_time') }}"></div>
+                                <div><label for="{{ $prefix }}_end_time">Hora de fin</label><input class="field" id="{{ $prefix }}_end_time" type="time" name="{{ $prefix }}_end_time" value="{{ old($prefix.'_end_time') }}"></div>
+                                <div><label for="{{ $prefix }}_classroom">Aula / ambiente</label><input class="field" id="{{ $prefix }}_classroom" name="{{ $prefix }}_classroom" value="{{ old($prefix.'_classroom') }}" placeholder="Ej. Lab. 204"></div>
                             </div>
                             <p class="help">Este horario común se aplica a todos los días seleccionados. Al reutilizar un horario se copian exactamente sus bloques guardados.</p>
                         </div>
