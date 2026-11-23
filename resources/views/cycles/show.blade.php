@@ -80,8 +80,7 @@
         </div>
     @endforelse
     @if($groups->hasPages())
-        <div class="pagination-summary">Mostrando {{ $groups->firstItem() }}–{{ $groups->lastItem() }} de {{ $groups->total() }} grupos</div>
-        {{ $groups->links() }}
+        <x-pagination :paginator="$groups" />
     @endif
 </section>
 
