@@ -7,6 +7,7 @@ use App\Models\CourseModality;
 use App\Services\CalendarService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\CarbonPeriod;
 
 class HolidayController extends Controller
 {
@@ -14,6 +15,41 @@ class HolidayController extends Controller
     {
         $professorId = auth()->user()->professor->id;
         $base = Holiday::where(fn ($query) => $query->whereNull('professor_id')->orWhere('professor_id', $professorId));
+
+        $calendarMonth = max(1, min(12, $request->integer('calendar_month', now()->month)));
+        $calendarYear = max(2000, min(2100, $request->integer('calendar_year', now()->year)));
+        $monthStart = Carbon::create($calendarYear, $calendarMonth, 1)->startOfMonth();
+        $monthEnd = $monthStart->copy()->endOfMonth();
+
+        $calendarHolidays = (clone $base)
+            ->whereBetween('holiday_date', [$monthStart->toDateString(), $monthEnd->toDateString()])
+            ->orderBy('holiday_date')
+            ->get()
+            ->groupBy(fn (Holiday $holiday) => $holiday->holiday_date->toDateString());
+
+        $calendarStart = $monthStart->copy()->startOfWeek(Carbon::MONDAY);
+        $calendarEnd = $monthEnd->copy()->endOfWeek(Carbon::SUNDAY);
+        $calendarDays = [];
+
+        foreach (CarbonPeriod::create($calendarStart, $calendarEnd) as $day) {
+            $key = $day->toDateString();
+            $calendarDays[] = [
+                'date' => $day->copy(),
+                'inMonth' => $day->month === $calendarMonth,
+                'holidays' => $calendarHolidays->get($key, collect()),
+            ];
+        }
+
+        $previousMonth = $monthStart->copy()->subMonth();
+        $nextMonth = $monthStart->copy()->addMonth();
+        $previousMonthUrl = route('holidays.index', array_merge($request->except('page', 'calendar_month', 'calendar_year'), [
+            'calendar_month' => $previousMonth->month,
+            'calendar_year' => $previousMonth->year,
+        ]));
+        $nextMonthUrl = route('holidays.index', array_merge($request->except('page', 'calendar_month', 'calendar_year'), [
+            'calendar_month' => $nextMonth->month,
+            'calendar_year' => $nextMonth->year,
+        ]));
 
         $query = (clone $base)->orderBy('holiday_date');
         if ($request->filled('year')) {
@@ -30,7 +66,16 @@ class HolidayController extends Controller
         $holidays = $query->paginate(40)->withQueryString();
         $years = $base->selectRaw('YEAR(holiday_date) as year')->distinct()->orderByDesc('year')->pluck('year');
 
-        return view('holidays.index', compact('holidays', 'years'));
+        return view('holidays.index', compact(
+            'holidays',
+            'years',
+            'calendarMonth',
+            'calendarYear',
+            'monthStart',
+            'calendarDays',
+            'previousMonthUrl',
+            'nextMonthUrl'
+        ));
     }
 
     public function store(Request $request, CalendarService $calendar)
