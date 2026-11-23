@@ -14,6 +14,10 @@ return new class extends Migration
         'courses' => ['professor_id', 'code', 'name'],
         'course_assignments' => ['teaching_group_id', 'course_id'],
         'course_modalities' => ['course_assignment_id', 'modality'],
+        'curricula' => ['course_id', 'version'],
+        'class_sessions' => ['course_modality_id', 'session_date', 'session_number'],
+        'evaluations' => ['course_modality_id', 'title'],
+        'generated_documents' => ['document_type', 'version', 'filename'],
     ];
 
     public function up(): void
@@ -64,6 +68,30 @@ return new class extends Migration
         DB::table('course_modalities')->select('id', 'course_assignment_id', 'modality')->orderBy('id')->chunkById(500, function ($rows): void {
             foreach ($rows as $row) {
                 $this->saveSlug('course_modalities', $row->id, "modalidad-{$row->modality}-asignacion-{$row->course_assignment_id}");
+            }
+        });
+
+        DB::table('curricula')->select('id', 'course_id', 'version')->orderBy('id')->chunkById(500, function ($rows): void {
+            foreach ($rows as $row) {
+                $this->saveSlug('curricula', $row->id, "malla-curso-{$row->course_id}-version-{$row->version}");
+            }
+        });
+
+        DB::table('class_sessions')->select('id', 'course_modality_id', 'session_date', 'session_number')->orderBy('id')->chunkById(500, function ($rows): void {
+            foreach ($rows as $row) {
+                $this->saveSlug('class_sessions', $row->id, "sesion-modalidad-{$row->course_modality_id}-{$row->session_date}-{$row->session_number}");
+            }
+        });
+
+        DB::table('evaluations')->select('id', 'course_modality_id', 'title')->orderBy('id')->chunkById(500, function ($rows): void {
+            foreach ($rows as $row) {
+                $this->saveSlug('evaluations', $row->id, "evaluacion-modalidad-{$row->course_modality_id}-{$row->title}");
+            }
+        });
+
+        DB::table('generated_documents')->select('id', 'document_type', 'version', 'filename')->orderBy('id')->chunkById(500, function ($rows): void {
+            foreach ($rows as $row) {
+                $this->saveSlug('generated_documents', $row->id, "documento-{$row->document_type}-{$row->version}-{$row->filename}");
             }
         });
     }
