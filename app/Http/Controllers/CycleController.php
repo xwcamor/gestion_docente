@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Cycle;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class CycleController extends Controller
@@ -11,7 +12,10 @@ class CycleController extends Controller
     public function index(Request $request)
     {
         $professor = auth()->user()->professor;
-        $query = $professor->cycles()->withCount('groups')->orderByDesc('academic_year')->orderByDesc('start_date');
+        $query = $professor->cycles()
+            ->withCount('groups')
+            ->orderByDesc('academic_year')
+            ->orderByDesc('start_date');
 
         if ($request->filled('year')) {
             $query->where('academic_year', $request->integer('year'));
@@ -25,10 +29,15 @@ class CycleController extends Controller
             });
         }
 
-        $cycles = $query->get();
-        $years = $professor->cycles()->select('academic_year')->distinct()->orderByDesc('academic_year')->pluck('academic_year');
+        $cycles = $query->paginate(12)->withQueryString();
+        $years = $professor->cycles()
+            ->select('academic_year')
+            ->distinct()
+            ->orderByDesc('academic_year')
+            ->pluck('academic_year');
+        $groupCount = $professor->groups()->count();
 
-        return view('cycles.index', compact('cycles', 'years'));
+        return view('cycles.index', compact('cycles', 'years', 'groupCount'));
     }
 
     public function create()
@@ -39,6 +48,7 @@ class CycleController extends Controller
     public function store(Request $request)
     {
         $professorId = auth()->user()->professor->id;
+        $request->merge(['cycle_code' => trim((string) $request->input('cycle_code'))]);
 
         $data = $request->validate(
             [
@@ -57,8 +67,8 @@ class CycleController extends Controller
                 'end_date' => ['required', 'date', 'after_or_equal:start_date'],
             ],
             [
-                'cycle_code.unique' => 'Ya tienes registrado un ciclo con ese año y código. Abre el ciclo existente o verifica los datos.',
-                'end_date.after_or_equal' => 'La fecha de fin debe ser igual o posterior a la fecha de inicio.',
+                'cycle_code.unique' => 'Ya existe un ciclo con ese año y código.',
+                'end_date.after_or_equal' => 'La fecha de fin debe ser igual o posterior al inicio.',
             ]
         );
 
@@ -66,15 +76,64 @@ class CycleController extends Controller
         $cycle = Cycle::create($data);
 
         return redirect()->route('cycles.show', $cycle)
-            ->with('success', 'Ciclo creado. Ahora agrega los grupos que te asignaron.');
+            ->with('success', 'Ciclo creado correctamente. Ahora puedes agregar sus grupos.');
+    }
+
+    public function update(Request $request, Cycle $cycle)
+    {
+        $this->authorizeCycle($cycle);
+        $professorId = auth()->user()->professor->id;
+        $request->merge(['cycle_code' => trim((string) $request->input('cycle_code'))]);
+
+        $data = $request->validate(
+            [
+                'academic_year' => ['required', 'integer', 'min:2020', 'max:2100'],
+                'cycle_code' => [
+                    'required',
+                    'string',
+                    'max:20',
+                    Rule::unique('cycles', 'cycle_code')
+                        ->ignore($cycle->id)
+                        ->where(fn ($query) => $query
+                            ->where('professor_id', $professorId)
+                            ->where('academic_year', $request->input('academic_year'))),
+                ],
+                'start_date' => ['required', 'date'],
+                'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+            ],
+            [
+                'cycle_code.unique' => 'Ya existe otro ciclo con ese año y código.',
+                'end_date.after_or_equal' => 'La fecha de fin debe ser igual o posterior al inicio.',
+            ]
+        );
+
+        $cycle->update($data);
+
+        return redirect()->route('cycles.show', $cycle)->with('success', 'Datos del ciclo actualizados.');
     }
 
     public function show(Cycle $cycle)
     {
         $this->authorizeCycle($cycle);
-        $cycle->load(['groups.assignments.course', 'groups.assignments.modalities.schedules']);
 
-        return view('cycles.show', compact('cycle'));
+        $groups = $cycle->groups()
+            ->withCount('assignments')
+            ->orderBy('name')
+            ->paginate(12)
+            ->withQueryString();
+
+        $groupCount = $cycle->groups()->count();
+        $courseCount = DB::table('course_assignments')
+            ->join('teaching_groups', 'teaching_groups.id', '=', 'course_assignments.teaching_group_id')
+            ->where('teaching_groups.cycle_id', $cycle->id)
+            ->count();
+        $modalityCount = DB::table('course_modalities')
+            ->join('course_assignments', 'course_assignments.id', '=', 'course_modalities.course_assignment_id')
+            ->join('teaching_groups', 'teaching_groups.id', '=', 'course_assignments.teaching_group_id')
+            ->where('teaching_groups.cycle_id', $cycle->id)
+            ->count();
+
+        return view('cycles.show', compact('cycle', 'groups', 'groupCount', 'courseCount', 'modalityCount'));
     }
 
     private function authorizeCycle(Cycle $cycle): void
