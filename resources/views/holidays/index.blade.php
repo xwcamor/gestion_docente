@@ -21,7 +21,7 @@
         <p class="subhead">Consulta las fechas que afectan tus clases y el calendario de cada modalidad.</p>
     </div>
     <div class="actions">
-        <button class="btn" type="button" data-modal-open="holiday-create-dialog">＋ Registrar fecha</button>
+        <button class="btn" type="button" data-modal-open="holiday-create-dialog"><x-icon name="plus" /> Registrar fecha</button>
     </div>
 </div>
 
@@ -40,9 +40,9 @@
             <h2>{{ ucfirst($monthNames[$calendarMonth]) }} {{ $calendarYear }}</h2>
         </div>
         <div class="calendar-controls">
-            <a class="calendar-nav" href="{{ $previousMonthUrl }}" aria-label="Mes anterior" title="Mes anterior">‹</a>
+            <a class="calendar-nav" href="{{ $previousMonthUrl }}" aria-label="Mes anterior" title="Mes anterior"><x-icon name="arrow-left" size="14" /></a>
             <a class="calendar-today" href="{{ route('holidays.index', array_merge(request()->except('page', 'year', 'calendar_month', 'calendar_year'), ['calendar_month' => now()->month, 'calendar_year' => now()->year])) }}">Hoy</a>
-            <a class="calendar-nav" href="{{ $nextMonthUrl }}" aria-label="Mes siguiente" title="Mes siguiente">›</a>
+            <a class="calendar-nav" href="{{ $nextMonthUrl }}" aria-label="Mes siguiente" title="Mes siguiente"><x-icon name="arrow-right" size="14" /></a>
         </div>
     </div>
 
@@ -119,9 +119,9 @@
                 <option value="{{ $value }}" @selected(request('scope') === $value)>{{ $label }}</option>
             @endforeach
         </select>
-        <button class="btn btn-secondary btn-sm" type="submit">Aplicar</button>
+        <button class="btn btn-secondary btn-sm" type="submit"><x-icon name="filter" /> Aplicar</button>
         @if(request()->hasAny(['q','year','scope']))
-            <a class="btn btn-ghost btn-sm" href="{{ route('holidays.index', ['calendar_month' => $calendarMonth, 'calendar_year' => $calendarYear]) }}">Limpiar</a>
+            <a class="btn btn-ghost btn-sm" href="{{ route('holidays.index', ['calendar_month' => $calendarMonth, 'calendar_year' => $calendarYear]) }}"><x-icon name="x" /> Limpiar</a>
         @endif
     </form>
 
@@ -152,7 +152,7 @@
                         <span class="badge">Pendiente</span>
                     @endif
                     @if($holiday->source_url)
-                        <a class="holiday-source" href="{{ $holiday->source_url }}" target="_blank" rel="noopener noreferrer">Ver fuente ↗</a>
+                        <a class="holiday-source" href="{{ $holiday->source_url }}" target="_blank" rel="noopener noreferrer"><x-icon name="arrow-up-right" /> Ver fuente</a>
                     @endif
                 </div>
             </article>
@@ -178,7 +178,7 @@
             <h2 id="calendar-day-title">Detalle de la fecha</h2>
             <p id="calendar-day-date"></p>
         </div>
-        <button class="dialog-close" type="button" data-modal-close aria-label="Cerrar">×</button>
+        <button class="dialog-close" type="button" data-modal-close aria-label="Cerrar"><x-icon name="x" /></button>
     </div>
     <div class="dialog-body">
         <div class="calendar-detail-name" id="calendar-day-name"></div>
@@ -187,7 +187,7 @@
             <span id="calendar-day-status"></span>
             <span id="calendar-day-verification"></span>
         </div>
-        <a id="calendar-day-source" class="calendar-day-source" href="#" target="_blank" rel="noopener noreferrer" hidden>Consultar fuente ↗</a>
+        <a id="calendar-day-source" class="calendar-day-source" href="#" target="_blank" rel="noopener noreferrer" hidden><x-icon name="arrow-up-right" /> Consultar fuente</a>
     </div>
     <div class="dialog-footer">
         <button class="btn btn-secondary" type="button" data-modal-close>Cerrar</button>
@@ -200,7 +200,7 @@
             <h2 id="holiday-create-title">Registrar feriado o cierre</h2>
             <p>Completa los datos de la fecha que deseas excluir del calendario.</p>
         </div>
-        <button class="dialog-close" type="button" data-modal-close aria-label="Cerrar">×</button>
+        <button class="dialog-close" type="button" data-modal-close aria-label="Cerrar"><x-icon name="x" /></button>
     </div>
     <form method="POST" action="{{ route('holidays.store') }}">
         @csrf
@@ -244,7 +244,7 @@
         </div>
         <div class="dialog-footer">
             <button class="btn btn-secondary" type="button" data-modal-close>Cancelar</button>
-            <button class="btn" type="submit">Guardar fecha</button>
+            <button class="btn" type="submit"><x-icon name="check" /> Guardar fecha</button>
         </div>
     </form>
 </dialog>
