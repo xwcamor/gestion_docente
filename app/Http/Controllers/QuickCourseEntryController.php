@@ -51,6 +51,46 @@ class QuickCourseEntryController extends Controller
             }
         }
 
+        $seenCodes = [];
+        foreach ($rows as $index => $row) {
+            $courseName = trim($row['course_name']);
+            $code = trim($row['course_code'] ?? '') ?: Str::upper(Str::slug($courseName, '-'));
+            $normalizedCode = mb_strtolower($code);
+
+            if (isset($seenCodes[$normalizedCode])) {
+                throw ValidationException::withMessages([
+                    "rows.{$index}.course_code" => "El curso «{$courseName}» repite un código dentro de esta carga. Revisa las filas antes de guardar.",
+                ]);
+            }
+            $seenCodes[$normalizedCode] = true;
+
+            $existingCourse = Course::where('professor_id', $group->professor_id)
+                ->where('code', $code)
+                ->first();
+
+            if ($existingCourse && $group->assignments()->where('course_id', $existingCourse->id)->exists()) {
+                throw ValidationException::withMessages([
+                    "rows.{$index}.course_name" => "«{$courseName}» ya está registrado en este grupo. No se modificó ningún dato.",
+                ]);
+            }
+
+            if ($existingCourse && mb_strtolower(trim($existingCourse->name)) !== mb_strtolower($courseName)) {
+                throw ValidationException::withMessages([
+                    "rows.{$index}.course_name" => "El código {$code} ya pertenece al curso «{$existingCourse->name}». Verifica el código o el nombre.",
+                ]);
+            }
+
+            $sameName = Course::where('professor_id', $group->professor_id)
+                ->whereRaw('LOWER(name) = ?', [mb_strtolower($courseName)])
+                ->first();
+
+            if ($sameName && mb_strtolower((string) $sameName->code) !== $normalizedCode) {
+                throw ValidationException::withMessages([
+                    "rows.{$index}.course_code" => "Ya existe «{$courseName}» con el código {$sameName->code}. Reutiliza ese código para evitar duplicados.",
+                ]);
+            }
+        }
+
         DB::transaction(function () use ($rows, $group) {
             foreach ($rows as $row) {
                 $code = trim($row['course_code'] ?? '') ?: Str::upper(Str::slug($row['course_name'], '-'));
@@ -58,14 +98,10 @@ class QuickCourseEntryController extends Controller
                     ['professor_id' => $group->professor_id, 'code' => $code],
                     ['name' => trim($row['course_name'])]
                 );
-                if ($course->name !== trim($row['course_name'])) {
-                    $course->update(['name' => trim($row['course_name'])]);
-                }
-
-                $assignment = $group->assignments()->firstOrCreate(
-                    ['course_id' => $course->id],
-                    ['assigned_at' => now()->toDateString()]
-                );
+                $assignment = $group->assignments()->create([
+                    'course_id' => $course->id,
+                    'assigned_at' => now()->toDateString(),
+                ]);
 
                 $types = $row['modality'] === 'BOTH' ? ['TEC', 'TALL'] : [$row['modality']];
                 foreach ($types as $type) {
