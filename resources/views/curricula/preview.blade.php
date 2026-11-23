@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title','Previsualizar malla')
 @section('content')
-<div class="page-head"><div><h1>Previsualización de malla curricular</h1><p class="subhead">Revisa los datos extraídos y las propuestas antes de incorporarlas al curso.</p></div><a class="btn btn-secondary" href="{{ route('curricula.show',$assignment) }}">Cancelar</a></div>
+<div class="page-head"><div><h1>Previsualización de malla curricular</h1><p class="subhead">Revisa los datos extraídos y las propuestas antes de incorporarlas al curso.</p></div><a class="btn btn-secondary" href="{{ route('curricula.show',$assignment) }}"><x-icon name="arrow-left" /> Cancelar</a></div>
 <div class="grid grid-3">
 <div class="card"><div class="stat-label">Versión del prompt</div><strong>{{ $promptInfo['prompt_version'] ?? 'No indicada' }}</strong></div>
 <div class="card"><div class="stat-label">Generado el</div><strong>{{ $promptInfo['prompt_generated_at'] ?? 'No indicado' }}</strong></div>
@@ -34,6 +34,6 @@
 @endforeach
 </section>
 <section class="card"><h2>Confirmar importación</h2><div class="alert alert-info">Los datos oficiales de la malla se guardarán como fuente. Las propuestas TEC/TALL de IA quedarán pendientes de aprobación. Podrás revisarlas y aprobarlas después.</div>
-<form method="POST" action="{{ route('curricula.confirm',$assignment) }}">@csrf<input type="hidden" name="token" value="{{ $token }}"><button class="btn" type="submit">Confirmar e importar esta malla</button></form>
+<form method="POST" action="{{ route('curricula.confirm',$assignment) }}">@csrf<input type="hidden" name="token" value="{{ $token }}"><button class="btn" type="submit"><x-icon name="check" /> Confirmar e importar esta malla</button></form>
 </section>
 @endsection
