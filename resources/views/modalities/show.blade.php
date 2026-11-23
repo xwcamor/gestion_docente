@@ -172,7 +172,8 @@
         let sessions=0,blocked=0,firstTeachingDate=null;
         const cursor=new Date(from);
         while(cursor<=to){
-            if(days.has(cursor.getDay())){
+            const isoDay = cursor.getDay() === 0 ? 7 : cursor.getDay();
+            if(days.has(isoDay)){
                 const key=[cursor.getFullYear(),String(cursor.getMonth()+1).padStart(2,'0'),String(cursor.getDate()).padStart(2,'0')].join('-');
                 const item=document.createElement('div');item.className='preview-date';
                 if(holidays.has(key)){blocked++;item.classList.add('holiday');item.textContent=fmt(cursor)+' · Feriado';}
