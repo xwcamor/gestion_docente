@@ -111,10 +111,10 @@ class QuickCourseEntryController extends Controller
                     ['professor_id' => $group->professor_id, 'code' => $code],
                     ['name' => trim($row['course_name'])]
                 );
-                $assignment = $group->assignments()->create([
-                    'course_id' => $course->id,
-                    'assigned_at' => now()->toDateString(),
-                ]);
+                $assignment = $group->assignments()->firstOrCreate(
+                    ['course_id' => $course->id],
+                    ['assigned_at' => now()->toDateString()]
+                );
 
                 $types = $row['modality'] === 'BOTH' ? ['TEC', 'TALL'] : [$row['modality']];
                 foreach ($types as $type) {
