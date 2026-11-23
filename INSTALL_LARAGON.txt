@@ -1,0 +1,59 @@
+INSTALACIÓN LIMPIA EN LARAGON — GESTIÓN DOCENTE
+
+REQUISITOS
+- Laragon para Windows.
+- PHP 8.3 o superior.
+- MySQL 8 / InnoDB.
+- Composer.
+- Extensiones PHP: pdo_mysql, mbstring, openssl, fileinfo, zip, gd, xml, dom,
+  simplexml, xmlreader, xmlwriter e iconv.
+
+ACTIVAR ZIP EN LARAGON (PASO OBLIGATORIO)
+1. Abre Laragon.
+2. Menu / PHP / Extensions.
+3. Marca la extensión zip.
+4. Reinicia Laragon (Stop All y Start All).
+5. En Laragon Terminal ejecuta: php -m | findstr /I zip
+   Debe aparecer zip.
+
+INSTALACIÓN LIMPIA
+ADVERTENCIA: el SQL contiene DROP DATABASE IF EXISTS gestion_docente y elimina
+la base anterior completa. Úsalo solo cuando quieras reiniciar todo.
+
+1. Descomprime el proyecto en C:\laragon\www\gestion_docente.
+2. Inicia Laragon con Start All.
+3. Abre Laragon Terminal:
+
+   cd C:\laragon\www\gestion_docente
+   composer install
+   copy .env.example .env
+
+4. Edita .env y configura la conexión MySQL:
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=gestion_docente
+   DB_USERNAME=root
+   DB_PASSWORD=
+   CACHE_STORE=file
+   SESSION_DRIVER=file
+   QUEUE_CONNECTION=sync
+
+5. Importa database/gestion_docente.sql desde phpMyAdmin o HeidiSQL.
+   Este único archivo crea la base, todas las tablas, relaciones, índices,
+   cache, sesiones y tablas de cola.
+
+6. En Laragon Terminal ejecuta:
+
+   php artisan key:generate
+   php artisan db:seed
+   php artisan gestion:crear-profesor --admin
+   php artisan serve
+
+7. Abre http://127.0.0.1:8000/login.
+
+IMPORTANTE
+- Para esta instalación inicial no ejecutes php artisan migrate.
+- No necesitas crear manualmente cache/sessions: están en el SQL.
+- composer install instala vendor/ y genera composer.lock localmente.
+- Las plantillas Excel maestras están en storage/app/plantillas.
