@@ -8,7 +8,7 @@
 
 <div class="grid grid-4" style="margin-bottom:19px">
     <div class="stat-card"><div class="stat-label">Ciclos académicos</div><div class="stat">{{ $cycles->count() }}</div></div>
-    <div class="stat-card"><div class="stat-label">Grupos registrados</div><div class="stat">{{ $groups->count() }}</div></div>
+    <div class="stat-card"><div class="stat-label">Grupos registrados</div><div class="stat">{{ $groupCount }}</div></div>
     <div class="stat-card"><div class="stat-label">Modalidades</div><div class="stat">{{ $modalities->count() }}</div></div>
     <div class="stat-card"><div class="stat-label">Feriados próximos</div><div class="stat">{{ $upcoming->count() }}</div></div>
 </div>
