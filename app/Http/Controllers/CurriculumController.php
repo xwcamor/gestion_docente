@@ -34,6 +34,8 @@ class CurriculumController extends Controller
             'tall_approved' => $suggestions->filter(fn ($item) => in_array(data_get($item->metadata, 'target_modality', 'BOTH'), ['TALL', 'BOTH'], true) && $item->approved)->count(),
             'pending' => $suggestions->where('approved', false)->count(),
         ];
+        $hasTecModality = $assignment->modalities->contains('modality', 'TEC');
+        $hasTallModality = $assignment->modalities->contains('modality', 'TALL');
         $modalityStats = $assignment->modalities->mapWithKeys(function ($modality) {
             return [$modality->modality => [
                 'sessions' => $modality->sessions->where('status', 'scheduled')->count(),
@@ -45,16 +47,18 @@ class CurriculumController extends Controller
         $workflow = [
             'has_curriculum' => (bool) $activeCurriculum,
             'has_suggestions' => $suggestions->isNotEmpty(),
-            'all_approved' => $suggestions->isNotEmpty() && $suggestions->every(fn ($item) => $item->approved),
-            'tec_configured' => (bool) data_get($modalityStats, 'TEC.configured', false),
-            'tall_configured' => (bool) data_get($modalityStats, 'TALL.configured', false),
-            'has_tec_sessions' => (int) data_get($modalityStats, 'TEC.sessions', 0) > 0,
-            'has_tall_sessions' => (int) data_get($modalityStats, 'TALL.sessions', 0) > 0,
+            'all_approved' => (bool) $activeCurriculum && ($suggestions->isEmpty() || $suggestions->every(fn ($item) => $item->approved)),
+            'has_tec_modality' => $hasTecModality,
+            'has_tall_modality' => $hasTallModality,
+            'tec_configured' => !$hasTecModality || (bool) data_get($modalityStats, 'TEC.configured', false),
+            'tall_configured' => !$hasTallModality || (bool) data_get($modalityStats, 'TALL.configured', false),
+            'has_tec_sessions' => !$hasTecModality || (int) data_get($modalityStats, 'TEC.sessions', 0) > 0,
+            'has_tall_sessions' => !$hasTallModality || (int) data_get($modalityStats, 'TALL.sessions', 0) > 0,
         ];
         $completedSteps = (int) $workflow['has_curriculum']
             + (int) $workflow['has_suggestions']
-            + (int) ($workflow['tec_configured'] || $workflow['tall_configured'])
-            + (int) ($workflow['has_tec_sessions'] || $workflow['has_tall_sessions'])
+            + (int) ($workflow['tec_configured'] && $workflow['tall_configured'])
+            + (int) ($workflow['has_tec_sessions'] && $workflow['has_tall_sessions'])
             + (int) $workflow['all_approved'];
         $progress = (int) round(($completedSteps / 5) * 100);
         return view('curricula.index', compact('assignment','curricula','activeCurriculum','suggestionStats','modalityStats','workflow','progress','totalHoursTheory','totalHoursPractice'));
