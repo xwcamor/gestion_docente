@@ -11,47 +11,20 @@
     <div>
         <p class="eyebrow">Organización académica</p>
         <h1>Mis ciclos académicos</h1>
-        <p class="subhead">Aquí empieza tu organización docente. Primero crea un ciclo; luego entra en él para registrar tus grupos y, dentro de cada grupo, agregar los cursos.</p>
+        <p class="subhead">Administra tus periodos académicos.</p>
     </div>
     <div class="actions">
+        <button class="btn btn-secondary" type="button" data-modal-open="workflow-help-dialog"><x-icon name="circle-help" /> Cómo funciona</button>
         <button class="btn" type="button" data-modal-open="cycle-create-dialog">
             <x-icon name="plus" /> Crear ciclo
         </button>
     </div>
 </div>
 
-<section class="card">
-    <div class="card-head">
-        <div>
-            <h2>¿Cómo se organiza?</h2>
-            <p class="card-description">Sigue estos pasos en orden. No necesitas crear todos los datos en una sola pantalla.</p>
-        </div>
-        <span class="badge badge-green"><x-icon name="check" size="11" /> Flujo de trabajo</span>
-    </div>
-    <div class="cycle-workflow">
-        <div class="workflow-step">
-            <span class="workflow-icon"><x-icon name="calendar-days" size="17" /></span>
-            <div><strong>1. Ciclo académico</strong><small>Año, código y fechas del periodo.</small></div>
-        </div>
-        <div class="workflow-step">
-            <span class="workflow-icon"><x-icon name="users" size="17" /></span>
-            <div><strong>2. Grupos</strong><small>Secciones que te asignaron en ese ciclo.</small></div>
-        </div>
-        <div class="workflow-step">
-            <span class="workflow-icon"><x-icon name="book-open" size="17" /></span>
-            <div><strong>3. Cursos</strong><small>Cursos y modalidades TEC / TALL.</small></div>
-        </div>
-        <div class="workflow-step">
-            <span class="workflow-icon"><x-icon name="clipboard-check" size="17" /></span>
-            <div><strong>4. Gestión</strong><small>Alumnos, horarios, sesiones y documentos.</small></div>
-        </div>
-    </div>
-</section>
-
 <div class="grid grid-3" style="margin-bottom:16px">
     <div class="stat-card">
         <div class="stat-top"><span class="stat-label">Ciclos registrados</span><span class="stat-icon"><x-icon name="calendar-days" /></span></div>
-        <div class="stat">{{ $cycles->count() }}</div>
+        <div class="stat">{{ $cycles->total() }}</div>
     </div>
     <div class="stat-card">
         <div class="stat-top"><span class="stat-label">Años disponibles</span><span class="stat-icon"><x-icon name="calendar-range" /></span></div>
@@ -59,17 +32,16 @@
     </div>
     <div class="stat-card">
         <div class="stat-top"><span class="stat-label">Grupos registrados</span><span class="stat-icon"><x-icon name="users" /></span></div>
-        <div class="stat">{{ $cycles->sum('groups_count') }}</div>
+        <div class="stat">{{ $groupCount }}</div>
     </div>
 </div>
 
 <section class="card">
     <div class="card-head">
         <div>
-            <h2>Listado de ciclos</h2>
-            <p class="card-description">Selecciona un ciclo para ver sus grupos y continuar con la organización.</p>
+            <h2>Mis ciclos</h2>
         </div>
-        <span class="badge">{{ $cycles->count() }} {{ $cycles->count() === 1 ? 'ciclo' : 'ciclos' }}</span>
+        <span class="badge">{{ $cycles->count() }} {{ $cycles->total() === 1 ? 'ciclo' : 'ciclos' }}</span>
     </div>
 
     <form method="GET" action="{{ route('cycles.index') }}" class="filter-bar">
@@ -110,18 +82,21 @@
             <strong>{{ request()->hasAny(['q', 'year']) ? 'No encontramos ciclos con esos filtros.' : 'Todavía no has creado un ciclo.' }}</strong>
             <span>{{ request()->hasAny(['q', 'year']) ? 'Prueba con otro año o código, o limpia los filtros.' : 'Crea tu primer ciclo para empezar. Después podrás registrar los grupos y cursos.' }}</span>
             @if(!request()->hasAny(['q', 'year']))
-                <div class="mt-16"><button class="btn" type="button" data-modal-open="cycle-create-dialog"><x-icon name="plus" /> Crear mi primer ciclo</button></div>
+                <div class="mt-16"><button class="btn" type="button" data-modal-open="cycle-create-dialog"><x-icon name="plus" /> Crear ciclo</button></div>
             @else
                 <div class="mt-16"><a class="btn btn-secondary" href="{{ route('cycles.index') }}"><x-icon name="x" /> Limpiar filtros</a></div>
             @endif
         </div>
     @endforelse
+    @if($cycles->hasPages())
+        <div class="pagination-summary">Mostrando {{ $cycles->firstItem() }}–{{ $cycles->lastItem() }} de {{ $cycles->total() }} ciclos</div>
+        {{ $cycles->links() }}
+    @endif
 </section>
 
 <dialog class="ui-dialog sheet-dialog" id="cycle-create-dialog" aria-labelledby="cycle-create-title" data-backdrop-close @if(request()->boolean('nuevo') || $errors->any()) data-auto-open @endif>
     <div class="dialog-head">
         <div>
-            <p class="eyebrow">Paso 1 · Organización académica</p>
             <h2 id="cycle-create-title">Crear ciclo académico</h2>
             <p>Registra el periodo que aparece en tu programación docente.</p>
         </div>
