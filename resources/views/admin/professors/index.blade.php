@@ -79,8 +79,7 @@
         @endforelse
     </div>
     @if($professors->hasPages())
-        <div class="pagination-summary">Mostrando {{ $professors->firstItem() }}–{{ $professors->lastItem() }} de {{ $professors->total() }} cuentas</div>
-        {{ $professors->links() }}
+        <x-pagination :paginator="$professors" />
     @endif
 </section>
 
