@@ -2,7 +2,7 @@
 @section('title', 'Vista previa de importación')
 @section('content')
 <div class="breadcrumbs"><a href="{{ route('cycles.index') }}">Ciclos y cursos</a><span>›</span><a href="{{ route('distribution.create') }}">Importar Excel</a><span>›</span><span class="current">Vista previa</span></div>
-<div class="page-head"><div><p class="eyebrow">Revisión antes de guardar</p><h1>Vista previa de tu carga académica</h1><p class="subhead">Comprueba los cursos detectados. Todavía no se ha guardado ningún dato.</p></div><a class="btn btn-secondary" href="{{ route('distribution.create') }}">Cambiar archivo</a></div>
+<div class="page-head"><div><p class="eyebrow">Revisión antes de guardar</p><h1>Vista previa de tu carga académica</h1><p class="subhead">Comprueba los cursos detectados. Todavía no se ha guardado ningún dato.</p></div><a class="btn btn-secondary" href="{{ route('distribution.create') }}"><x-icon name="file-text" /> Cambiar archivo</a></div>
 <div class="grid grid-4" style="margin-bottom:16px">
     <div class="stat-card"><div class="stat-label">Ciclo detectado</div><div class="stat">{{ $data['academic_year'] }} · {{ $data['cycle_code'] }}</div></div>
     <div class="stat-card"><div class="stat-label">Cursos</div><div class="stat">{{ $data['course_count'] }}</div></div>
@@ -28,7 +28,7 @@
         @csrf
         <div class="form-row"><div><label for="group_name">Nombre del grupo</label><input class="field" id="group_name" name="group_name" required maxlength="100" value="{{ old('group_name', 'Grupo principal') }}"><p class="help">Puedes cambiarlo por el nombre de tu sección o aula.</p></div><div><label>Ciclo que se creará o reutilizará</label><input class="field" value="{{ $data['academic_year'] }} · {{ $data['cycle_code'] }}" disabled></div></div>
         <div class="alert alert-info" style="margin-top:16px">Los horarios (días, horas y ambiente) no se importan desde esta pestaña porque no están en sus columnas. Podrás completarlos después y generar el calendario excluyendo feriados.</div>
-        <div class="form-actions"><a class="btn btn-secondary" href="{{ route('distribution.create') }}">Cancelar</a><button class="btn" type="submit" {{ count($data['rows']) === 0 ? 'disabled' : '' }}>Confirmar e importar {{ count($data['rows']) }} cursos</button></div>
+        <div class="form-actions"><a class="btn btn-secondary" href="{{ route('distribution.create') }}"><x-icon name="arrow-left" /> Cancelar</a><button class="btn" type="submit" {{ count($data['rows']) === 0 ? 'disabled' : '' }}><x-icon name="check" /> Confirmar e importar {{ count($data['rows']) }} cursos</button></div>
     </form>
 </section>
 @endsection
