@@ -1,39 +1,79 @@
 @extends('layouts.app')
-@section('title','Grupo')
+@section('title', 'Grupo '.$group->name)
 @section('content')
-<div class="page-head"><div><p class="muted small"><a href="{{ route('cycles.show',$group->cycle) }}">Ciclo {{ $group->cycle->cycle_code }}</a> / Grupo</p><h1>{{ $group->name }}</h1><p class="subhead">{{ $group->cycle->academic_year }} · Asignado {{ $group->assigned_at?->format('d/m/Y') ?? 'sin fecha' }}</p></div><a class="btn btn-secondary" href="{{ route('cycles.show',$group->cycle) }}">Volver al ciclo</a></div>
-<section class="card"><h2>Asignar curso</h2><p class="muted">No existe un límite de cursos por grupo. Activa TEC, TALL o ambas modalidades; cada una tendrá su NRC, fechas, horario y documentos propios.</p>
-<form method="POST" action="{{ route('assignments.store',$group) }}">@csrf
-<div class="form-row-3">
-<div><label>Nombre del curso</label><input class="field" name="course_name" required></div>
-<div><label>Código del curso</label><input class="field" name="course_code" placeholder="Ej. PIAD-224"></div>
-<div><label>Fecha de asignación</label><input class="field" type="date" name="assigned_at"></div>
+<div class="breadcrumbs"><a href="{{ route('cycles.index') }}">Ciclos</a><span>›</span><a href="{{ route('cycles.show', $group->cycle) }}">{{ $group->cycle->academic_year }} · Ciclo {{ $group->cycle->cycle_code }}</a><span>›</span><span class="current">{{ $group->name }}</span></div>
+<div class="page-head">
+    <div><p class="eyebrow">Paso 3 de 4 · Cursos</p><h1>{{ $group->name }}</h1><p class="subhead">{{ $group->cycle->academic_year }} · Ciclo {{ $group->cycle->cycle_code }} · {{ $group->assigned_at?->format('d/m/Y') ?? 'Fecha de asignación no indicada' }}</p></div>
+    <div class="actions"><a class="btn btn-secondary" href="{{ route('cycles.show', $group->cycle) }}">← Volver al ciclo</a><a class="btn" href="{{ route('assignments.create', $group) }}">＋ Agregar curso</a></div>
 </div>
-<div class="form-row"><div><label>Carrera</label><input class="field" name="career"></div><div><label>Módulo</label><input class="field" name="module"></div></div>
-<div class="grid grid-2 mt-16">
-<div style="border:1px solid #dbe5f1;border-radius:10px;padding:14px"><label class="checkline"><input type="checkbox" name="has_tec" value="1" checked> Activar TEC (Conocimientos tecnológicos)</label>
-<div class="form-row"><div><label>NRC TEC</label><input class="field" name="tec_nrc"></div><div><label>Horas por semana</label><input class="field" type="number" step=".5" min="0" name="tec_total_hours"></div></div>
-<div class="form-row"><div><label>Inicio TEC</label><input class="field" type="date" name="tec_start_date"></div><div><label>Fin TEC</label><input class="field" type="date" name="tec_end_date"></div></div>
-<label>Días de clase TEC</label><div class="form-row-3">@foreach([1=>'Lun',2=>'Mar',3=>'Mié',4=>'Jue',5=>'Vie',6=>'Sáb',7=>'Dom'] as $day=>$label)<label class="checkline"><input type="checkbox" name="tec_days[]" value="{{ $day }}"> {{ $label }}</label>@endforeach</div>
-<div class="form-row"><div><label>Hora de inicio</label><input class="field" type="time" name="tec_start_time"></div><div><label>Hora de fin</label><input class="field" type="time" name="tec_end_time"></div></div>
-<label>Ambiente</label><input class="field" name="tec_classroom">
+
+<div class="grid grid-3" style="margin-bottom:17px">
+    <div class="stat-card"><div class="stat-label">Cursos de este grupo</div><div class="stat">{{ $group->assignments->count() }}</div></div>
+    <div class="stat-card"><div class="stat-label">Modalidades TEC</div><div class="stat">{{ $group->assignments->sum(fn($a) => $a->modalities->where('modality', 'TEC')->count()) }}</div></div>
+    <div class="stat-card"><div class="stat-label">Modalidades TALL</div><div class="stat">{{ $group->assignments->sum(fn($a) => $a->modalities->where('modality', 'TALL')->count()) }}</div></div>
 </div>
-<div style="border:1px solid #dbe5f1;border-radius:10px;padding:14px"><label class="checkline"><input type="checkbox" name="has_tall" value="1"> Activar TALL (Práctica de taller)</label>
-<div class="form-row"><div><label>NRC TALL</label><input class="field" name="tall_nrc"></div><div><label>Horas por semana</label><input class="field" type="number" step=".5" min="0" name="tall_total_hours"></div></div>
-<div class="form-row"><div><label>Inicio TALL</label><input class="field" type="date" name="tall_start_date"></div><div><label>Fin TALL</label><input class="field" type="date" name="tall_end_date"></div></div>
-<label>Días de clase TALL</label><div class="form-row-3">@foreach([1=>'Lun',2=>'Mar',3=>'Mié',4=>'Jue',5=>'Vie',6=>'Sáb',7=>'Dom'] as $day=>$label)<label class="checkline"><input type="checkbox" name="tall_days[]" value="{{ $day }}"> {{ $label }}</label>@endforeach</div>
-<div class="form-row"><div><label>Hora de inicio</label><input class="field" type="time" name="tall_start_time"></div><div><label>Hora de fin</label><input class="field" type="time" name="tall_end_time"></div></div>
-<label>Ambiente</label><input class="field" name="tall_classroom">
-</div>
-</div>
-<label>Observaciones</label><textarea class="field" name="notes" rows="2"></textarea>
-<button class="btn mt-16" type="submit">Guardar curso y modalidades</button>
-</form></section>
-<section class="card"><h2>Cursos asignados ({{ $group->assignments->count() }})</h2>
-@if($group->assignments->isEmpty())<div class="empty">Todavía no hay cursos asignados a este grupo.</div>@else
-@foreach($group->assignments as $assignment)
-<div style="padding:15px 0;border-bottom:1px solid #e8edf3"><div class="page-head" style="margin:0"><div><strong>{{ $assignment->course->name }}</strong><div class="muted small">{{ $assignment->course->code }}</div></div><a href="{{ route('curricula.show',$assignment) }}">Malla curricular</a></div>
-<div class="actions mt-16">@forelse($assignment->modalities as $modality)<a class="btn btn-secondary" href="{{ route('modalities.show',$modality) }}">{{ $modality->modality }} · NRC {{ $modality->nrc ?: 'Pendiente' }}</a>@empty<span class="muted small">Sin modalidad configurada</span>@endforelse</div></div>
-@endforeach @endif
+
+<section class="card">
+    <div class="card-head"><div><h2>Cursos asignados</h2><p class="card-description">Selecciona una modalidad para trabajar con su calendario, alumnos, notas y documentos.</p></div><span class="badge">{{ $group->assignments->count() }} cursos</span></div>
+    @if($group->assignments->isNotEmpty())
+        <div class="filter-bar">
+            <input class="filter-input" id="course-search" type="search" placeholder="Buscar por nombre o código…" aria-label="Buscar cursos">
+            <select class="filter-input" id="modality-filter" aria-label="Filtrar por modalidad">
+                <option value="">Todas las modalidades</option><option value="TEC">Solo con TEC</option><option value="TALL">Solo con TALL</option><option value="BOTH">TEC y TALL</option>
+            </select>
+            <span class="help" id="course-count">{{ $group->assignments->count() }} cursos</span>
+        </div>
+        <div class="grid grid-2" id="course-list">
+            @foreach($group->assignments as $assignment)
+                @php($types = $assignment->modalities->pluck('modality')->all())
+                <article class="course-card" data-search="{{ strtolower($assignment->course->name.' '.$assignment->course->code) }}" data-modalities="{{ implode(',', $types) }}">
+                    <div class="course-card-head">
+                        <div><div class="list-title">{{ $assignment->course->name }}</div><div class="list-meta">{{ $assignment->course->code ?: 'Sin código' }}</div></div>
+                        <a class="btn btn-ghost btn-sm" href="{{ route('curricula.show', $assignment) }}">Malla curricular</a>
+                    </div>
+                    <div class="actions mt-16">
+                        @forelse($assignment->modalities as $modality)
+                            <a class="btn btn-secondary btn-sm" href="{{ route('modalities.show', $modality) }}"><span class="badge {{ $modality->modality === 'TEC' ? 'badge-blue' : 'badge-green' }}">{{ $modality->modality }}</span> NRC {{ $modality->nrc ?: 'Pendiente' }} →</a>
+                        @empty
+                            <span class="badge badge-orange">Modalidad pendiente</span>
+                        @endforelse
+                    </div>
+                </article>
+            @endforeach
+        </div>
+        <div class="empty" id="course-empty" hidden><strong>No hay cursos que coincidan.</strong><span>Prueba con otro nombre o filtro.</span></div>
+    @else
+        <div class="empty"><strong>Aún no has agregado cursos a este grupo.</strong><span>Registra el primer curso y selecciona si tendrá TEC, TALL o ambas.</span><div class="mt-16"><a class="btn" href="{{ route('assignments.create', $group) }}">Agregar primer curso</a></div></div>
+    @endif
 </section>
 @endsection
+
+@push('scripts')
+<script>
+(() => {
+    const search = document.getElementById('course-search');
+    const filter = document.getElementById('modality-filter');
+    if (!search || !filter) return;
+    const cards = [...document.querySelectorAll('.course-card')];
+    const empty = document.getElementById('course-empty');
+    const count = document.getElementById('course-count');
+    const apply = () => {
+        const term = search.value.trim().toLocaleLowerCase();
+        const selected = filter.value;
+        let visible = 0;
+        cards.forEach(card => {
+            const textMatch = card.dataset.search.includes(term);
+            const types = card.dataset.modalities.split(',').filter(Boolean);
+            const typeMatch = !selected || (selected === 'BOTH' ? types.includes('TEC') && types.includes('TALL') : types.includes(selected));
+            const show = textMatch && typeMatch;
+            card.hidden = !show;
+            if (show) visible++;
+        });
+        empty.hidden = visible !== 0;
+        count.textContent = visible + (visible === 1 ? ' curso' : ' cursos');
+    };
+    search.addEventListener('input', apply);
+    filter.addEventListener('change', apply);
+})();
+</script>
+@endpush
