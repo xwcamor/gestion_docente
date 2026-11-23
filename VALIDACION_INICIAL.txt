@@ -1,0 +1,32 @@
+VALIDACIÓN / CAMBIOS DE PROYECTO GESTIÓN DOCENTE — ACTUALIZACIÓN MYSQL 1059
+
+- Aplicación PHP/Laravel preparada para Laragon + MySQL/InnoDB.
+- Ciclo con varios grupos; grupo con cantidad ilimitada de cursos; cada curso puede tener TEC, TALL o ambas modalidades.
+- Cada modalidad conserva NRC, horarios, fechas, alumnos y documentos independientes.
+- Importación desde el mismo archivo original del campus; no se solicita una plantilla alternativa.
+- Plantillas Excel fuente: documentacion/formatos_excel_fuente/ (7 libros Excel) y operativas en storage/app/plantillas/.
+- Malla curricular: prompt GD-MALLA-2.0; adjuntar PDF original a ChatGPT; pegar JSON en la aplicación.
+- Una única malla produce planes didácticos TEC y TALL separados. Las propuestas IA quedan pendientes de aprobación docente.
+- Semana del curso secuencial 1..N calculada por calendario; semana impresa en la malla se conserva aparte como source_week_number.
+- Excel generados por curso/grupo/NRC/modalidad y tipo documental.
+- Índice generated_documents: gd_mod_type_ver_idx.
+- Índice curriculum_content_items: cci_week_category_approved_idx (corrección del error MySQL 1059).
+- Migración de cache/sesiones crea cache, cache_locks y sessions.
+- SQL único crea el esquema completo e inserta los 18 registros de migración; tras importarlo, php artisan migrate --seed no recrea tablas y ejecuta seeders.
+- README e INSTALL_LARAGON describen Menu / PHP / Extensions / zip.
+
+VALIDACIONES REALIZADAS EN ESTE ENTORNO
+- PHP lint de todos los archivos PHP.
+- JSON curricular validado.
+- Índices del esquema SQL comparados con nombres cortos explícitos.
+- Conteo de 18 migraciones para el SQL único.
+- Integridad ZIP verificada.
+
+PENDIENTE DE VALIDAR EN LARAGON DEL USUARIO
+- composer install (vendor/ y composer.lock se generan localmente).
+- Importar database/gestion_docente.sql en MySQL 8.
+- Ejecutar php artisan key:generate, php artisan migrate --seed,
+  php artisan gestion:crear-profesor --admin y php artisan serve.
+- Ejecutar php artisan test.
+- Importar una malla real y comparar todos los Excel generados con los formatos oficiales.
+- No se conecta a OpenAI API: el uso de ChatGPT es manual por prompt y JSON.
