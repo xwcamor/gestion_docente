@@ -97,7 +97,7 @@
         .nav-dot{width:6px;height:6px;flex:none;border-radius:50%;background:#c3cbc2}
         .nav-link.active .nav-dot{background:#55745e}
         .sidebar-note{margin:20px 5px 0;padding:12px;border:1px solid #e8ece6;border-radius:7px;background:#f5f7f3;color:#707a71;font-size:10px;line-height:1.6}
-        .sidebar-note strong{display:block;margin-bottom:5px;color:#48564b}
+        .sidebar-note strong{display:flex;align-items:center;gap:6px;margin-bottom:7px;color:#48564b}.sidebar-note>div{display:flex;align-items:center;gap:7px;margin-top:5px}
         .main{width:100%;max-width:1520px;min-width:0;margin:0 auto;padding:clamp(18px,2.7vw,36px)}
         .page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin:0 0 22px}
         .page-head>div:first-child{min-width:0}
@@ -384,14 +384,20 @@
                 <div class="nav-label" style="margin-top:15px">Administración</div>
                 <a class="nav-link {{ request()->routeIs('admin.*') ? 'active' : '' }}" href="{{ route('admin.professors.index') }}"><x-icon name="users-round" />Profesores y cuentas</a>
             @endif
-            <div class="sidebar-note"><strong>Tu flujo de trabajo</strong>1. Ciclo académico<br>2. Grupo asignado<br>3. Curso y modalidades<br>4. Alumnos, calendario y documentos</div>
+            <div class="sidebar-note">
+                <strong><x-icon name="clipboard-check" size="13" /> Tu flujo de trabajo</strong>
+                <div><x-icon name="calendar-days" size="12" /> 1. Ciclo académico</div>
+                <div><x-icon name="users" size="12" /> 2. Grupo asignado</div>
+                <div><x-icon name="book-open" size="12" /> 3. Curso y modalidades</div>
+                <div><x-icon name="file-text" size="12" /> 4. Alumnos y documentos</div>
+            </div>
         </div>
     </aside>
     <main class="main">
         @if(session('success') || session('error') || session('info') || ($errors->any() && !request()->routeIs('holidays.index', 'admin.professors.index', 'cycles.index', 'cycles.show')))
         <div class="flash-stack" aria-live="polite" aria-atomic="false">
             @if(session('success'))
-                <div class="flash flash-success" data-auto-dismiss role="status"><span class="flash-mark" aria-hidden="true"><x-icon name="check" size="12" /></span><div class="flash-content"><strong>Listo</strong>{{ session('success') }}</div><button class="flash-close" type="button" data-alert-close aria-label="Cerrar mensaje">×</button></div>
+                <div class="flash flash-success" data-auto-dismiss role="status"><span class="flash-mark" aria-hidden="true"><x-icon name="check" size="12" /></span><div class="flash-content"><strong>Listo</strong>{{ session('success') }}</div><button class="flash-close" type="button" data-alert-close aria-label="Cerrar mensaje"><x-icon name="x" size="13" /></button></div>
             @endif
             @if(session('error'))
                 <div class="flash flash-error" role="alert"><span class="flash-mark" aria-hidden="true"><x-icon name="circle-alert" size="12" /></span><div class="flash-content"><strong>No se pudo completar</strong>{{ session('error') }}</div><button class="flash-close" type="button" data-alert-close aria-label="Cerrar mensaje">×</button></div>
@@ -400,7 +406,7 @@
                 <div class="flash flash-info" data-auto-dismiss role="status"><span class="flash-mark" aria-hidden="true"><x-icon name="info" size="12" /></span><div class="flash-content">{{ session('info') }}</div><button class="flash-close" type="button" data-alert-close aria-label="Cerrar mensaje">×</button></div>
             @endif
             @if($errors->any() && !request()->routeIs('holidays.index', 'cycles.index', 'cycles.show'))
-                <div class="flash flash-error" role="alert"><span class="flash-mark" aria-hidden="true">!</span><div class="flash-content"><strong>Revisa los datos ingresados</strong><ul style="margin:5px 0 0;padding-left:17px">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div><button class="flash-close" type="button" data-alert-close aria-label="Cerrar mensaje">×</button></div>
+                <div class="flash flash-error" role="alert"><span class="flash-mark" aria-hidden="true"><x-icon name="circle-alert" size="12" /></span><div class="flash-content"><strong>Revisa los datos ingresados</strong><ul style="margin:5px 0 0;padding-left:17px">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div><button class="flash-close" type="button" data-alert-close aria-label="Cerrar mensaje">×</button></div>
             @endif
         </div>
         @endif
@@ -409,8 +415,8 @@
 </div>
 
 <dialog class="ui-dialog confirm-dialog" id="app-confirm-dialog" aria-labelledby="app-confirm-title" data-backdrop-close>
-    <div class="dialog-head"><div><h2 id="app-confirm-title">Confirmar acción</h2><p id="app-confirm-message">¿Deseas continuar?</p></div><button class="dialog-close" type="button" data-modal-close aria-label="Cerrar">×</button></div>
-    <div class="dialog-footer"><button class="btn btn-secondary" type="button" data-modal-close>Cancelar</button><button class="btn" type="button" id="app-confirm-submit">Continuar</button></div>
+    <div class="dialog-head"><div><h2 id="app-confirm-title">Confirmar acción</h2><p id="app-confirm-message">¿Deseas continuar?</p></div><button class="dialog-close" type="button" data-modal-close aria-label="Cerrar"><x-icon name="x" size="15" /></button></div>
+    <div class="dialog-footer"><button class="btn btn-secondary" type="button" data-modal-close>Cancelar</button><button class="btn" type="button" id="app-confirm-submit"><x-icon name="check" /> Continuar</button></div>
 </dialog>
 
 <script>
@@ -498,7 +504,10 @@
     });
 
     document.querySelectorAll('dialog[data-auto-open]').forEach(dialog => {
-        if (typeof dialog.showModal === 'function') dialog.showModal();
+        if (typeof dialog.showModal === 'function') {
+            dialog.showModal();
+            window.requestAnimationFrame(() => dialog.querySelector('input:not([type="hidden"]),select,textarea')?.focus());
+        }
     });
 })();
 </script>
