@@ -103,7 +103,7 @@ class EvaluationController extends Controller
             );
         }
 
-        return redirect()->route('evaluations.index', $modality)
+        return redirect()->route('evaluations.index', ['modality' => $modality, 'page' => max(1, (int) $request->input('page', 1))])
             ->with('success', 'Calificaciones guardadas. Se conservaron por separado de la nota general importada del campus.');
     }
 
