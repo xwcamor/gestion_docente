@@ -4,31 +4,53 @@
 
 @section('content')
 <div class="guest-card">
-    <div class="brand-mark">GD</div>
-    <p class="muted" style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;font-weight:800;margin:20px 0 8px">Plataforma académica</p>
-    <h1 style="font-size:27px;margin:0 0 8px;color:#17365d">Bienvenido</h1>
-    <p class="muted" style="margin:0 0 22px">Ingresa con la cuenta individual que te asignaron para gestionar tus ciclos, cursos y documentos.</p>
+    <p class="guest-eyebrow">Bienvenido de nuevo</p>
+    <h2>Inicia sesión</h2>
+    <p class="guest-description">Ingresa con tu cuenta docente para continuar con tu espacio académico.</p>
 
     @if($errors->any())
-        <div class="alert alert-error">
+        <div class="alert alert-error" role="alert">
             @foreach($errors->all() as $error)<div>{{ $error }}</div>@endforeach
         </div>
     @endif
-    @if(session('status'))<div class="alert alert-success">{{ session('status') }}</div>@endif
+    @if(session('status'))<div class="alert alert-success" role="status">{{ session('status') }}</div>@endif
 
     <form method="POST" action="{{ route('login.store') }}">
         @csrf
-        <label for="email">Correo electrónico</label>
-        <input class="field" id="email" type="email" name="email" value="{{ old('email') }}" autocomplete="username" required autofocus placeholder="profesor@institucion.edu.pe">
-        @error('email')<div class="error-text">{{ $message }}</div>@enderror
-
-        <label for="password">Contraseña</label>
-        <input class="field" id="password" type="password" name="password" autocomplete="current-password" required placeholder="Tu contraseña">
-        @error('password')<div class="error-text">{{ $message }}</div>@enderror
-
-        <label class="checkline" style="margin-top:14px"><input type="checkbox" name="remember" value="1"> Mantener mi sesión iniciada</label>
-        <button class="btn btn-block" type="submit">Ingresar al sistema</button>
+        <div class="field-group">
+            <label class="field-label" for="email">Correo electrónico</label>
+            <div class="field-wrap">
+                <span class="field-icon" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/></svg></span>
+                <input class="field" id="email" type="email" name="email" value="{{ old('email') }}" autocomplete="username" required autofocus placeholder="tu@institucion.edu.pe">
+            </div>
+            @error('email')<div class="error-text">{{ $message }}</div>@enderror
+        </div>
+        <div class="field-group">
+            <label class="field-label" for="password">Contraseña</label>
+            <div class="field-wrap">
+                <span class="field-icon" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 1 1 8 0v3"/></svg></span>
+                <input class="field" id="password" type="password" name="password" autocomplete="current-password" required placeholder="Ingresa tu contraseña">
+                <button class="field-toggle" type="button" id="toggle-password" aria-label="Mostrar contraseña" aria-pressed="false">Mostrar</button>
+            </div>
+            @error('password')<div class="error-text">{{ $message }}</div>@enderror
+        </div>
+        <label class="remember-row"><input type="checkbox" name="remember" value="1"> Mantener mi sesión iniciada</label>
+        <button class="btn" type="submit">Ingresar a mi espacio <span aria-hidden="true">→</span></button>
     </form>
-    <p class="muted small" style="text-align:center;margin:22px 0 0">Acceso personal · Gestión Docente</p>
+    <div class="guest-security"><span aria-hidden="true">⌑</span> Tu cuenta es personal y tu acceso es privado</div>
 </div>
+<script>
+(() => {
+    const button=document.getElementById('toggle-password');
+    const input=document.getElementById('password');
+    if(!button||!input)return;
+    button.addEventListener('click',()=>{
+        const visible=input.type==='password';
+        input.type=visible?'text':'password';
+        button.textContent=visible?'Ocultar':'Mostrar';
+        button.setAttribute('aria-label',visible?'Ocultar contraseña':'Mostrar contraseña');
+        button.setAttribute('aria-pressed',String(visible));
+    });
+})();
+</script>
 @endsection
