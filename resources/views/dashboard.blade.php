@@ -6,14 +6,14 @@
     <div class="actions"><a class="btn btn-secondary" href="{{ route('cycles.index') }}">Ver mis ciclos</a><a class="btn" href="{{ route('cycles.create') }}">＋ Crear ciclo</a></div>
 </div>
 
-<div class="grid grid-4" style="margin-bottom:19px">
+<div class="grid grid-4 dashboard-stats" style="margin-bottom:19px">
     <div class="stat-card"><div class="stat-label">Ciclos académicos</div><div class="stat">{{ $cycles->count() }}</div></div>
     <div class="stat-card"><div class="stat-label">Grupos registrados</div><div class="stat">{{ $groupCount }}</div></div>
     <div class="stat-card"><div class="stat-label">Modalidades</div><div class="stat">{{ $modalities->count() }}</div></div>
     <div class="stat-card"><div class="stat-label">Feriados próximos</div><div class="stat">{{ $upcoming->count() }}</div></div>
 </div>
 
-<section class="card">
+<section class="card dashboard-guide">
     <div class="card-head"><div><h2>Cómo trabajar en el sistema</h2><p class="card-description">Sigue este orden. Cada pantalla te lleva al siguiente paso.</p></div><span class="badge badge-blue">Flujo de trabajo</span></div>
     <div class="grid grid-4">
         <a class="course-card" href="{{ route('cycles.index') }}"><span class="badge badge-blue">01</span><h3 style="margin-top:10px">Ciclos</h3><p class="help">Registra el año y periodo académico.</p></a>
@@ -52,4 +52,16 @@
         </tbody></table></div>
     @endif
 </section>
+@push('styles')
+<style>
+@media(max-width:680px){
+    .dashboard-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+    .dashboard-stats .stat-card{min-width:0}
+    .dashboard-guide{display:none}
+    .dashboard-stats+.dashboard-guide{display:none}
+    .dashboard-stats .stat-label{min-height:26px;line-height:1.25}
+    .dashboard-stats .stat{font-size:23px}
+}
+</style>
+@endpush
 @endsection
