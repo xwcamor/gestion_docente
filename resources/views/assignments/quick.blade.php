@@ -4,7 +4,7 @@
 <div class="breadcrumbs"><a href="{{ route('cycles.index') }}">Ciclos</a><span>›</span><a href="{{ route('cycles.show', $group->cycle) }}">{{ $group->cycle->academic_year }} · {{ $group->cycle->cycle_code }}</a><span>›</span><a href="{{ route('groups.show', $group) }}">{{ $group->name }}</a><span>›</span><span class="current">Carga rápida</span></div>
 <div class="page-head">
     <div><p class="eyebrow">Registro de cursos · Captura rápida</p><h1>Registrar cursos</h1><p class="subhead">Digita tus cursos en una sola tabla, como en tu Excel. No necesitas importar ningún archivo.</p></div>
-    <a class="btn btn-secondary" href="{{ route('groups.show', $group) }}">← Volver al grupo</a>
+    <a class="btn btn-secondary" href="{{ route('groups.show', $group) }}"><x-icon name="arrow-left" /> Volver al grupo</a>
 </div>
 @if($errors->any())
 <div class="alert alert-error"><strong>Revisa estos datos:</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
@@ -31,14 +31,14 @@
                         <td><input class="field mono" name="rows[{{ $i }}][tall_nrc]" value="{{ old("rows.$i.tall_nrc") }}" placeholder="NRC"></td>
                         <td><input class="field date-field" type="date" name="rows[{{ $i }}][start_date]" value="{{ old("rows.$i.start_date") }}"></td>
                         <td><input class="field date-field" type="date" name="rows[{{ $i }}][end_date]" value="{{ old("rows.$i.end_date") }}"></td>
-                        <td><button class="btn btn-ghost btn-sm remove-row" type="button" title="Quitar fila" aria-label="Quitar fila">×</button></td>
+                        <td><button class="btn btn-ghost btn-sm remove-row" type="button" title="Quitar fila" aria-label="Quitar fila"><x-icon name="x" size="13" /></button></td>
                     </tr>
                 @endfor
                 </tbody>
             </table>
         </div>
-        <div class="quick-actions"><button class="btn btn-secondary" type="button" id="add-row">＋ Agregar fila</button><span class="help">Puedes registrar varios cursos antes de guardar.</span></div>
-        <div class="form-actions"><a class="btn btn-secondary" href="{{ route('groups.show', $group) }}">Cancelar</a><button class="btn" type="submit">Guardar cursos</button></div>
+        <div class="quick-actions"><button class="btn btn-secondary" type="button" id="add-row"><x-icon name="plus" /> Agregar fila</button><span class="help">Puedes registrar varios cursos antes de guardar.</span></div>
+        <div class="form-actions"><a class="btn btn-secondary" href="{{ route('groups.show', $group) }}"><x-icon name="arrow-left" /> Volver al grupo</a><button class="btn" type="submit"><x-icon name="check" /> Guardar cursos</button></div>
     </section>
 </form>
 @endsection
@@ -106,7 +106,7 @@
             const inputName='rows['+i+']['+name+']';
             if(name==='modality')return '<td><select class="field modality-select" name="'+inputName+'"><option value="">Elegir</option><option value="TEC">TEC</option><option value="TALL">TALL</option><option value="BOTH">Ambas</option></select></td>';
             return '<td><input class="field '+(type==='date'?'date-field':'mono')+'" type="'+type+'" name="'+inputName+'" placeholder="'+placeholder+'"></td>';
-        }).join('')+'<td><button class="btn btn-ghost btn-sm remove-row" type="button" aria-label="Quitar fila">×</button></td>';
+        }).join('')+'<td><button class="btn btn-ghost btn-sm remove-row" type="button" aria-label="Quitar fila"><x-icon name="x" size="13" /></button></td>';
         return tr;
     };
     add.addEventListener('click',()=>{body.appendChild(makeRow(body.querySelectorAll('tr').length));renumber();});
