@@ -5,15 +5,10 @@
 <div class="page-head"><div><p class="eyebrow">Registro de curso</p><h1>Agregar curso al grupo</h1><p class="subhead">Esta opción queda como alternativa para un curso aislado. Para cargar toda tu distribución, utiliza el Excel institucional.</p></div></div>
 <div class="alert alert-info"><strong>¿Tienes varios cursos en tu Excel?</strong> Evita llenar este formulario curso por curso. Importa la pestaña Cursos para registrar nombres, NRC y fechas en un solo proceso. </div>
 
-<div class="stepper" id="assignment-stepper">
-    <div class="step active" data-step-indicator="1"><span class="step-number">1</span><span>Datos del curso</span></div><span class="step-line"></span>
-    <div class="step" data-step-indicator="2"><span class="step-number">2</span><span>Modalidades y horario</span></div>
-</div>
-
 <form method="POST" action="{{ route('assignments.store', $group) }}" id="assignment-form">
     @csrf
     <section class="card wizard-section" id="assignment-step-1">
-        <div class="card-head"><div><h2>1. Datos generales</h2><p class="card-description">Estos datos identifican el curso dentro de tu grupo.</p></div><span class="badge badge-blue">Obligatorio</span></div>
+        <div class="card-head"><div><h2>Datos generales</h2><p class="card-description">Estos datos identifican el curso dentro de tu grupo.</p></div><span class="badge badge-blue">Obligatorio</span></div>
         <div class="form-row">
             <div><label for="course_name">Nombre del curso</label><input class="field" id="course_name" name="course_name" value="{{ old('course_name') }}" required maxlength="255" placeholder="Ej. Sistemas Operativos y Comunicación de Datos"></div>
             <div><label for="course_code">Código del curso (opcional)</label><input class="field" id="course_code" name="course_code" value="{{ old('course_code') }}" maxlength="80" placeholder="Ej. PIAD-224"><p class="help">Si no tienes código, el sistema generará uno usando el nombre.</p></div>
@@ -28,7 +23,7 @@
     </section>
 
     <section class="card wizard-section" id="assignment-step-2" hidden>
-        <div class="card-head"><div><h2>2. Modalidades y horario</h2><p class="card-description">Activa TEC, TALL o ambas. Cada modalidad tendrá su propio NRC, fechas, horario y alumnos.</p></div><span class="badge badge-blue">Selecciona al menos una</span></div>
+        <div class="card-head"><div><h2>Modalidades y horario</h2><p class="card-description">Activa TEC, TALL o ambas. Cada modalidad tendrá su propio NRC, fechas, horario y alumnos.</p></div><span class="badge badge-blue">Selecciona al menos una</span></div>
         @if(count($scheduleTemplates))
             <div class="alert alert-info"><strong>Atajo disponible:</strong> puedes copiar días, horas, ambiente y fechas desde otro curso de este grupo. El NRC no se copia porque cada modalidad debe conservar el suyo.</div>
         @else
@@ -109,16 +104,10 @@
     const scheduleTemplates = @json($scheduleTemplates);
     const stepOne = document.getElementById('assignment-step-1');
     const stepTwo = document.getElementById('assignment-step-2');
-    const indicators = [...document.querySelectorAll('[data-step-indicator]')];
 
     const showStep = number => {
         stepOne.hidden = number !== 1;
         stepTwo.hidden = number !== 2;
-        indicators.forEach(item => {
-            const n = Number(item.dataset.stepIndicator);
-            item.classList.toggle('active', n === number);
-            item.classList.toggle('done', n < number);
-        });
         if (number === 1) document.getElementById('course_name').focus();
     };
 
