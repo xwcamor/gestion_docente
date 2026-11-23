@@ -363,6 +363,31 @@
  .calendar-nav{min-width:29px;height:29px}
  .calendar-today{height:29px;padding:0 7px}
 }
+
+/* Feriados: calendario con señales de color claras */
+.holiday-view-switch{border-color:#d3e2e9;background:#edf4f7}
+.holiday-view-option{color:#56788a}
+.holiday-view-option.active{border-color:#bdd6e1;color:#28677d}
+.holiday-summary{border-color:#d7e6ec;background:linear-gradient(100deg,#eff7fa,#f5faf8)}
+.holiday-summary strong{color:#28677d}
+.holiday-summary-note{color:#5e7d8b;border-left-color:#d5e4e9}
+.calendar-nav,.calendar-today{border-color:#cbdde6;color:#3c748b}
+.calendar-nav:hover,.calendar-today:hover{border-color:#92bdcc;background:#eef7fa}
+.calendar-weekday{background:#eaf3f7;color:#4b7284;border-color:#d6e4eb}
+.calendar-grid{border-color:#d6e4eb}
+.calendar-day{border-color:#dce8ed}
+.calendar-day.has-holiday{background:#fffbf3}
+.calendar-day-number{color:#3c6173}
+.calendar-day-number.today{background:#28677d;color:#fff}
+.calendar-event{background:#fff0d9;color:#8e6024}
+.calendar-event.event-info{background:#eaf4f8;color:#3d7187}
+.calendar-event-dot{background:#d0923e}
+.event-info .calendar-event-dot{background:#4e91aa}
+.calendar-detail-meta span{border-color:#dce8ed;background:#f3f8fa;color:#4a7181}
+.holiday-date{border-color:#d6e5eb;background:#eff6f8}
+.holiday-date strong{color:#28677d}
+.holiday-title-line h3{color:#315a6d}
+
 </style>
 @endpush
 
