@@ -71,7 +71,7 @@
                 </div>
                 @if($profile)
                     <div class="account-actions">
-                        <button class="inline-edit" type="button" data-edit-account
+                        <button class="inline-edit" type="button" data-modal-open="account-edit-dialog" data-edit-account
                             data-user-id="{{ $user->id }}"
                             data-update-url="{{ route('admin.professors.update', $user) }}"
                             data-full-name="{{ $profile->full_name }}"
@@ -276,7 +276,7 @@
         const button = event.target.closest('[data-edit-account]');
         if (!button) return;
         populate(button);
-        dialog.showModal();
+        if (!dialog.open) dialog.showModal();
         fields.full_name.focus();
     });
     @if(request('dialog') === 'edit-account')
