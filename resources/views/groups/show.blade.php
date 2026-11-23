@@ -4,7 +4,7 @@
 <div class="breadcrumbs"><a href="{{ route('cycles.index') }}">Ciclos</a><span>›</span><a href="{{ route('cycles.show', $group->cycle) }}">{{ $group->cycle->academic_year }} · Ciclo {{ $group->cycle->cycle_code }}</a><span>›</span><span class="current">{{ $group->name }}</span></div>
 <div class="page-head">
     <div><p class="eyebrow">Paso 3 de 4 · Cursos</p><h1>{{ $group->name }}</h1><p class="subhead">{{ $group->cycle->academic_year }} · Ciclo {{ $group->cycle->cycle_code }} · {{ $group->assigned_at?->format('d/m/Y') ?? 'Fecha de asignación no indicada' }}</p></div>
-    <div class="actions"><a class="btn btn-secondary" href="{{ route('cycles.show', $group->cycle) }}">← Volver al ciclo</a><a class="btn" href="{{ route('assignments.create', $group) }}">＋ Agregar curso</a></div>
+    <div class="actions"><a class="btn btn-secondary" href="{{ route('cycles.show', $group->cycle) }}">← Volver al ciclo</a><a class="btn" href="{{ route('assignments.quick', $group) }}">＋ Carga rápida de cursos</a></div>
 </div>
 
 <div class="grid grid-3" style="margin-bottom:17px">
@@ -43,7 +43,7 @@
         </div>
         <div class="empty" id="course-empty" hidden><strong>No hay cursos que coincidan.</strong><span>Prueba con otro nombre o filtro.</span></div>
     @else
-        <div class="empty"><strong>Aún no has agregado cursos a este grupo.</strong><span>Registra el primer curso y selecciona si tendrá TEC, TALL o ambas.</span><div class="mt-16"><a class="btn" href="{{ route('assignments.create', $group) }}">Agregar primer curso</a></div></div>
+        <div class="empty"><strong>Aún no has agregado cursos a este grupo.</strong><span>Registra el primer curso y selecciona si tendrá TEC, TALL o ambas.</span><div class="mt-16"><a class="btn" href="{{ route('assignments.quick', $group) }}">Registrar primeros cursos</a></div></div>
     @endif
 </section>
 @endsection
