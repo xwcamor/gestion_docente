@@ -6,6 +6,7 @@ use App\Models\Cycle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Validator;
 
 class CycleController extends Controller
 {
@@ -85,7 +86,8 @@ class CycleController extends Controller
         $professorId = auth()->user()->professor->id;
         $request->merge(['cycle_code' => trim((string) $request->input('cycle_code'))]);
 
-        $data = $request->validate(
+        $validator = Validator::make(
+            $request->all(),
             [
                 'academic_year' => ['required', 'integer', 'min:2020', 'max:2100'],
                 'cycle_code' => [
@@ -107,7 +109,14 @@ class CycleController extends Controller
             ]
         );
 
-        $cycle->update($data);
+        if ($validator->fails()) {
+            return redirect()
+                ->route('cycles.show', ['cycle' => $cycle, 'dialog' => 'edit-cycle'])
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $cycle->update($validator->validated());
 
         return redirect()->route('cycles.show', $cycle)->with('success', 'Datos del ciclo actualizados.');
     }
