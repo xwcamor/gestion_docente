@@ -187,6 +187,25 @@
  .accounts-counter{text-align:right}
  .account-item{padding:12px}
 }
+
+/* Cuentas: métricas y perfiles con acentos propios */
+.account-metric{border-color:#d8e6ec;background:#f4f9fb}
+.account-metric:nth-child(1){border-top:3px solid #4d84ad;background:#f2f7fc}
+.account-metric:nth-child(2){border-top:3px solid #3f9a88;background:#f1faf7}
+.account-metric:nth-child(3){border-top:3px solid #9278ba;background:#f8f5fc}
+.account-metric span{color:#607c8a}
+.account-metric strong{color:#2f7088}
+.accounts-search{border-color:#ccdde5;color:#4d8396}
+.accounts-search:focus-within{border-color:#4b91a9;box-shadow:0 0 0 3px rgba(53,131,158,.12)}
+.account-item{border-color:#dce8ed;background:linear-gradient(160deg,#fff 0%,#fbfdfe 100%)}
+.account-item:hover{border-color:#9dc3d1;background:#f8fcfd}
+.account-avatar{border-color:#cfe1eb;background:linear-gradient(140deg,#e7f2f8,#edf7f6);color:#28677d}
+.account-identity h3{color:#294e61}
+.account-identity a{color:#39788f}
+.account-details{border-top-color:#e5eef2}
+.account-details span{color:#708b98}
+.account-details strong{color:#3f6271}
+
 </style>
 @endpush
 
