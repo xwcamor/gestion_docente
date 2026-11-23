@@ -3,7 +3,7 @@
 @section('content')
 <div class="breadcrumbs"><a href="{{ route('cycles.index') }}">Ciclos</a><span>›</span><a href="{{ route('cycles.show', $group->cycle) }}">{{ $group->cycle->academic_year }} · {{ $group->cycle->cycle_code }}</a><span>›</span><a href="{{ route('groups.show', $group) }}">{{ $group->name }}</a><span>›</span><span class="current">Nuevo curso</span></div>
 <div class="page-head"><div><p class="eyebrow">Registro de curso</p><h1>Agregar curso al grupo</h1><p class="subhead">Esta opción queda como alternativa para un curso aislado. Para cargar toda tu distribución, utiliza el Excel institucional.</p></div></div>
-<div class="alert alert-info"><strong>¿Tienes varios cursos en tu Excel?</strong> Evita llenar este formulario curso por curso. Importa la pestaña Cursos para registrar nombres, NRC y fechas en un solo proceso. <a href="{{ route('distribution.create') }}" style="font-weight:750">Importar Excel institucional →</a></div>
+<div class="alert alert-info"><strong>¿Tienes varios cursos en tu Excel?</strong> Evita llenar este formulario curso por curso. Importa la pestaña Cursos para registrar nombres, NRC y fechas en un solo proceso. </div>
 
 <div class="stepper" id="assignment-stepper">
     <div class="step active" data-step-indicator="1"><span class="step-number">1</span><span>Datos del curso</span></div><span class="step-line"></span>
@@ -24,7 +24,7 @@
             <div><label for="assigned_at">Fecha de asignación</label><input class="field" id="assigned_at" type="date" name="assigned_at" value="{{ old('assigned_at') }}"></div>
         </div>
         <label for="notes">Notas internas (opcional)</label><textarea class="field" id="notes" name="notes" rows="2" placeholder="Observaciones sobre la asignación…">{{ old('notes') }}</textarea>
-        <div class="form-actions"><a class="btn btn-secondary" href="{{ route('groups.show', $group) }}">← Volver al grupo</a><button class="btn" type="button" id="next-step">Continuar: modalidades →</button></div>
+        <div class="form-actions"><a class="btn btn-secondary" href="{{ route('groups.show', $group) }}"><x-icon name="arrow-left" /> Volver al grupo</a><button class="btn" type="button" id="next-step"><x-icon name="arrow-right" /> Continuar: modalidades</button></div>
     </section>
 
     <section class="card wizard-section" id="assignment-step-2" hidden>
@@ -80,8 +80,8 @@
             @endforeach
         </div>
         <div class="form-actions">
-            <button class="btn btn-secondary" type="button" id="back-step">← Volver a datos del curso</button>
-            <div class="actions"><a class="btn btn-ghost" href="{{ route('groups.show', $group) }}">Cancelar</a><button class="btn" type="submit">Guardar curso y modalidades</button></div>
+            <button class="btn btn-secondary" type="button" id="back-step"><x-icon name="arrow-left" /> Volver a datos del curso</button>
+            <div class="actions"><a class="btn btn-ghost" href="{{ route('groups.show', $group) }}"><x-icon name="arrow-left" /> Cancelar</a><button class="btn" type="submit"><x-icon name="check" /> Guardar curso y modalidades</button></div>
         </div>
     </section>
 </form>
