@@ -5,11 +5,11 @@
 <div class="breadcrumbs"><a href="{{ route('cycles.index') }}">Ciclos</a><span>›</span><a href="{{ route('cycles.show', $assignment->group->cycle) }}">{{ $assignment->group->cycle->academic_year }} · {{ $assignment->group->cycle->cycle_code }}</a><span>›</span><a href="{{ route('groups.show', $assignment->group) }}">{{ $assignment->group->name }}</a><span>›</span><span class="current">{{ $modality->modality }}</span></div>
 <div class="page-head">
     <div><p class="eyebrow">Paso 4 de 4 · Gestión de modalidad</p><h1>{{ $assignment->course->name }}</h1><p class="subhead">{{ $modality->modality }} · NRC {{ $modality->nrc ?: 'Pendiente' }} · Bloque {{ $modality->block_code ?: 'Pendiente' }} @if($modality->block_reference) · Ref. {{ $modality->block_reference }} @endif · {{ $assignment->group->name }} · {{ $assignment->group->cycle->academic_year }}</p></div>
-    <a class="btn btn-secondary" href="{{ route('groups.show', $assignment->group) }}">← Volver al grupo</a>
+    <a class="btn btn-secondary" href="{{ route('groups.show', $assignment->group) }}"><x-icon name="arrow-left" /> Volver al grupo</a>
 </div>
 <div class="quick-nav">
-    <a href="#calendar">Calendario</a><a href="#students">Alumnos</a><a href="#documents">Documentos Excel</a><a href="#sessions">Sesiones</a>
-    <a href="{{ route('evaluations.index', $modality) }}">Evaluaciones y notas →</a>
+    <a href="#calendar"><x-icon name="calendar-days" /> Calendario</a><a href="#students"><x-icon name="users" /> Alumnos</a><a href="#documents"><x-icon name="file-text" /> Documentos Excel</a><a href="#sessions"><x-icon name="clipboard-check" /> Sesiones</a>
+    <a href="{{ route('evaluations.index', $modality) }}"><x-icon name="arrow-right" /> Evaluaciones y notas</a>
 </div>
 <div class="grid grid-3" style="margin-bottom:17px">
     <div class="stat-card"><div class="stat-label">Alumnos matriculados</div><div class="stat">{{ $modality->enrollments->count() }}</div></div>
@@ -48,17 +48,17 @@
 <div class="calendar-preview-head"><div><strong>Vista previa automática</strong><p class="help">Solo cuenta tus días de clase y excluye feriados.</p></div><span class="badge badge-blue" id="preview-count">Pendiente</span></div>
 <div class="calendar-preview-stats"><div><small>Primera clase</small><strong id="preview-first">—</strong></div><div><small>Última clase efectiva</small><strong id="preview-last">—</strong></div><div><small>Feriados excluidos</small><strong id="preview-holidays">0</strong></div></div>
 <p class="help" id="preview-note">Selecciona las fechas y los días para calcular.</p>
-<button class="btn btn-secondary btn-sm" type="button" id="adjust-end-date" disabled>Usar última clase como fecha final</button>
+<button class="btn btn-secondary btn-sm" type="button" id="adjust-end-date" disabled><x-icon name="calendar-check" /> Usar última clase como fecha final</button>
 <details class="preview-details"><summary>Ver fechas calculadas</summary><div id="preview-dates" class="preview-date-list"></div></details>
 </div>
-                <div class="form-actions"><span class="help">Los documentos anteriores se marcarán para regeneración si cambian los datos.</span><button class="btn" type="submit">Guardar y recalcular calendario</button></div>
+                <div class="form-actions"><span class="help">Los documentos anteriores se marcarán para regeneración si cambian los datos.</span><button class="btn" type="submit"><x-icon name="check" /> Guardar y recalcular calendario</button></div>
             </form>
         </div>
     </details>
     @if($modality->start_date && $modality->end_date && $modality->schedules->isEmpty())
         <div class="alert alert-warning mt-16">Ya hay fechas registradas, pero falta al menos un día y horario de clase para calcular las sesiones.</div>
     @endif
-    <form method="POST" action="{{ route('modalities.rebuild', $modality) }}" class="mt-16" data-confirm="Se volverán a calcular las sesiones de esta modalidad con la configuración y los feriados actuales. ¿Deseas continuar?">@csrf<button class="btn btn-secondary btn-sm" type="submit">↻ Recalcular calendario ahora</button></form>
+    <form method="POST" action="{{ route('modalities.rebuild', $modality) }}" class="mt-16" data-confirm="Se volverán a calcular las sesiones de esta modalidad con la configuración y los feriados actuales. ¿Deseas continuar?">@csrf<button class="btn btn-secondary btn-sm" type="submit"><x-icon name="layers" /> Recalcular calendario ahora</button></form>
 </section>
 
 <section class="card" id="students">
@@ -67,19 +67,19 @@
         @csrf
         <label for="roster">Archivo de alumnos (.xls, .xlsx o .csv)</label>
         <input class="field" id="roster" type="file" name="roster" accept=".xls,.xlsx,.csv,.txt" required>
-        <div class="actions mt-16"><button class="btn" type="submit">Seleccionar archivo y revisar →</button>@if($import)<span class="help">Última importación: {{ $import->original_filename }} · {{ $import->created_count }} nuevos · {{ $import->updated_count }} actualizados · {{ $import->skipped_count }} omitidos.</span>@endif</div>
+        <div class="actions mt-16"><button class="btn" type="submit"><x-icon name="file-text" /> Seleccionar archivo y revisar</button>@if($import)<span class="help">Última importación: {{ $import->original_filename }} · {{ $import->created_count }} nuevos · {{ $import->updated_count }} actualizados · {{ $import->skipped_count }} omitidos.</span>@endif</div>
     </form>
 </section>
 
 <section class="card" id="documents">
-    <div class="card-head"><div><h2>3. Documentos Excel</h2><p class="card-description">Genera los formatos oficiales usando los datos de esta modalidad.</p></div><a class="btn btn-secondary btn-sm" href="{{ route('evaluations.index', $modality) }}">Evaluaciones y notas →</a></div>
+    <div class="card-head"><div><h2>3. Documentos Excel</h2><p class="card-description">Genera los formatos oficiales usando los datos de esta modalidad.</p></div><a class="btn btn-secondary btn-sm" href="{{ route('evaluations.index', $modality) }}"><x-icon name="arrow-right" /> Evaluaciones y notas</a></div>
     <div class="grid grid-2">
         @foreach(['plan'=>'Plan de sesión','registro'=>'Registro de formación','evaluacion'=>'Formato de evaluación','charla'=>'Charla de 5 minutos'] as $type=>$label)
             <form class="course-card" method="POST" action="{{ route('documents.generate', [$modality, $type]) }}">
                 @csrf
                 <strong style="display:block;margin-bottom:8px">{{ $label }}</strong>
                 <span class="help" style="display:block;margin-bottom:12px">Crear archivo Excel con los datos actuales.</span>
-                <button class="btn btn-secondary btn-sm" type="submit">Generar Excel</button>
+                <button class="btn btn-secondary btn-sm" type="submit"><x-icon name="file-text" /> Generar Excel</button>
             </form>
         @endforeach
     </div>
@@ -87,7 +87,7 @@
         <h3 style="margin-top:20px">Archivos generados</h3>
         <div class="table-wrap"><table><thead><tr><th>Documento</th><th>Versión</th><th>Estado</th><th>Fecha</th><th></th></tr></thead><tbody>
             @foreach($modality->documents as $document)
-                <tr><td>{{ $document->filename }}</td><td>{{ $document->version }}</td><td>@if(($document->metadata['stale'] ?? false))<span class="badge badge-orange">Regenerar</span>@else<span class="badge badge-green">Vigente</span>@endif</td><td>{{ $document->created_at?->format('d/m/Y H:i') }}</td><td><a href="{{ route('documents.download', $document) }}">Descargar</a></td></tr>
+                <tr><td>{{ $document->filename }}</td><td>{{ $document->version }}</td><td>@if(($document->metadata['stale'] ?? false))<span class="badge badge-orange">Regenerar</span>@else<span class="badge badge-green">Vigente</span>@endif</td><td>{{ $document->created_at?->format('d/m/Y H:i') }}</td><td><a href="{{ route('documents.download', $document) }}"><x-icon name="arrow-right" /> Descargar</a></td></tr>
             @endforeach
         </tbody></table></div>
     @endif
@@ -96,7 +96,7 @@
 <section class="card" id="sessions">
     <div class="card-head"><div><h2>4. Sesiones del curso</h2><p class="card-description">El calendario se calcula con las fechas, días de clase y feriados. Abre una sesión solo cuando necesites editar su contenido.</p></div><span class="badge">{{ $modality->sessions->count() }} sesiones</span></div>
     @if($modality->sessions->isEmpty())
-        <div class="empty"><strong>Aún no se han calculado sesiones.</strong><span>Configura el periodo y el horario en la sección Calendario.</span><div class="mt-16"><a class="btn btn-secondary btn-sm" href="#calendar">Ir a calendario</a></div></div>
+        <div class="empty"><strong>Aún no se han calculado sesiones.</strong><span>Configura el periodo y el horario en la sección Calendario.</span><div class="mt-16"><a class="btn btn-secondary btn-sm" href="#calendar"><x-icon name="calendar-days" /> Ir a calendario</a></div></div>
     @else
         <div class="filter-bar"><input class="filter-input" id="session-search" type="search" placeholder="Buscar por fecha, semana o tema…" aria-label="Buscar sesiones"><span class="help">{{ $modality->sessions->where('status', 'scheduled')->count() }} sesiones programadas</span></div>
         <div id="session-list">
@@ -113,7 +113,7 @@
                                 <label for="objective-{{ $session->id }}">Objetivo</label><input class="field" id="objective-{{ $session->id }}" name="objective" value="{{ $session->objective }}">
                                 <label for="activities-{{ $session->id }}">Actividades, ejercicios y materiales</label><textarea class="field" id="activities-{{ $session->id }}" name="activities" rows="3">{{ $session->activities }}</textarea>
                                 <label for="evidence-{{ $session->id }}">Evidencias</label><input class="field" id="evidence-{{ $session->id }}" name="evidence" value="{{ $session->evidence }}">
-                                <div class="form-actions"><span class="help">Se guarda solo el contenido de esta sesión.</span><button class="btn btn-secondary btn-sm" type="submit">Guardar sesión</button></div>
+                                <div class="form-actions"><span class="help">Se guarda solo el contenido de esta sesión.</span><button class="btn btn-secondary btn-sm" type="submit"><x-icon name="check" /> Guardar sesión</button></div>
                             </form>
                         @endif
                     </div>
