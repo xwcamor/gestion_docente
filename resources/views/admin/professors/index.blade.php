@@ -13,7 +13,7 @@
         <p class="subhead">Administra los accesos y perfiles docentes desde un solo lugar.</p>
     </div>
     <div class="actions">
-        <button class="btn" type="button" data-modal-open="account-create-dialog">＋ Nueva cuenta</button>
+        <button class="btn" type="button" data-modal-open="account-create-dialog"><x-icon name="plus" /> Nueva cuenta</button>
     </div>
 </div>
 
@@ -83,7 +83,7 @@
             <div class="empty accounts-empty">
                 <strong>No hay cuentas registradas.</strong>
                 <span>Crea la primera cuenta docente para comenzar.</span>
-                <div class="mt-16"><button class="btn btn-secondary btn-sm" type="button" data-modal-open="account-create-dialog">Crear cuenta</button></div>
+                <div class="mt-16"><button class="btn btn-secondary btn-sm" type="button" data-modal-open="account-create-dialog"><x-icon name="users" /> Crear cuenta</button></div>
             </div>
         @endforelse
     </div>
@@ -99,7 +99,7 @@
             <h2 id="account-create-title">Crear cuenta docente</h2>
             <p>Los datos de acceso se utilizarán para ingresar al sistema.</p>
         </div>
-        <button class="dialog-close" type="button" data-modal-close aria-label="Cerrar">×</button>
+        <button class="dialog-close" type="button" data-modal-close aria-label="Cerrar"><x-icon name="x" /></button>
     </div>
     <form method="POST" action="{{ route('admin.professors.store') }}">
         @csrf
@@ -145,7 +145,7 @@
         </div>
         <div class="dialog-footer">
             <button class="btn btn-secondary" type="button" data-modal-close>Cancelar</button>
-            <button class="btn" type="submit">Crear cuenta</button>
+            <button class="btn" type="submit"><x-icon name="users" /> Crear cuenta</button>
         </div>
     </form>
 </dialog>
