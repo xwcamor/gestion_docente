@@ -1,49 +1,204 @@
 @extends('layouts.app')
 @section('title', 'Feriados y cierres')
 @section('content')
+@php
+    $scopeLabels = [
+        'NATIONAL' => 'Nacional',
+        'REGIONAL' => 'Regional',
+        'INSTITUTIONAL' => 'Institucional',
+        'SECTOR' => 'Sector',
+    ];
+@endphp
+
 <div class="page-head">
-    <div><p class="eyebrow">Configuración del calendario</p><h1>Feriados y cierres</h1><p class="subhead">Administra fechas que deben bloquear sesiones. Los cierres personales no modifican los calendarios de otros profesores.</p></div>
+    <div>
+        <p class="eyebrow">Calendario académico</p>
+        <h1>Feriados y cierres</h1>
+        <p class="subhead">Registra fechas en las que no habrá clases. Las modalidades que coincidan con esas fechas se actualizarán automáticamente.</p>
+    </div>
+    <div class="actions">
+        <button class="btn" type="button" data-modal-open="holiday-create-dialog">＋ Registrar fecha</button>
+    </div>
 </div>
 
-<section class="card">
-    <details class="panel">
-        <summary>＋ Registrar un feriado o cierre</summary>
-        <div class="panel-body">
-            <p class="card-description">Completa los datos de la excepción. Si bloquea clases, el sistema recalculará las modalidades afectadas.</p>
-            <form method="POST" action="{{ route('holidays.store') }}">
-                @csrf
-                <div class="form-row-3">
-                    <div><label for="holiday_date">Fecha</label><input class="field" id="holiday_date" type="date" name="holiday_date" value="{{ old('holiday_date') }}" required></div>
-                    <div><label for="name">Nombre del feriado o cierre</label><input class="field" id="name" name="name" value="{{ old('name') }}" required placeholder="Ej. Cierre institucional"></div>
-                    <div><label for="scope">Ámbito</label><select class="field" id="scope" name="scope" required><option value="NATIONAL">Nacional</option><option value="REGIONAL">Regional</option><option value="INSTITUTIONAL">Institucional</option><option value="SECTOR">Sector</option></select></div>
-                </div>
-                <div class="form-row">
-                    <div><label for="blocks_classes">¿Debe bloquear clases?</label><select class="field" id="blocks_classes" name="blocks_classes"><option value="1">Sí, no se dictan clases</option><option value="0">No, solo informativo</option></select></div>
-                    <div><label for="source_url">Fuente o norma (opcional)</label><input class="field" id="source_url" type="url" name="source_url" value="{{ old('source_url') }}" placeholder="https://…"></div>
-                </div>
-                <label for="source_note">Nota o referencia (opcional)</label><textarea class="field" id="source_note" name="source_note" rows="2" placeholder="Indica la norma o el motivo del cierre…">{{ old('source_note') }}</textarea>
-                <div class="form-actions"><span class="help">Las fechas personales quedan asociadas a tu cuenta.</span><button class="btn" type="submit">Guardar excepción</button></div>
-            </form>
-        </div>
-    </details>
+<section class="holiday-summary">
+    <div>
+        <span class="holiday-summary-label">Fechas encontradas</span>
+        <strong>{{ $holidays->total() }}</strong>
+    </div>
+    <div class="holiday-summary-note">Las excepciones registradas desde tu cuenta se aplican a tus calendarios. No modifican los calendarios de otros docentes.</div>
 </section>
 
-<section class="card">
-    <div class="card-head"><div><h2>Calendario registrado</h2><p class="card-description">Puedes combinar los filtros para localizar una fecha.</p></div><span class="badge">{{ $holidays->total() }} registros</span></div>
-    <form method="GET" action="{{ route('holidays.index') }}" class="filter-bar">
-        <input class="filter-input" type="search" name="q" value="{{ request('q') }}" placeholder="Buscar por nombre o nota…" aria-label="Buscar feriados">
-        <select class="filter-input" name="year"><option value="">Todos los años</option>@foreach($years as $year)<option value="{{ $year }}" @selected((string)request('year') === (string)$year)>{{ $year }}</option>@endforeach</select>
-        <select class="filter-input" name="scope"><option value="">Todos los ámbitos</option><option value="NATIONAL" @selected(request('scope')==='NATIONAL')>Nacional</option><option value="REGIONAL" @selected(request('scope')==='REGIONAL')>Regional</option><option value="INSTITUTIONAL" @selected(request('scope')==='INSTITUTIONAL')>Institucional</option><option value="SECTOR" @selected(request('scope')==='SECTOR')>Sector</option></select>
-        <button class="btn btn-secondary btn-sm" type="submit">Filtrar</button>
-        @if(request()->hasAny(['q','year','scope']))<a class="btn btn-ghost btn-sm" href="{{ route('holidays.index') }}">Limpiar</a>@endif
+<section class="card holiday-card">
+    <div class="card-head">
+        <div>
+            <h2>Fechas registradas</h2>
+            <p class="card-description">Filtra por año, ámbito o nombre para encontrar una fecha.</p>
+        </div>
+    </div>
+
+    <form method="GET" action="{{ route('holidays.index') }}" class="filter-bar holiday-filters">
+        <input class="filter-input" type="search" name="q" value="{{ request('q') }}" placeholder="Buscar por nombre…" aria-label="Buscar por nombre">
+        <select class="filter-input" name="year" aria-label="Filtrar por año">
+            <option value="">Todos los años</option>
+            @foreach($years as $year)
+                <option value="{{ $year }}" @selected((string)request('year') === (string)$year)>{{ $year }}</option>
+            @endforeach
+        </select>
+        <select class="filter-input" name="scope" aria-label="Filtrar por ámbito">
+            <option value="">Todos los ámbitos</option>
+            @foreach($scopeLabels as $value => $label)
+                <option value="{{ $value }}" @selected(request('scope') === $value)>{{ $label }}</option>
+            @endforeach
+        </select>
+        <button class="btn btn-secondary btn-sm" type="submit">Aplicar</button>
+        @if(request()->hasAny(['q','year','scope']))
+            <a class="btn btn-ghost btn-sm" href="{{ route('holidays.index') }}">Limpiar</a>
+        @endif
     </form>
-    <div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Motivo</th><th>Ámbito</th><th>Bloquea clases</th><th>Verificación</th><th>Fuente</th></tr></thead><tbody>
+
+    <div class="holiday-list">
         @forelse($holidays as $holiday)
-            <tr><td><strong>{{ $holiday->holiday_date->format('d/m/Y') }}</strong></td><td>{{ $holiday->name }}</td><td>{{ $holiday->scope }}</td><td>@if($holiday->blocks_classes)<span class="badge badge-orange">Sí, bloquea</span>@else<span class="badge">No</span>@endif</td><td>@if($holiday->verified)<span class="badge badge-green">Verificado</span>@else<span class="badge badge-orange">Pendiente</span>@endif</td><td>@if($holiday->source_url)<a href="{{ $holiday->source_url }}" target="_blank" rel="noopener">Consultar fuente</a>@else—@endif</td></tr>
+            <article class="holiday-row">
+                <div class="holiday-date" aria-label="{{ $holiday->holiday_date->format('d/m/Y') }}">
+                    <span>{{ $holiday->holiday_date->translatedFormat('M') }}</span>
+                    <strong>{{ $holiday->holiday_date->format('d') }}</strong>
+                    <small>{{ $holiday->holiday_date->format('Y') }}</small>
+                </div>
+                <div class="holiday-info">
+                    <div class="holiday-title-line">
+                        <h3>{{ $holiday->name }}</h3>
+                        <span class="badge">{{ $scopeLabels[$holiday->scope] ?? $holiday->scope }}</span>
+                    </div>
+                    <p class="holiday-meta">
+                        {{ $holiday->holiday_date->translatedFormat('l, d \d\e F \d\e Y') }}
+                        <span aria-hidden="true">·</span>
+                        {{ $holiday->professor_id ? 'Registro personal' : 'Registro general' }}
+                    </p>
+                </div>
+                <div class="holiday-status">
+                    @if($holiday->blocks_classes)
+                        <span class="badge badge-orange">No hay clases</span>
+                    @else
+                        <span class="badge">Solo informativo</span>
+                    @endif
+                    @if($holiday->verified)
+                        <span class="badge badge-green">Verificado</span>
+                    @else
+                        <span class="badge">Pendiente</span>
+                    @endif
+                    @if($holiday->source_url)
+                        <a class="holiday-source" href="{{ $holiday->source_url }}" target="_blank" rel="noopener noreferrer">Ver fuente ↗</a>
+                    @endif
+                </div>
+            </article>
         @empty
-            <tr><td colspan="6"><div class="empty"><strong>No hay fechas que coincidan con los filtros.</strong><span>Prueba con otro año o registra una excepción.</span></div></td></tr>
+            <div class="empty holiday-empty">
+                <strong>{{ request()->hasAny(['q','year','scope']) ? 'No hay fechas con esos filtros.' : 'Todavía no registras feriados o cierres.' }}</strong>
+                <span>{{ request()->hasAny(['q','year','scope']) ? 'Prueba con otro nombre, año o ámbito.' : 'Registra la primera fecha para que el calendario pueda excluirla.' }}</span>
+                @if(!request()->hasAny(['q','year','scope']))
+                    <div class="mt-16"><button class="btn btn-secondary btn-sm" type="button" data-modal-open="holiday-create-dialog">Registrar fecha</button></div>
+                @endif
+            </div>
         @endforelse
-    </tbody></table></div>
-    <div class="mt-16">{{ $holidays->links() }}</div>
+    </div>
+
+    @if($holidays->hasPages())
+        <div class="holiday-pagination">{{ $holidays->links() }}</div>
+    @endif
 </section>
+
+<dialog class="ui-dialog sheet-dialog" id="holiday-create-dialog" aria-labelledby="holiday-create-title" @if($errors->any()) data-auto-open @endif>
+    <div class="dialog-head">
+        <div>
+            <h2 id="holiday-create-title">Registrar feriado o cierre</h2>
+            <p>Completa los datos de la fecha que deseas excluir del calendario.</p>
+        </div>
+        <button class="dialog-close" type="button" data-modal-close aria-label="Cerrar">×</button>
+    </div>
+    <form method="POST" action="{{ route('holidays.store') }}">
+        @csrf
+        <div class="dialog-body">
+            @if($errors->any())
+                <div class="dialog-error" role="alert">
+                    <strong>Revisa estos campos:</strong>
+                    <ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+                </div>
+            @endif
+            <div class="form-row">
+                <div>
+                    <label for="holiday_date">Fecha</label>
+                    <input class="field" id="holiday_date" type="date" name="holiday_date" value="{{ old('holiday_date') }}" required>
+                    @error('holiday_date')<p class="help" style="color:#914d45">{{ $message }}</p>@enderror
+                </div>
+                <div>
+                    <label for="scope">Ámbito</label>
+                    <select class="field" id="scope" name="scope" required>
+                        @foreach($scopeLabels as $value => $label)
+                            <option value="{{ $value }}" @selected(old('scope', 'NATIONAL') === $value)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    @error('scope')<p class="help" style="color:#914d45">{{ $message }}</p>@enderror
+                </div>
+            </div>
+            <label for="name">Nombre de la fecha</label>
+            <input class="field" id="name" name="name" value="{{ old('name') }}" maxlength="255" required placeholder="Ej. Feriado nacional o cierre institucional">
+            @error('name')<p class="help" style="color:#914d45">{{ $message }}</p>@enderror
+
+            <label for="blocks_classes">¿Se suspenden las clases?</label>
+            <select class="field" id="blocks_classes" name="blocks_classes" required>
+                <option value="1" @selected(old('blocks_classes', '1') === '1')>Sí, bloquear las sesiones</option>
+                <option value="0" @selected(old('blocks_classes') === '0')>No, solo dejar constancia</option>
+            </select>
+            <p class="help">Al bloquear clases, se recalcularán las modalidades que tengan sesión en esa fecha.</p>
+
+            <label for="source_url">Fuente o norma (opcional)</label>
+            <input class="field" id="source_url" type="url" name="source_url" value="{{ old('source_url') }}" maxlength="500" placeholder="https://…">
+            @error('source_url')<p class="help" style="color:#914d45">{{ $message }}</p>@enderror
+        </div>
+        <div class="dialog-footer">
+            <button class="btn btn-secondary" type="button" data-modal-close>Cancelar</button>
+            <button class="btn" type="submit">Guardar fecha</button>
+        </div>
+    </form>
+</dialog>
 @endsection
+
+@push('styles')
+<style>
+.holiday-summary{display:flex;align-items:center;gap:18px;margin:0 0 13px;padding:13px 16px;border:1px solid #e2e6e0;border-radius:8px;background:#fbfcfa}
+.holiday-summary>div:first-child{display:flex;align-items:baseline;gap:10px;flex:none}
+.holiday-summary-label{color:#79847b;font-size:10px}
+.holiday-summary strong{color:#40584a;font-size:20px;font-weight:680}
+.holiday-summary-note{padding-left:17px;border-left:1px solid #e0e5de;color:#7b857c;font-size:10px;line-height:1.5}
+.holiday-card{padding:17px}
+.holiday-filters .filter-input{flex:1 1 135px;min-width:120px}
+.holiday-list{display:grid;gap:0}
+.holiday-row{display:grid;grid-template-columns:58px minmax(0,1fr) minmax(130px,auto);align-items:center;gap:13px;padding:13px 2px;border-bottom:1px solid #edf0eb}
+.holiday-row:last-child{border-bottom:0}
+.holiday-date{width:52px;min-height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid #e3e8e1;border-radius:7px;background:#f8faf7}
+.holiday-date span{color:#718075;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.holiday-date strong{margin:1px 0;color:#354b3d;font-size:20px;line-height:1.1;font-weight:700}
+.holiday-date small{color:#929b92;font-size:9px}
+.holiday-info{min-width:0}
+.holiday-title-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}
+.holiday-title-line h3{margin:0;color:#354239;font-size:12px;font-weight:680;overflow-wrap:anywhere}
+.holiday-meta{margin:5px 0 0;color:#8a938b;font-size:10px;line-height:1.4;text-transform:capitalize;overflow-wrap:anywhere}
+.holiday-status{display:flex;align-items:flex-end;justify-content:center;flex-direction:column;gap:5px;min-width:0}
+.holiday-source{color:#526b59;font-size:10px;font-weight:640}
+.holiday-empty{margin:4px 0}
+.holiday-pagination{margin-top:13px;padding-top:12px;border-top:1px solid #edf0eb}
+@media(max-width:640px){
+ .holiday-summary{align-items:flex-start;flex-direction:column;gap:7px;padding:11px 12px}
+ .holiday-summary-note{padding:0;border:0}
+ .holiday-filters{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .holiday-row{grid-template-columns:48px minmax(0,1fr);gap:9px;padding:12px 0}
+ .holiday-date{width:44px;min-height:52px}
+ .holiday-date strong{font-size:18px}
+ .holiday-status{grid-column:2;align-items:flex-start;justify-content:flex-start;flex-direction:row;flex-wrap:wrap;gap:5px}
+ .holiday-title-line{gap:5px}
+ .holiday-title-line h3{flex:1 1 100%}
+ .holiday-meta{font-size:9px}
+}
+</style>
+@endpush
