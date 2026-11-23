@@ -25,6 +25,7 @@
     </div>
     <div class="actions">
         <button class="btn" type="button" data-modal-open="holiday-create-dialog"><x-icon name="plus" /> Registrar fecha</button>
+    </div>
 </div>
 
 <nav class="holiday-view-switch" aria-label="Presentación de feriados">
