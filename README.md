@@ -133,3 +133,21 @@ La migración de `curriculum_content_items` utiliza el nombre corto explícito `
 
 
 **Nota de instalación en mi Laragon:** tuve que activar la extensión ZIP desde `Menu / PHP / Extensions / zip` y reiniciar Laragon para que Composer pudiera trabajar con los archivos comprimidos.
+
+
+## Solución si Composer indica que falta bootstrap/cache
+
+El repositorio conserva las carpetas de escritura requeridas por Laravel mediante archivos `.gitignore`, ya que Git no versiona carpetas vacías. Después de actualizar el repositorio, comprueba que exista `bootstrap/cache`.
+
+Si tu copia local ya está clonada y Composer se detuvo con el error:
+
+```powershell
+New-Item -ItemType Directory -Force bootstrap\cache
+New-Item -ItemType Directory -Force storage\framework\cache\data
+New-Item -ItemType Directory -Force storage\framework\sessions
+New-Item -ItemType Directory -Force storage\framework\views
+New-Item -ItemType Directory -Force storage\logs
+composer install
+```
+
+No es un problema de PHP ZIP ni de MySQL. Composer había instalado los paquetes; falló el script Laravel `package:discover` porque faltaba el directorio de caché de arranque.
