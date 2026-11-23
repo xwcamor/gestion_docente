@@ -35,6 +35,42 @@
             text-rendering:optimizeLegibility;
         }
         *{box-sizing:border-box}
+        .icon{display:inline-block;flex:none;width:1em;height:1em;vertical-align:-.18em;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+        .icon-sprite{position:absolute;width:0;height:0;overflow:hidden;pointer-events:none}
+        .btn .icon{width:15px;height:15px}
+        .nav-link .icon{width:16px;height:16px;color:#869187}
+        .nav-link.active .icon{color:#40584a}
+        .logout{display:inline-flex;align-items:center;gap:7px}
+        .main{animation:page-enter .22s var(--ease-out) both}
+        @keyframes page-enter{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+        .btn.is-loading{pointer-events:none;opacity:.78}
+        .btn.is-loading:after{content:"";width:12px;height:12px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:btn-spin .65s linear infinite}
+        @keyframes btn-spin{to{transform:rotate(360deg)}}
+        .cycle-workflow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+        .workflow-step{display:flex;align-items:flex-start;gap:10px;min-width:0;padding:13px;border:1px solid #e7ebe5;border-radius:8px;background:#fff}
+        .workflow-icon{width:32px;height:32px;flex:none;display:grid;place-items:center;border-radius:8px;background:#f0f4ef;color:#49634f}
+        .workflow-step strong{display:block;color:#3e4a40;font-size:11px;font-weight:700}
+        .workflow-step small{display:block;margin-top:3px;color:#818b82;font-size:10px;line-height:1.45}
+        .cycle-item{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px 0;border-bottom:1px solid #edf0eb;animation:item-enter .24s var(--ease-out) both}
+        .cycle-item:last-child{border-bottom:0}
+        .cycle-item:nth-child(2){animation-delay:.025s}.cycle-item:nth-child(3){animation-delay:.05s}.cycle-item:nth-child(4){animation-delay:.075s}
+        @keyframes item-enter{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+        .cycle-item-main{display:flex;align-items:flex-start;gap:11px;min-width:0}
+        .cycle-item-icon{width:36px;height:36px;flex:none;display:grid;place-items:center;border:1px solid #e3e9e2;border-radius:9px;background:#f7f9f6;color:#526a57}
+        .cycle-item-title{margin:0;color:#344238;font-size:13px;font-weight:720;line-height:1.4}
+        .cycle-item-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:5px;color:#7d887e;font-size:10px;line-height:1.5}
+        .cycle-item-actions{display:flex;align-items:center;gap:7px;flex:none}
+        .modal-context{display:flex;align-items:flex-start;gap:9px;margin:0 0 14px;padding:10px 11px;border:1px solid #e0e8df;border-radius:7px;background:#f5f8f4;color:#546456;font-size:11px;line-height:1.5}
+        .modal-context .icon{margin-top:1px}
+        .field-error{margin:5px 0 0;color:#914d45;font-size:10px;line-height:1.45}
+        .stat-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+        .stat-icon{width:29px;height:29px;display:grid;place-items:center;border-radius:7px;background:#f1f5f0;color:#536b58}
+        .stat-icon .icon{width:15px;height:15px}
+        .cycle-back{display:inline-flex;align-items:center;gap:7px;margin-bottom:12px;color:#647267;font-size:11px;font-weight:650}
+        .cycle-back:hover{color:#344a3e;text-decoration:none}
+        @media(max-width:900px){.cycle-workflow{grid-template-columns:repeat(2,minmax(0,1fr))}}
+        @media(max-width:720px){.cycle-item{align-items:stretch;flex-direction:column;gap:10px}.cycle-item-actions{width:100%}.cycle-item-actions .btn{flex:1}.cycle-workflow{grid-template-columns:repeat(2,minmax(0,1fr))}}
+        @media(max-width:390px){.cycle-workflow{grid-template-columns:1fr}.workflow-step{padding:10px}}
         html{min-width:320px;scroll-behavior:smooth}
         body{margin:0;min-height:100vh;background:var(--canvas);color:var(--ink);font-size:13px;-webkit-font-smoothing:antialiased;overflow-wrap:break-word}
         button,input,select,textarea{font:inherit}
@@ -296,6 +332,37 @@
     @stack('styles')
 </head>
 <body>
+
+<svg class="icon-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+ <symbol id="icon-layout-dashboard" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="5" rx="1.5"/><rect x="13" y="10" width="8" height="11" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/></symbol>
+ <symbol id="icon-calendar-days" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01"/></symbol>
+ <symbol id="icon-calendar-range" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 14h3m2 0h3m-8 3h3"/></symbol>
+ <symbol id="icon-users-round" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20v-1a6 6 0 0 1 12 0v1M16 5.5a3 3 0 0 1 0 5.8M18 14a5 5 0 0 1 3 4.5V20"/></symbol>
+ <symbol id="icon-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+ <symbol id="icon-book-open" viewBox="0 0 24 24"><path d="M12 7v14M3 18V5a1 1 0 0 1 1-1h3a5 5 0 0 1 5 5 5 5 0 0 1 5-5h3a1 1 0 0 1 1 1v13h-4a5 5 0 0 0-5 3 5 5 0 0 0-5-3H3z"/></symbol>
+ <symbol id="icon-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+ <symbol id="icon-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M5 12h14"/></symbol>
+ <symbol id="icon-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14m-7-7 7 7-7 7"/></symbol>
+ <symbol id="icon-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+ <symbol id="icon-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+ <symbol id="icon-x" viewBox="0 0 24 24"><path d="m18 6-12 12M6 6l12 12"/></symbol>
+ <symbol id="icon-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></symbol>
+ <symbol id="icon-filter" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10m-7 6h4"/></symbol>
+ <symbol id="icon-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+ <symbol id="icon-layers" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5z"/><path d="m3 12 9 5 9-5M3 16l9 5 9-5"/></symbol>
+ <symbol id="icon-graduation-cap" viewBox="0 0 24 24"><path d="m2 10 10-5 10 5-10 5-10-5z"/><path d="M6 12v5c3.5 3 8.5 3 12 0v-5m4-2v6"/></symbol>
+ <symbol id="icon-file-text" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8"/></symbol>
+ <symbol id="icon-clipboard-check" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4.5h6a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1zM8 13l2.5 2.5L16 10"/></symbol>
+ <symbol id="icon-log-out" viewBox="0 0 24 24"><path d="M10 17l5-5-5-5m5 5H3"/><path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/></symbol>
+ <symbol id="icon-circle-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></symbol>
+ <symbol id="icon-circle-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5m0 3h.01"/></symbol>
+ <symbol id="icon-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-8h.01"/></symbol>
+ <symbol id="icon-circle-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 4.2 1.8c-1.2 1.1-1.7 1.5-1.7 3.2m0 3h.01"/></symbol>
+ <symbol id="icon-building-2" viewBox="0 0 24 24"><path d="M3 21V5l9-3 9 3v16M3 21h18M8 8h1m6 0h1M8 12h1m6 0h1M10 21v-4h4v4"/></symbol>
+ <symbol id="icon-arrow-up-right" viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10"/></symbol>
+ <symbol id="icon-sparkles" viewBox="0 0 24 24"><path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3zM19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15z"/></symbol>
+</svg>
+
 <header class="topbar">
     <a class="brand" href="{{ route('dashboard') }}">
         <span class="brand-mark">GD</span>
@@ -303,36 +370,36 @@
     </a>
     <div class="top-actions">
         <span class="top-user">{{ auth()->user()->name ?? '' }}</span>
-        <form method="POST" action="{{ route('logout') }}">@csrf<button class="logout" type="submit">Cerrar sesión</button></form>
+        <form method="POST" action="{{ route('logout') }}">@csrf<button class="logout" type="submit"><x-icon name="log-out" size="15" />Cerrar sesión</button></form>
     </div>
 </header>
 <div class="app-shell">
     <aside class="sidebar">
         <div>
             <div class="nav-label">Espacio de trabajo</div>
-            <a class="nav-link {{ request()->routeIs('dashboard*') ? 'active' : '' }}" href="{{ route('dashboard') }}"><span class="nav-dot"></span>Resumen</a>
-            <a class="nav-link {{ request()->routeIs('cycles.*','groups.*','assignments.*','modalities.*','evaluations.*','curricula.*','students.*','documents.*','distribution.*') ? 'active' : '' }}" href="{{ route('cycles.index') }}"><span class="nav-dot"></span>Ciclos y cursos</a>
-            <a class="nav-link {{ request()->routeIs('holidays.*') ? 'active' : '' }}" href="{{ route('holidays.index') }}"><span class="nav-dot"></span>Feriados</a>
+            <a class="nav-link {{ request()->routeIs('dashboard*') ? 'active' : '' }}" href="{{ route('dashboard') }}"><x-icon name="layout-dashboard" />Resumen</a>
+            <a class="nav-link {{ request()->routeIs('cycles.*','groups.*','assignments.*','modalities.*','evaluations.*','curricula.*','students.*','documents.*','distribution.*') ? 'active' : '' }}" href="{{ route('cycles.index') }}"><x-icon name="calendar-days" />Ciclos y cursos</a>
+            <a class="nav-link {{ request()->routeIs('holidays.*') ? 'active' : '' }}" href="{{ route('holidays.index') }}"><x-icon name="calendar-range" />Feriados</a>
             @if(auth()->user()->isAdmin())
                 <div class="nav-label" style="margin-top:15px">Administración</div>
-                <a class="nav-link {{ request()->routeIs('admin.*') ? 'active' : '' }}" href="{{ route('admin.professors.index') }}"><span class="nav-dot"></span>Profesores y cuentas</a>
+                <a class="nav-link {{ request()->routeIs('admin.*') ? 'active' : '' }}" href="{{ route('admin.professors.index') }}"><x-icon name="users-round" />Profesores y cuentas</a>
             @endif
             <div class="sidebar-note"><strong>Tu flujo de trabajo</strong>1. Ciclo académico<br>2. Grupo asignado<br>3. Curso y modalidades<br>4. Alumnos, calendario y documentos</div>
         </div>
     </aside>
     <main class="main">
-        @if(session('success') || session('error') || session('info') || ($errors->any() && !request()->routeIs('holidays.index', 'admin.professors.index')))
+        @if(session('success') || session('error') || session('info') || ($errors->any() && !request()->routeIs('holidays.index', 'admin.professors.index', 'cycles.index', 'cycles.show')))
         <div class="flash-stack" aria-live="polite" aria-atomic="false">
             @if(session('success'))
-                <div class="flash flash-success" data-auto-dismiss role="status"><span class="flash-mark" aria-hidden="true">✓</span><div class="flash-content"><strong>Listo</strong>{{ session('success') }}</div><button class="flash-close" type="button" data-alert-close aria-label="Cerrar mensaje">×</button></div>
+                <div class="flash flash-success" data-auto-dismiss role="status"><span class="flash-mark" aria-hidden="true"><x-icon name="check" size="12" /></span><div class="flash-content"><strong>Listo</strong>{{ session('success') }}</div><button class="flash-close" type="button" data-alert-close aria-label="Cerrar mensaje">×</button></div>
             @endif
             @if(session('error'))
-                <div class="flash flash-error" role="alert"><span class="flash-mark" aria-hidden="true">!</span><div class="flash-content"><strong>No se pudo completar</strong>{{ session('error') }}</div><button class="flash-close" type="button" data-alert-close aria-label="Cerrar mensaje">×</button></div>
+                <div class="flash flash-error" role="alert"><span class="flash-mark" aria-hidden="true"><x-icon name="circle-alert" size="12" /></span><div class="flash-content"><strong>No se pudo completar</strong>{{ session('error') }}</div><button class="flash-close" type="button" data-alert-close aria-label="Cerrar mensaje">×</button></div>
             @endif
             @if(session('info'))
-                <div class="flash flash-info" data-auto-dismiss role="status"><span class="flash-mark" aria-hidden="true">i</span><div class="flash-content">{{ session('info') }}</div><button class="flash-close" type="button" data-alert-close aria-label="Cerrar mensaje">×</button></div>
+                <div class="flash flash-info" data-auto-dismiss role="status"><span class="flash-mark" aria-hidden="true"><x-icon name="info" size="12" /></span><div class="flash-content">{{ session('info') }}</div><button class="flash-close" type="button" data-alert-close aria-label="Cerrar mensaje">×</button></div>
             @endif
-            @if($errors->any() && !request()->routeIs('holidays.index'))
+            @if($errors->any() && !request()->routeIs('holidays.index', 'cycles.index', 'cycles.show'))
                 <div class="flash flash-error" role="alert"><span class="flash-mark" aria-hidden="true">!</span><div class="flash-content"><strong>Revisa los datos ingresados</strong><ul style="margin:5px 0 0;padding-left:17px">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div><button class="flash-close" type="button" data-alert-close aria-label="Cerrar mensaje">×</button></div>
             @endif
         </div>
@@ -349,6 +416,7 @@
 <script>
 (() => {
     let pendingForm = null;
+    let lastModalTrigger = null;
     const confirmDialog = document.getElementById('app-confirm-dialog');
     const confirmMessage = document.getElementById('app-confirm-message');
     const confirmSubmit = document.getElementById('app-confirm-submit');
@@ -357,7 +425,11 @@
         const opener = event.target.closest('[data-modal-open]');
         if (opener) {
             const dialog = document.getElementById(opener.dataset.modalOpen);
-            if (dialog && typeof dialog.showModal === 'function') dialog.showModal();
+            if (dialog && typeof dialog.showModal === 'function') {
+                lastModalTrigger = opener;
+                dialog.showModal();
+                window.requestAnimationFrame(() => dialog.querySelector('input:not([type="hidden"]),select,textarea,button:not([data-modal-close])')?.focus());
+            }
         }
         const closer = event.target.closest('[data-modal-close]');
         if (closer) closer.closest('dialog')?.close();
@@ -394,6 +466,26 @@
     });
 
     confirmDialog?.addEventListener('close', () => { pendingForm = null; });
+    document.querySelectorAll('dialog').forEach(dialog => {
+        dialog.addEventListener('close', () => {
+            if (lastModalTrigger?.isConnected) lastModalTrigger.focus();
+        });
+    });
+
+    document.addEventListener('submit', event => {
+        const form = event.target;
+        if (!(form instanceof HTMLFormElement) || form.dataset.loadingForm !== '1') return;
+        if (form.dataset.submitting === '1') {
+            event.preventDefault();
+            return;
+        }
+        form.dataset.submitting = '1';
+        const submit = form.querySelector('button[type="submit"]:not([disabled])');
+        if (submit) {
+            submit.classList.add('is-loading');
+            submit.setAttribute('aria-busy', 'true');
+        }
+    });
 
     document.querySelectorAll('.flash[data-auto-dismiss]').forEach(message => {
         window.setTimeout(() => {
