@@ -186,7 +186,7 @@
     </div>
 
     @if($holidays->hasPages())
-        <div class="holiday-pagination">{{ $holidays->links() }}</div>
+        <div class="holiday-pagination"><x-pagination :paginator="$holidays" /></div>
     @endif
 </section>
 @endunless
