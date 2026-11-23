@@ -7,7 +7,7 @@
         <h1>Control de programación curricular</h1>
         <p class="subhead">Una sola malla alimenta dos planificaciones independientes: teoría (TEC) y taller/práctica (TALL).</p>
     </div>
-    <a class="btn btn-secondary" href="{{ route('groups.show',$assignment->group) }}">Volver al grupo</a>
+    <a class="btn btn-secondary" href="{{ route('groups.show',$assignment->group) }}"><x-icon name="arrow-left" /> Volver al grupo</a>
 </div>
 <section class="card workflow-card">
     <div class="workflow-heading"><div><span class="eyebrow">Panel de control</span><h2>Tu avance</h2><p class="muted small">El progreso se calcula con información guardada en el sistema.</p></div><div class="workflow-score">{{ $progress }}<small>%</small></div></div>
@@ -24,13 +24,13 @@
         <div class="modality-title"><span class="modality-icon">T</span><div><h2>TEORÍA</h2><p>Conocimientos tecnológicos y sesiones de aula</p></div></div>
         <div class="modality-metrics"><div><strong>{{ $suggestionStats['tec_approved'] }}/{{ $suggestionStats['tec_total'] }}</strong><span>Propuestas aprobadas</span></div><div><strong>{{ data_get($modalityStats,'TEC.sessions',0) }}</strong><span>Sesiones calculadas</span></div></div>
         <span class="status-line {{ $workflow['tec_configured'] ? 'is-done' : 'is-pending' }}">{{ !$workflow['has_tec_modality'] ? 'Modalidad TEC no asignada' : ($workflow['tec_configured'] ? 'Calendario configurado' : 'Falta configurar el calendario TEC') }}</span>
-        <div class="actions"><a class="btn btn-secondary btn-sm" href="{{ route('groups.show',$assignment->group) }}">Ir a cursos</a><a class="btn btn-secondary btn-sm" href="#suggestions" data-filter="TEC">Revisar teoría</a></div>
+        <div class="actions"><a class="btn btn-secondary btn-sm" href="{{ route('groups.show',$assignment->group) }}"><x-icon name="book-open" /> Ir a cursos</a><a class="btn btn-secondary btn-sm" href="#suggestions" data-filter="TEC"><x-icon name="book-open" /> Revisar teoría</a></div>
     </article>
     <article class="card modality-card workshop">
         <div class="modality-title"><span class="modality-icon">P</span><div><h2>TALLER / PRÁCTICA</h2><p>Tareas, operaciones y evidencias de taller</p></div></div>
         <div class="modality-metrics"><div><strong>{{ $suggestionStats['tall_approved'] }}/{{ $suggestionStats['tall_total'] }}</strong><span>Propuestas aprobadas</span></div><div><strong>{{ data_get($modalityStats,'TALL.sessions',0) }}</strong><span>Sesiones calculadas</span></div></div>
         <span class="status-line {{ $workflow['tall_configured'] ? 'is-done' : 'is-pending' }}">{{ !$workflow['has_tall_modality'] ? 'Modalidad TALL no asignada' : ($workflow['tall_configured'] ? 'Calendario configurado' : 'Falta configurar el calendario TALL') }}</span>
-        <div class="actions"><a class="btn btn-secondary btn-sm" href="{{ route('groups.show',$assignment->group) }}">Ir a cursos</a><a class="btn btn-secondary btn-sm" href="#suggestions" data-filter="TALL">Revisar taller</a></div>
+        <div class="actions"><a class="btn btn-secondary btn-sm" href="{{ route('groups.show',$assignment->group) }}"><x-icon name="book-open" /> Ir a cursos</a><a class="btn btn-secondary btn-sm" href="#suggestions" data-filter="TALL"><x-icon name="graduation-cap" /> Revisar taller</a></div>
     </article>
 </section>
 <section class="card">
@@ -40,14 +40,14 @@
         <a class="step-row" href="#suggestions"><span class="step-number {{ $workflow['has_suggestions'] ? 'complete' : '' }}">{{ $workflow['has_suggestions'] ? '✓' : '2' }}</span><span><strong>Revisar teoría y taller</strong><small>{{ $suggestionStats['pending'] }} propuestas pendientes de aprobación</small></span><span class="step-action">Revisar →</span></a>
         <a class="step-row" href="{{ route('groups.show',$assignment->group) }}"><span class="step-number {{ $workflow['tec_configured'] && $workflow['tall_configured'] ? 'complete' : '' }}">3</span><span><strong>Configurar días y horarios</strong><small>Define fechas de TEC y TALL por separado</small></span><span class="step-action">Configurar →</span></a>
         <a class="step-row" href="{{ route('groups.show',$assignment->group) }}"><span class="step-number {{ $workflow['has_tec_sessions'] && $workflow['has_tall_sessions'] ? 'complete' : '' }}">4</span><span><strong>Generar sesiones por fecha</strong><small>Comprueba que cada modalidad tenga sesiones calculadas</small></span><span class="step-action">Ver sesiones →</span></a>
-        <div class="step-row"><span class="step-number {{ $workflow['all_approved'] ? 'complete' : '' }}">{{ $workflow['all_approved'] ? '✓' : '5' }}</span><span><strong>Aprobar la programación</strong><small>{{ $workflow['all_approved'] ? 'Todas las propuestas están aprobadas' : 'Aprueba las propuestas que correspondan' }}</small></span><span class="step-action"><a href="#suggestions">Ir →</a></span></div>
+        <div class="step-row"><span class="step-number {{ $workflow['all_approved'] ? 'complete' : '' }}">{{ $workflow['all_approved'] ? '✓' : '5' }}</span><span><strong>Aprobar la programación</strong><small>{{ $workflow['all_approved'] ? 'Todas las propuestas están aprobadas' : 'Aprueba las propuestas que correspondan' }}</small></span><span class="step-action"><a href="#suggestions"><x-icon name="arrow-right" /> Ir</a></span></div>
     </div>
 </section>
 <section class="card" id="upload">
     <div class="card-head"><div><h2>1. Malla curricular</h2><p class="card-description">Sube el PDF oficial. Gestión Docente extrae el texto y prepara el prompt general para ChatGPT.</p></div><span class="badge {{ $workflow['has_curriculum'] ? 'badge-green' : '' }}">{{ $workflow['has_curriculum'] ? 'Importada' : 'Pendiente' }}</span></div>
     <form method="POST" enctype="multipart/form-data" action="{{ route('curricula.extract',$assignment) }}">@csrf
         <label for="curriculum_pdf">Documento PDF de la malla</label><input class="field" id="curriculum_pdf" type="file" name="curriculum_pdf" accept=".pdf,application/pdf" required>
-        <div class="actions mt-16"><button class="btn" type="submit">Analizar PDF y preparar prompt</button><a class="btn btn-secondary" href="{{ route('curricula.example',$assignment) }}">Ver JSON de ejemplo</a></div>
+        <div class="actions mt-16"><button class="btn" type="submit"><x-icon name="sparkles" /> Analizar PDF y preparar prompt</button><a class="btn btn-secondary" href="{{ route('curricula.example',$assignment) }}"><x-icon name="file-text" /> Ver JSON de ejemplo</a></div>
     </form>
     <p class="help">La malla es la fuente oficial. La IA debe separar teoría y práctica, conservar las horas T/P/V y proponer una planificación independiente para cada modalidad.</p>
 </section>
@@ -60,7 +60,7 @@
     @else
         <div class="quick-toolbar">
             <button type="button" class="btn btn-secondary btn-sm filter-button active" data-filter="ALL">Todas</button><button type="button" class="btn btn-secondary btn-sm filter-button" data-filter="TEC">Solo teoría</button><button type="button" class="btn btn-secondary btn-sm filter-button" data-filter="TALL">Solo taller</button><button type="button" class="btn btn-secondary btn-sm filter-button" data-filter="PENDING">Pendientes</button>
-            <span class="toolbar-spacer"></span><button type="button" class="btn btn-secondary btn-sm" id="selectVisible">Seleccionar visibles</button><button type="button" class="btn btn-secondary btn-sm" id="clearVisible">Limpiar selección</button>
+            <span class="toolbar-spacer"></span><button type="button" class="btn btn-secondary btn-sm" id="selectVisible"><x-icon name="check" /> Seleccionar visibles</button><button type="button" class="btn btn-secondary btn-sm" id="clearVisible"><x-icon name="x" /> Limpiar selección</button>
         </div>
         <form method="POST" action="{{ route('curricula.approve',$activeCurriculum) }}" id="approvalForm">@csrf
             <div class="suggestion-list">
@@ -76,7 +76,7 @@
                     @endforeach
                 @endforeach
             </div>
-            <div class="form-actions sticky-actions"><span class="help" id="selectionCount">Selecciona las propuestas que deseas aprobar.</span><button class="btn" type="submit">Guardar aprobación</button></div>
+            <div class="form-actions sticky-actions"><span class="help" id="selectionCount">Selecciona las propuestas que deseas aprobar.</span><button class="btn" type="submit"><x-icon name="check" /> Guardar aprobación</button></div>
         </form>
     @endif
 </section>
