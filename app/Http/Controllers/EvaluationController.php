@@ -6,6 +6,7 @@ use App\Models\CourseModality;
 use App\Models\Evaluation;
 use App\Models\Grade;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class EvaluationController extends Controller
@@ -27,10 +28,18 @@ class EvaluationController extends Controller
     {
         $this->owned($modality);
         $data = $request->validate([
-            'title' => 'required|string|max:180',
+            'title' => [
+                'required',
+                'string',
+                'max:180',
+                Rule::unique('evaluations', 'title')
+                    ->where(fn ($query) => $query->where('course_modality_id', $modality->id)),
+            ],
             'evaluation_date' => 'nullable|date',
             'weight' => 'nullable|numeric|min:0|max:100',
             'maximum_score' => 'required|numeric|gt:0|max:100',
+        ], [
+            'title.unique' => 'Ya existe una evaluación con ese nombre en esta modalidad.',
         ]);
         $modality->evaluations()->create($data);
 
