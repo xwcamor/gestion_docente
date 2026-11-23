@@ -11,7 +11,7 @@
         <input class="field" type="file" id="file" name="file" accept=".xlsx,.xls" required>
         <p class="help">Se leerá únicamente la pestaña Cursos para esta importación. Las demás hojas se conservan en el archivo original.</p>
         <div class="alert alert-info" style="margin-top:17px"><strong>Importante:</strong> la pestaña Cursos contiene NRC y fechas, pero no los días ni las horas de clase. Esos horarios se configurarán después, sin inventar información.</div>
-        <div class="form-actions"><a class="btn btn-secondary" href="{{ route('cycles.index') }}">Cancelar</a><button class="btn" type="submit">Leer Excel y mostrar vista previa →</button></div>
+        <div class="form-actions"><a class="btn btn-secondary" href="{{ route('cycles.index') }}"><x-icon name="arrow-left" /> Cancelar</a><button class="btn" type="submit"><x-icon name="file-text" /> Leer Excel y mostrar vista previa</button></div>
     </form>
 </section>
 @endsection
