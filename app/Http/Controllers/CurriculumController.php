@@ -164,11 +164,17 @@ class CurriculumController extends Controller
     public function approveSuggestions(Request $request, Curriculum $curriculum, CalendarService $calendar)
     {
         $this->ownedCurriculum($curriculum);
-        $data = $request->validate(['approved_items' => 'nullable|array', 'approved_items.*' => 'integer']);
+        $data = $request->validate([
+            'approved_items' => 'nullable|array',
+            'approved_items.*' => 'integer',
+            'reviewed_items' => 'nullable|array',
+            'reviewed_items.*' => 'integer',
+        ]);
         $allowed = $curriculum->weeks()->with('contentItems')->get()->flatMap->contentItems->where('source_kind','AI_SUGGESTION')->pluck('id')->map(fn($id)=>(int)$id)->all();
         $selected = array_map('intval', $data['approved_items'] ?? []);
-        abort_if(array_diff($selected, $allowed), 422, 'La lista contiene sugerencias de otra malla.');
-        foreach ($allowed as $id) CurriculumContentItem::whereKey($id)->update(['approved'=>in_array($id,$selected,true)]);
+        $reviewed = array_map('intval', $data['reviewed_items'] ?? $allowed);
+        abort_if(array_diff($selected, $allowed) || array_diff($reviewed, $allowed) || array_diff($selected, $reviewed), 422, 'La lista contiene sugerencias de otra malla.');
+        foreach ($reviewed as $id) CurriculumContentItem::whereKey($id)->update(['approved'=>in_array($id,$selected,true)]);
         $assignment = \App\Models\CourseAssignment::where('curriculum_id',$curriculum->id)->whereHas('group',fn($q)=>$q->where('professor_id',auth()->user()->professor->id))->first();
         if ($assignment) $this->rebuildCourseCalendars($assignment,$calendar);
         return back()->with('success','Se actualizaron las sugerencias y se recalcularon los calendarios asociados.');
