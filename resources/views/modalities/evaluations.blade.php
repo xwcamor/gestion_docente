@@ -4,7 +4,7 @@
 <div class="breadcrumbs"><a href="{{ route('cycles.index') }}">Ciclos</a><span>›</span><a href="{{ route('groups.show', $modality->assignment->group) }}">{{ $modality->assignment->group->name }}</a><span>›</span><a href="{{ route('modalities.show', $modality) }}">{{ $modality->assignment->course->name }} · {{ $modality->modality }}</a><span>›</span><span class="current">Evaluaciones</span></div>
 <div class="page-head">
     <div><p class="eyebrow">Gestión de calificaciones</p><h1>Evaluaciones y notas</h1><p class="subhead">{{ $modality->assignment->course->name }} · {{ $modality->modality }} · NRC {{ $modality->nrc ?: 'sin asignar' }} · {{ $modality->enrollments->count() }} alumnos.</p></div>
-    <a class="btn btn-secondary" href="{{ route('modalities.show', $modality) }}">← Volver a modalidad</a>
+    <a class="btn btn-secondary" href="{{ route('modalities.show', $modality) }}"><x-icon name="arrow-left" /> Volver a modalidad</a>
 </div>
 
 <section class="card">
@@ -20,14 +20,14 @@
                     <div><label for="weight">Peso (%) (opcional)</label><input class="field" id="weight" type="number" step=".01" min="0" max="100" name="weight" placeholder="Ej. 25"></div>
                 </div>
                 <div class="form-row"><div><label for="maximum_score">Nota máxima</label><input class="field" id="maximum_score" type="number" name="maximum_score" min=".01" max="100" step=".01" value="20" required></div></div>
-                <div class="form-actions"><span class="help">La nota máxima se utiliza para validar los resultados.</span><button class="btn" type="submit">Guardar evaluación</button></div>
+                <div class="form-actions"><span class="help">La nota máxima se utiliza para validar los resultados.</span><button class="btn" type="submit"><x-icon name="check" /> Guardar evaluación</button></div>
             </form>
         </div>
     </details>
 </section>
 
 @if($modality->enrollments->isEmpty())
-    <section class="card"><div class="empty"><strong>Primero importa la lista de alumnos.</strong><span>Regresa a la modalidad, carga el archivo original del campus y confirma la importación.</span><div class="mt-16"><a class="btn btn-secondary" href="{{ route('modalities.show', $modality) }}#students">Ir a importar alumnos</a></div></div></section>
+    <section class="card"><div class="empty"><strong>Primero importa la lista de alumnos.</strong><span>Regresa a la modalidad, carga el archivo original del campus y confirma la importación.</span><div class="mt-16"><a class="btn btn-secondary" href="{{ route('modalities.show', $modality) }}#students"><x-icon name="users" /> Ir a importar alumnos</a></div></div></section>
 @endif
 
 @forelse($modality->evaluations as $evaluation)
@@ -52,7 +52,7 @@
                         </tr>
                     @endforeach
                 </tbody></table></div>
-                <div class="form-actions"><span class="help">Se guardan únicamente las notas ingresadas en esta evaluación.</span><button class="btn" type="submit">Guardar calificaciones</button></div>
+                <div class="form-actions"><span class="help">Se guardan únicamente las notas ingresadas en esta evaluación.</span><button class="btn" type="submit"><x-icon name="check" /> Guardar calificaciones</button></div>
             </form>
             <div class="empty grade-empty" hidden><strong>No se encontraron alumnos.</strong><span>Revisa el nombre o código que buscaste.</span></div>
         @else
