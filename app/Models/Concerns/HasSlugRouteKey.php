@@ -9,11 +9,10 @@ trait HasSlugRouteKey
 {
     protected static function bootHasSlugRouteKey(): void
     {
-        static::created(function (Model $model): void {
+        static::creating(function (Model $model): void {
             if (blank($model->getAttribute('slug'))) {
-                $model->forceFill([
-                    'slug' => Str::limit(Str::slug($model->slugSource()), 165, '').'-'.$model->getKey(),
-                ])->saveQuietly();
+                $base = Str::limit(Str::slug($model->slugSource()), 165, '');
+                $model->setAttribute('slug', $base.'-'.Str::lower(Str::random(8)));
             }
         });
     }
