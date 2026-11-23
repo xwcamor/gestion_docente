@@ -425,6 +425,16 @@
         .modal-help-item strong{display:block;color:#31586b;font-size:12px}
         .modal-help-item p{margin:4px 0 0;color:#6d8390;font-size:10px;line-height:1.5}
         @media(max-width:720px){.modal-help-grid{grid-template-columns:1fr}}
+
+        .pagination{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:17px 0 0;padding-top:13px;border-top:1px solid #e7eef2}
+        .pagination-status{color:#6f8793;font-size:10px}
+        .pagination-links{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+        .pagination-links a,.pagination-links>span{min-width:31px;height:31px;display:inline-flex;align-items:center;justify-content:center;padding:0 8px;border:1px solid #d6e4ea;border-radius:7px;background:#fff;color:#4c7182;font-size:10px;font-weight:650;text-decoration:none}
+        .pagination-links a:hover{border-color:#9fc3d0;background:#eff7fa}
+        .pagination-links .is-current{border-color:#28677d;background:#28677d;color:#fff}
+        .pagination-links .is-disabled{color:#a7b5bc;background:#f5f8f9}
+        .pagination-links .pagination-ellipsis{min-width:18px;padding:0;border:0;background:transparent;color:#899da7}
+        @media(max-width:600px){.pagination{align-items:flex-start;flex-direction:column}.pagination-links{width:100%}.pagination-links a,.pagination-links>span{flex:1}}
     </style>
     @stack('styles')
 </head>
