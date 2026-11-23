@@ -153,6 +153,32 @@
         </div>
     </form>
 </dialog>
+
+<dialog class="ui-dialog sheet-dialog" id="account-edit-dialog" aria-labelledby="account-edit-title" data-backdrop-close>
+ <div class="dialog-head"><div><h2 id="account-edit-title">Editar perfil docente</h2><p>Actualiza los datos de acceso y del perfil.</p></div><button class="dialog-close" type="button" data-modal-close aria-label="Cerrar"><x-icon name="x" /></button></div>
+ <form method="POST" action="#" id="account-edit-form" data-loading-form="1">
+  @csrf
+  @method('PATCH')
+  <input type="hidden" name="return_q" value="{{ request('q') }}">
+  <input type="hidden" name="return_page" value="{{ request('page', 1) }}">
+  <div class="dialog-body">
+   <div class="form-row">
+    <div><label for="edit_full_name">Nombre completo</label><input class="field" id="edit_full_name" name="full_name" required maxlength="255"></div>
+    <div><label for="edit_email">Correo electrónico</label><input class="field" id="edit_email" type="email" name="email" required maxlength="255"></div>
+   </div>
+   <div class="form-row">
+    <div><label for="edit_institutional_id">ID institucional</label><input class="field" id="edit_institutional_id" name="institutional_id" maxlength="80"></div>
+    <div><label for="edit_school">Escuela</label><input class="field" id="edit_school" name="school" maxlength="255"></div>
+   </div>
+   <label for="edit_career">Carrera</label><input class="field" id="edit_career" name="career" maxlength="255">
+   @if($errors->any() && request('dialog') === 'edit-account')
+    <div class="dialog-error" role="alert"><strong>Revisa estos datos:</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
+   @endif
+  </div>
+  <div class="dialog-footer"><button class="btn btn-secondary" type="button" data-modal-close>Cancelar</button><button class="btn" type="submit"><x-icon name="check" /> Guardar cambios</button></div>
+ </form>
+</dialog>
+
 @endsection
 
 @push('styles')
