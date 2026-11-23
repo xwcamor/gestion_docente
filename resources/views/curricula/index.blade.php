@@ -98,6 +98,29 @@
 @push('styles')
 <style>
 .workflow-card{background:#fff}.workflow-heading{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}.workflow-heading h2{margin:4px 0}.workflow-score{font-size:36px;font-weight:720;color:#40584a;white-space:normal;overflow-wrap:anywhere;line-height:1.1}.workflow-score small{font-size:16px}.progress-track{height:10px;background:#e7ebe5;border-radius:6px;overflow:hidden;margin:12px 0 18px}.progress-track span{display:block;height:100%;background:#55745e;border-radius:20px}.workflow-stats,.modality-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.workflow-stats>div,.modality-metrics>div{padding:12px;background:#fff;border:1px solid #e6ebe5;border-radius:10px}.workflow-stats strong,.modality-metrics strong{display:block;font-size:20px}.workflow-stats span,.modality-metrics span{font-size:11px;color:#768078}.modality-control{margin:16px 0}.modality-card{margin:0}.modality-title{display:flex;align-items:center;gap:12px;margin-bottom:16px}.modality-title h2{margin:0}.modality-title p{margin:3px 0 0;color:#768078;font-size:12px}.modality-icon{width:38px;height:38px;border-radius:8px;display:grid;place-items:center;font-size:19px;font-weight:800;background:#eff3ef;color:#526b58}.workshop .modality-icon{background:#edf4ed;color:#4e7556}.modality-metrics{grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:12px}.status-line{display:block;font-size:12px;margin:8px 0 14px}.status-line:before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:7px;background:#977548}.status-line.is-done:before{background:#55745e}.step-list{display:grid;gap:0}.step-row{display:flex;align-items:center;gap:12px;padding:13px 2px;border-bottom:1px solid #edf0eb;text-decoration:none;color:inherit}.step-row:last-child{border-bottom:0}.step-number{width:29px;height:29px;flex:0 0 29px;border-radius:50%;display:grid;place-items:center;background:#f1f3f0;color:#657168;font-size:12px;font-weight:800}.step-number.complete{background:#edf4ed;color:#4e7556}.step-row small{display:block;color:#768078;margin-top:3px;font-size:11px}.step-action{margin-left:auto;max-width:160px;color:#526b58;font-size:11px;font-weight:680;white-space:normal;text-align:right;overflow-wrap:anywhere}.quick-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin:12px 0}.toolbar-spacer{flex:1}.filter-button.active{background:#eef3ed;border-color:#cbd8ca;color:#40584a}.suggestion-list{display:grid;gap:7px}.suggestion-row{display:flex;align-items:center;gap:10px;min-width:0;padding:11px;border:1px solid #e6ebe5;border-radius:10px;cursor:pointer}.suggestion-row[hidden]{display:none}.suggestion-row input{width:17px;height:17px;flex:0 0 auto}.suggestion-copy{flex:1;min-width:0}.suggestion-copy strong{display:block;font-size:13px;font-weight:600;line-height:1.45}.suggestion-meta{display:block;font-size:10px;color:#768078;text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px}.sticky-actions{position:sticky;bottom:8px;background:#fff;padding:12px;border:1px solid #e2e7e0;border-radius:12px;box-shadow:none;z-index:2}.version-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid #edf0eb}.version-row:last-child{border-bottom:0}@media(max-width:700px){.workflow-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.workflow-score{font-size:30px}.modality-control{grid-template-columns:1fr}.quick-toolbar .toolbar-spacer{display:none}.quick-toolbar button{flex:1}.suggestion-row{align-items:flex-start}.suggestion-row>.badge{font-size:9px}.version-row{align-items:flex-start;flex-direction:column}.sticky-actions{align-items:flex-start;flex-direction:column}.sticky-actions button{width:100%}}
+
+/* Currícula: teoría y taller se distinguen por color */
+.workflow-score{color:#28677d}
+.progress-track{background:#e4edf2}
+.progress-track span{background:linear-gradient(90deg,#367da0,#39a18d)}
+.workflow-stats>div,.modality-metrics>div{border-color:#dce8ed;background:#f8fbfc}
+.workflow-stats strong,.modality-metrics strong{color:#315c70}
+.workflow-stats span,.modality-metrics span{color:#6a8491}
+.modality-card.theory{border-top:3px solid #5187b2;background:#f8fbfe}
+.modality-card.workshop{border-top:3px solid #3d9b8d;background:#f5fbf9}
+.modality-card.theory .modality-icon{background:#e6f0fa;color:#3c73a2}
+.modality-card.workshop .modality-icon{background:#e2f4ef;color:#2e8275}
+.status-line:before{background:#d09a50}
+.status-line.is-done:before{background:#3d9b72}
+.step-row{border-bottom-color:#e5edf1}
+.step-number{background:#e9f1f5;color:#466b7d}
+.step-number.complete{background:#e1f3e9;color:#2d8155}
+.step-action{color:#34738b}
+.filter-button.active{background:#e8f3f8;border-color:#b9d5e0;color:#28677d}
+.suggestion-row{border-color:#dce7ec;background:#fff}
+.suggestion-row:hover{border-color:#9fc6d4;background:#f7fbfc}
+.sticky-actions{border-color:#cddfe7;background:#f5fafc}
+
 </style>
 @endpush
 @push('scripts')
