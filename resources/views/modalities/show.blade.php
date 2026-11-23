@@ -4,7 +4,7 @@
 @php($assignment = $modality->assignment)
 <div class="breadcrumbs"><a href="{{ route('cycles.index') }}">Ciclos</a><span>›</span><a href="{{ route('cycles.show', $assignment->group->cycle) }}">{{ $assignment->group->cycle->academic_year }} · {{ $assignment->group->cycle->cycle_code }}</a><span>›</span><a href="{{ route('groups.show', $assignment->group) }}">{{ $assignment->group->name }}</a><span>›</span><span class="current">{{ $modality->modality }}</span></div>
 <div class="page-head">
-    <div><p class="eyebrow">Paso 4 de 4 · Gestión de modalidad</p><h1>{{ $assignment->course->name }}</h1><p class="subhead">{{ $modality->modality }} · NRC {{ $modality->nrc ?: 'Pendiente' }} · Bloque {{ $modality->block_code ?: 'Pendiente' }} @if($modality->block_reference) · Ref. {{ $modality->block_reference }} @endif · {{ $assignment->group->name }} · {{ $assignment->group->cycle->academic_year }}</p></div>
+    <div><p class="eyebrow">Modalidad {{ $modality->label }}</p><h1>{{ $assignment->course->name }}</h1><p class="subhead">{{ $modality->modality }} · NRC {{ $modality->nrc ?: 'Pendiente' }} · Bloque {{ $modality->block_code ?: 'Pendiente' }} @if($modality->block_reference) · Ref. {{ $modality->block_reference }} @endif · {{ $assignment->group->name }} · {{ $assignment->group->cycle->academic_year }}</p></div>
     <a class="btn btn-secondary" href="{{ route('groups.show', $assignment->group) }}"><x-icon name="arrow-left" /> Volver al grupo</a>
 </div>
 <div class="quick-nav">
@@ -18,7 +18,7 @@
 </div>
 
 <section class="card" id="calendar">
-    <div class="card-head"><div><h2>1. Calendario y horario</h2><p class="card-description">Configura el periodo y los días de clase. Las sesiones se calculan automáticamente.</p></div><span class="badge {{ $modality->modality === 'TEC' ? 'badge-blue' : 'badge-green' }}">{{ $modality->label }}</span></div>
+    <div class="card-head"><div><h2>Calendario y horario</h2><p class="card-description">Configura el periodo y los días de clase. Las sesiones se calculan automáticamente.</p></div><span class="badge {{ $modality->modality === 'TEC' ? 'badge-blue' : 'badge-green' }}">{{ $modality->label }}</span></div>
     <details class="panel">
         <summary>Ver o modificar configuración del calendario</summary>
         <div class="panel-body">
@@ -62,7 +62,7 @@
 </section>
 
 <section class="card" id="students">
-    <div class="card-head"><div><h2>2. Alumnos del campus</h2><p class="card-description">Importa el archivo original que recibes de la plataforma. Primero revisarás una vista previa.</p></div><span class="badge">{{ $modality->enrollments->count() }} alumnos</span></div>
+    <div class="card-head"><div><h2>Alumnos del campus</h2><p class="card-description">Importa el archivo original que recibes de la plataforma. Primero revisarás una vista previa.</p></div><span class="badge">{{ $modality->enrollments->count() }} alumnos</span></div>
     <form method="POST" enctype="multipart/form-data" action="{{ route('students.preview', $modality) }}">
         @csrf
         <label for="roster">Archivo de alumnos (.xls, .xlsx o .csv)</label>
@@ -72,7 +72,7 @@
 </section>
 
 <section class="card" id="documents">
-    <div class="card-head"><div><h2>3. Documentos Excel</h2><p class="card-description">Genera los formatos oficiales usando los datos de esta modalidad.</p></div><a class="btn btn-secondary btn-sm" href="{{ route('evaluations.index', $modality) }}"><x-icon name="arrow-right" /> Evaluaciones y notas</a></div>
+    <div class="card-head"><div><h2>Documentos Excel</h2><p class="card-description">Genera los formatos oficiales usando los datos de esta modalidad.</p></div><a class="btn btn-secondary btn-sm" href="{{ route('evaluations.index', $modality) }}"><x-icon name="arrow-right" /> Evaluaciones y notas</a></div>
     <div class="grid grid-2">
         @foreach(['plan'=>'Plan de sesión','registro'=>'Registro de formación','evaluacion'=>'Formato de evaluación','charla'=>'Charla de 5 minutos'] as $type=>$label)
             <form class="course-card" method="POST" action="{{ route('documents.generate', [$modality, $type]) }}">
