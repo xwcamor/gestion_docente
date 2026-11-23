@@ -68,10 +68,23 @@ class QuickCourseEntryController extends Controller
                 ->where('code', $code)
                 ->first();
 
-            if ($existingCourse && $group->assignments()->where('course_id', $existingCourse->id)->exists()) {
-                throw ValidationException::withMessages([
-                    "rows.{$index}.course_name" => "«{$courseName}» ya está registrado en este grupo. No se modificó ningún dato.",
-                ]);
+            if ($existingCourse) {
+                $existingAssignment = $group->assignments()
+                    ->with('modalities')
+                    ->where('course_id', $existingCourse->id)
+                    ->first();
+
+                if ($existingAssignment) {
+                    $requestedTypes = $row['modality'] === 'BOTH' ? ['TEC', 'TALL'] : [$row['modality']];
+                    $existingTypes = $existingAssignment->modalities->pluck('modality')->all();
+                    $missingTypes = array_diff($requestedTypes, $existingTypes);
+
+                    if (empty($missingTypes)) {
+                        throw ValidationException::withMessages([
+                            "rows.{$index}.course_name" => "«{$courseName}» ya tiene las modalidades solicitadas en este grupo. No se cambió ningún dato.",
+                        ]);
+                    }
+                }
             }
 
             if ($existingCourse && mb_strtolower(trim($existingCourse->name)) !== mb_strtolower($courseName)) {
@@ -106,7 +119,11 @@ class QuickCourseEntryController extends Controller
                 $types = $row['modality'] === 'BOTH' ? ['TEC', 'TALL'] : [$row['modality']];
                 foreach ($types as $type) {
                     $prefix = $type === 'TEC' ? 'tec' : 'tall';
-                    $modality = CourseModality::firstOrNew([
+                    if ($assignment->modalities()->where('modality', $type)->exists()) {
+                        continue;
+                    }
+
+                    $modality = new CourseModality([
                         'course_assignment_id' => $assignment->id,
                         'modality' => $type,
                     ]);
