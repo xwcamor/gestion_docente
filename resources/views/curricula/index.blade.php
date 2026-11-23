@@ -23,13 +23,13 @@
     <article class="card modality-card theory">
         <div class="modality-title"><span class="modality-icon">T</span><div><h2>TEORÍA</h2><p>Conocimientos tecnológicos y sesiones de aula</p></div></div>
         <div class="modality-metrics"><div><strong>{{ $suggestionStats['tec_approved'] }}/{{ $suggestionStats['tec_total'] }}</strong><span>Propuestas aprobadas</span></div><div><strong>{{ data_get($modalityStats,'TEC.sessions',0) }}</strong><span>Sesiones calculadas</span></div></div>
-        <span class="status-line {{ $workflow['tec_configured'] ? 'is-done' : 'is-pending' }}">{{ $workflow['tec_configured'] ? 'Calendario configurado' : 'Falta configurar el calendario TEC' }}</span>
+        <span class="status-line {{ $workflow['tec_configured'] ? 'is-done' : 'is-pending' }}">{{ !$workflow['has_tec_modality'] ? 'Modalidad TEC no asignada' : ($workflow['tec_configured'] ? 'Calendario configurado' : 'Falta configurar el calendario TEC') }}</span>
         <div class="actions"><a class="btn btn-secondary btn-sm" href="{{ route('groups.show',$assignment->group) }}">Ir a cursos</a><a class="btn btn-secondary btn-sm" href="#suggestions" data-filter="TEC">Revisar teoría</a></div>
     </article>
     <article class="card modality-card workshop">
         <div class="modality-title"><span class="modality-icon">P</span><div><h2>TALLER / PRÁCTICA</h2><p>Tareas, operaciones y evidencias de taller</p></div></div>
         <div class="modality-metrics"><div><strong>{{ $suggestionStats['tall_approved'] }}/{{ $suggestionStats['tall_total'] }}</strong><span>Propuestas aprobadas</span></div><div><strong>{{ data_get($modalityStats,'TALL.sessions',0) }}</strong><span>Sesiones calculadas</span></div></div>
-        <span class="status-line {{ $workflow['tall_configured'] ? 'is-done' : 'is-pending' }}">{{ $workflow['tall_configured'] ? 'Calendario configurado' : 'Falta configurar el calendario TALL' }}</span>
+        <span class="status-line {{ $workflow['tall_configured'] ? 'is-done' : 'is-pending' }}">{{ !$workflow['has_tall_modality'] ? 'Modalidad TALL no asignada' : ($workflow['tall_configured'] ? 'Calendario configurado' : 'Falta configurar el calendario TALL') }}</span>
         <div class="actions"><a class="btn btn-secondary btn-sm" href="{{ route('groups.show',$assignment->group) }}">Ir a cursos</a><a class="btn btn-secondary btn-sm" href="#suggestions" data-filter="TALL">Revisar taller</a></div>
     </article>
 </section>
