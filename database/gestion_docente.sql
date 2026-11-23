@@ -262,7 +262,7 @@ CREATE TABLE curriculum_content_items (
   metadata JSON NULL,
   created_at TIMESTAMP NULL,
   updated_at TIMESTAMP NULL,
-  INDEX curr_content_week_cat_approved_idx (curriculum_week_id, category, approved),
+  INDEX cci_week_category_approved_idx (curriculum_week_id, category, approved),
   CONSTRAINT curr_content_week_fk FOREIGN KEY (curriculum_week_id) REFERENCES curriculum_weeks(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
