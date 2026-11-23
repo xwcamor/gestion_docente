@@ -67,6 +67,7 @@
                                 class="calendar-event {{ $holiday->blocks_classes ? 'event-blocking' : 'event-info' }}"
                                 type="button"
                                 data-calendar-detail
+                                aria-label="Ver {{ $holiday->name }} del {{ $day['date']->format('d/m/Y') }}"
                                 data-date="{{ $day['date']->format('d/m/Y') }}"
                                 data-name="{{ $holiday->name }}"
                                 data-scope="{{ $scopeLabels[$holiday->scope] ?? $holiday->scope }}"
