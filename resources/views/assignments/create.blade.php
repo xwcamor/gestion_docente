@@ -2,7 +2,8 @@
 @section('title', 'Agregar curso')
 @section('content')
 <div class="breadcrumbs"><a href="{{ route('cycles.index') }}">Ciclos</a><span>›</span><a href="{{ route('cycles.show', $group->cycle) }}">{{ $group->cycle->academic_year }} · {{ $group->cycle->cycle_code }}</a><span>›</span><a href="{{ route('groups.show', $group) }}">{{ $group->name }}</a><span>›</span><span class="current">Nuevo curso</span></div>
-<div class="page-head"><div><p class="eyebrow">Paso 3 de 4 · Registro de curso</p><h1>Agregar curso al grupo</h1><p class="subhead">Primero indica qué curso te asignaron. Después configura solo las modalidades que correspondan.</p></div></div>
+<div class="page-head"><div><p class="eyebrow">Registro de curso</p><h1>Agregar curso al grupo</h1><p class="subhead">Esta opción queda como alternativa para un curso aislado. Para cargar toda tu distribución, utiliza el Excel institucional.</p></div></div>
+<div class="alert alert-info"><strong>¿Tienes varios cursos en tu Excel?</strong> Evita llenar este formulario curso por curso. Importa la pestaña Cursos para registrar nombres, NRC y fechas en un solo proceso. <a href="{{ route('distribution.create') }}" style="font-weight:750">Importar Excel institucional →</a></div>
 
 <div class="stepper" id="assignment-stepper">
     <div class="step active" data-step-indicator="1"><span class="step-number">1</span><span>Datos del curso</span></div><span class="step-line"></span>

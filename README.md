@@ -210,3 +210,12 @@ php artisan migrate
 ## Repositorio
 
 https://github.com/xwcamor/gestion_docente
+
+
+## Importar cursos desde Excel institucional
+
+En **Ciclos y cursos → Importar carga Excel**, sube uno de los formatos institucionales que contenga la pestaña **Cursos**. El importador lee las columnas CURSO, CODIGO, BLOQUE TEC, NRC TEC, BLOQUE TALLER, BLOQUE, NRC TALLE y FECHA, y muestra una vista previa antes de guardar.
+
+La importación crea o reutiliza el ciclo y el grupo indicado, registra cada curso y mantiene TEC/TALL como modalidades independientes con su NRC y periodo. Se puede volver a importar el mismo archivo al mismo grupo sin duplicar asignaciones ni modalidades.
+
+**Límite de la fuente:** la pestaña Cursos no contiene días, horas ni ambientes. Por eso el importador no inventa horarios ni crea sesiones. Después de confirmar, abre cada modalidad y completa su horario; el calendario podrá calcular las sesiones con los feriados configurados.
