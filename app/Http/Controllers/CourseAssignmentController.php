@@ -105,10 +105,25 @@ class CourseAssignmentController extends Controller
             ->where('code', $code)
             ->first();
 
-        if ($existingCourse && $group->assignments()->where('course_id', $existingCourse->id)->exists()) {
-            throw ValidationException::withMessages([
-                'course_name' => 'Este curso ya está registrado en el grupo. No se modificaron su NRC ni sus horarios.',
-            ]);
+        $existingAssignment = $existingCourse
+            ? $group->assignments()->with('modalities')->where('course_id', $existingCourse->id)->first()
+            : null;
+
+        $requestedTypes = [];
+        if ($request->boolean('has_tec')) {
+            $requestedTypes[] = 'TEC';
+        }
+        if ($request->boolean('has_tall')) {
+            $requestedTypes[] = 'TALL';
+        }
+
+        if ($existingAssignment) {
+            $existingTypes = $existingAssignment->modalities->pluck('modality')->all();
+            if (empty(array_diff($requestedTypes, $existingTypes))) {
+                throw ValidationException::withMessages([
+                    'course_name' => 'Este curso ya tiene las modalidades seleccionadas en el grupo. No se modificó ningún NRC ni horario existente.',
+                ]);
+            }
         }
 
         if ($existingCourse && mb_strtolower(trim($existingCourse->name)) !== mb_strtolower($courseName)) {
@@ -133,7 +148,7 @@ class CourseAssignmentController extends Controller
         );
 
         $defaultCurriculum = $course->curricula()->where('is_active', true)->with('weeks')->first();
-        $assignment = $group->assignments()->create([
+        $assignment = $existingAssignment ?: $group->assignments()->create([
             'course_id' => $course->id,
             'curriculum_id' => $defaultCurriculum?->id,
             'assigned_at' => $data['assigned_at'] ?? now()->toDateString(),
@@ -149,21 +164,21 @@ class CourseAssignmentController extends Controller
                 continue;
             }
 
-            $modality = CourseModality::updateOrCreate(
-                ['course_assignment_id' => $assignment->id, 'modality' => $kind],
-                [
-                    'nrc' => $data[$prefix . '_nrc'] ?? null,
-                    'start_date' => $data[$prefix . '_start_date'] ?? null,
-                    'end_date' => $data[$prefix . '_end_date'] ?? null,
-                    'total_hours' => $data[$prefix . '_total_hours'] ?? null,
-                    'curriculum_start_week' => 1,
-                    'active' => true,
-                    'semester' => $data['module'] ?? null,
-                    'period_label' => $group->cycle->academic_year . '-' . $group->cycle->cycle_code . '-' . $kind,
-                ]
-            );
+            if ($assignment->modalities()->where('modality', $kind)->exists()) {
+                continue;
+            }
 
-            $modality->schedules()->delete();
+            $modality = $assignment->modalities()->create([
+                'modality' => $kind,
+                'nrc' => $data[$prefix . '_nrc'] ?? null,
+                'start_date' => $data[$prefix . '_start_date'] ?? null,
+                'end_date' => $data[$prefix . '_end_date'] ?? null,
+                'total_hours' => $data[$prefix . '_total_hours'] ?? null,
+                'curriculum_start_week' => 1,
+                'active' => true,
+                'semester' => $data['module'] ?? null,
+                'period_label' => $group->cycle->academic_year . '-' . $group->cycle->cycle_code . '-' . $kind,
+            ]);
             foreach (($data[$prefix . '_schedules'] ?? []) as $schedule) {
                 if (empty($schedule['day_of_week']) || empty($schedule['start_time']) || empty($schedule['end_time']) || $schedule['end_time'] <= $schedule['start_time']) {
                     continue;
