@@ -11,24 +11,26 @@ class DashboardController extends Controller
     {
         $professor = auth()->user()->professor;
 
+        $cycleCount = $professor->cycles()->count();
         $cycles = $professor->cycles()
             ->withCount('groups')
             ->orderByDesc('academic_year')
             ->orderByDesc('cycle_code')
+            ->take(5)
             ->get();
 
         $groupCount = $professor->groups()->count();
-
         $groups = $professor->groups()
-            ->with(['cycle', 'assignments.course', 'assignments.modalities'])
+            ->with('cycle')
+            ->withCount('assignments')
             ->latest()
             ->take(8)
             ->get();
 
-        $modalities = CourseModality::whereHas(
+        $modalityCount = CourseModality::whereHas(
             'assignment.group',
             fn ($query) => $query->where('professor_id', $professor->id)
-        )->with(['assignment.course', 'assignment.group'])->get();
+        )->count();
 
         $upcoming = Holiday::whereBetween('holiday_date', [
             now()->toDateString(),
@@ -37,8 +39,16 @@ class DashboardController extends Controller
             ->where('blocks_classes', true)
             ->where(fn ($query) => $query->whereNull('professor_id')->orWhere('professor_id', $professor->id))
             ->orderBy('holiday_date')
+            ->take(6)
             ->get();
 
-        return view('dashboard', compact('cycles', 'groups', 'groupCount', 'modalities', 'upcoming'));
+        return view('dashboard', compact(
+            'cycles',
+            'cycleCount',
+            'groups',
+            'groupCount',
+            'modalityCount',
+            'upcoming'
+        ));
     }
 }
