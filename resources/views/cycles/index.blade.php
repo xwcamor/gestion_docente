@@ -5,7 +5,7 @@
     <div><p class="eyebrow">Organización académica</p><h1>Ciclos académicos</h1><p class="subhead">Organiza tus periodos, crea tus grupos y registra los cursos en una sola tabla rápida. La única importación será la lista de alumnos.</p></div>
     <div class="actions"><a class="btn" href="{{ route('cycles.create') }}">＋ Crear ciclo</a></div>
 </div>
-<section class="card" style="border-color:#d7e4f1;background:#fbfdff">
+<section class="card">
     <div class="card-head"><div><h2>Cómo trabajarás</h2><p class="card-description">Sin importar hojas de distribución ni llenar un formulario por curso.</p></div><span class="badge badge-green">Flujo simplificado</span></div>
     <div class="grid grid-4">
         <div><span class="badge badge-blue">01</span><h3 style="margin-top:9px">Crea el ciclo</h3><p class="help">Indica año, periodo y fechas generales.</p></div>
@@ -14,11 +14,11 @@
         <div><span class="badge badge-blue">04</span><h3 style="margin-top:9px">Configura horarios</h3><p class="help">Calcula sesiones, excluye feriados e importa alumnos por modalidad.</p></div>
     </div>
 </section>
-<div class="grid grid-4" style="margin-bottom:18px">
+<div class="grid grid-4" style="margin-bottom:16px">
     <div class="stat-card"><div class="stat-label">Ciclos registrados</div><div class="stat">{{ $cycles->count() }}</div></div>
     <div class="stat-card"><div class="stat-label">Años disponibles</div><div class="stat">{{ $years->count() }}</div></div>
     <div class="stat-card"><div class="stat-label">Grupos en pantalla</div><div class="stat">{{ $cycles->sum('groups_count') }}</div></div>
-    <div class="stat-card"><div class="stat-label">Siguiente paso</div><div style="font-size:14px;font-weight:700;margin-top:9px;color:#17365d">Registrar cursos</div></div>
+    <div class="stat-card"><div class="stat-label">Siguiente paso</div><div class="stat" style="font-size:14px;margin-top:9px">Registrar cursos</div></div>
 </div>
 <section class="card">
     <div class="card-head"><div><h2>Mis ciclos</h2><p class="card-description">Busca por año o código para encontrar rápidamente el periodo que necesitas.</p></div><span class="badge">{{ $cycles->count() }} resultados</span></div>
