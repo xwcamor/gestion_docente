@@ -321,7 +321,7 @@
         </div>
     </aside>
     <main class="main">
-        @if(session('success') || session('error') || session('info') || ($errors->any() && !request()->routeIs('holidays.index')))
+        @if(session('success') || session('error') || session('info') || ($errors->any() && !request()->routeIs('holidays.index', 'admin.professors.index')))
         <div class="flash-stack" aria-live="polite" aria-atomic="false">
             @if(session('success'))
                 <div class="flash flash-success" data-auto-dismiss role="status"><span class="flash-mark" aria-hidden="true">✓</span><div class="flash-content"><strong>Listo</strong>{{ session('success') }}</div><button class="flash-close" type="button" data-alert-close aria-label="Cerrar mensaje">×</button></div>
