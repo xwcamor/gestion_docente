@@ -67,5 +67,6 @@ Route::middleware(['auth', 'professor'])->group(function () {
     Route::prefix('administracion')->name('admin.')->middleware('admin')->group(function () {
         Route::get('/profesores', [AdminProfessorController::class, 'index'])->name('professors.index');
         Route::post('/profesores', [AdminProfessorController::class, 'store'])->name('professors.store');
+        Route::patch('/profesores/{user}', [AdminProfessorController::class, 'update'])->name('professors.update');
     });
 });
