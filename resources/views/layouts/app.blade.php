@@ -328,6 +328,103 @@
         @media(prefers-reduced-motion:reduce){
             *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
         }
+
+        /* Color system: blue, teal and warm semantic accents */
+        :root{
+            --ink:#203440;--ink-soft:#3f5663;--muted:#687f8b;--faint:#90a2aa;
+            --line:#dce6eb;--line-strong:#c8d7df;--canvas:#f2f6f9;--surface:#fff;--surface-soft:#f7fafc;
+            --accent:#28677d;--accent-hover:#20566a;--accent-soft:#e8f2f6;
+            --success:#28734f;--success-bg:#eaf5ee;--warning:#986329;--warning-bg:#fff4e3;
+            --danger:#a74646;--danger-bg:#fff0ef;--info:#346c91;--info-bg:#edf5fb;
+        }
+        body{background:linear-gradient(135deg,#f2f6f9 0%,#f5f8fa 46%,#eff5f7 100%);color:var(--ink)}
+        .topbar{background:rgba(255,255,255,.97);border-bottom-color:#d8e4eb;box-shadow:0 2px 10px rgba(35,72,92,.035)}
+        .brand-mark{border-color:#cfe1e8;background:linear-gradient(145deg,#eaf5f8,#e9f2f8);color:#28677d}
+        .sidebar{background:linear-gradient(180deg,#f4f8fa 0%,#f8fafb 100%);border-right-color:#dce7ed}
+        .nav-label{color:#78909d}
+        .nav-link{color:#526b78}
+        .nav-link:hover,.nav-link.active{background:#e5f1f6;color:#245f75}
+        .nav-link.active{border-color:#cfe2eb}
+        .nav-link.active .icon{color:#28677d}
+        .sidebar-note{border-color:#dce8ed;background:#edf5f8;color:#59717e}
+        .sidebar-note strong{color:#305a6e}
+        .main{color:var(--ink)}
+        h1{color:#203744}
+        h2{color:#2c4b5b}
+        h3{color:#385a6a}
+        .eyebrow{color:#4c849a}
+        .subhead,.card-description{color:#607987}
+        .breadcrumbs{color:#8ca0aa}.breadcrumbs a{color:#41758a}.breadcrumbs .current{color:#365767}
+        .card{border-color:#dce7ec;box-shadow:0 2px 8px rgba(40,78,96,.025)}
+        .card-head{border-bottom:1px solid #edf2f5;padding-bottom:11px}
+        .stat-card{border-color:#dce7ed;background:#fff;box-shadow:0 2px 7px rgba(40,78,96,.025)}
+        .stat{color:#28677d}
+        .stat-icon{background:#e8f3f7;color:#28677d}
+        .btn{border-color:#28677d;background:#28677d}
+        .btn:hover{border-color:#20566a;background:#20566a}
+        .btn-secondary{border-color:#cbdce4;background:#fff;color:#3d6070}
+        .btn-secondary:hover{border-color:#a8c8d6;background:#eef6f9;color:#255a70}
+        .btn-ghost{color:#527588}
+        .btn-ghost:hover{border-color:#d7e7ed;background:#edf5f8;color:#2b657c}
+        .field{border-color:#cadbe3;color:#294653}
+        .field:hover{border-color:#9dbdcb}
+        .field:focus{border-color:#4b91a9;box-shadow:0 0 0 3px rgba(53,131,158,.14)}
+        label,.field-label{color:#3c5f70}
+        .help{color:#718894}
+        .badge{border-color:#dce7ec;background:#f2f6f8;color:#526a76}
+        .badge-blue{border-color:#cfe2ed;background:#eaf4fa;color:#316d8d}
+        .badge-green{border-color:#cfe7d8;background:#eaf5ee;color:#34744f}
+        .badge-orange{border-color:#f0dfc1;background:#fff4e4;color:#93652b}
+        .badge-red{border-color:#efd4d2;background:#fff0ef;color:#a34a48}
+        .badge-purple{border-color:#e2d9f2;background:#f4effb;color:#72569b}
+        .badge-teal{border-color:#cce8e3;background:#eaf7f4;color:#2d766b}
+        .empty{border-color:#d4e3e9;background:#f7fafb;color:#68818d}
+        .empty strong{color:#355667}
+        .filter-bar{border-color:#dce7ed;background:#f3f7f9}
+        .filter-input{border-color:#cddde5;color:#405f6e}
+        .list-title{color:#315365}.list-meta{color:#718895}
+        .course-card{border-color:#dce7ed;background:#fff}
+        .course-card:hover{border-color:#a8c9d7;background:#fbfdfe}
+        .choice-card{border-color:#dce7ed}
+        .choice-card.selected{border-color:#70a7bc;background:#f1f8fa;box-shadow:0 0 0 2px #e5f2f6}
+        th{background:#edf4f7;color:#557584}
+        td{color:#3f5965}
+        tbody tr:hover{background:#f4f9fb}
+        .quick-nav{border-color:#dce7ed;background:rgba(240,247,250,.96)}
+        .quick-nav a{color:#557687}
+        .quick-nav a:hover{border-color:#d3e5eb;background:#fff}
+        .flash-success{border-color:#cfe7d8;background:#f2faf5;color:#34744f}
+        .flash-error{border-color:#efd4d2;background:#fff5f4;color:#a34a48}
+        .flash-info{border-color:#cfe2ed;background:#f2f8fc;color:#346c91}
+        .flash-success .flash-mark{background:#dff1e6;color:#28734f}
+        .flash-error .flash-mark{background:#fbe4e2;color:#a74646}
+        .flash-info .flash-mark{background:#e0eff8;color:#346c91}
+        .dialog-head{background:linear-gradient(135deg,#f3f8fa,#fff)}
+        .modal-context{border-color:#d2e5ec;background:#eff7fa;color:#476a79}
+        .cycle-item-icon{border-color:#d4e5ed;background:#edf5f8;color:#39758d}
+        .workflow-icon{background:#e8f3f7;color:#28677d}
+        .stat-card:nth-child(4n+1) .stat-icon{background:#e8f1fb;color:#3f70a0}
+        .stat-card:nth-child(4n+2) .stat-icon{background:#e7f5f1;color:#347d72}
+        .stat-card:nth-child(4n+3) .stat-icon{background:#fff2e2;color:#a36b2f}
+        .stat-card:nth-child(4n) .stat-icon{background:#f2edfa;color:#795fa5}
+        .dashboard-stats .stat-card:nth-child(1){border-top:3px solid #5b8db7;background:#f5f9fd}
+        .dashboard-stats .stat-card:nth-child(2){border-top:3px solid #4b9a8b;background:#f4faf8}
+        .dashboard-stats .stat-card:nth-child(3){border-top:3px solid #d19a55;background:#fffaf3}
+        .dashboard-stats .stat-card:nth-child(4){border-top:3px solid #8975b1;background:#faf8fd}
+        .cycle-item{border-bottom-color:#e8eff2}
+        .cycle-item:hover .cycle-item-icon{background:#e3f1f6}
+        .pagination{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin:16px 0 0}
+        .pagination a,.pagination span{min-width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;padding:0 9px;border:1px solid #d5e3e9;border-radius:7px;background:#fff;color:#456a7b;font-size:11px}
+        .pagination [aria-current="page"] span{border-color:#28677d;background:#28677d;color:#fff}
+        .pagination a:hover{border-color:#9fc0cd;background:#eff7fa;text-decoration:none}
+        .inline-edit{display:inline-flex;align-items:center;gap:5px;border:0;background:transparent;color:#34758c;font-size:10px;font-weight:650;cursor:pointer}
+        .inline-edit:hover{color:#1e566b;text-decoration:underline}
+        .modal-help-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+        .modal-help-item{display:flex;align-items:flex-start;gap:10px;padding:12px;border:1px solid #dce8ed;border-radius:9px;background:#f8fbfc}
+        .modal-help-item .workflow-icon{width:34px;height:34px}
+        .modal-help-item strong{display:block;color:#31586b;font-size:12px}
+        .modal-help-item p{margin:4px 0 0;color:#6d8390;font-size:10px;line-height:1.5}
+        @media(max-width:720px){.modal-help-grid{grid-template-columns:1fr}}
     </style>
     @stack('styles')
 </head>
@@ -418,6 +515,27 @@
 <dialog class="ui-dialog confirm-dialog" id="app-confirm-dialog" aria-labelledby="app-confirm-title" data-backdrop-close>
     <div class="dialog-head"><div><h2 id="app-confirm-title">Confirmar acción</h2><p id="app-confirm-message">¿Deseas continuar?</p></div><button class="dialog-close" type="button" data-modal-close aria-label="Cerrar"><x-icon name="x" size="15" /></button></div>
     <div class="dialog-footer"><button class="btn btn-secondary" type="button" data-modal-close>Cancelar</button><button class="btn" type="button" id="app-confirm-submit"><x-icon name="check" /> Continuar</button></div>
+</dialog>
+
+
+<dialog class="ui-dialog sheet-dialog" id="workflow-help-dialog" aria-labelledby="workflow-help-title" data-backdrop-close>
+    <div class="dialog-head">
+        <div>
+            <p class="eyebrow">Ayuda rápida</p>
+            <h2 id="workflow-help-title">¿Cómo se organiza tu trabajo?</h2>
+            <p>El sistema conecta tus periodos, grupos y cursos en un mismo lugar.</p>
+        </div>
+        <button class="dialog-close" type="button" data-modal-close aria-label="Cerrar"><x-icon name="x" /></button>
+    </div>
+    <div class="dialog-body">
+        <div class="modal-help-grid">
+            <div class="modal-help-item"><span class="workflow-icon"><x-icon name="calendar-days" /></span><div><strong>Ciclos</strong><p>Registra el año, el código y las fechas del periodo académico.</p></div></div>
+            <div class="modal-help-item"><span class="workflow-icon"><x-icon name="users" /></span><div><strong>Grupos</strong><p>Agrega las secciones que tienes asignadas dentro de cada ciclo.</p></div></div>
+            <div class="modal-help-item"><span class="workflow-icon"><x-icon name="book-open" /></span><div><strong>Cursos</strong><p>Asigna cursos a cada grupo y define si trabajan con TEC, TALL o ambas.</p></div></div>
+            <div class="modal-help-item"><span class="workflow-icon"><x-icon name="clipboard-check" /></span><div><strong>Gestión académica</strong><p>Configura horarios, importa alumnos, registra notas y genera documentos.</p></div></div>
+        </div>
+    </div>
+    <div class="dialog-footer"><button class="btn" type="button" data-modal-close>Entendido</button></div>
 </dialog>
 
 <script>
