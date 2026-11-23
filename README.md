@@ -167,3 +167,17 @@ Para crear una cuenta docente normal, ejecuta `php artisan gestion:crear-profeso
 
 El correo debe ser único. Si ya existe, el comando no duplica ni modifica la cuenta. No guardes contraseñas en el README ni las compartas en capturas.
 
+
+
+## Solución si `php artisan serve` indica que no existe `public`
+
+El repositorio debe incluir `public/index.php` y `public/.htaccess`. Si ya tienes una copia local, actualízala:
+
+```bash
+git pull origin main
+composer dump-autoload
+php artisan optimize:clear
+php artisan serve
+```
+
+La dirección local por defecto es http://127.0.0.1:8000. No vuelvas a importar el SQL ni recrees el usuario administrador para resolver este error: la cuenta ya creada permanece en MySQL.
