@@ -169,8 +169,8 @@
         .quick-nav a{max-width:100%;padding:7px 9px;border:1px solid transparent;border-radius:6px;color:#657267;font-size:10px;font-weight:620;line-height:1.3;overflow-wrap:anywhere}
         .quick-nav a:hover{border-color:#e0e6de;background:#fff;text-decoration:none}
         /* Flash messages */
-        .flash-stack{position:relative;z-index:25;display:grid;gap:7px;margin:0 0 15px}
-        .flash{display:flex;align-items:flex-start;gap:10px;min-width:0;padding:11px 12px;border:1px solid;border-radius:8px;background:#fff;font-size:11px;line-height:1.5;box-shadow:0 2px 5px rgba(30,40,32,.025)}
+        .flash-stack{position:relative;z-index:25;display:grid;gap:7px;margin:0 0 15px}.flash-stack:empty{display:none}
+        .flash{display:flex;align-items:flex-start;gap:10px;min-width:0;padding:11px 12px;border:1px solid;border-radius:8px;background:#fff;font-size:11px;line-height:1.5;box-shadow:0 2px 5px rgba(30,40,32,.025);transition:opacity .13s ease,transform .13s ease}
         .flash-mark{width:18px;height:18px;flex:none;display:grid;place-items:center;border-radius:50%;font-size:10px;font-weight:800}
         .flash-content{flex:1;min-width:0}
         .flash-content strong{display:block;margin-bottom:2px;font-weight:720}
@@ -323,15 +323,15 @@
     <main class="main">
         <div class="flash-stack" aria-live="polite" aria-atomic="false">
             @if(session('success'))
-                <div class="flash flash-success" role="status"><span class="flash-mark" aria-hidden="true">✓</span><div class="flash-content"><strong>Listo</strong>{{ session('success') }}</div><button class="flash-close" type="button" data-alert-close aria-label="Cerrar mensaje">×</button></div>
+                <div class="flash flash-success" data-auto-dismiss role="status"><span class="flash-mark" aria-hidden="true">✓</span><div class="flash-content"><strong>Listo</strong>{{ session('success') }}</div><button class="flash-close" type="button" data-alert-close aria-label="Cerrar mensaje">×</button></div>
             @endif
             @if(session('error'))
                 <div class="flash flash-error" role="alert"><span class="flash-mark" aria-hidden="true">!</span><div class="flash-content"><strong>No se pudo completar</strong>{{ session('error') }}</div><button class="flash-close" type="button" data-alert-close aria-label="Cerrar mensaje">×</button></div>
             @endif
             @if(session('info'))
-                <div class="flash flash-info" role="status"><span class="flash-mark" aria-hidden="true">i</span><div class="flash-content">{{ session('info') }}</div><button class="flash-close" type="button" data-alert-close aria-label="Cerrar mensaje">×</button></div>
+                <div class="flash flash-info" data-auto-dismiss role="status"><span class="flash-mark" aria-hidden="true">i</span><div class="flash-content">{{ session('info') }}</div><button class="flash-close" type="button" data-alert-close aria-label="Cerrar mensaje">×</button></div>
             @endif
-            @if($errors->any())
+            @if($errors->any() && !request()->routeIs('holidays.index'))
                 <div class="flash flash-error" role="alert"><span class="flash-mark" aria-hidden="true">!</span><div class="flash-content"><strong>Revisa los datos ingresados</strong><ul style="margin:5px 0 0;padding-left:17px">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div><button class="flash-close" type="button" data-alert-close aria-label="Cerrar mensaje">×</button></div>
             @endif
         </div>
@@ -393,7 +393,7 @@
 
     confirmDialog?.addEventListener('close', () => { pendingForm = null; });
 
-    document.querySelectorAll('.flash').forEach(message => {
+    document.querySelectorAll('.flash[data-auto-dismiss]').forEach(message => {
         window.setTimeout(() => {
             if (message.isConnected) {
                 message.style.opacity = '0';
