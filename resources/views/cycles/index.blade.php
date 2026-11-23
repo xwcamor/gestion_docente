@@ -89,8 +89,7 @@
         </div>
     @endforelse
     @if($cycles->hasPages())
-        <div class="pagination-summary">Mostrando {{ $cycles->firstItem() }}–{{ $cycles->lastItem() }} de {{ $cycles->total() }} ciclos</div>
-        {{ $cycles->links() }}
+        <x-pagination :paginator="$cycles" />
     @endif
 </section>
 
