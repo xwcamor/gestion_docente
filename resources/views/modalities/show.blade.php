@@ -58,7 +58,7 @@
     @if($modality->start_date && $modality->end_date && $modality->schedules->isEmpty())
         <div class="alert alert-warning mt-16">Ya hay fechas registradas, pero falta al menos un día y horario de clase para calcular las sesiones.</div>
     @endif
-    <form method="POST" action="{{ route('modalities.rebuild', $modality) }}" class="mt-16">@csrf<button class="btn btn-secondary btn-sm" type="submit">↻ Recalcular calendario ahora</button></form>
+    <form method="POST" action="{{ route('modalities.rebuild', $modality) }}" class="mt-16" data-confirm="Se volverán a calcular las sesiones de esta modalidad con la configuración y los feriados actuales. ¿Deseas continuar?">@csrf<button class="btn btn-secondary btn-sm" type="submit">↻ Recalcular calendario ahora</button></form>
 </section>
 
 <section class="card" id="students">
@@ -127,17 +127,17 @@
 
 @push('styles')
 <style>
-.calendar-preview{margin-top:18px;padding:16px;border:1px solid #d9e4ef;border-radius:12px;background:#f8fbff}
+.calendar-preview{margin-top:18px;padding:16px;border:1px solid #e2e7e0;border-radius:9px;background:#f8faf7}
 .calendar-preview-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
 .calendar-preview-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:13px 0}
-.calendar-preview-stats>div{padding:11px;background:#fff;border:1px solid #e5ebf2;border-radius:9px}
-.calendar-preview-stats small{display:block;color:#667085;font-size:10px;margin-bottom:5px}
-.calendar-preview-stats strong{font-size:14px;color:#17365d}
-.preview-details{margin-top:12px;border-top:1px solid #e2eaf2;padding-top:10px}
-.preview-details summary{cursor:pointer;font-size:12px;font-weight:700;color:#344054}
+.calendar-preview-stats>div{padding:11px;background:#fff;border:1px solid #e7ebe5;border-radius:7px}
+.calendar-preview-stats small{display:block;color:#7b867d;font-size:10px;margin-bottom:5px}
+.calendar-preview-stats strong{font-size:14px;color:#40584a}
+.preview-details{margin-top:12px;border-top:1px solid #e3e8e1;padding-top:10px}
+.preview-details summary{cursor:pointer;font-size:12px;font-weight:700;color:#465249}
 .preview-date-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(135px,1fr));gap:6px;margin-top:10px}
-.preview-date{font-size:11px;padding:7px 8px;border-radius:7px;background:#fff;border:1px solid #e6ebf1}
-.preview-date.holiday{color:#9a5b10;background:#fff8eb;border-color:#f1dfbd}
+.preview-date{font-size:11px;padding:7px 8px;border-radius:6px;background:#fff;border:1px solid #e6ebe5}
+.preview-date.holiday{color:#806338;background:#f8f3e9;border-color:#e9dfca}
 @media(max-width:600px){.calendar-preview-stats{grid-template-columns:1fr}.calendar-preview-head{display:block}}
 </style>
 @endpush
