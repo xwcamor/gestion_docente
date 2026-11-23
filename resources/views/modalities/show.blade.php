@@ -139,6 +139,17 @@
 .preview-date{font-size:11px;padding:7px 8px;border-radius:6px;background:#fff;border:1px solid #e6ebe5}
 .preview-date.holiday{color:#806338;background:#f8f3e9;border-color:#e9dfca}
 @media(max-width:600px){.calendar-preview-stats{grid-template-columns:1fr}.calendar-preview-head{display:block}}
+
+/* Modalidad: calendario, alumnado y documentos con contraste */
+.calendar-preview{border-color:#cfe1e9;background:linear-gradient(135deg,#eff7fa,#f5faf9)}
+.calendar-preview-stats>div{border-color:#d9e7ed;background:#fff}
+.calendar-preview-stats small{color:#668392}
+.calendar-preview-stats strong{color:#28677d}
+.preview-details{border-top-color:#d8e6ec}
+.preview-details summary{color:#35657a}
+.preview-date{border-color:#dce8ed;background:#fff;color:#456b7c}
+.preview-date.holiday{color:#956326;background:#fff4e3;border-color:#efd8b1}
+
 </style>
 @endpush
 
