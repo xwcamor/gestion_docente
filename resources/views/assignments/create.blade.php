@@ -93,6 +93,11 @@
 .schedule-copy-note{margin-top:10px;padding:10px 11px;border-radius:8px;background:#effaf3;border:1px solid #cdebd7;color:#17663b;font-size:11px;line-height:1.5}
 .copied-schedules{display:none}
 .modality-fields[hidden],.wizard-section[hidden]{display:none!important}
+
+.modality-fields{border-top-color:#d9e7ed}
+.schedule-copy-note{background:#edf8f6;border-color:#bfe4dc;color:#26776b}
+.choice-card.selected{background:#f0f8fb;border-color:#89b9ca}
+
 </style>
 @endpush
 
