@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CycleController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\CourseAssignmentController;
+use App\Http\Controllers\QuickCourseEntryController;
 use App\Http\Controllers\CourseModalityController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\StudentImportController;

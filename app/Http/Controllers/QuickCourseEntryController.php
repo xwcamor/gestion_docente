@@ -1,14 +1,14 @@
 <?php
 
-namespace App\\Http\\Controllers;
+namespace App\Http\Controllers;
 
-use App\\Models\\Course;
-use App\\Models\\CourseModality;
-use App\\Models\\TeachingGroup;
-use Illuminate\\Http\\Request;
-use Illuminate\\Support\\Facades\\DB;
-use Illuminate\\Support\\Str;
-use Illuminate\\Validation\\ValidationException;
+use App\Models\Course;
+use App\Models\CourseModality;
+use App\Models\TeachingGroup;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class QuickCourseEntryController extends Controller
 {

@@ -1,8 +1,8 @@
 <?php
-namespace App\\Models;
-use Illuminate\\Database\\Eloquent\\Model;
-use Illuminate\\Database\\Eloquent\\Relations\\BelongsTo;
-use Illuminate\\Database\\Eloquent\\Relations\\HasMany;
+namespace App\Models;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 class CourseModality extends Model {
  protected $fillable=['course_assignment_id','modality','nrc','block_code','block_reference','start_date','end_date','total_hours','curriculum_start_week','active','period_label','semester'];
  protected function casts(): array { return ['start_date'=>'date','end_date'=>'date','total_hours'=>'decimal:2','curriculum_start_week'=>'integer','active'=>'boolean']; }
