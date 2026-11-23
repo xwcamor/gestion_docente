@@ -14,6 +14,7 @@
             <p class="card-description">Cada evaluación guarda sus notas por separado. La nota general importada del campus no se modifica.</p>
             <form method="POST" action="{{ route('evaluations.store', $modality) }}">
                 @csrf
+                <input type="hidden" name="page" value="{{ $enrollments->currentPage() }}">
                 <div class="form-row-3">
                     <div><label for="title">Nombre de la evaluación</label><input class="field" id="title" name="title" required placeholder="Ej. Evaluación 1"></div>
                     <div><label for="evaluation_date">Fecha (opcional)</label><input class="field" id="evaluation_date" type="date" name="evaluation_date"></div>
@@ -62,11 +63,11 @@
     </section>
 @empty
     <section class="card"><div class="empty"><strong>Aún no has creado evaluaciones.</strong><span>Usa el botón superior para crear la primera evaluación de esta modalidad.</span></div></section>
+@endforelse
 
 @if($modality->evaluations->isNotEmpty() && $enrollments->hasPages())
     <section class="card"><x-pagination :paginator="$enrollments" /></section>
 @endif
-@endforelse
 @endsection
 
 @push('scripts')
