@@ -2,26 +2,16 @@
 @section('title', 'Resumen')
 @section('content')
 <div class="page-head">
-    <div><p class="eyebrow">Tu espacio de trabajo</p><h1>Hola, {{ auth()->user()->name }}</h1><p class="subhead">Desde aquí puedes continuar con tus ciclos, grupos, cursos y documentos.</p></div>
-    <div class="actions"><a class="btn btn-secondary" href="{{ route('cycles.index') }}"><x-icon name="calendar-days" /> Ver mis ciclos</a><a class="btn" href="{{ route('cycles.create') }}"><x-icon name="plus" /> Crear ciclo</a></div>
+    <div><p class="eyebrow">Tu espacio de trabajo</p><h1>Hola, {{ auth()->user()->name }}</h1><p class="subhead">Tu actividad académica en un solo lugar.</p></div>
+    <div class="actions"><button class="btn btn-secondary" type="button" data-modal-open="workflow-help-dialog"><x-icon name="circle-help" /> Cómo funciona</button><a class="btn" href="{{ route('cycles.create') }}"><x-icon name="plus" /> Crear ciclo</a></div>
 </div>
 
 <div class="grid grid-4 dashboard-stats" style="margin-bottom:19px">
-    <div class="stat-card"><div class="stat-label">Ciclos académicos</div><div class="stat">{{ $cycles->count() }}</div></div>
-    <div class="stat-card"><div class="stat-label">Grupos registrados</div><div class="stat">{{ $groupCount }}</div></div>
-    <div class="stat-card"><div class="stat-label">Modalidades</div><div class="stat">{{ $modalities->count() }}</div></div>
-    <div class="stat-card"><div class="stat-label">Feriados próximos</div><div class="stat">{{ $upcoming->count() }}</div></div>
+    <div class="stat-card"><div class="stat-top"><span class="stat-label">Ciclos académicos</span><span class="stat-icon"><x-icon name="calendar-days" /></span></div><div class="stat">{{ $cycleCount }}</div></div>
+    <div class="stat-card"><div class="stat-top"><span class="stat-label">Grupos registrados</span><span class="stat-icon"><x-icon name="users" /></span></div><div class="stat">{{ $groupCount }}</div></div>
+    <div class="stat-card"><div class="stat-top"><span class="stat-label">Modalidades</span><span class="stat-icon"><x-icon name="layers" /></span></div><div class="stat">{{ $modalityCount }}</div></div>
+    <div class="stat-card"><div class="stat-top"><span class="stat-label">Feriados próximos</span><span class="stat-icon"><x-icon name="calendar-range" /></span></div><div class="stat">{{ $upcoming->count() }}</div></div>
 </div>
-
-<section class="card dashboard-guide">
-    <div class="card-head"><div><h2>Cómo trabajar en el sistema</h2><p class="card-description">Sigue este orden. Cada pantalla te lleva al siguiente paso.</p></div><span class="badge badge-blue">Flujo de trabajo</span></div>
-    <div class="grid grid-4">
-        <a class="course-card" href="{{ route('cycles.index') }}"><span class="badge badge-blue">01</span><h3 style="margin-top:10px">Ciclos</h3><p class="help">Registra el año y periodo académico.</p></a>
-        <a class="course-card" href="{{ route('cycles.index') }}"><span class="badge badge-blue">02</span><h3 style="margin-top:10px">Grupos</h3><p class="help">Agrega los grupos que te asignen a cada ciclo.</p></a>
-        <a class="course-card" href="{{ route('cycles.index') }}"><span class="badge badge-blue">03</span><h3 style="margin-top:10px">Cursos</h3><p class="help">Registra cada curso y elige TEC, TALL o ambos.</p></a>
-        <a class="course-card" href="{{ route('cycles.index') }}"><span class="badge badge-blue">04</span><h3 style="margin-top:10px">Gestión</h3><p class="help">Importa alumnos, administra notas y genera Excel.</p></a>
-    </div>
-</section>
 
 <div class="grid grid-2">
     <section class="card">
@@ -47,7 +37,7 @@
     @else
         <div class="table-wrap"><table><thead><tr><th>Grupo</th><th>Ciclo</th><th>Cursos</th><th></th></tr></thead><tbody>
             @foreach($groups as $group)
-                <tr><td><strong>{{ $group->name }}</strong></td><td>{{ $group->cycle->academic_year }} · {{ $group->cycle->cycle_code }}</td><td>{{ $group->assignments->count() }}</td><td><a class="btn btn-secondary btn-sm" href="{{ route('groups.show', $group) }}"><x-icon name="arrow-right" /> Abrir grupo</a></td></tr>
+                <tr><td><strong>{{ $group->name }}</strong></td><td>{{ $group->cycle->academic_year }} · {{ $group->cycle->cycle_code }}</td><td>{{ $group->assignments_count }}</td><td><a class="btn btn-secondary btn-sm" href="{{ route('groups.show', $group) }}"><x-icon name="arrow-right" /> Abrir grupo</a></td></tr>
             @endforeach
         </tbody></table></div>
     @endif
@@ -57,8 +47,6 @@
 @media(max-width:680px){
     .dashboard-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
     .dashboard-stats .stat-card{min-width:0}
-    .dashboard-guide{display:none}
-    .dashboard-stats+.dashboard-guide{display:none}
     .dashboard-stats .stat-label{min-height:26px;line-height:1.25}
     .dashboard-stats .stat{font-size:23px}
 }
