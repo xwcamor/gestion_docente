@@ -2,6 +2,7 @@
 @section('title', 'Feriados y cierres')
 @section('content')
 @php
+    $monthLabels = [1 => 'ENE', 2 => 'FEB', 3 => 'MAR', 4 => 'ABR', 5 => 'MAY', 6 => 'JUN', 7 => 'JUL', 8 => 'AGO', 9 => 'SEP', 10 => 'OCT', 11 => 'NOV', 12 => 'DIC'];
     $scopeLabels = [
         'NATIONAL' => 'Nacional',
         'REGIONAL' => 'Regional',
@@ -61,7 +62,7 @@
         @forelse($holidays as $holiday)
             <article class="holiday-row">
                 <div class="holiday-date" aria-label="{{ $holiday->holiday_date->format('d/m/Y') }}">
-                    <span>{{ $holiday->holiday_date->translatedFormat('M') }}</span>
+                    <span>{{ $monthLabels[$holiday->holiday_date->month] }}</span>
                     <strong>{{ $holiday->holiday_date->format('d') }}</strong>
                     <small>{{ $holiday->holiday_date->format('Y') }}</small>
                 </div>
@@ -73,7 +74,7 @@
                     <p class="holiday-meta">
                         {{ $holiday->holiday_date->translatedFormat('l, d \d\e F \d\e Y') }}
                         <span aria-hidden="true">·</span>
-                        {{ $holiday->professor_id ? 'Registro personal' : 'Registro general' }}
+                        {{ $holiday->professor_id ? 'Tu calendario' : 'Registro general' }}
                     </p>
                 </div>
                 <div class="holiday-status">
@@ -108,7 +109,7 @@
     @endif
 </section>
 
-<dialog class="ui-dialog sheet-dialog" id="holiday-create-dialog" aria-labelledby="holiday-create-title" @if($errors->any()) data-auto-open @endif>
+<dialog class="ui-dialog sheet-dialog" id="holiday-create-dialog" aria-labelledby="holiday-create-title" data-backdrop-close @if($errors->any()) data-auto-open @endif>
     <div class="dialog-head">
         <div>
             <h2 id="holiday-create-title">Registrar feriado o cierre</h2>
