@@ -97,7 +97,7 @@
     @endif
 </section>
 
-<dialog class="ui-dialog sheet-dialog" id="account-create-dialog" aria-labelledby="account-create-title" data-backdrop-close @if($errors->any()) data-auto-open @endif>
+<dialog class="ui-dialog sheet-dialog" id="account-create-dialog" aria-labelledby="account-create-title" data-backdrop-close @if($errors->any() && request('dialog') !== 'edit-account') data-auto-open @endif>
     <div class="dialog-head">
         <div>
             <h2 id="account-create-title">Crear cuenta docente</h2>
@@ -107,6 +107,8 @@
     </div>
     <form method="POST" action="{{ route('admin.professors.store') }}">
         @csrf
+        <input type="hidden" name="return_q" value="{{ request('q') }}">
+        <input type="hidden" name="return_page" value="{{ request('page', 1) }}">
         <div class="dialog-body">
             @if($errors->any())
                 <div class="dialog-error" role="alert">
@@ -154,7 +156,7 @@
     </form>
 </dialog>
 
-<dialog class="ui-dialog sheet-dialog" id="account-edit-dialog" aria-labelledby="account-edit-title" data-backdrop-close>
+<dialog class="ui-dialog sheet-dialog" id="account-edit-dialog" aria-labelledby="account-edit-title" data-backdrop-close @if(request('dialog') === 'edit-account' && $errors->any()) data-auto-open @endif>
  <div class="dialog-head"><div><h2 id="account-edit-title">Editar perfil docente</h2><p>Actualiza los datos de acceso y del perfil.</p></div><button class="dialog-close" type="button" data-modal-close aria-label="Cerrar"><x-icon name="x" /></button></div>
  <form method="POST" action="#" id="account-edit-form" data-loading-form="1">
   @csrf
@@ -163,14 +165,14 @@
   <input type="hidden" name="return_page" value="{{ request('page', 1) }}">
   <div class="dialog-body">
    <div class="form-row">
-    <div><label for="edit_full_name">Nombre completo</label><input class="field" id="edit_full_name" name="full_name" required maxlength="255"></div>
-    <div><label for="edit_email">Correo electrónico</label><input class="field" id="edit_email" type="email" name="email" required maxlength="255"></div>
+    <div><label for="edit_full_name">Nombre completo</label><input class="field" id="edit_full_name" name="full_name" value="{{ old('full_name') }}" required maxlength="255"></div>
+    <div><label for="edit_email">Correo electrónico</label><input class="field" id="edit_email" type="email" name="email" value="{{ old('email') }}" required maxlength="255"></div>
    </div>
    <div class="form-row">
-    <div><label for="edit_institutional_id">ID institucional</label><input class="field" id="edit_institutional_id" name="institutional_id" maxlength="80"></div>
-    <div><label for="edit_school">Escuela</label><input class="field" id="edit_school" name="school" maxlength="255"></div>
+    <div><label for="edit_institutional_id">ID institucional</label><input class="field" id="edit_institutional_id" name="institutional_id" value="{{ old('institutional_id') }}" maxlength="80"></div>
+    <div><label for="edit_school">Escuela</label><input class="field" id="edit_school" name="school" value="{{ old('school') }}" maxlength="255"></div>
    </div>
-   <label for="edit_career">Carrera</label><input class="field" id="edit_career" name="career" maxlength="255">
+   <label for="edit_career">Carrera</label><input class="field" id="edit_career" name="career" value="{{ old('career') }}" maxlength="255">
    @if($errors->any() && request('dialog') === 'edit-account')
     <div class="dialog-error" role="alert"><strong>Revisa estos datos:</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
    @endif
@@ -249,3 +251,47 @@
 </style>
 @endpush
 
+@push('scripts')
+<script>
+(() => {
+    const dialog = document.getElementById('account-edit-dialog');
+    const form = document.getElementById('account-edit-form');
+    if (!dialog || !form) return;
+    const fields = {
+        full_name: document.getElementById('edit_full_name'),
+        email: document.getElementById('edit_email'),
+        institutional_id: document.getElementById('edit_institutional_id'),
+        school: document.getElementById('edit_school'),
+        career: document.getElementById('edit_career'),
+    };
+    const populate = (button) => {
+        form.action = button.dataset.updateUrl;
+        fields.full_name.value = button.dataset.fullName || '';
+        fields.email.value = button.dataset.email || '';
+        fields.institutional_id.value = button.dataset.institutionalId || '';
+        fields.school.value = button.dataset.school || '';
+        fields.career.value = button.dataset.career || '';
+    };
+    document.addEventListener('click', event => {
+        const button = event.target.closest('[data-edit-account]');
+        if (!button) return;
+        populate(button);
+        dialog.showModal();
+        fields.full_name.focus();
+    });
+    @if(request('dialog') === 'edit-account')
+        const button = document.querySelector('[data-edit-account][data-user-id="{{ (int) request('user_id') }}"]');
+        if (button) {
+            populate(button);
+            fields.full_name.value = @json(old('full_name', ''));
+            fields.email.value = @json(old('email', ''));
+            fields.institutional_id.value = @json(old('institutional_id', ''));
+            fields.school.value = @json(old('school', ''));
+            fields.career.value = @json(old('career', ''));
+            if (!dialog.open) dialog.showModal();
+            fields.full_name.focus();
+        }
+    @endif
+})();
+</script>
+@endpush
