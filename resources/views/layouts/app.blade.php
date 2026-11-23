@@ -321,6 +321,7 @@
         </div>
     </aside>
     <main class="main">
+        @if(session('success') || session('error') || session('info') || ($errors->any() && !request()->routeIs('holidays.index')))
         <div class="flash-stack" aria-live="polite" aria-atomic="false">
             @if(session('success'))
                 <div class="flash flash-success" data-auto-dismiss role="status"><span class="flash-mark" aria-hidden="true">✓</span><div class="flash-content"><strong>Listo</strong>{{ session('success') }}</div><button class="flash-close" type="button" data-alert-close aria-label="Cerrar mensaje">×</button></div>
@@ -335,11 +336,12 @@
                 <div class="flash flash-error" role="alert"><span class="flash-mark" aria-hidden="true">!</span><div class="flash-content"><strong>Revisa los datos ingresados</strong><ul style="margin:5px 0 0;padding-left:17px">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div><button class="flash-close" type="button" data-alert-close aria-label="Cerrar mensaje">×</button></div>
             @endif
         </div>
+        @endif
         @yield('content')
     </main>
 </div>
 
-<dialog class="ui-dialog confirm-dialog" id="app-confirm-dialog" aria-labelledby="app-confirm-title">
+<dialog class="ui-dialog confirm-dialog" id="app-confirm-dialog" aria-labelledby="app-confirm-title" data-backdrop-close>
     <div class="dialog-head"><div><h2 id="app-confirm-title">Confirmar acción</h2><p id="app-confirm-message">¿Deseas continuar?</p></div><button class="dialog-close" type="button" data-modal-close aria-label="Cerrar">×</button></div>
     <div class="dialog-footer"><button class="btn btn-secondary" type="button" data-modal-close>Cancelar</button><button class="btn" type="button" id="app-confirm-submit">Continuar</button></div>
 </dialog>
