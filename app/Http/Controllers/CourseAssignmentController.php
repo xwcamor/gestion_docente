@@ -98,14 +98,43 @@ class CourseAssignmentController extends Controller
         }
 
         $professorId = $group->professor_id;
-        $code = $data['course_code'] ?: Str::upper(Str::slug($data['course_name'], '-'));
+        $courseName = trim($data['course_name']);
+        $code = trim($data['course_code'] ?? '') ?: Str::upper(Str::slug($courseName, '-'));
+
+        $existingCourse = Course::where('professor_id', $professorId)
+            ->where('code', $code)
+            ->first();
+
+        if ($existingCourse && $group->assignments()->where('course_id', $existingCourse->id)->exists()) {
+            throw ValidationException::withMessages([
+                'course_name' => 'Este curso ya está registrado en el grupo. No se modificaron su NRC ni sus horarios.',
+            ]);
+        }
+
+        if ($existingCourse && mb_strtolower(trim($existingCourse->name)) !== mb_strtolower($courseName)) {
+            throw ValidationException::withMessages([
+                'course_code' => "El código {$code} ya pertenece al curso «{$existingCourse->name}». Verifica los datos.",
+            ]);
+        }
+
+        $sameName = Course::where('professor_id', $professorId)
+            ->whereRaw('LOWER(name) = ?', [mb_strtolower($courseName)])
+            ->first();
+
+        if ($sameName && mb_strtolower((string) $sameName->code) !== mb_strtolower($code)) {
+            throw ValidationException::withMessages([
+                'course_code' => "Ya existe «{$courseName}» con el código {$sameName->code}. Reutiliza ese código para evitar duplicados.",
+            ]);
+        }
+
         $course = Course::firstOrCreate(
             ['professor_id' => $professorId, 'code' => $code],
-            ['name' => $data['course_name'], 'career' => $data['career'] ?? null, 'module' => $data['module'] ?? null]
+            ['name' => $courseName, 'career' => $data['career'] ?? null, 'module' => $data['module'] ?? null]
         );
 
         $defaultCurriculum = $course->curricula()->where('is_active', true)->with('weeks')->first();
-        $assignment = $group->assignments()->firstOrCreate(['course_id' => $course->id], [
+        $assignment = $group->assignments()->create([
+            'course_id' => $course->id,
             'curriculum_id' => $defaultCurriculum?->id,
             'assigned_at' => $data['assigned_at'] ?? now()->toDateString(),
             'notes' => $data['notes'] ?? null,
