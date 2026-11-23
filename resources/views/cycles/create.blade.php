@@ -3,14 +3,7 @@
 @section('content')
 <div class="breadcrumbs"><a href="{{ route('cycles.index') }}">Ciclos</a><span>›</span><span class="current">Nuevo ciclo</span></div>
 <div class="page-head">
-    <div><p class="eyebrow">Paso 1 de 4 · Organización académica</p><h1>Crear ciclo académico</h1><p class="subhead">Registra el periodo una sola vez. Después podrás agregar todos los grupos que te asignen.</p></div>
-</div>
-
-<div class="stepper">
-    <div class="step active"><span class="step-number">1</span><span>Ciclo</span></div><span class="step-line"></span>
-    <div class="step"><span class="step-number">2</span><span>Grupo</span></div><span class="step-line"></span>
-    <div class="step"><span class="step-number">3</span><span>Curso</span></div><span class="step-line"></span>
-    <div class="step"><span class="step-number">4</span><span>Gestión</span></div>
+    <div><p class="eyebrow">Datos del periodo</p><h1>Crear ciclo académico</h1><p class="subhead">Registra el periodo una sola vez. Después podrás agregar todos los grupos que te asignen.</p></div>
 </div>
 
 <section class="card">
