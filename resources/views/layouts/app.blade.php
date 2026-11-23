@@ -203,6 +203,71 @@ h1{font-size:clamp(25px,2.1vw,34px);letter-spacing:-1.1px}
 }
 @media(prefers-reduced-motion:reduce){.course-card:hover{transform:none}}
 
+    
+/* Design refinement: quiet surfaces, clear hierarchy, purposeful motion */
+:root{
+ --ink:#202a36;--muted:#69756c;--line:#e3e7e2;--surface:#fff;--canvas:#f7f8f6;
+ --navy:#203e5c;--navy-hover:#2a5277;--blue-soft:#edf2f6;--radius:9px;
+ font-family:'DM Sans',Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+body{background:var(--canvas);color:var(--ink);font-size:13px}
+.topbar{height:62px;padding:0 28px;box-shadow:none;border-bottom:1px solid #e5e8e3}
+.brand{font-size:14px;gap:10px}.brand-mark{width:33px;height:33px;border-radius:8px;background:#203e5c;box-shadow:none}
+.brand small{color:#879188;font-size:10px;letter-spacing:.2px}
+.app-shell{grid-template-columns:228px minmax(0,1fr);min-height:calc(100vh - 62px)}
+.sidebar{padding:22px 13px;background:#fafbf9}
+.nav-label{color:#929b92;letter-spacing:1.1px;font-size:9px}
+.nav-link{border-radius:7px;padding:10px 11px;font-size:12px;font-weight:600}
+.nav-link:hover,.nav-link.active{background:#edf1ed;color:#203e5c}
+.nav-link.active{box-shadow:inset 2px 0 #426b91}
+.nav-link.active .nav-dot{background:#426b91}
+.sidebar-note{border-radius:7px;background:#f4f6f3;border-color:#e8ebe6}
+.main{max-width:1540px;padding:30px clamp(20px,3vw,42px)}
+h1{font-size:26px;letter-spacing:-.9px;color:#202a36;font-weight:700}
+h2{font-size:16px;letter-spacing:-.25px;color:#27352c;font-weight:700}
+h3{font-size:13px;color:#3f4b42}
+.subhead{font-size:13px;color:#778178}
+.card,.stat-card,.course-card,.choice-card,details.panel{border-radius:9px;box-shadow:none;border-color:#e3e7e2}
+.card{padding:20px;background:#fff}
+.stat-card{padding:16px 17px}
+.stat{font-size:25px;color:#294d6e}
+.btn{min-height:37px;border-radius:7px;box-shadow:none;font-size:12px;transition:background 130ms ease-out,border-color 130ms ease-out,transform 100ms ease-out}
+.btn:hover{box-shadow:none}
+.btn:active{transform:scale(.99)}
+.btn-secondary{border-color:#d7ddd6;color:#465248}
+.field,.filter-input{border-radius:7px;border-color:#d8ded7;font-size:12px}
+.field:focus{border-color:#7896b0;box-shadow:0 0 0 3px rgba(66,107,145,.09)}
+label,.field-label{color:#465248;font-size:11px}
+.alert{border-radius:7px}
+.badge{border-radius:5px;font-size:10px}
+.empty{border-radius:8px;background:#fafbf9}
+.filter-bar{border-radius:8px;background:#f8f9f7;border-color:#e7ebe5}
+.course-card{transition:border-color 140ms ease-out}
+.course-card:hover{transform:none;box-shadow:none;border-color:#bfcbbf}
+.step-number{border-radius:7px}
+.choice-card.selected{border-color:#8ea7bd;box-shadow:0 0 0 2px #eff3f6}
+.quick-nav{top:62px;background:rgba(247,248,246,.96);backdrop-filter:blur(8px);border-radius:8px;box-shadow:none}
+.quick-nav a{border-radius:6px}
+details.panel{border-radius:8px}
+@media(max-width:1000px){
+ .app-shell{grid-template-columns:1fr}
+ .sidebar{position:sticky;top:62px;background:rgba(250,251,249,.97);backdrop-filter:blur(8px)}
+ .main{padding:22px}
+}
+@media(max-width:680px){
+ .topbar{height:55px;padding:0 12px}
+ .brand-mark{width:30px;height:30px;border-radius:7px}
+ .app-shell{min-height:calc(100vh - 55px)}
+ .sidebar{top:55px}
+ .main{padding:14px 10px 25px}
+ .page-head h1{font-size:21px}
+ .card{padding:13px;border-radius:8px}
+ .stat-card{border-radius:8px}
+ .quick-nav{top:55px}
+ .btn{border-radius:7px}
+}
+@media(prefers-reduced-motion:reduce){.course-card:hover{transform:none}}
+
     </style>
     @stack('styles')
 </head>
