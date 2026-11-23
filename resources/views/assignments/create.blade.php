@@ -63,7 +63,7 @@
                             <label>Días de clase</label>
                             <div class="weekday-list">
                                 @foreach([1=>'Lun',2=>'Mar',3=>'Mié',4=>'Jue',5=>'Vie',6=>'Sáb',7=>'Dom'] as $day=>$dayLabel)
-                                    <label class="weekday"><input type="checkbox" name="{{ $prefix }}_days[]" value="{{ $day }}" data-weekday="{{ $prefix }}"> {{ $dayLabel }}</label>
+                                    <label class="weekday"><input type="checkbox" name="{{ $prefix }}_days[]" value="{{ $day }}" data-weekday="{{ $prefix }}" @checked(in_array($day, old($prefix.'_days', [])))> {{ $dayLabel }}</label>
                                 @endforeach
                             </div>
                             <div class="form-row-3" style="margin-top:10px">
