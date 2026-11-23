@@ -146,6 +146,7 @@
                 <div class="dialog-error" role="alert"><strong>Revisa estos datos:</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
             @endif
             <label for="edit_group_name">Nombre del grupo</label>
+            <input type="hidden" name="page" value="{{ request('page', 1) }}">
             <input class="field" id="edit_group_name" name="name" required maxlength="100">
             <label for="edit_group_assigned">Fecha de asignación <span class="muted">(opcional)</span></label>
             <input class="field" id="edit_group_assigned" type="date" name="assigned_at">
