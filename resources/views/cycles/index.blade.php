@@ -41,7 +41,7 @@
         <div>
             <h2>Mis ciclos</h2>
         </div>
-        <span class="badge">{{ $cycles->count() }} {{ $cycles->total() === 1 ? 'ciclo' : 'ciclos' }}</span>
+        <span class="badge">{{ $cycles->total() }} {{ $cycles->total() === 1 ? 'ciclo' : 'ciclos' }}</span>
     </div>
 
     <form method="GET" action="{{ route('cycles.index') }}" class="filter-bar">
