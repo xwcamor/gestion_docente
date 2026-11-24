@@ -21,6 +21,38 @@ class CourseModalityController extends Controller
         $scheduledSessionCount = $modality->sessions()->where('status', 'scheduled')->count();
         $documentCount = $modality->documents()->count();
 
+        $hasNrc = filled($modality->nrc);
+        $hasCourseDates = $modality->start_date !== null && $modality->end_date !== null;
+        $hasClassSchedule = $modality->schedules->contains(
+            fn ($schedule) => $schedule->block_type === 'CLASS'
+        );
+        $hasGeneratedCalendar = $scheduledSessionCount > 0;
+        $configurationSteps = collect([
+            $hasNrc,
+            $hasCourseDates,
+            $hasClassSchedule,
+            $hasGeneratedCalendar,
+        ])->filter()->count();
+        $configurationPercent = (int) round(($configurationSteps / 4) * 100);
+
+        $sessionsWithContentCount = $modality->sessions()
+            ->where('status', 'scheduled')
+            ->where(function ($query) {
+                $query->where(function ($q) {
+                    $q->whereNotNull('topic')->where('topic', '<>', '');
+                })->orWhere(function ($q) {
+                    $q->whereNotNull('objective')->where('objective', '<>', '');
+                })->orWhere(function ($q) {
+                    $q->whereNotNull('activities')->where('activities', '<>', '');
+                })->orWhere(function ($q) {
+                    $q->whereNotNull('evidence')->where('evidence', '<>', '');
+                });
+            })
+            ->count();
+        $sessionContentPercent = $scheduledSessionCount > 0
+            ? (int) round(($sessionsWithContentCount / $scheduledSessionCount) * 100)
+            : 0;
+
         $sessions = $modality->sessions()
             ->orderBy('session_date')
             ->orderBy('session_number')
@@ -50,6 +82,10 @@ class CourseModalityController extends Controller
             'sessionCount',
             'scheduledSessionCount',
             'documentCount',
+            'configurationSteps',
+            'configurationPercent',
+            'sessionsWithContentCount',
+            'sessionContentPercent',
             'sessions',
             'documents'
         ));
