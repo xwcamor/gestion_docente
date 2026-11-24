@@ -83,7 +83,7 @@
                         <th>{{ $gridRow['start'] }}</th>
                         <th>{{ $gridRow['end'] }}</th>
                         @foreach($loadWeekdays as $day => $dayLabel)
-                            @php($cell = $gridRow['cells'][$day])
+                            @php $cell = $gridRow['cells'][$day]; @endphp
                             <td class="{{ !$cell['active'] ? 'is-empty' : ($cell['conflict'] ? 'is-conflict' : (($cell['type'] ?? 'THEORY') === 'LAB' ? 'is-lab' : 'is-theory')) }}">
                                 @if($cell['show'])
                                     @foreach($cell['blocks'] as $block)
