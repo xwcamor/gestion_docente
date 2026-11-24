@@ -177,7 +177,7 @@ class InstitutionalExcelService
             $row++;
         }
 
-        $sheet->getSheetView()->setShowGridLines(false);
+        $sheet->setShowGridlines(false);
         $sheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE)
             ->setFitToWidth(1)->setFitToHeight(0);
 
@@ -233,7 +233,7 @@ class InstitutionalExcelService
         }
 
         $this->appendSystemGrades($spreadsheet, $modality, $students);
-        $sheet->getSheetView()->setShowGridLines(false);
+        $sheet->setShowGridlines(false);
 
         return $spreadsheet;
     }
@@ -316,7 +316,7 @@ class InstitutionalExcelService
         $title = $isTall ? 'PLAN DE SESIÓN - PRÁCTICA DE TALLER' : 'PLAN DE SESIÓN - CONOCIMIENTOS TECNOLÓGICOS';
 
         $sheet->setTitle($this->safeSheetTitle($date?->format('d-m-Y') ?? 'Plan de Sesion'));
-        $sheet->getSheetView()->setShowGridLines(false);
+        $sheet->setShowGridlines(false);
         $sheet->mergeCells('A1:B1');
         $sheet->mergeCells('C1:J1');
         $sheet->mergeCells('K1:N1');
@@ -531,7 +531,7 @@ class InstitutionalExcelService
         ]);
         $sheet->getStyle('B5:B53')->getAlignment()->setWrapText(true);
         $sheet->getStyle('E6:E53')->getAlignment()->setWrapText(true);
-        $sheet->getSheetView()->setShowGridLines(false);
+        $sheet->setShowGridlines(false);
     }
 
     private function setEvaluationMetadata(Worksheet $sheet, CourseModality $modality): void
