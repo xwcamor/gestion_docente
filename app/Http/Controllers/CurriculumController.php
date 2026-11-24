@@ -27,7 +27,7 @@ class CurriculumController extends Controller
 
         return redirect()
             ->route('curricula.show', $assignment)
-            ->with('success', 'Para analizar la malla, selecciona el PDF y pulsa «Analizar PDF y preparar prompt».');
+            ->with('success', 'Para analizar la malla, selecciona el PDF y pulsa «Analizar PDF y continuar».');
     }
 
     public function extract(Request $request, CourseAssignment $assignment, CurriculumImportService $service)
