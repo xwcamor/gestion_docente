@@ -107,28 +107,12 @@ class FiveMinuteTalkService
      */
     public function availableDays(Cycle $cycle): array
     {
-        $modalities = CourseModality::query()
-            ->with('schedules')
-            ->whereHas('assignment.group', fn ($query) => $query->where('cycle_id', $cycle->id))
-            ->whereNotNull('start_date')
-            ->whereNotNull('end_date')
-            ->get();
-
+        $dates = $this->assignedDates($cycle, [1, 2, 3, 4, 5, 6, 7]);
         $days = [];
-        foreach ($modalities as $modality) {
-            $start = $this->cycleBoundedDate($modality->start_date, $cycle->start_date, true);
-            $end = $this->cycleBoundedDate($modality->end_date, $cycle->end_date, false);
 
-            if (!$start || !$end || $start->gt($end)) {
-                continue;
-            }
-
-            foreach ($modality->schedules as $schedule) {
-                $day = (int) $schedule->day_of_week;
-                if ($day >= 1 && $day <= 7) {
-                    $days[$day] = true;
-                }
-            }
+        foreach ($dates as $date) {
+            $day = Carbon::parse($date)->dayOfWeekIso;
+            $days[$day] = true;
         }
 
         $available = array_keys($days);
@@ -241,7 +225,11 @@ class FiveMinuteTalkService
         );
 
         foreach ($header as $index => $value) {
-            if (in_array($value, ['tema', 'temas', 'charla', 'título', 'titulo', 'topic'], true)) {
+            if (
+                in_array($value, ['tema', 'temas', 'charla', 'título', 'titulo', 'topic'], true)
+                || str_contains($value, 'tema')
+                || str_contains($value, 'charla')
+            ) {
                 $topicColumn = $index;
                 break;
             }
