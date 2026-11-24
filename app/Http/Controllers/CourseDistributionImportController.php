@@ -42,7 +42,8 @@ class CourseDistributionImportController extends Controller
             'BLOQUE TALLER',
             'BLOQUE',
             'NRC TALLER',
-            'FECHA',
+            'FECHA TEC',
+            'FECHA TALLER',
         ];
 
         foreach ($headers as $index => $header) {
@@ -50,7 +51,7 @@ class CourseDistributionImportController extends Controller
             $courses->setCellValue($column.'1', $header);
         }
 
-        $courses->getStyle('A1:H1')->applyFromArray([
+        $courses->getStyle('A1:I1')->applyFromArray([
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 10],
             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '385548']],
             'alignment' => [
@@ -64,20 +65,20 @@ class CourseDistributionImportController extends Controller
         ]);
         $courses->getRowDimension(1)->setRowHeight(32);
 
-        foreach (['A' => 38, 'B' => 25, 'C' => 20, 'D' => 16, 'E' => 20, 'F' => 18, 'G' => 16, 'H' => 32] as $column => $width) {
+        foreach (['A' => 38, 'B' => 25, 'C' => 20, 'D' => 16, 'E' => 20, 'F' => 18, 'G' => 16, 'H' => 30, 'I' => 30] as $column => $width) {
             $courses->getColumnDimension($column)->setWidth($width);
         }
 
         // Prepara filas vacías para completar sin incluir cursos ficticios.
-        $courses->getStyle('A2:H101')->getNumberFormat()->setFormatCode('@');
-        $courses->getStyle('A2:H101')->applyFromArray([
+        $courses->getStyle('A2:I101')->getNumberFormat()->setFormatCode('@');
+        $courses->getStyle('A2:I101')->applyFromArray([
             'alignment' => ['vertical' => Alignment::VERTICAL_CENTER, 'wrapText' => true],
             'borders' => [
                 'bottom' => ['borderStyle' => Border::BORDER_HAIR, 'color' => ['rgb' => 'DCE5DF']],
             ],
         ]);
         $courses->freezePane('A2');
-        $courses->setAutoFilter('A1:H101');
+        $courses->setAutoFilter('A1:I101');
         $courses->getTabColor()->setRGB('385548');
 
         $schedules = $spreadsheet->createSheet();
@@ -87,7 +88,7 @@ class CourseDistributionImportController extends Controller
             $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($index + 1);
             $schedules->setCellValue($column.'1', $header);
         }
-        $schedules->getStyle('A1:H1')->applyFromArray([
+        $schedules->getStyle('A1:I1')->applyFromArray([
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 10],
             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '60796B']],
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER, 'wrapText' => true],
@@ -140,7 +141,8 @@ class CourseDistributionImportController extends Controller
             ['BLOQUE TALLER', 'Si tiene taller', 'Código o identificador del bloque de taller/práctica. Al completarlo se activa la modalidad TALL.', 'TALL-01'],
             ['BLOQUE', 'Opcional si ya llenaste BLOQUE TALLER', 'Código alternativo del bloque TALL. Si lo completas, se utiliza este valor en lugar de BLOQUE TALLER.', 'TALL-01'],
             ['NRC TALLER', 'Si tiene taller', 'NRC asignado a la oferta de taller/práctica. Se admite también el encabezado antiguo NRC TALLE.', '0011524'],
-            ['FECHA', 'Sí', 'Rango común de inicio y fin para las modalidades activas del curso, en formato día/mes/año.', '01/08/2026 al 15/12/2026'],
+            ['FECHA TEC', 'Si tiene teoría', 'Rango de inicio y fin exclusivo para la modalidad TEC, en formato día/mes/año.', '01/08/2026 al 15/12/2026'],
+            ['FECHA TALLER', 'Si tiene taller', 'Rango de inicio y fin exclusivo para la modalidad TALL, en formato día/mes/año.', '15/08/2026 al 20/12/2026'],
         ];
         foreach ($instructions as $rowIndex => $row) {
             foreach ($row as $columnIndex => $value) {
@@ -149,11 +151,11 @@ class CourseDistributionImportController extends Controller
             }
         }
 
-        $guide->getStyle('A5:D12')->applyFromArray([
+        $guide->getStyle('A5:D13')->applyFromArray([
             'alignment' => ['vertical' => Alignment::VERTICAL_TOP, 'wrapText' => true],
             'borders' => ['bottom' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'E1E8E2']]],
         ]);
-        foreach (range(5, 12) as $row) {
+        foreach (range(5, 13) as $row) {
             $guide->getRowDimension($row)->setRowHeight(42);
         }
         foreach (['A' => 22, 'B' => 18, 'C' => 72, 'D' => 48] as $column => $width) {
@@ -169,7 +171,7 @@ class CourseDistributionImportController extends Controller
         $rules = [
             '1. En la hoja Cursos coloca solamente datos reales. Los ejemplos de esta hoja son orientativos y no se importan.',
             '2. Si el curso tiene TEC y TALL, completa ambas parejas de NRC y bloques. Si solo tiene una modalidad, deja vacíos los campos de la otra.',
-            '3. La columna FECHA contiene un solo rango y el importador lo aplica a las modalidades activas de ese curso.',
+            '3. FECHA TEC y FECHA TALLER permiten rangos independientes. Los archivos antiguos con una sola FECHA siguen siendo compatibles y aplican ese rango común.',
             '4. La hoja Horarios usa el mismo CODIGO de Cursos y la modalidad TEC o TALL para asociar cada bloque.',
             '5. En Horarios registra una fila por cada día y bloque; si un bloque se repite lunes y miércoles, crea dos filas.',
             '6. No elimines ni renombres las columnas de Cursos u Horarios. Guarda el archivo como .xlsx antes de subirlo.',
