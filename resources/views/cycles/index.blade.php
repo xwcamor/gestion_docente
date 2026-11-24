@@ -4,44 +4,26 @@
 <div class="breadcrumbs">
     <a href="{{ route('dashboard') }}">Resumen</a>
     <x-icon name="chevron-right" size="12" />
-    <span class="current">Ciclos académicos</span>
+    <span class="current">Cargas laborales</span>
 </div>
 
 <div class="page-head">
     <div>
-        <p class="eyebrow">Organización académica</p>
-        <h1>Mis ciclos académicos</h1>
-        <p class="subhead">Administra tus periodos académicos.</p>
+        <p class="eyebrow">Programación docente</p>
+        <h1>Cargas laborales</h1>
+        <p class="subhead">Cada carga se organiza por ciclo y grupo. Importa el archivo maestro para registrar cursos, NRC y fechas.</p>
     </div>
     <div class="actions">
-        <button class="btn btn-secondary" type="button" data-modal-open="workflow-help-dialog"><x-icon name="circle-help" /> Cómo funciona</button>
-        <button class="btn" type="button" data-modal-open="cycle-create-dialog">
-            <x-icon name="plus" /> Crear ciclo
-        </button>
-    </div>
-</div>
-
-<div class="grid grid-3" style="margin-bottom:16px">
-    <div class="stat-card">
-        <div class="stat-top"><span class="stat-label">Ciclos registrados</span><span class="stat-icon"><x-icon name="calendar-days" /></span></div>
-        <div class="stat">{{ $cycles->total() }}</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-top"><span class="stat-label">Años disponibles</span><span class="stat-icon"><x-icon name="calendar-range" /></span></div>
-        <div class="stat">{{ $years->count() }}</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-top"><span class="stat-label">Grupos registrados</span><span class="stat-icon"><x-icon name="users" /></span></div>
-        <div class="stat">{{ $groupCount }}</div>
+        <button class="btn btn-secondary" type="button" data-modal-open="cycle-create-dialog"><x-icon name="plus" /> Crear ciclo manualmente</button>
+        <a class="btn" href="{{ route('distribution.create') }}"><x-icon name="file-up" /> Importar carga laboral</a>
     </div>
 </div>
 
 <section class="card">
     <div class="card-head">
         <div>
-            <h2>Mis ciclos</h2>
+            <h2>Cargas laborales registradas</h2>
         </div>
-        <span class="badge">{{ $cycles->total() }} {{ $cycles->total() === 1 ? 'ciclo' : 'ciclos' }}</span>
     </div>
 
     <form method="GET" action="{{ route('cycles.index') }}" class="filter-bar">
@@ -88,10 +70,10 @@
     @empty
         <div class="empty">
             <span class="stat-icon" style="margin:0 auto 10px;width:42px;height:42px"><x-icon name="calendar-days" size="20" /></span>
-            <strong>{{ request()->hasAny(['q', 'year']) ? 'No encontramos ciclos con esos filtros.' : 'Todavía no has creado un ciclo.' }}</strong>
-            <span>{{ request()->hasAny(['q', 'year']) ? 'Prueba con otro año o código, o limpia los filtros.' : 'Crea tu primer ciclo para empezar. Después podrás registrar los grupos y cursos.' }}</span>
+            <strong>{{ request()->hasAny(['q', 'year']) ? 'No encontramos cargas laborales con esos filtros.' : 'Todavía no has importado una carga laboral.' }}</strong>
+            <span>{{ request()->hasAny(['q', 'year']) ? 'Prueba con otro año o código, o limpia los filtros.' : 'Sube el archivo maestro para registrar el ciclo, grupo, cursos, NRC y fechas.' }}</span>
             @if(!request()->hasAny(['q', 'year']))
-                <div class="mt-16"><button class="btn" type="button" data-modal-open="cycle-create-dialog"><x-icon name="plus" /> Crear ciclo</button></div>
+                <div class="mt-16"><a class="btn" href="{{ route('distribution.create') }}"><x-icon name="file-up" /> Importar carga laboral</a></div>
             @else
                 <div class="mt-16"><a class="btn btn-secondary" href="{{ route('cycles.index') }}"><x-icon name="x" /> Limpiar filtros</a></div>
             @endif
