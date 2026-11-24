@@ -378,6 +378,7 @@
             }
             field.id = id;
             field.name = name;
+            if (type === 'time') field.step = '900';
             const match = name.match(/^groups\[(\d+)\]\[([^\]]+)\]/);
             if (match) {
                 const groupIndex = Number(match[1]);
