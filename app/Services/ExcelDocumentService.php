@@ -24,6 +24,31 @@ class ExcelDocumentService
         'evaluacion' => 'Formato de evaluación',
     ];
 
+    /**
+     * A session plan and the training progress register depend on official
+     * weekly topics from the linked curriculum. The task title is accepted as
+     * a fallback for older curricula that predate the programming-sheet field.
+     */
+    public function hasCurriculumTopics(CourseModality $modality): bool
+    {
+        $modality->loadMissing([
+            'assignment.curriculum.weeks.task',
+            'assignment.course.curricula.weeks.task',
+        ]);
+
+        $assignment = $modality->assignment;
+        $curriculum = $assignment->curriculum
+            ?: $assignment->course->curricula->firstWhere('is_active', true);
+
+        if (!$curriculum) {
+            return false;
+        }
+
+        return $curriculum->weeks->contains(fn ($week) =>
+            filled($week->source_topic) || filled($week->task?->title)
+        );
+    }
+
     public function generateForModality(CourseModality $modality, string $type, int $userId): GeneratedDocument
     {
         if (!array_key_exists($type, self::DOCUMENTS)) {
@@ -37,6 +62,15 @@ class ExcelDocumentService
             'assignment.group.cycle',
             'schedules',
         ]);
+
+        if (
+            in_array($type, ['plan', 'registro'], true)
+            && !$this->hasCurriculumTopics($modality)
+        ) {
+            throw ValidationException::withMessages([
+                'document' => 'Para generar el Plan de sesión o el Control de avance, primero importa una malla curricular que contenga temas semanales.',
+            ]);
+        }
 
         $course = $modality->assignment->course;
         $group = $modality->assignment->group;
