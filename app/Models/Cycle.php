@@ -33,11 +33,6 @@ class Cycle extends Model
         return $this->hasMany(TeachingGroup::class);
     }
 
-    public function fiveMinuteTalks(): HasMany
-    {
-        return $this->hasMany(CycleFiveMinuteTalk::class);
-    }
-
     public function generatedDocuments(): HasMany
     {
         return $this->hasMany(GeneratedDocument::class);
