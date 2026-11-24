@@ -219,7 +219,7 @@
     <form method="POST" action="{{ route('groups.store', $cycle) }}" data-loading-form="1">
         @csrf
         <div class="dialog-body">
-            @if($errors->any() && !request('dialog') && !request()->boolean('talks'))
+            @if($errors->any() && !request('dialog'))
                 <div class="dialog-error" role="alert"><strong>Revisa estos datos:</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
             @endif
             <div class="group-count-control">
@@ -269,9 +269,6 @@
 .cycle-progress-track span{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#3a8cab,#47a88e)}
 .cycle-progress-grid small{display:block;margin-top:6px;color:#76868e;font-size:10px}
 @media(max-width:650px){.cycle-progress-grid{grid-template-columns:1fr}.cycle-progress-heading{align-items:flex-start;flex-direction:column}}
-    .talk-execution-form{display:grid;grid-template-columns:110px 115px minmax(140px,1fr) auto;gap:6px;align-items:center;min-width:520px}
-    .talk-execution-form .field{width:100%;min-width:0;min-height:33px;padding:6px 8px;font-size:10px}
-    @media(max-width:800px){.talk-execution-form{grid-template-columns:1fr 1fr;min-width:0}.talk-execution-form input[name=observations]{grid-column:1/-1}}
 
 .cycle-weekly-load{padding:16px}
 .weekly-hours-total{display:inline-flex;align-items:center;padding:7px 10px;border:1px solid #c6dce5;border-radius:7px;background:#f4fafc;color:#23657d;font-size:12px;font-weight:750;white-space:nowrap}
