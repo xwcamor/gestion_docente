@@ -191,18 +191,30 @@ class StudentImportService
                 $group->students()->syncWithoutDetaching([$student->id]);
             }
 
-            $modalities = $group->assignments()
+            $modalityIds = $group->assignments()
                 ->with('modalities:id,course_assignment_id')
                 ->get()
-                ->flatMap(fn ($assignment) => $assignment->modalities);
+                ->flatMap(fn ($assignment) => $assignment->modalities)
+                ->pluck('id')
+                ->all();
 
-            $studentIds = $group->students()->pluck('students.id');
-            foreach ($modalities as $modality) {
-                foreach ($studentIds as $studentId) {
-                    Enrollment::firstOrCreate(
-                        ['course_modality_id' => $modality->id, 'student_id' => $studentId],
-                        ['status' => 'active']
-                    );
+            $studentIds = $group->students()->pluck('students.id')->all();
+            $timestamp = now();
+            foreach (array_chunk($studentIds, 500) as $studentChunk) {
+                $enrollmentRows = [];
+                foreach ($modalityIds as $modalityId) {
+                    foreach ($studentChunk as $studentId) {
+                        $enrollmentRows[] = [
+                            'course_modality_id' => $modalityId,
+                            'student_id' => $studentId,
+                            'status' => 'active',
+                            'created_at' => $timestamp,
+                            'updated_at' => $timestamp,
+                        ];
+                    }
+                }
+                if ($enrollmentRows) {
+                    DB::table('enrollments')->insertOrIgnore($enrollmentRows);
                 }
             }
         });
@@ -223,18 +235,22 @@ class StudentImportService
      */
     public function syncGroupRosterToModality(CourseModality $modality): int
     {
-        $group = $modality->assignment()->with('group.students:id')->firstOrFail()->group;
-        $studentIds = $group->students->modelKeys();
+        $group = $modality->assignment()->with('group')->firstOrFail()->group;
+        $studentIds = $group->students()->pluck('students.id')->all();
         $created = 0;
+        $timestamp = now();
 
-        foreach ($studentIds as $studentId) {
-            $enrollment = Enrollment::firstOrCreate(
-                ['course_modality_id' => $modality->id, 'student_id' => $studentId],
-                ['status' => 'active']
-            );
+        foreach (array_chunk($studentIds, 500) as $studentChunk) {
+            $rows = array_map(fn ($studentId) => [
+                'course_modality_id' => $modality->id,
+                'student_id' => $studentId,
+                'status' => 'active',
+                'created_at' => $timestamp,
+                'updated_at' => $timestamp,
+            ], $studentChunk);
 
-            if ($enrollment->wasRecentlyCreated) {
-                $created++;
+            if ($rows) {
+                $created += DB::table('enrollments')->insertOrIgnore($rows);
             }
         }
 
