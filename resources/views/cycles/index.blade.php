@@ -65,6 +65,10 @@
                 <div>
                     <h3 class="cycle-item-title">{{ $cycle->academic_year }} · Ciclo {{ $cycle->cycle_code }}</h3>
                     <div class="cycle-item-meta">
+                        <span><x-icon name="graduation-cap" size="12" /> {{ $cycle->career ?: 'Carrera pendiente' }}</span>
+                        <span>·</span>
+                        <span>Semestre {{ $cycle->semester ?: '—' }}</span>
+                        <span>·</span>
                         <span><x-icon name="calendar-range" size="12" /> {{ $cycle->start_date?->format('d/m/Y') }} – {{ $cycle->end_date?->format('d/m/Y') }}</span>
                         <span>·</span>
                         <span><x-icon name="users" size="12" /> {{ $cycle->groups_count }} {{ $cycle->groups_count === 1 ? 'grupo' : 'grupos' }}</span>
@@ -131,6 +135,18 @@
                     <input class="field" id="cycle_code" name="cycle_code" value="{{ old('cycle_code', '10') }}" maxlength="20" required placeholder="Ej. 10 o 20">
                     <p class="help">Usa el código de tu programación académica.</p>
                     @error('cycle_code')<p class="field-error">{{ $message }}</p>@enderror
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label for="career">Nombre de la carrera <span class="muted">*</span></label>
+                    <input class="field" id="career" name="career" value="{{ old('career', auth()->user()->professor->career) }}" maxlength="255" required placeholder="Ej. Desarrollo de Software">
+                    @error('career')<p class="field-error">{{ $message }}</p>@enderror
+                </div>
+                <div>
+                    <label for="semester">Semestre académico <span class="muted">*</span></label>
+                    <input class="field" id="semester" name="semester" value="{{ old('semester') }}" maxlength="60" required placeholder="Ej. IV semestre">
+                    @error('semester')<p class="field-error">{{ $message }}</p>@enderror
                 </div>
             </div>
             <div class="form-row">
