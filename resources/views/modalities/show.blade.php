@@ -193,13 +193,25 @@
         <div class="modality-section-toolbar">
             <a class="btn btn-secondary btn-sm" href="{{ route('evaluations.index', $modality) }}"><x-icon name="arrow-right" /> Evaluaciones y notas</a>
         </div>
+        @if(!$hasCurriculumTopics)
+            <div class="alert alert-info document-curriculum-requirement" id="document-curriculum-requirement">
+                Importa primero la malla curricular con sus temas semanales para habilitar el <strong>Plan de sesión</strong> y el <strong>Control de avance</strong>. El Formato de evaluación sigue disponible.
+            </div>
+        @endif
     <div class="document-generator-list">
-        @foreach(['plan'=>'Plan de sesión','registro'=>'Registro de formación','evaluacion'=>'Formato de evaluación'] as $type=>$label)
-            <form class="document-generator-row" method="POST" action="{{ route('documents.generate', [$modality, $type]) }}" data-loading-form="1">
-                @csrf
-                <span><strong>{{ $label }}</strong><small>Archivo Excel con los datos actuales</small></span>
-                <button class="btn btn-secondary btn-sm" type="submit"><x-icon name="file-text" /> Generar</button>
-            </form>
+        @foreach(['plan'=>'Plan de sesión','registro'=>'Control de avance','evaluacion'=>'Formato de evaluación'] as $type=>$label)
+            @if(in_array($type, ['plan', 'registro'], true) && !$hasCurriculumTopics)
+                <div class="document-generator-row">
+                    <span><strong>{{ $label }}</strong><small>Disponible al importar los temas de la malla curricular</small></span>
+                    <button class="btn btn-secondary btn-sm" type="button" disabled aria-describedby="document-curriculum-requirement"><x-icon name="lock" /> Requiere malla</button>
+                </div>
+            @else
+                <form class="document-generator-row" method="POST" action="{{ route('documents.generate', [$modality, $type]) }}" data-loading-form="1">
+                    @csrf
+                    <span><strong>{{ $label }}</strong><small>Archivo Excel con los datos actuales</small></span>
+                    <button class="btn btn-secondary btn-sm" type="submit"><x-icon name="file-text" /> Generar</button>
+                </form>
+            @endif
         @endforeach
     </div>
     @if($documentCount > 0)
@@ -307,6 +319,8 @@
 .schedule-row .field{min-height:35px;font-size:11px}
 .schedule-remove-cell .btn{min-height:35px;padding:6px 8px}
 .schedule-editor-actions{margin:7px 0 0}
+.document-curriculum-requirement{margin:10px 0;padding:9px 12px;font-size:11px}
+.document-generator-row button:disabled{opacity:.6;cursor:not-allowed}
 @media(min-width:1051px){.schedule-days-options{flex-wrap:nowrap}}
 .calendar-preview{margin-top:18px;padding:16px;border:1px solid #cfe1e9;border-radius:9px;background:linear-gradient(135deg,#eff7fa,#f8fbfc)}
 .calendar-preview-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
