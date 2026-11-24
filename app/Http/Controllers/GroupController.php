@@ -242,22 +242,31 @@ class GroupController extends Controller
         });
 
         $page = max(1, (int) $request->input('students_page', 1));
-        $returnUrl = route('groups.show', [
-            'group' => $group,
-            'students_page' => $page,
-        ]);
-
         if ($validator->fails()) {
             return redirect()
-                ->to($returnUrl.'?edit_student='.$student->id.'#group-roster')
+                ->route('groups.show', [
+                    'group' => $group,
+                    'students_page' => $page,
+                    'edit_student' => $student->id,
+                ])
+                ->withFragment('group-roster')
                 ->withErrors($validator)
                 ->withInput();
         }
 
-        $student->update($validator->validated());
+        $validated = $validator->validated();
+        $student->update([
+            'institutional_id' => $validated['institutional_id'] ?? null,
+            'username' => $validated['username'] ?? null,
+            'surnames' => $validated['surnames'],
+            'given_names' => $validated['given_names'],
+        ]);
 
         return redirect()
-            ->to($returnUrl.'#group-roster')
+            ->to(route('groups.show', [
+                'group' => $group,
+                'students_page' => $page,
+            ]).'#group-roster')
             ->with('success', 'Datos del alumno actualizados. El cambio se refleja en los cursos donde está matriculado.');
     }
 
