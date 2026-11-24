@@ -268,6 +268,12 @@ class CourseDistributionImportController extends Controller
         $data = session('distribution_import.preview');
         abort_unless(is_array($data) && !empty($data['rows']), 419, 'La vista previa expiró. Vuelve a subir el Excel.');
 
+        if (!empty($data['errors'])) {
+            return redirect()->route('distribution.create')->withErrors([
+                'file' => 'El archivo contiene errores en cursos u horarios. Corrígelos en Excel y vuelve a importarlo.',
+            ]);
+        }
+
         $validated = $request->validate([
             'group_name' => 'required|string|max:100',
         ]);
@@ -384,12 +390,16 @@ class CourseDistributionImportController extends Controller
             $message .= " También se importaron {$scheduleBlocksImported} bloques horarios.";
             if ($calendarRebuilt > 0) {
                 $message .= " Se calcularon los calendarios de {$calendarRebuilt} modalidades.";
+            } else {
+                $message .= ' Las modalidades sin fechas completas quedan pendientes de cálculo de calendario.';
             }
+        } elseif ($modalitiesWithExistingSchedules > 0) {
+            $message .= " No se agregaron bloques nuevos porque las modalidades ya tenían horarios; se conservaron los de {$modalitiesWithExistingSchedules} modalidades.";
         } else {
             $message .= ' No se importaron bloques horarios; podrás configurarlos en cada modalidad.';
         }
-        if ($modalitiesWithExistingSchedules > 0) {
-            $message .= " Se conservaron los horarios que ya estaban configurados en {$modalitiesWithExistingSchedules} modalidades.";
+        if ($scheduleBlocksImported > 0 && $modalitiesWithExistingSchedules > 0) {
+            $message .= " También se conservaron los horarios manuales de {$modalitiesWithExistingSchedules} modalidades.";
         }
 
         $redirect = redirect()->route('cycles.show', $cycle)->with('success', $message);
