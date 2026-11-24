@@ -141,6 +141,23 @@
         <span class="badge badge-blue">{{ $groupCount }} {{ $groupCount === 1 ? 'grupo' : 'grupos' }}</span>
     </div>
     @forelse($groups as $group)
+        @php
+            $groupWorkloadHasDetails = filled($group->workload_type)
+                || !empty($group->workload_days)
+                || filled($group->workload_start_time)
+                || filled($group->workload_end_time)
+                || $group->supervisor_theory_hours !== null
+                || $group->supervisor_lab_hours !== null;
+            $groupWorkloadComplete = in_array($group->workload_type, ['PARTIAL', 'FULL'], true)
+                && $group->workload_start_date !== null
+                && $group->workload_end_date !== null
+                && !empty($group->workload_days)
+                && filled($group->workload_start_time)
+                && filled($group->workload_end_time)
+                && $group->supervisor_theory_hours !== null
+                && $group->supervisor_lab_hours !== null;
+            $groupWorkloadStatus = $groupWorkloadComplete ? 'complete' : ($groupWorkloadHasDetails ? 'partial' : 'pending');
+        @endphp
         <article class="cycle-item">
             <div class="cycle-item-main">
                 <span class="cycle-item-icon"><x-icon name="users" size="18" /></span>
@@ -152,6 +169,15 @@
                         <span><x-icon name="book-open" size="12" /> {{ $group->assignments_count }} {{ $group->assignments_count === 1 ? 'curso' : 'cursos' }}</span>
                         <span>·</span>
                         <span><x-icon name="users" size="12" /> {{ $group->students_count }} alumnos</span>
+                    </div>
+                    <div class="cycle-group-workload">
+                        <x-section-status :status="$groupWorkloadStatus" />
+                        @if($groupWorkloadHasDetails)
+                            <span>{{ $group->workload_type === 'FULL' ? 'Completa' : 'Parcial' }}</span>
+                            <span>Supervisor: {{ number_format((float) $group->supervisor_theory_hours, 2) }} h teoría · {{ number_format((float) $group->supervisor_lab_hours, 2) }} h taller</span>
+                        @else
+                            <span>Falta registrar la carga asignada</span>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -320,6 +346,11 @@
 
 @push('styles')
 <style>
+.cycle-group-workload{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin-top:8px;color:#687970;font-size:10px;line-height:1.4}
+.cycle-group-workload>span:not(.section-status){padding:4px 7px;border:1px solid #e5ebe6;border-radius:6px;background:#f8faf8}
+html[data-theme="dark"] .cycle-group-workload{color:#b5c7bc}
+html[data-theme="dark"] .cycle-group-workload>span:not(.section-status){background:#17251f;border-color:#34483c}
+@media(max-width:650px){.cycle-group-workload{align-items:flex-start;flex-direction:column}}
 .group-count-control{display:grid;grid-template-columns:minmax(0,1fr) 110px;align-items:center;gap:10px}
 .group-count-control label{margin:0}
 .group-count-control .help{grid-column:1/-1;margin:0}
