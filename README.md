@@ -202,6 +202,20 @@ Comprueba que MySQL esté iniciado en Laragon y que exista la base vacía `gesti
 
 La estructura usa nombres explícitos y cortos para los índices que podrían superar el límite de 64 caracteres de MySQL, incluido `cci_week_category_approved_idx` para el contenido de la malla curricular.
 
+### Error SQLSTATE[42S22]: columna `slug` desconocida en `curricula`
+
+La migración correctiva `2026_11_24_000008_repair_curricula_slug_column.php` comprueba si falta `curricula.slug`, la crea, completa los valores de las mallas existentes y asegura su índice único. No elimina ni vuelve a importar las mallas.
+
+Actualiza el repositorio y ejecuta:
+
+```powershell
+git pull origin main
+php artisan migrate
+php artisan optimize:clear
+```
+
+No ejecutes `migrate:fresh`: borraría los datos de la instalación.
+
 ### Error de tabla `cache` inexistente
 
 La migración inicial también crea `cache`, `cache_locks`, `sessions`, `jobs`, `job_batches` y `failed_jobs`. Si acabas de actualizar el repositorio, ejecuta:
