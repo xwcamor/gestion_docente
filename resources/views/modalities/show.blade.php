@@ -79,7 +79,7 @@
                 </div>
 
                 <div class="schedule-editor-heading">
-                    <div><h3>Bloques semanales</h3><p class="help">Agrega una fila por cada bloque. Cada día puede tener varias horas, ambientes y tipos diferentes.</p></div>
+                    <div><h3>Repetición semanal</h3><p class="help">Cada bloque se repite automáticamente en los días marcados, desde la fecha de inicio hasta la fecha de fin. Los feriados bloqueados se excluyen.</p></div>
                     <span class="schedule-hours-chip">Total calculado: <strong id="weekly-hours-live">{{ number_format($weeklyHoursCalculated, 2) }} h</strong></span>
                 </div>
                 <div id="schedule-editor" class="schedule-editor">
