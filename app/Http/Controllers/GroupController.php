@@ -145,7 +145,24 @@ class GroupController extends Controller
         $tecCount = (int) ($modalityCounts['TEC'] ?? 0);
         $tallCount = (int) ($modalityCounts['TALL'] ?? 0);
 
-        return view('groups.show', compact('group', 'assignments', 'courseCount', 'tecCount', 'tallCount'));
+        $studentCount = $group->students()->count();
+        $students = $group->students()
+            ->orderBy('students.surnames')
+            ->orderBy('students.given_names')
+            ->paginate(20, ['students.*'], 'students_page')
+            ->withQueryString();
+        $lastRosterImport = $group->importBatches()->latest()->first();
+
+        return view('groups.show', compact(
+            'group',
+            'assignments',
+            'courseCount',
+            'tecCount',
+            'tallCount',
+            'studentCount',
+            'students',
+            'lastRosterImport'
+        ));
     }
 
     private function authorizeCycle(Cycle $cycle): void
