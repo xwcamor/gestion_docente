@@ -122,6 +122,8 @@ class CourseDistributionImportService
             ]);
         }
 
+        $scheduleCount = $this->parseSchedules($spreadsheet, $rows, $warnings, $errors);
+
         $allDates = collect($rows)->flatMap(fn ($row) => collect($row['modalities'])->flatMap(fn ($modality) => array_filter([$modality['start_date'], $modality['end_date']])));
         // CODIGO identifica el periodo académico. BLOQUE TEC/TALL puede conservar un periodo interno distinto.
         $sourceCodes = collect($rows)->pluck('source_code')->filter()->all();
@@ -146,8 +148,183 @@ class CourseDistributionImportService
             'rows' => $rows, 'errors' => $errors, 'warnings' => array_values(array_unique($warnings)),
             'course_count' => count($rows),
             'modality_count' => collect($rows)->sum(fn ($row) => count($row['modalities'])),
+            'schedule_count' => $scheduleCount,
             'source_sheet' => $sheet->getTitle(),
         ];
+    }
+
+    private function parseSchedules($spreadsheet, array &$rows, array &$warnings, array &$errors): int
+    {
+        $sheet = null;
+        foreach ($spreadsheet->getWorksheetIterator() as $candidate) {
+            if (mb_strtolower(trim($candidate->getTitle())) === 'horarios') {
+                $sheet = $candidate;
+                break;
+            }
+        }
+
+        foreach ($rows as &$course) {
+            foreach ($course['modalities'] as &$modality) {
+                $modality['schedules'] = [];
+            }
+            unset($modality);
+        }
+        unset($course);
+
+        if (!$sheet) {
+            $warnings[] = 'No se encontró la pestaña Horarios. Los días, horas y ambientes deberán configurarse después en cada modalidad.';
+            return 0;
+        }
+
+        $headers = [];
+        foreach ($sheet->getRowIterator(1, 1) as $row) {
+            foreach ($row->getCellIterator() as $cell) {
+                $headers[$this->normalize((string) $cell->getValue())] = $cell->getColumn();
+            }
+        }
+
+        $required = ['codigo', 'modalidad', 'nrc', 'dia', 'desde', 'hasta', 'tipo', 'ambiente'];
+        $missing = array_values(array_filter($required, fn ($header) => !isset($headers[$header])));
+        if ($missing) {
+            $warnings[] = 'La pestaña Horarios existe, pero no tiene las columnas requeridas: '.implode(', ', $missing).'. No se importaron horarios.';
+            return 0;
+        }
+
+        $courseIndexes = [];
+        foreach ($rows as $courseIndex => $course) {
+            $key = $this->normalize((string) ($course['source_code'] ?: $course['code']));
+            $courseIndexes[$key] = $courseIndex;
+        }
+
+        $dayMap = [
+            'lunes' => 1, 'lun' => 1, 'martes' => 2, 'mar' => 2,
+            'miercoles' => 3, 'mie' => 3, 'miércoles' => 3,
+            'jueves' => 4, 'jue' => 4, 'viernes' => 5, 'vie' => 5,
+            'sabado' => 6, 'sab' => 6, 'domingo' => 7, 'dom' => 7,
+            '1' => 1, '2' => 2, '3' => 3, '4' => 4, '5' => 5, '6' => 6, '7' => 7,
+        ];
+
+        $count = 0;
+        $maxRow = $sheet->getHighestDataRow();
+        for ($rowNumber = 2; $rowNumber <= $maxRow; $rowNumber++) {
+            $value = fn ($key) => trim((string) ($sheet->getCell($headers[$key].$rowNumber)->getFormattedValue() ?? ''));
+            $code = $value('codigo');
+            $modalityName = strtoupper($this->normalize($value('modalidad')));
+            $nrc = $this->cleanNrc($value('nrc') );
+            $dayText = $this->normalize($value('dia'));
+            $startTime = $this->parseTime($value('desde'));
+            $endTime = $this->parseTime($value('hasta'));
+            $instructionText = $this->normalize($value('tipo'));
+            $classroom = $value('ambiente');
+
+            if ($code === '' && $modalityName === '' && $dayText === '' && $value('desde') === '' && $value('hasta') === '') {
+                continue;
+            }
+
+            $courseKey = $this->normalize($code);
+            if (!isset($courseIndexes[$courseKey])) {
+                $errors[] = "Hoja Horarios, fila {$rowNumber}: el CODIGO no coincide con ningún curso de la hoja Cursos.";
+                continue;
+            }
+
+            $courseIndex = $courseIndexes[$courseKey];
+            $modalityType = match ($modalityName) {
+                'TEC', 'TEORIA' => 'TEC',
+                'TALL', 'TALLER', 'PRACTICA', 'PRACTICA DE TALLER' => 'TALL',
+                default => null,
+            };
+            if (!$modalityType) {
+                $errors[] = "Hoja Horarios, fila {$rowNumber}: MODALIDAD debe ser TEC o TALL.";
+                continue;
+            }
+
+            $modalityIndex = null;
+            foreach ($rows[$courseIndex]['modalities'] as $index => $candidate) {
+                if ($candidate['type'] === $modalityType) {
+                    $modalityIndex = $index;
+                    break;
+                }
+            }
+            if ($modalityIndex === null) {
+                $errors[] = "Hoja Horarios, fila {$rowNumber}: el curso {$code} no tiene modalidad {$modalityType} en la hoja Cursos.";
+                continue;
+            }
+
+            $expectedNrc = $rows[$courseIndex]['modalities'][$modalityIndex]['nrc'];
+            if ($nrc && $expectedNrc && $nrc !== $expectedNrc) {
+                $errors[] = "Hoja Horarios, fila {$rowNumber}: el NRC {$nrc} no coincide con el NRC {$expectedNrc} del curso {$code} ({$modalityType}).";
+                continue;
+            }
+
+            if (!isset($dayMap[$dayText])) {
+                $errors[] = "Hoja Horarios, fila {$rowNumber}: DIA debe ser un día de la semana (LUNES a DOMINGO).";
+                continue;
+            }
+            if (!$startTime || !$endTime || $endTime <= $startTime) {
+                $errors[] = "Hoja Horarios, fila {$rowNumber}: revisa DESDE y HASTA; usa horas HH:MM y una hora final posterior.";
+                continue;
+            }
+            if ((int) substr($startTime, 3, 2) % 15 !== 0 || (int) substr($endTime, 3, 2) % 15 !== 0) {
+                $errors[] = "Hoja Horarios, fila {$rowNumber}: las horas deben estar en intervalos de 15 minutos.";
+                continue;
+            }
+
+            $instructionType = match ($instructionText) {
+                'TEORIA', 'THEORY' => 'THEORY',
+                'TALLER', 'PRACTICA', 'PRACTICA DE TALLER', 'LAB', 'LABORATORIO' => 'LAB',
+                default => null,
+            };
+            if (!$instructionType) {
+                $errors[] = "Hoja Horarios, fila {$rowNumber}: TIPO debe ser TEORIA o TALLER/PRACTICA.";
+                continue;
+            }
+
+            $rows[$courseIndex]['modalities'][$modalityIndex]['schedules'][] = [
+                'day_of_week' => $dayMap[$dayText],
+                'start_time' => $startTime,
+                'end_time' => $endTime,
+                'classroom' => $classroom !== '' ? $classroom : null,
+                'instruction_type' => $instructionType,
+                'block_type' => 'CLASS',
+                'nrc' => $expectedNrc ?: $nrc,
+            ];
+            $count++;
+        }
+
+        foreach ($rows as $course) {
+            foreach ($course['modalities'] as $modality) {
+                $grouped = collect($modality['schedules'] ?? [])->groupBy('day_of_week');
+                foreach ($grouped as $day => $blocks) {
+                    $ordered = $blocks->sortBy('start_time')->values();
+                    for ($index = 1; $index < $ordered->count(); $index++) {
+                        if ($ordered[$index]['start_time'] < $ordered[$index - 1]['end_time']) {
+                            $errors[] = "Horarios del curso {$course['name']} ({$modality['type']}): hay bloques que se cruzan el mismo día.";
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        if ($count === 0) {
+            $warnings[] = 'La pestaña Horarios no contiene bloques válidos. Los horarios deberán configurarse en cada modalidad.';
+        }
+
+        return $count;
+    }
+
+    private function parseTime(string $value): ?string
+    {
+        $value = trim($value);
+        if (preg_match('/^(\d{1,2}):(\d{2})(?::\d{2})?$/', $value, $matches)) {
+            $hour = (int) $matches[1];
+            $minute = (int) $matches[2];
+            if ($hour <= 23 && $minute <= 59) {
+                return sprintf('%02d:%02d', $hour, $minute);
+            }
+        }
+
+        return null;
     }
 
     private function normalize(string $value): string
