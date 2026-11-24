@@ -226,9 +226,11 @@ class FiveMinuteTalkService
 
         foreach ($header as $index => $value) {
             if (
-                in_array($value, ['tema', 'temas', 'charla', 'título', 'titulo', 'topic'], true)
-                || str_contains($value, 'tema')
-                || str_contains($value, 'charla')
+                in_array($value, [
+                    'tema', 'temas', 'charla', 'título', 'titulo', 'topic',
+                    'nombre del tema', 'tema de charla', 'tema de la charla',
+                    'título de la charla', 'titulo de la charla',
+                ], true)
             ) {
                 $topicColumn = $index;
                 break;
@@ -238,7 +240,7 @@ class FiveMinuteTalkService
         // A common fixed template starts with an item number and the topic in column B.
         if ($topicColumn === null && count($header) > 1) {
             $firstHeader = trim($header[0] ?? '');
-            if (preg_match('/^(#|n[.º°]?|número|numero)$/u', $firstHeader)) {
+            if (preg_match('/^(#|n[.º°]?|nro|número|numero)$/u', $firstHeader) || is_numeric($firstHeader)) {
                 $topicColumn = 1;
             }
         }
