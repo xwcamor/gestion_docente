@@ -311,8 +311,10 @@
         });
 
         const rowPreview = row.querySelector('[data-row-preview]');
-        const tec = parsed.TEC?.entries?.[0];
-        const tall = parsed.TALL?.entries?.[0];
+        const tecEntry = parsed.TEC?.entries?.length === 1 ? parsed.TEC.entries[0] : null;
+        const tallEntry = parsed.TALL?.entries?.length === 1 ? parsed.TALL.entries[0] : null;
+        const tec = tecEntry?.type === 'TEC' ? tecEntry : null;
+        const tall = tallEntry?.type === 'TALL' ? tallEntry : null;
 
         if (tec && tall && tec.base !== tall.base) {
             rowPreview.textContent = 'Los códigos TEC y TAL deben pertenecer al mismo periodo, programa y curso.';
