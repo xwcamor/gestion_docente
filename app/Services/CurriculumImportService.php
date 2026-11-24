@@ -27,15 +27,13 @@ class CurriculumImportService
             fn (array $page) => 'PÁGINA '.$page['page']."\n".$page['text'],
             $pages
         ));
-        if (mb_strlen(trim($fullText)) < 500) {
-            throw ValidationException::withMessages([
-                'curriculum_pdf' => 'No se pudo extraer suficiente texto del PDF. Puede ser escaneado o tener tablas como imagen. Adjunta el PDF original a la IA junto con el prompt y revisa su salida antes de importarla.',
-            ]);
-        }
-return [
+        $textExtractionWarning = mb_strlen(trim($fullText)) < 500;
+
+        return [
             'pages' => $pages,
             'text' => $fullText,
             'sections' => $this->detectKeySections($pages),
+            'text_extraction_warning' => $textExtractionWarning,
         ];
     }
 
@@ -56,16 +54,39 @@ return [
             ],
         ];
 
+        // A table may continue on the next pages without repeating its title.
+        // Keep all pages from one detected heading up to the next detected table.
+        $starts = [];
+        foreach ($pages as $index => $page) {
+            foreach ($definitions as $key => $definition) {
+                if (!isset($starts[$key]) && preg_match($definition['pattern'], (string) ($page['text'] ?? '')) === 1) {
+                    $starts[$key] = $index;
+                }
+            }
+        }
+
+        $orderedStarts = $starts;
+        asort($orderedStarts);
         $sections = [];
+
         foreach ($definitions as $key => $definition) {
-            $matchedPages = array_values(array_filter(
-                $pages,
-                fn (array $page) => preg_match($definition['pattern'], (string) ($page['text'] ?? '')) === 1
-            ));
+            $start = $starts[$key] ?? null;
+            $matchedPages = [];
+
+            if ($start !== null) {
+                $end = count($pages);
+                foreach ($orderedStarts as $otherKey => $otherStart) {
+                    if ($otherKey !== $key && $otherStart > $start) {
+                        $end = min($end, $otherStart);
+                    }
+                }
+
+                $matchedPages = array_slice($pages, $start, $end - $start);
+            }
 
             $sections[$key] = [
                 'label' => $definition['label'],
-                'detected' => $matchedPages !== [],
+                'detected' => $start !== null,
                 'pages' => array_values(array_map(fn (array $page) => (int) $page['page'], $matchedPages)),
                 'text' => implode("\n\n", array_map(
                     fn (array $page) => 'PÁGINA '.$page['page']."\n".$page['text'],
@@ -77,7 +98,7 @@ return [
         return $sections;
     }
 
-        public const PROMPT_VERSION = 'GD-MALLA-3.0';
+    public const PROMPT_VERSION = 'GD-MALLA-3.0';
 
     public function promptVersion(): string
     {
