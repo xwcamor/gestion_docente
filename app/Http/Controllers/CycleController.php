@@ -166,7 +166,8 @@ class CycleController extends Controller
             ->whereExists(function ($query) {
                 $query->selectRaw('1')
                     ->from('modality_schedules')
-                    ->whereColumn('modality_schedules.course_modality_id', 'course_modalities.id');
+                    ->whereColumn('modality_schedules.course_modality_id', 'course_modalities.id')
+                    ->where('modality_schedules.block_type', 'CLASS');
             })
             ->count();
 
@@ -177,11 +178,63 @@ class CycleController extends Controller
             ? (int) round(($configuredModalityCount / $modalityCount) * 100)
             : 0;
 
-        $declaredWeeklyHours = (float) DB::table('course_modalities')
-            ->join('course_assignments', 'course_assignments.id', '=', 'course_modalities.course_assignment_id')
-            ->join('teaching_groups', 'teaching_groups.id', '=', 'course_assignments.teaching_group_id')
-            ->where('teaching_groups.cycle_id', $cycle->id)
-            ->sum('course_modalities.total_hours');
+        $loadWeekdays = [
+            1 => 'Lunes', 2 => 'Martes', 3 => 'Miércoles', 4 => 'Jueves',
+            5 => 'Viernes', 6 => 'Sábado', 7 => 'Domingo',
+        ];
+        $loadSchedules = \\App\\Models\\ModalitySchedule::query()
+            ->with(['modality.assignment.course'])
+            ->where('block_type', 'CLASS')
+            ->whereHas('modality.assignment.group', fn ($query) => $query->where('cycle_id', $cycle->id))
+            ->get();
+
+        $timeToMinutes = fn ($time) => ((int) substr((string) $time, 0, 2) * 60) + (int) substr((string) $time, 3, 2);
+        $loadBlocks = $loadSchedules->map(function ($schedule) use ($timeToMinutes) {
+            $course = $schedule->modality->assignment->course;
+            return [
+                'day' => (int) $schedule->day_of_week,
+                'start' => $timeToMinutes($schedule->start_time),
+                'end' => $timeToMinutes($schedule->end_time),
+                'course' => $course->code ?: $course->name,
+                'room' => $schedule->classroom ?: 'Ambiente pendiente',
+                'instruction_type' => $schedule->instruction_type ?? 'THEORY',
+            ];
+        })->values();
+
+        $declaredWeeklyHours = round($loadBlocks->sum(fn ($block) => max(0, $block['end'] - $block['start'])) / 60, 2);
+        $loadGridRows = [];
+        $loadConflictCount = 0;
+        if ($loadBlocks->isNotEmpty()) {
+            $gridStart = intdiv((int) $loadBlocks->min('start'), 15) * 15;
+            $gridEnd = (int) (ceil($loadBlocks->max('end') / 15) * 15);
+
+            for ($minute = $gridStart; $minute < $gridEnd; $minute += 15) {
+                $cells = [];
+                foreach ($loadWeekdays as $day => $dayName) {
+                    $active = $loadBlocks->filter(fn ($block) =>
+                        $block['day'] === $day && $block['start'] < ($minute + 15) && $block['end'] > $minute
+                    )->values();
+                    $starts = $active->filter(fn ($block) => $block['start'] >= $minute && $block['start'] < ($minute + 15))->values();
+                    $conflict = $active->count() > 1;
+                    if ($conflict) {
+                        $loadConflictCount++;
+                    }
+                    $cells[$day] = [
+                        'active' => $active->isNotEmpty(),
+                        'conflict' => $conflict,
+                        'show' => $starts->isNotEmpty(),
+                        'blocks' => $starts->all(),
+                        'type' => $active->first()['instruction_type'] ?? 'THEORY',
+                    ];
+                }
+
+                $loadGridRows[] = [
+                    'start' => sprintf('%02d:%02d', intdiv($minute, 60), $minute % 60),
+                    'end' => sprintf('%02d:%02d', intdiv($minute + 15, 60), ($minute + 15) % 60),
+                    'cells' => $cells,
+                ];
+            }
+        }
 
         $cycleTalks = $cycle->fiveMinuteTalks()
             ->orderByRaw('scheduled_date IS NULL')
@@ -199,6 +252,9 @@ class CycleController extends Controller
             'courseCount',
             'modalityCount',
             'declaredWeeklyHours',
+            'loadWeekdays',
+            'loadGridRows',
+            'loadConflictCount',
             'curriculumAssignedCount',
             'configuredModalityCount',
             'curriculumPercent',

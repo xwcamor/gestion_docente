@@ -109,7 +109,7 @@ class ExcelDocumentService
                     $schedule->classroom,
                     $modality->start_date?->format('d/m/Y'),
                     $modality->end_date?->format('d/m/Y'),
-                    $modality->total_hours,
+                    round($modality->schedules->sum(fn ($item) => $item->duration_minutes) / 60, 2),
                 ];
             }
         }

@@ -58,10 +58,70 @@
         <div class="stat">{{ $modalityCount }}</div>
     </div>
     <div class="stat-card">
-        <div class="stat-top"><span class="stat-label">Horas declaradas / semana</span><span class="stat-icon"><x-icon name="clock" /></span></div>
+        <div class="stat-top"><span class="stat-label">Horas presenciales / semana</span><span class="stat-icon"><x-icon name="clock" /></span></div>
         <div class="stat">{{ number_format($declaredWeeklyHours, 1) }} h</div>
     </div>
 </div>
+
+@if($loadGridRows)
+<section class="card cycle-weekly-load" id="weekly-load">
+    <div class="card-head">
+        <div>
+            <h2>Distribución semanal de carga horaria</h2>
+            <p class="card-description">Vista consolidada del ciclo en intervalos de 15 minutos. Solo incluye bloques presenciales de teoría y laboratorio.</p>
+        </div>
+        <span class="weekly-hours-total">{{ number_format($declaredWeeklyHours, 2) }} h/semana</span>
+    </div>
+    @if($loadConflictCount > 0)
+        <div class="alert alert-error load-conflict-alert"><x-icon name="alert-triangle" /> Hay bloques que coinciden en el mismo día y horario. Revisa las modalidades marcadas en rojo.</div>
+    @endif
+    <div class="table-wrap weekly-timetable-wrap">
+        <table class="weekly-timetable">
+            <thead>
+                <tr>
+                    <th>Inicio</th>
+                    <th>Fin</th>
+                    @foreach($loadWeekdays as $dayLabel)
+                        <th>{{ $dayLabel }}</th>
+                    @endforeach
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($loadGridRows as $gridRow)
+                    <tr>
+                        <th>{{ $gridRow['start'] }}</th>
+                        <th>{{ $gridRow['end'] }}</th>
+                        @foreach($loadWeekdays as $day => $dayLabel)
+                            @php($cell = $gridRow['cells'][$day])
+                            <td class="{{ !$cell['active'] ? 'is-empty' : ($cell['conflict'] ? 'is-conflict' : (($cell['type'] ?? 'THEORY') === 'LAB' ? 'is-lab' : 'is-theory')) }}">
+                                @if($cell['show'])
+                                    @foreach($cell['blocks'] as $block)
+                                        <div class="weekly-timetable-block">
+                                            <strong>{{ $block['course'] }}</strong>
+                                            <small>{{ $block['instruction_type'] === 'LAB' ? 'LAB' : 'TEORÍA' }} · {{ $block['room'] }}</small>
+                                        </div>
+                                    @endforeach
+                                @elseif($cell['conflict'])
+                                    <span class="conflict-label">HORARIO CRUZADO</span>
+                                @endif
+                            </td>
+                        @endforeach
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+    <div class="weekly-load-legend">
+        <span><i class="legend-theory"></i> Teoría</span>
+        <span><i class="legend-lab"></i> Laboratorio</span>
+        <span><i class="legend-conflict"></i> Cruce de horarios</span>
+    </div>
+</section>
+@elseif($modalityCount === 0)
+<section class="card">
+    <div class="empty"><strong>Aún no hay horarios para mostrar.</strong><span>Agrega cursos y registra sus bloques de clase para construir la carga semanal.</span></div>
+</section>
+@endif
 
 <section class="card cycle-progress">
     <div class="cycle-progress-heading">
@@ -277,6 +337,29 @@
     .talk-execution-form{display:grid;grid-template-columns:110px 115px minmax(140px,1fr) auto;gap:6px;align-items:center;min-width:520px}
     .talk-execution-form .field{width:100%;min-width:0;min-height:33px;padding:6px 8px;font-size:10px}
     @media(max-width:800px){.talk-execution-form{grid-template-columns:1fr 1fr;min-width:0}.talk-execution-form input[name=observations]{grid-column:1/-1}}
+
+.cycle-weekly-load{padding:16px}
+.weekly-hours-total{display:inline-flex;align-items:center;padding:7px 10px;border:1px solid #c6dce5;border-radius:7px;background:#f4fafc;color:#23657d;font-size:12px;font-weight:750;white-space:nowrap}
+.weekly-timetable-wrap{max-height:620px;overflow:auto;border:1px solid #dfe6e1;border-radius:7px}
+.weekly-timetable{min-width:900px;table-layout:fixed;border-collapse:separate;border-spacing:0;font-size:10px}
+.weekly-timetable th,.weekly-timetable td{padding:0;border-right:1px solid #e1e7e2;border-bottom:1px solid #e1e7e2;text-align:center}
+.weekly-timetable thead th{position:sticky;top:0;z-index:2;height:32px;background:#e8eef0;color:#405d68;font-size:10px}
+.weekly-timetable tbody th{width:58px;height:26px;background:#f7f9f7;color:#66756c;font-size:9px;font-weight:600}
+.weekly-timetable td{height:26px;background:#fff}
+.weekly-timetable td.is-theory{background:#edf5fa;color:#285e77}
+.weekly-timetable td.is-lab{background:#edf6ef;color:#326747}
+.weekly-timetable td.is-conflict{background:#fff0ef;color:#a53832}
+.weekly-timetable td.is-empty{background:#fff}
+.weekly-timetable-block{display:grid;gap:1px;padding:3px;line-height:1.2;overflow-wrap:anywhere}
+.weekly-timetable-block strong{font-size:9px;font-weight:800}
+.weekly-timetable-block small{font-size:8px;font-weight:650}
+.conflict-label{font-size:8px;font-weight:800}
+.load-conflict-alert{margin-bottom:12px}
+.weekly-load-legend{display:flex;gap:15px;flex-wrap:wrap;margin-top:10px;color:#748179;font-size:9px}
+.weekly-load-legend span{display:inline-flex;align-items:center;gap:5px}
+.weekly-load-legend i{width:9px;height:9px;border-radius:2px;display:inline-block}
+.legend-theory{background:#cfe2eb}.legend-lab{background:#cfe4d5}.legend-conflict{background:#f0c1bd}
+@media(max-width:760px){.cycle-weekly-load{padding:11px}.weekly-timetable-wrap{max-height:500px}}
 </style>
 @endpush
 
