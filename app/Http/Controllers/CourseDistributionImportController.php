@@ -45,7 +45,8 @@ class CourseDistributionImportController extends Controller
         ];
 
         foreach ($headers as $index => $header) {
-            $courses->setCellValueByColumnAndRow($index + 1, 1, $header);
+            $column = \\PhpOffice\\PhpSpreadsheet\\Cell\\Coordinate::stringFromColumnIndex($index + 1);
+            $courses->setCellValue($column.'1', $header);
         }
 
         $courses->getStyle('A1:H1')->applyFromArray([
@@ -78,6 +79,32 @@ class CourseDistributionImportController extends Controller
         $courses->setAutoFilter('A1:H101');
         $courses->getTabColor()->setRGB('385548');
 
+        $schedules = $spreadsheet->createSheet();
+        $schedules->setTitle('Horarios');
+        $scheduleHeaders = ['CODIGO', 'MODALIDAD', 'NRC', 'DIA', 'DESDE', 'HASTA', 'TIPO', 'AMBIENTE'];
+        foreach ($scheduleHeaders as $index => $header) {
+            $column = \\PhpOffice\\PhpSpreadsheet\\Cell\\Coordinate::stringFromColumnIndex($index + 1);
+            $schedules->setCellValue($column.'1', $header);
+        }
+        $schedules->getStyle('A1:H1')->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 10],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '60796B']],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER, 'wrapText' => true],
+            'borders' => ['bottom' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => '385548']]],
+        ]);
+        $schedules->getRowDimension(1)->setRowHeight(30);
+        foreach (['A' => 25, 'B' => 16, 'C' => 16, 'D' => 18, 'E' => 14, 'F' => 14, 'G' => 18, 'H' => 25] as $column => $width) {
+            $schedules->getColumnDimension($column)->setWidth($width);
+        }
+        $schedules->getStyle('A2:H301')->getNumberFormat()->setFormatCode('@');
+        $schedules->getStyle('A2:H301')->applyFromArray([
+            'alignment' => ['vertical' => Alignment::VERTICAL_CENTER, 'wrapText' => true],
+            'borders' => ['bottom' => ['borderStyle' => Border::BORDER_HAIR, 'color' => ['rgb' => 'DCE5DF']]],
+        ]);
+        $schedules->freezePane('A2');
+        $schedules->setAutoFilter('A1:H301');
+        $schedules->getTabColor()->setRGB('789184');
+
         $guide = $spreadsheet->createSheet();
         $guide->setTitle('Instrucciones');
         $guide->mergeCells('A1:D1');
@@ -95,7 +122,8 @@ class CourseDistributionImportController extends Controller
 
         $guideHeaders = ['COLUMNA', 'OBLIGATORIO', 'QUÉ DEBES COLOCAR', 'EJEMPLO (NO IMPORTAR)'];
         foreach ($guideHeaders as $index => $header) {
-            $guide->setCellValueByColumnAndRow($index + 1, 4, $header);
+            $column = \\PhpOffice\\PhpSpreadsheet\\Cell\\Coordinate::stringFromColumnIndex($index + 1);
+            $guide->setCellValue($column.'4', $header);
         }
         $guide->getStyle('A4:D4')->applyFromArray([
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
@@ -115,7 +143,8 @@ class CourseDistributionImportController extends Controller
         ];
         foreach ($instructions as $rowIndex => $row) {
             foreach ($row as $columnIndex => $value) {
-                $guide->setCellValueByColumnAndRow($columnIndex + 1, 5 + $rowIndex, $value);
+                $column = \\PhpOffice\\PhpSpreadsheet\\Cell\\Coordinate::stringFromColumnIndex($columnIndex + 1);
+                $guide->setCellValue($column.(5 + $rowIndex), $value);
             }
         }
 
@@ -140,8 +169,9 @@ class CourseDistributionImportController extends Controller
             '1. En la hoja Cursos coloca solamente datos reales. Los ejemplos de esta hoja son orientativos y no se importan.',
             '2. Si el curso tiene TEC y TALL, completa ambas parejas de NRC y bloques. Si solo tiene una modalidad, deja vacíos los campos de la otra.',
             '3. La columna FECHA contiene un solo rango y el importador lo aplica a las modalidades activas de ese curso.',
-            '4. Esta versión importa cursos, códigos, NRC, bloques y fechas. Los días, horas y ambientes del horario todavía se configuran después en cada modalidad.',
-            '5. No elimines ni renombres las columnas de la hoja Cursos. Guarda el archivo como .xlsx antes de subirlo.',
+            '4. La hoja Horarios usa el mismo CODIGO de Cursos y la modalidad TEC o TALL para asociar cada bloque.',
+            '5. En Horarios registra una fila por cada día y bloque; si un bloque se repite lunes y miércoles, crea dos filas.',
+            '6. No elimines ni renombres las columnas de Cursos u Horarios. Guarda el archivo como .xlsx antes de subirlo.',
         ];
         foreach ($rules as $index => $rule) {
             $row = 15 + $index;
@@ -150,6 +180,53 @@ class CourseDistributionImportController extends Controller
             $guide->getStyle("A{$row}:D{$row}")->getAlignment()->setWrapText(true)->setVertical(Alignment::VERTICAL_CENTER);
             $guide->getRowDimension($row)->setRowHeight($index === 3 ? 32 : 24);
         }
+        $guide->mergeCells('A22:D22');
+        $guide->setCellValue('A22', 'HOJA HORARIOS · BLOQUES SEMANALES');
+        $guide->getStyle('A22:D22')->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => '385548']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'EAF1EC']],
+        ]);
+        $guide->mergeCells('A23:D23');
+        $guide->setCellValue('A23', 'Agrega una fila por cada día y bloque. El sistema relaciona el horario con el curso mediante CODIGO y MODALIDAD.');
+        $guide->getStyle('A23:D23')->getAlignment()->setWrapText(true)->setVertical(Alignment::VERTICAL_CENTER);
+        $guide->getRowDimension(23)->setRowHeight(30);
+
+        $scheduleGuideHeaders = ['COLUMNA', 'OBLIGATORIO', 'QUÉ DEBES COLOCAR', 'EJEMPLO'];
+        foreach ($scheduleGuideHeaders as $index => $header) {
+            $column = \\PhpOffice\\PhpSpreadsheet\\Cell\\Coordinate::stringFromColumnIndex($index + 1);
+            $guide->setCellValue($column.'25', $header);
+        }
+        $guide->getStyle('A25:D25')->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '60796B']],
+            'alignment' => ['wrapText' => true, 'vertical' => Alignment::VERTICAL_CENTER],
+        ]);
+        $scheduleInstructions = [
+            ['CODIGO', 'Sí', 'Debe ser idéntico al CODIGO de la hoja Cursos.', '202620-PIAD-224'],
+            ['MODALIDAD', 'Sí', 'TEC para teoría o TALL para taller/práctica.', 'TEC'],
+            ['NRC', 'No', 'NRC de esa modalidad. Si lo colocas, debe coincidir con Cursos.', '0011523'],
+            ['DIA', 'Sí', 'Día de la semana. Puedes escribir LUNES, MARTES, MIÉRCOLES, etc.', 'LUNES'],
+            ['DESDE', 'Sí', 'Hora de inicio en formato de 24 horas, HH:MM.', '09:00'],
+            ['HASTA', 'Sí', 'Hora de fin, posterior a DESDE. Usa intervalos de 15 minutos.', '11:00'],
+            ['TIPO', 'Sí', 'TEORIA para clases teóricas; TALLER, PRACTICA o LAB para laboratorio/taller.', 'TEORIA'],
+            ['AMBIENTE', 'No', 'Aula, laboratorio o ambiente donde se dicta la clase.', 'LAB 105'],
+        ];
+        foreach ($scheduleInstructions as $rowIndex => $row) {
+            foreach ($row as $columnIndex => $value) {
+                $column = \\PhpOffice\\PhpSpreadsheet\\Cell\\Coordinate::stringFromColumnIndex($columnIndex + 1);
+                $guide->setCellValue($column.(26 + $rowIndex), $value);
+            }
+            $guide->getRowDimension(26 + $rowIndex)->setRowHeight(34);
+        }
+        $guide->getStyle('A26:D33')->applyFromArray([
+            'alignment' => ['vertical' => Alignment::VERTICAL_TOP, 'wrapText' => true],
+            'borders' => ['bottom' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'E1E8E2']]],
+        ]);
+        $guide->mergeCells('A35:D35');
+        $guide->setCellValue('A35', 'Ejemplo: si el curso PIAD-224 tiene clases lunes y miércoles de 09:00 a 11:00, registra dos filas en Horarios con el mismo CODIGO, MODALIDAD, NRC, horas, tipo y ambiente; solo cambia DIA.');
+        $guide->getStyle('A35:D35')->getAlignment()->setWrapText(true);
+        $guide->getRowDimension(35)->setRowHeight(38);
+
         $guide->freezePane('A5');
         $guide->getTabColor()->setRGB('789184');
 
