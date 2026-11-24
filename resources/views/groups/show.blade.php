@@ -475,6 +475,7 @@
     </div>
 </details>
 
+@if($studentCount > 0)
 <details class="card group-panel group-talk-panel" id="group-talks" data-group-panel @if(request()->boolean('talks')) open @endif>
     <summary class="group-panel-summary">
         <span class="group-panel-icon group-talk-icon"><x-icon name="clipboard-check" /></span>
@@ -605,6 +606,7 @@
         @endif
     </div>
 </details>
+@endif
 @endsection
 
 @push('styles')
