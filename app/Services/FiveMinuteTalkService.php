@@ -140,10 +140,6 @@ class FiveMinuteTalkService
                         $changes['scheduled_date'] = $date;
                     }
 
-                    if ($talk->participant_count !== $participantCount) {
-                        $changes['participant_count'] = $participantCount;
-                    }
-
                     if ($changes) {
                         $changes['updated_at'] = $now;
 
@@ -214,47 +210,6 @@ class FiveMinuteTalkService
         $end = $hasGroupRange ? $group->workload_end_date : $group->cycle->end_date;
 
         return $start !== null && $end !== null && !$end->lt($start);
-    }
-
-    /**
-     * Evenly distributes ordered pending topics across available work days.
-     * If there are fewer days than talks, one talk is placed on each available
-     * date and the remaining topics stay pending without a date.
-     *
-     * @return array<int, string|null> Talk ID mapped to its assigned date.
-     */
-    private function distributeDates($pending, array $availableDates): array
-    {
-        $pending = $pending->values();
-        $talkCount = $pending->count();
-        $dateCount = count($availableDates);
-        $assignments = [];
-
-        if ($talkCount === 0 || $dateCount === 0) {
-            return $assignments;
-        }
-
-        $assignableCount = min($talkCount, $dateCount);
-
-        for ($index = 0; $index < $assignableCount; $index++) {
-            if ($talkCount > $dateCount) {
-                $dateIndex = $index;
-            } elseif ($talkCount === 1) {
-                $dateIndex = intdiv($dateCount - 1, 2);
-            } else {
-                $dateIndex = (int) round(
-                    $index * ($dateCount - 1) / ($talkCount - 1)
-                );
-            }
-
-            $assignments[(int) $pending[$index]->id] = $availableDates[$dateIndex];
-        }
-
-        for ($index = $assignableCount; $index < $talkCount; $index++) {
-            $assignments[(int) $pending[$index]->id] = null;
-        }
-
-        return $assignments;
     }
 
     /**
