@@ -42,6 +42,7 @@ Route::middleware(['auth', 'professor'])->group(function () {
 
     Route::get('/asignaciones/{assignment}/malla-curricular', [CurriculumController::class, 'show'])->name('curricula.show');
     Route::post('/asignaciones/{assignment}/malla-curricular/extraer', [CurriculumController::class, 'extract'])->name('curricula.extract');
+    Route::get('/asignaciones/{assignment}/malla-curricular/extraer', [CurriculumController::class, 'extractGet'])->name('curricula.extract.get');
     Route::get('/asignaciones/{assignment}/malla-curricular/prompt/{token}', [CurriculumController::class, 'showPrompt'])->name('curricula.prompt');
     Route::post('/asignaciones/{assignment}/malla-curricular/previsualizar', [CurriculumController::class, 'preview'])->name('curricula.preview');
     Route::post('/asignaciones/{assignment}/malla-curricular/confirmar', [CurriculumController::class, 'confirm'])->name('curricula.confirm');
