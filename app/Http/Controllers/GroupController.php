@@ -133,7 +133,13 @@ class GroupController extends Controller
     {
         $this->authorizeGroup($group);
         $group->load('cycle');
-        $talkScheduleSummary = $talkService->ensureScheduled($group);
+
+        // Las charlas son una actividad del grupo y solo se habilitan cuando
+        // existe al menos un alumno en el padrón.
+        $studentCount = $group->students()->count();
+        $talkScheduleSummary = $studentCount > 0
+            ? $talkService->ensureScheduled($group)
+            : null;
 
         $assignments = $group->assignments()
             ->with(['course', 'curriculum', 'modalities.schedules'])
@@ -243,7 +249,6 @@ class GroupController extends Controller
             ->filter()
             ->values();
 
-        $studentCount = $group->students()->count();
         $students = $group->students()
             ->orderBy('students.surnames')
             ->orderBy('students.given_names')
@@ -253,11 +258,13 @@ class GroupController extends Controller
 
         // The execution table only contains talks with a date. Unscheduled
         // catalogue entries remain reusable in storage but are not shown.
-        $groupTalks = $group->fiveMinuteTalks()
-            ->whereNotNull('scheduled_date')
-            ->orderBy('scheduled_date')
-            ->orderBy('position')
-            ->get();
+        $groupTalks = $studentCount > 0
+            ? $group->fiveMinuteTalks()
+                ->whereNotNull('scheduled_date')
+                ->orderBy('scheduled_date')
+                ->orderBy('position')
+                ->get()
+            : collect();
         $talkAssignedCount = $groupTalks->count();
         $talkDoneCount = $groupTalks->where('status', 'done')->count();
         $talkPendingCount = $talkAssignedCount - $talkDoneCount;
