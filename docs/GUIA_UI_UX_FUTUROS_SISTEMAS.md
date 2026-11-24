@@ -14,7 +14,7 @@ Esta guía convierte una colección de skills de diseño en un método práctico
 | **Emil Design Engineering** | Componentes, feedback, microinteracciones y animación | Decidir qué merece movimiento, cómo responde un botón, cómo se abre un panel y cómo se conserva la continuidad sin ralentizar el trabajo. |
 | **Vercel Web Design Guidelines** | Revisión de interfaces web antes de entregar | Contraste, teclado, foco, etiquetas, formularios, navegación, estados, responsive, movimiento reducido y claridad del contenido. |
 | **Anthropic Frontend Design** | Crear una pantalla o renovar la dirección visual de una interfaz | Definir intención visual, tipografía, color, espacio y jerarquía; evitar la apariencia de una plantilla genérica. |
-| **Hallmark** | Auditoría de diseño, rediseño y revisión del contenido visible | Revisar si el diseño y el texto parecen hechos para el producto. Aplicar una revisión de microcopy: etiquetas, instrucciones, confirmaciones, errores y estados vacíos. No sustituye la validación funcional ni el criterio del negocio. |
+| **Hallmark** | Auditoría anti-slop de pantallas nuevas y revisión visual cuando el usuario lo solicita | Detectar patrones genéricos y evaluar la coherencia de la interfaz. Puede acompañar la revisión del texto visible, pero no debe tratarse como corrector ortográfico ni como especialista dedicado de UX writing; usa además la checklist de microcopy de esta guía. |
 | **Make Interfaces Feel Better** | Pulido final de componentes | Bordes, sombras, radios, alineación óptica, iconos, estados hover/active, áreas de interacción y pequeños detalles que mejoran la sensación de calidad. |
 | **UI/UX Pro Max** | Definir o revisar un sistema de diseño completo | Recomendar estilos, paletas, combinaciones tipográficas, patrones de producto, gráficos y guías por stack. Para Laravel, indicar explícitamente que el stack es Blade/CSS/JS. |
 | **Stageshow** | Explicar un recorrido o crear una demostración visual animada | Construir una historia con cursor, ventanas y escenas simplificadas para enseñar un flujo. Es para demos o walkthroughs; no sustituye los controles reales ni la lógica de una aplicación. |
@@ -119,6 +119,9 @@ No uses títulos genéricos como “Información”, “Datos” o “Gestión�
 - No depender del color como única forma de comunicar estado.
 
 ## 4. Revisión de textos de interfaz
+
+Hallmark se utiliza como crítica anti-slop y coherencia visual, no como corrector ortográfico dedicado. Para revisar textos usa también esta lista:
+
 
 Usa Hallmark como una pasada de crítica del producto y revisa manualmente:
 
