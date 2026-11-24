@@ -82,13 +82,11 @@ class FiveMinuteTalkService
         ) {
             $now = now();
 
-            // Participant count always mirrors the current shared group roster.
+            // Use the current roster only as an initial value. Once a talk has
+            // its own participant count, preserve it as an editable execution record.
             DB::table('group_five_minute_talks')
                 ->where('teaching_group_id', $group->id)
-                ->where(function ($query) use ($participantCount) {
-                    $query->whereNull('participant_count')
-                        ->orWhere('participant_count', '<>', $participantCount);
-                })
+                ->whereNull('participant_count')
                 ->update([
                     'participant_count' => $participantCount,
                     'updated_at' => $now,
