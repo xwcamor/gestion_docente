@@ -364,7 +364,6 @@ class GroupController extends Controller
         $talkAssignedCount = $groupTalks->count();
         $talkDoneCount = $groupTalks->where('status', 'done')->count();
         $talkPendingCount = $talkAssignedCount - $talkDoneCount;
-        $talkUnscheduledCount = 0;
 
         $rosterStatus = $studentCount > 0 ? 'complete' : 'pending';
         $coursesStatus = $courseCount === 0
@@ -412,7 +411,6 @@ class GroupController extends Controller
             'talkAssignedCount',
             'talkDoneCount',
             'talkPendingCount',
-            'talkUnscheduledCount',
             'talkScheduleSummary'
         ));
     }
