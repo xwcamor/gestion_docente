@@ -21,6 +21,10 @@
     </div>
 </div>
 
+@if(session('success'))
+    <div class="alert alert-success" role="status">{{ session('success') }}</div>
+@endif
+
 <div class="grid grid-3" style="margin-bottom:16px">
     <div class="stat-card">
         <div class="stat-top"><span class="stat-label">Ciclos registrados</span><span class="stat-icon"><x-icon name="calendar-days" /></span></div>
