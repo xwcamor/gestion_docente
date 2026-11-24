@@ -45,6 +45,7 @@ class GroupController extends Controller
 
         $validator = Validator::make($request->all(), [
             'groups' => ['required', 'array', 'min:1', 'max:30'],
+            'groups.*' => ['required', 'array'],
             'groups.*.name' => [
                 'required',
                 'string',
@@ -62,7 +63,7 @@ class GroupController extends Controller
 
         $validator->after(function ($validator) use ($request) {
             $names = collect((array) $request->input('groups', []))
-                ->map(fn ($row) => mb_strtolower(trim((string) ($row['name'] ?? ''))))
+                ->map(fn ($row) => is_array($row) ? mb_strtolower(trim((string) ($row['name'] ?? ''))) : '')
                 ->filter();
 
             if ($names->unique()->count() !== $names->count()) {
