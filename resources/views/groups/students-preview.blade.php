@@ -17,23 +17,6 @@
     <a class="btn btn-secondary" href="{{ route('groups.show', $group) }}#group-roster"><x-icon name="arrow-left" /> Cancelar</a>
 </div>
 
-<div class="grid grid-3">
-    <div class="stat-card"><div class="stat-label">Filas detectadas</div><div class="stat">{{ $preview['total'] }}</div></div>
-    <div class="stat-card"><div class="stat-label">Formato</div><strong>{{ $preview['format'] }}</strong></div>
-    <div class="stat-card"><div class="stat-label">Alumnos actuales del grupo</div><div class="stat">{{ $group->students()->count() }}</div></div>
-</div>
-
-<section class="card">
-    <div class="card-head">
-        <div><h2>Columnas reconocidas</h2><p class="card-description">Se identifican por encabezados; el padrón se vincula al grupo, no a un curso concreto.</p></div>
-    </div>
-    <div class="actions">
-        @foreach($preview['headers'] as $header)
-            <span class="badge badge-blue">{{ $header }}</span>
-        @endforeach
-    </div>
-</section>
-
 <section class="card">
     <div class="card-head"><div><h2>Muestra del archivo</h2><p class="card-description">Se muestran las primeras filas para comprobar que el archivo correcto fue seleccionado.</p></div></div>
     <div class="table-wrap">
