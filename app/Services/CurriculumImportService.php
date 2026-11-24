@@ -37,6 +37,7 @@ return [
             'text' => $fullText,
             'sections' => $this->detectKeySections($pages),
         ];
+    }
 
     /**
      * Detect the two institutional tables by their headings without discarding
@@ -75,23 +76,22 @@ return [
 
         return $sections;
     }
-    }
 
-public const PROMPT_VERSION = 'GD-MALLA-3.0';
+        public const PROMPT_VERSION = 'GD-MALLA-3.0';
 
     public function promptVersion(): string
     {
         return self::PROMPT_VERSION;
     }
 
-public function buildPrompt(
+    public function buildPrompt(
         string $sourceText,
         CourseAssignment $assignment,
         ?string $generatedAt = null,
         array $sections = []
     ): string
     {
-$assignment->loadMissing(['course', 'group.cycle']);
+        $assignment->loadMissing(['course', 'group.cycle']);
         $course = $assignment->course;
         $cycle = $assignment->group?->cycle;
         $career = $cycle?->career ?: ($course->career ?: 'No registrada');
@@ -111,9 +111,9 @@ $assignment->loadMissing(['course', 'group.cycle']);
         }
         $schema = <<<'JSON'
 {
-"schema_version": 3,
+  "schema_version": 3,
   "processing": {
-"prompt_version": "GD-MALLA-3.0",
+    "prompt_version": "GD-MALLA-3.0",
     "prompt_generated_at": "2026-11-23T10:00:00-05:00"
   },
   "metadata": {
@@ -203,14 +203,14 @@ JSON;
             .$sourceText
             ."\n================ FIN DE FUENTE ================\n\n"
             ."METADATOS QUE DEBES REPETIR EXACTAMENTE EN processing: prompt_version = ".self::PROMPT_VERSION."; prompt_generated_at = {$generatedAt}. No cambies estos valores.\n\n"
-            ."VERIFICACIÓN FINAL: JSON parseable; schema_version=3; weeks en secuencia 1..N sin duplicados; source_week_number conserva la numeración impresa o null; programming_topic contiene el tema exacto de la Hoja de Programación o queda vacío con explicación; horas numéricas o null; tareas HT relacionadas con las HO correctas; contenidos semanales fieles a la fuente; tec_plan y tall_plan presentes en cada bloque; sin comentarios ni comas finales. Devuelve solo JSON.
+            ."VERIFICACIÓN FINAL: JSON parseable; schema_version=3; weeks en secuencia 1..N sin duplicados; source_week_number conserva la numeración impresa o null; programming_topic contiene el tema exacto de la Hoja de Programación o queda vacío con explicación; horas numéricas o null; tareas HT relacionadas con las HO correctas; contenidos semanales fieles a la fuente; tec_plan y tall_plan presentes en cada bloque; sin comentarios ni comas finales. Devuelve solo JSON.";
     }
 
     public function validatePayload(array $payload): array
     {
         $schemaVersion = (int) ($payload['schema_version'] ?? 0);
-if (!in_array($schemaVersion, [1, 2, 3], true)) {
-La versión del esquema JSON no es compatible (se admite schema_version 1, 2 o 3).
+        if (!in_array($schemaVersion, [1, 2, 3], true)) {
+            throw ValidationException::withMessages(['json_content' => 'La versión del esquema JSON no es compatible (se admite schema_version 1, 2 o 3).']);
         }
 
         $metadata = $payload['metadata'] ?? null;
@@ -226,7 +226,7 @@ La versión del esquema JSON no es compatible (se admite schema_version 1, 2 o 3
             }
         }
 
-if ($schemaVersion >= 2) {
+        if ($schemaVersion >= 2) {
             $processing = $payload['processing'] ?? [];
             if (!is_array($processing)) {
                 throw ValidationException::withMessages(['json_content' => 'processing debe ser un objeto con la versión y fecha del prompt.']);
@@ -383,10 +383,10 @@ if ($schemaVersion >= 2) {
                 'module_code' => $meta['module_code'] ?? null,
                 'module_name' => $meta['module_name'] ?? null,
                 'course_name' => $meta['course_name'] ?? $course->name,
-'career' => $meta['career'] ?? ($assignment->group->cycle->career ?? $course->career),
+                'career' => $meta['career'] ?? ($assignment->group->cycle->career ?? $course->career),
                 'professional_school' => $meta['professional_school'] ?? null,
                 'occupational_module' => $meta['occupational_module'] ?? null,
-'semester' => $meta['semester'] ?? ($assignment->group->cycle->semester ?? null),
+                'semester' => $meta['semester'] ?? ($assignment->group->cycle->semester ?? null),
                 'general_objective' => $meta['general_objective'] ?? null,
                 'source_filename' => $source['filename'] ?? 'Importación JSON de malla curricular',
                 'source_path' => $source['path'] ?? null,
@@ -434,7 +434,7 @@ if ($schemaVersion >= 2) {
                 $week = $curriculum->weeks()->create([
                     'curriculum_task_id' => $task?->id,
                     'week_number' => $weekData['week_number'],
-'source_week_number' => $weekData['source_week_number'] ?? null,
+                    'source_week_number' => $weekData['source_week_number'] ?? null,
                     'source_topic' => $weekData['programming_topic'] ?: null,
                     'hours_theory' => $weekData['hours']['T'],
                     'hours_practice' => $weekData['hours']['P'],
