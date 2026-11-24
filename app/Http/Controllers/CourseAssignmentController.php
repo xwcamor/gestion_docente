@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Course;
 use App\Models\CourseModality;
 use App\Models\TeachingGroup;
+use App\Models\GeneratedDocument;
+use App\Models\ImportBatch;
+use Illuminate\Support\Facades\Storage;
 use App\Services\CalendarService;
 use App\Services\StudentImportService;
 use Illuminate\Http\Request;
@@ -219,6 +222,30 @@ class CourseAssignmentController extends Controller
             'success',
             'Curso guardado. Puedes abrir cada modalidad para revisar sus alumnos, calendario, evaluaciones y documentos.'
         );
+    }
+
+    public function destroy(\\App\\Models\\CourseAssignment $assignment)
+    {
+        $assignment->load('group');
+        $group = $assignment->group;
+        $this->authorizeGroup($group);
+
+        $modalityIds = $assignment->modalities()->pluck('id')->all();
+        $generatedPaths = GeneratedDocument::query()
+            ->whereIn('course_modality_id', $modalityIds)
+            ->pluck('stored_path');
+        $importPaths = ImportBatch::query()
+            ->whereIn('course_modality_id', $modalityIds)
+            ->pluck('stored_path');
+
+        DB::transaction(fn () => $assignment->delete());
+
+        Storage::disk('local')->delete(
+            $generatedPaths->merge($importPaths)->filter()->unique()->values()->all()
+        );
+
+        return redirect()->route('groups.show', $group)
+            ->with('success', 'Curso retirado de este grupo. El registro del catálogo se conserva para reutilizarlo en otros grupos o ciclos.');
     }
 
     private function authorizeGroup(TeachingGroup $group): void
