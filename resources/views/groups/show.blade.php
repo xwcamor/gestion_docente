@@ -35,49 +35,138 @@
     </div>
 @endif
 
-<div class="group-stats">
-    <div class="stat-card">
-        <div class="stat-top"><span class="stat-label">Alumnos</span><span class="stat-icon"><x-icon name="users" /></span></div>
-        <div class="stat">{{ number_format($studentCount) }}</div>
-        <span class="stat-hint">Padrón del grupo</span>
-    </div>
-    <div class="stat-card">
-        <div class="stat-top"><span class="stat-label">Cursos</span><span class="stat-icon"><x-icon name="book-open" /></span></div>
-        <div class="stat">{{ number_format($courseCount) }}</div>
-        <span class="stat-hint">{{ $modalityCount }} modalidades</span>
-    </div>
-    <div class="stat-card">
-        <div class="stat-top"><span class="stat-label">Carga semanal</span><span class="stat-icon"><x-icon name="clock" /></span></div>
-        <div class="stat">{{ number_format($declaredWeeklyHours, 1) }} h</div>
-        <span class="stat-hint">Horas declaradas</span>
-    </div>
-</div>
+<details class="card group-panel group-workload-panel" id="group-workload" data-group-panel @if($workloadStatus !== 'complete' || request()->boolean('workload')) open @endif>
+    <summary class="group-panel-summary">
+        <span class="group-panel-icon group-workload-icon"><x-icon name="clock" /></span>
+        <span class="group-panel-title">
+            <strong>Carga horaria</strong>
+            <small>Asignación del supervisor frente a las horas reales de tus cursos</small>
+        </span>
+        <span class="group-panel-count">{{ number_format($supervisorTheoryHours + $supervisorLabHours, 2) }} h asignadas · {{ number_format($actualTheoryHours + $actualLabHours, 2) }} h dictadas</span>
+        <x-section-status :status="$workloadStatus" />
+        <x-icon name="chevron-right" class="group-panel-chevron" />
+    </summary>
+    <div class="group-panel-body">
+        <div class="workload-comparison">
+            @foreach([
+                ['label' => 'Teoría', 'assigned' => $supervisorTheoryHours, 'actual' => $actualTheoryHours, 'diff' => $theoryHoursDifference, 'configured' => $group->supervisor_theory_hours !== null],
+                ['label' => 'Taller', 'assigned' => $supervisorLabHours, 'actual' => $actualLabHours, 'diff' => $labHoursDifference, 'configured' => $group->supervisor_lab_hours !== null],
+            ] as $comparison)
+                <div class="workload-comparison-item">
+                    <div class="workload-comparison-title">
+                        <strong>{{ $comparison['label'] }}</strong>
+                        @if($comparison['configured'])
+                            <span class="workload-difference {{ abs($comparison['diff']) <= 0.01 ? 'is-equal' : ($comparison['diff'] > 0 ? 'is-below' : 'is-above') }}">
+                                @if(abs($comparison['diff']) <= 0.01)
+                                    Coincide
+                                @elseif($comparison['diff'] > 0)
+                                    {{ number_format($comparison['diff'], 2) }} h por debajo
+                                @else
+                                    {{ number_format(abs($comparison['diff']), 2) }} h por encima
+                                @endif
+                            </span>
+                        @else
+                            <span class="workload-difference is-pending">Sin asignación</span>
+                        @endif
+                    </div>
+                    <div class="workload-comparison-values">
+                        <div><small>Supervisor</small><strong>{{ $comparison['configured'] ? number_format($comparison['assigned'], 2).' h' : '—' }}</strong></div>
+                        <div><small>Horario real</small><strong>{{ number_format($comparison['actual'], 2) }} h</strong></div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
 
-<section class="group-progress card" aria-labelledby="group-progress-title">
-    <div class="group-progress-heading">
-        <div><p class="eyebrow">Resumen de configuración</p><h2 id="group-progress-title">Avance académico del grupo</h2></div>
-        <span class="muted small">Datos actuales</span>
-    </div>
-    <div class="progress-grid">
-        <div class="progress-item">
-            <div class="progress-label"><span>Cursos con modalidad</span><strong>{{ $coursesWithModalityCount }} / {{ $courseCount }}</strong></div>
-            <div class="progress-track" role="progressbar" aria-label="Cursos con modalidad asignada" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $courseModalityPercent }}"><span style="width:{{ $courseModalityPercent }}%"></span></div>
-            <small>{{ $courseModalityPercent }}% de cursos con modalidad</small>
+        <div class="alert alert-info workload-note">
+            Las horas del supervisor son la carga autorizada. Las horas reales se calculan automáticamente sumando los bloques semanales de teoría y taller que configures en cada curso. No se reemplaza el horario de las modalidades.
         </div>
-        <div class="progress-item">
-            <div class="progress-label"><span>Horarios configurados</span><strong>{{ $configuredModalityCount }} / {{ $modalityCount }}</strong></div>
-            <div class="progress-track" role="progressbar" aria-label="Modalidades con fechas y horario configurados" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $schedulePercent }}"><span style="width:{{ $schedulePercent }}%"></span></div>
-            <small>{{ $schedulePercent }}% de modalidades con fechas y horario</small>
-        </div>
-        <div class="progress-item">
-            <div class="progress-label"><span>Mallas vinculadas</span><strong>{{ $curriculumCount }} / {{ $courseCount }}</strong></div>
-            <div class="progress-track" role="progressbar" aria-label="Cursos con malla curricular vinculada" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $curriculumPercent }}"><span style="width:{{ $curriculumPercent }}%"></span></div>
-            <small>{{ $curriculumPercent }}% de cursos con malla curricular</small>
-        </div>
-    </div>
-</section>
 
-<details class="card group-panel" id="group-roster" data-group-panel @if($studentCount === 0 || request('edit_student')) open @endif>
+        <form method="POST" action="{{ route('groups.workload.update', $group) }}" class="workload-form" data-loading-form="1">
+            @csrf
+            @method('PATCH')
+            <div class="form-row-3">
+                <div>
+                    <label for="workload_type">Tipo de asignación</label>
+                    <select class="field" id="workload_type" name="workload_type">
+                        <option value="">Seleccionar</option>
+                        <option value="PARTIAL" @selected(old('workload_type', $group->workload_type) === 'PARTIAL')>Parcial</option>
+                        <option value="FULL" @selected(old('workload_type', $group->workload_type) === 'FULL')>Completa</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="workload_start_date">Fecha de inicio</label>
+                    <input class="field" id="workload_start_date" type="date" name="workload_start_date" value="{{ old('workload_start_date', $group->workload_start_date?->format('Y-m-d') ?? $group->cycle->start_date?->format('Y-m-d')) }}">
+                    @error('workload_start_date')<small class="field-error">{{ $message }}</small>@enderror
+                </div>
+                <div>
+                    <label for="workload_end_date">Fecha de término</label>
+                    <input class="field" id="workload_end_date" type="date" name="workload_end_date" value="{{ old('workload_end_date', $group->workload_end_date?->format('Y-m-d') ?? $group->cycle->end_date?->format('Y-m-d')) }}">
+                    @error('workload_end_date')<small class="field-error">{{ $message }}</small>@enderror
+                </div>
+            </div>
+
+            <div class="workload-days-field">
+                <label>Días asignados por el supervisor</label>
+                <div class="weekday-list">
+                    @foreach([1=>'Lun',2=>'Mar',3=>'Mié',4=>'Jue',5=>'Vie',6=>'Sáb',7=>'Dom'] as $day=>$dayLabel)
+                        <label class="weekday">
+                            <input type="checkbox" name="workload_days[]" value="{{ $day }}" @checked(in_array($day, array_map('intval', old('workload_days', $group->workload_days ?? [])), true))>
+                            {{ $dayLabel }}
+                        </label>
+                    @endforeach
+                </div>
+                @error('workload_days')<small class="field-error">{{ $message }}</small>@enderror
+            </div>
+
+            <div class="form-row-3">
+                <div>
+                    <label for="workload_start_time">Hora inicial de disponibilidad</label>
+                    <input class="field" id="workload_start_time" type="time" name="workload_start_time" value="{{ old('workload_start_time', $group->workload_start_time ? substr($group->workload_start_time, 0, 5) : '') }}">
+                    @error('workload_start_time')<small class="field-error">{{ $message }}</small>@enderror
+                </div>
+                <div>
+                    <label for="workload_end_time">Hora final de disponibilidad</label>
+                    <input class="field" id="workload_end_time" type="time" name="workload_end_time" value="{{ old('workload_end_time', $group->workload_end_time ? substr($group->workload_end_time, 0, 5) : '') }}">
+                    @error('workload_end_time')<small class="field-error">{{ $message }}</small>@enderror
+                </div>
+                <div class="workload-date-summary">
+                    <small>Rango de disponibilidad</small>
+                    <strong>{{ $workloadDaysLabels->isNotEmpty() ? $workloadDaysLabels->map(fn ($day) => mb_substr($day, 0, 3))->join(', ') : 'Días pendientes' }}</strong>
+                </div>
+            </div>
+
+            <div class="workload-hours-fields">
+                <div>
+                    <label for="supervisor_theory_hours">Horas de teoría asignadas por el supervisor</label>
+                    <div class="input-with-suffix">
+                        <input class="field" id="supervisor_theory_hours" type="number" name="supervisor_theory_hours" min="0" max="9999" step="0.25" value="{{ old('supervisor_theory_hours', $group->supervisor_theory_hours) }}" placeholder="Ej. 5">
+                        <span>h/semana</span>
+                    </div>
+                    @error('supervisor_theory_hours')<small class="field-error">{{ $message }}</small>@enderror
+                </div>
+                <div>
+                    <label for="supervisor_lab_hours">Horas de taller asignadas por el supervisor</label>
+                    <div class="input-with-suffix">
+                        <input class="field" id="supervisor_lab_hours" type="number" name="supervisor_lab_hours" min="0" max="9999" step="0.25" value="{{ old('supervisor_lab_hours', $group->supervisor_lab_hours) }}" placeholder="Ej. 10">
+                        <span>h/semana</span>
+                    </div>
+                    @error('supervisor_lab_hours')<small class="field-error">{{ $message }}</small>@enderror
+                </div>
+            </div>
+
+            @if($errors->has('workload_type') || $errors->has('workload_start_date') || $errors->has('workload_end_date') || $errors->has('workload_start_time') || $errors->has('workload_end_time'))
+                <div class="alert alert-error">Revisa los datos de la asignación de carga horaria.</div>
+            @endif
+
+            <div class="form-actions">
+                <span class="help">La disponibilidad del grupo es referencial. Los días y las horas efectivas de cada curso se detallan en su modalidad.</span>
+                <button class="btn" type="submit"><x-icon name="check" /> Guardar carga horaria</button>
+            </div>
+        </form>
+    </div>
+</details>
+
+<details class="card group-panel" id="group-roster" data-group-panel @if(($studentCount === 0 && !request('workload')) || request('edit_student')) open @endif>
     <summary class="group-panel-summary">
         <span class="group-panel-icon"><x-icon name="users" /></span>
         <span class="group-panel-title">
@@ -85,6 +174,7 @@
             <small>Una sola lista para todos los cursos del grupo</small>
         </span>
         <span class="group-panel-count">{{ number_format($studentCount) }} alumnos</span>
+        <x-section-status :status="$rosterStatus" />
         <x-icon name="chevron-right" class="group-panel-chevron" />
     </summary>
     <div class="group-panel-body">
@@ -181,9 +271,30 @@
             <small>Consulta NRC, modalidad, malla y avance de configuración</small>
         </span>
         <span class="group-panel-count">{{ number_format($courseCount) }} cursos</span>
+        <x-section-status :status="$coursesStatus" />
         <x-icon name="chevron-right" class="group-panel-chevron" />
     </summary>
     <div class="group-panel-body">
+        <section class="course-progress-summary" aria-label="Avance de configuración de cursos">
+            <div class="course-progress-summary-head">
+                <strong>Avance de configuración</strong>
+                <span class="muted small">Se actualiza con tus cursos y horarios</span>
+            </div>
+            <div class="progress-grid">
+                <div class="progress-item">
+                    <div class="progress-label"><span>Cursos con modalidad</span><strong>{{ $coursesWithModalityCount }} / {{ $courseCount }}</strong></div>
+                    <div class="progress-track" role="progressbar" aria-label="Cursos con modalidad asignada" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $courseModalityPercent }}"><span style="width:{{ $courseModalityPercent }}%"></span></div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-label"><span>Horarios configurados</span><strong>{{ $configuredModalityCount }} / {{ $modalityCount }}</strong></div>
+                    <div class="progress-track" role="progressbar" aria-label="Modalidades con fechas y horario configurados" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $schedulePercent }}"><span style="width:{{ $schedulePercent }}%"></span></div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-label"><span>Mallas vinculadas</span><strong>{{ $curriculumCount }} / {{ $courseCount }}</strong></div>
+                    <div class="progress-track" role="progressbar" aria-label="Cursos con malla curricular vinculada" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $curriculumPercent }}"><span style="width:{{ $curriculumPercent }}%"></span></div>
+                </div>
+            </div>
+        </section>
         @if($assignments->isNotEmpty())
             <div class="filter-bar course-toolbar">
                 <input class="filter-input" id="course-search" type="search" placeholder="Buscar curso…" aria-label="Buscar cursos">
@@ -261,6 +372,7 @@
             <small>Programación exclusiva de {{ $group->name }} según sus propios días de clase</small>
         </span>
         <span class="group-panel-count">{{ $talkDoneCount }} realizadas · {{ $talkPendingCount }} pendientes</span>
+        <x-section-status :status="$talkStatus" />
         <x-icon name="chevron-right" class="group-panel-chevron" />
     </summary>
     <div class="group-panel-body">
@@ -331,6 +443,51 @@
 
 @push('styles')
 <style>
+.section-status{display:inline-flex;align-items:center;justify-content:center;gap:5px;flex:none;padding:5px 9px;border:1px solid;border-radius:999px;font-size:10px;font-weight:750;line-height:1.2;white-space:nowrap}
+.section-status-symbol{font-size:11px;font-weight:900}
+.section-status-complete{color:#24734b;background:#edf8f0;border-color:#cfe8d6}
+.section-status-partial{color:#98651d;background:#fff7e8;border-color:#f1dfb8}
+.section-status-pending{color:#68747c;background:#f3f5f6;border-color:#dce2e5}
+.course-progress-summary{margin:13px 0 15px;padding:13px 14px;border:1px solid #e5ebea;border-radius:9px;background:#fafcfb}
+.course-progress-summary-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;color:#425c53;font-size:12px}
+.group-workload-panel{border-color:#d9e6e1}
+.group-workload-icon{background:#edf6f1;color:#35765b}
+.group-workload-panel[open]>.group-panel-summary{background:#f7fbf8}
+.workload-comparison{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0}
+.workload-comparison-item{padding:12px;border:1px solid #e3ebe6;border-radius:8px;background:#fbfdfb}
+.workload-comparison-title{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#3d594c;font-size:12px}
+.workload-difference{padding:4px 7px;border:1px solid;border-radius:20px;font-size:9px;font-weight:750;white-space:nowrap}
+.workload-difference.is-equal{color:#24734b;background:#edf8f0;border-color:#cfe8d6}
+.workload-difference.is-below{color:#98651d;background:#fff7e8;border-color:#f1dfb8}
+.workload-difference.is-above{color:#a0443d;background:#fff1ef;border-color:#f0d5d1}
+.workload-difference.is-pending{color:#68747c;background:#f3f5f6;border-color:#dce2e5}
+.workload-comparison-values{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
+.workload-comparison-values div{display:flex;flex-direction:column;gap:3px}
+.workload-comparison-values small{color:#819089;font-size:10px}
+.workload-comparison-values strong{color:#2c493b;font-size:18px;font-weight:800;font-variant-numeric:tabular-nums}
+.workload-note{margin:12px 0}
+.workload-form{display:grid;gap:15px;padding-top:13px;border-top:1px solid #edf1ee}
+.workload-days-field>label,.workload-form label{display:block;margin-bottom:6px;color:#52625a;font-size:11px;font-weight:700}
+.workload-days-field{margin-top:13px}
+.workload-days-field .weekday-list{display:flex;flex-wrap:wrap;gap:6px}
+.workload-date-summary{display:flex;flex-direction:column;justify-content:center;gap:5px;padding:8px 10px;border:1px solid #e4ebe6;border-radius:7px;background:#f8fbf9}
+.workload-date-summary small{color:#819089;font-size:10px}
+.workload-date-summary strong{color:#365c49;font-size:12px}
+.workload-hours-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.input-with-suffix{display:flex;align-items:center;gap:7px}
+.input-with-suffix .field{min-width:0;flex:1}
+.input-with-suffix span{color:#728179;font-size:10px;white-space:nowrap}
+html[data-theme="dark"] .section-status-complete{color:#b9e9ca;background:#173a29;border-color:#285a40}
+html[data-theme="dark"] .section-status-partial{color:#f1d49a;background:#3b2e17;border-color:#65502a}
+html[data-theme="dark"] .section-status-pending{color:#c0cbd0;background:#26343a;border-color:#40515a}
+html[data-theme="dark"] .course-progress-summary,html[data-theme="dark"] .workload-comparison-item{background:#172820;border-color:#355144}
+html[data-theme="dark"] .course-progress-summary-head,html[data-theme="dark"] .workload-comparison-title,html[data-theme="dark"] .workload-comparison-values strong{color:#d0e6d8}
+html[data-theme="dark"] .workload-date-summary{background:#172820;border-color:#355144}
+html[data-theme="dark"] .workload-date-summary strong{color:#c4e6d0}
+html[data-theme="dark"] .workload-date-summary small,html[data-theme="dark"] .workload-comparison-values small{color:#9eb7aa}
+html[data-theme="dark"] .group-workload-panel[open]>.group-panel-summary{background:#172820}
+@media(max-width:760px){.workload-comparison{grid-template-columns:1fr}.workload-hours-fields{grid-template-columns:1fr}}
+
 .group-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:11px;margin-bottom:14px}
 .stat-hint{display:block;margin-top:3px;color:#71808a;font-size:11px}
 .group-progress{margin-bottom:14px;padding:17px 19px}
