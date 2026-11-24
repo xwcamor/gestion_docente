@@ -24,7 +24,8 @@
         <div class="panel-body">
             <form method="POST" action="{{ route('modalities.update', $modality) }}">
                 @csrf @method('PUT')
-                <div class="form-row-3">
+                <p class="help">Estas son las fechas reales de dictado de este curso/modalidad. Pueden terminar antes del fin del rango general del ciclo; el calendario solo generará sesiones dentro de estas fechas.</p>
+            <div class="form-row-3">
                     <div><label for="nrc">NRC de esta modalidad</label><input class="field" id="nrc" name="nrc" value="{{ old('nrc', $modality->nrc) }}"></div>
                     <div><label for="start_date">Fecha de inicio</label><input class="field" id="start_date" type="date" name="start_date" value="{{ old('start_date', $modality->start_date?->format('Y-m-d')) }}"></div>
                     <div><label for="end_date">Fecha de fin</label><input class="field" id="end_date" type="date" name="end_date" value="{{ old('end_date', $modality->end_date?->format('Y-m-d')) }}"></div>
