@@ -7,9 +7,7 @@ use App\Models\CourseModality;
 use App\Models\ModalitySchedule;
 use App\Models\GeneratedDocument;
 use App\Models\ImportBatch;
-use App\Models\CycleFiveMinuteTalk;
 use App\Services\AuditLogger;
-use App\Services\FiveMinuteTalkService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -130,10 +128,9 @@ class CycleController extends Controller
         return redirect()->route('cycles.show', $cycle)->with('success', 'Datos del ciclo actualizados.');
     }
 
-    public function show(Cycle $cycle, FiveMinuteTalkService $talkService)
+    public function show(Cycle $cycle)
     {
         $this->authorizeCycle($cycle);
-        $talkService->ensureScheduled($cycle);
 
         $groups = $cycle->groups()
             ->withCount(['assignments', 'students'])
@@ -237,14 +234,6 @@ class CycleController extends Controller
             }
         }
 
-        $cycleTalks = $cycle->fiveMinuteTalks()
-            ->orderByRaw('scheduled_date IS NULL')
-            ->orderBy('scheduled_date')
-            ->orderBy('position')
-            ->get();
-        $talkAssignedCount = $cycleTalks->whereNotNull('scheduled_date')->count();
-        $talkDoneCount = $cycleTalks->where('status', 'done')->count();
-        $talkPendingCount = $cycleTalks->count() - $talkDoneCount;
 
         return view('cycles.show', compact(
             'cycle',
@@ -259,43 +248,8 @@ class CycleController extends Controller
             'curriculumAssignedCount',
             'configuredModalityCount',
             'curriculumPercent',
-            'schedulePercent',
-            'cycleTalks',
-            'talkAssignedCount',
-            'talkDoneCount',
-            'talkPendingCount'
+            'schedulePercent'
         ));
-    }
-
-    public function updateTalkExecution(Request $request, Cycle $cycle, CycleFiveMinuteTalk $talk, AuditLogger $audit)
-    {
-        $this->authorizeCycle($cycle);
-        abort_unless((int) $talk->cycle_id === (int) $cycle->id, 404);
-
-        $data = $request->validate([
-            'status' => ['required', 'in:pending,done'],
-            'participant_count' => ['nullable', 'integer', 'min:0', 'max:10000'],
-            'observations' => ['nullable', 'string', 'max:2000'],
-        ]);
-
-        if ($data['status'] === 'done' && !array_key_exists('participant_count', $data)) {
-            throw ValidationException::withMessages([
-                'participant_count' => 'Indica cuántos participantes asistieron a la charla.',
-            ]);
-        }
-
-        $before = $talk->only(['status', 'participant_count', 'observations']);
-        $talk->update([
-            'status' => $data['status'],
-            'participant_count' => $data['participant_count'] ?? null,
-            'observations' => $data['observations'] ?? null,
-        ]);
-
-        $audit->record('charlas', 'updated', 'Se registró la ejecución de la charla: '.$talk->topic, $talk,
-            $before, $talk->only(['status', 'participant_count', 'observations']));
-
-        return redirect()->route('cycles.show', ['cycle' => $cycle, 'talks' => 1])
-            ->with('success', 'Registro de ejecución actualizado.');
     }
 
     public function destroy(Cycle $cycle)
