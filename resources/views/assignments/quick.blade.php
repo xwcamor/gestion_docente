@@ -19,8 +19,8 @@
 
 @if($errors->any())
     <div class="alert alert-error" role="alert">
-        <strong>Revisa los datos antes de guardar.</strong>
-        <ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+        <strong>Hay datos que revisar.</strong>
+        Corrige los mensajes señalados en cada curso y vuelve a guardar.
     </div>
 @endif
 
