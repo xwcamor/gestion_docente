@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Concerns\HasSlugRouteKey;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TeachingGroup extends Model
@@ -36,5 +37,16 @@ class TeachingGroup extends Model
     public function assignments(): HasMany
     {
         return $this->hasMany(CourseAssignment::class);
+    }
+
+    public function students(): BelongsToMany
+    {
+        return $this->belongsToMany(Student::class, 'teaching_group_students')
+            ->withTimestamps();
+    }
+
+    public function importBatches(): HasMany
+    {
+        return $this->hasMany(ImportBatch::class);
     }
 }
