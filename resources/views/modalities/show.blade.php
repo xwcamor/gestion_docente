@@ -33,10 +33,6 @@
             <div class="detail-progress-track" role="progressbar" aria-label="Sesiones programadas con contenido" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $sessionContentPercent }}"><span style="width:{{ $sessionContentPercent }}%"></span></div>
             <small>Una sesión cuenta cuando tiene tema, objetivo, actividades o evidencias.</small>
         </div>
-    @elseif($hasAnySchedule)
-        <div class="detail-progress-row">
-            <small>Esta modalidad utiliza bloques asincrónicos. No requiere sesiones de clase en el calendario.</small>
-        </div>
     @else
         <div class="detail-progress-row">
             <small>Falta configurar el horario de esta modalidad. Elige los días y bloques correspondientes en Calendario y horario.</small>

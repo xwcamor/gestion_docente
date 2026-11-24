@@ -143,7 +143,11 @@ class CourseModalityController extends Controller
         $normalizedSchedules = [];
         if ($request->has('schedules_present')) {
             foreach (($data['schedules'] ?? []) as $index => $schedule) {
-                $hasValues = collect($schedule)->contains(fn ($value) => filled($value));
+                // El tipo por defecto no convierte una fila vacía en un bloque incompleto.
+                $hasValues = filled($schedule['day_of_week'] ?? null)
+                    || filled($schedule['start_time'] ?? null)
+                    || filled($schedule['end_time'] ?? null)
+                    || filled($schedule['classroom'] ?? null);
                 if (! $hasValues) {
                     continue;
                 }
