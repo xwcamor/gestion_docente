@@ -456,7 +456,7 @@
         <div class="talks-intro">
             <div>
                 <strong>Catálogo institucional</strong>
-                <p>Se programa una charla por cada día disponible del grupo y se excluyen los feriados. Al terminar los 96 temas oficiales, el catálogo vuelve automáticamente al primero. Las charlas realizadas conservan su fecha.</p>
+                <p>Se programa una charla por cada día disponible del grupo y se excluyen los feriados. Al terminar los 96 temas oficiales, el catálogo vuelve automáticamente al primero. Marca el check al realizarla; participantes se calcula desde el padrón del grupo.</p>
             </div>
             @if($groupTalks->isNotEmpty())
                 <form method="POST" action="{{ route('documents.group-talks', $group) }}">
@@ -532,7 +532,7 @@
                                             <small>alumnos</small>
                                         </div>
                                         <input class="field" name="observations" value="{{ $talk->observations }}" maxlength="2000" placeholder="Observaciones del grupo" aria-label="Observaciones">
-                                        <button class="btn btn-secondary btn-sm" type="submit"><x-icon name="check" /> Guardar</button>
+                                        <button class="btn btn-secondary btn-sm" type="submit"><x-icon name="check" /> Guardar observación</button>
                                     </form>
                                 </td>
                             </tr>
