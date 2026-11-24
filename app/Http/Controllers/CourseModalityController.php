@@ -5,15 +5,17 @@ namespace App\Http\Controllers;
 use App\Models\CourseModality;
 use App\Models\Holiday;
 use App\Services\CalendarService;
+use App\Services\FiveMinuteTalkService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
 class CourseModalityController extends Controller
 {
-    public function show(CourseModality $modality)
+    public function show(CourseModality $modality, FiveMinuteTalkService $talkService)
     {
         $this->owned($modality);
         $modality->load(['assignment.course', 'assignment.group.cycle', 'schedules']);
+        $talkService->ensureScheduled($modality->assignment->group);
 
         $import = $modality->importBatches()->latest()->first();
         $enrollmentsCount = $modality->enrollments()->count();
