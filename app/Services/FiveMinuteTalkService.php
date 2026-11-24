@@ -3,38 +3,41 @@
 namespace App\Services;
 
 use App\Models\CourseModality;
-use App\Models\Cycle;
 use App\Models\FiveMinuteTalkTopic;
 use App\Models\Holiday;
+use App\Models\TeachingGroup;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 class FiveMinuteTalkService
 {
-    public function ensureScheduled(Cycle $cycle): void
+    /**
+     * Each group receives its own copy of the institutional topic catalogue
+     * and its own schedule, execution status, attendance and observations.
+     */
+    public function ensureScheduled(TeachingGroup $group): void
     {
+        $group->loadMissing('cycle');
         $catalogue = $this->catalogue();
-        $this->ensureProfessorCatalogue((int) $cycle->professor_id, $catalogue);
+        $this->ensureProfessorCatalogue((int) $group->professor_id, $catalogue);
 
         $topics = FiveMinuteTalkTopic::query()
-            ->where('professor_id', $cycle->professor_id)
+            ->where('professor_id', $group->professor_id)
             ->orderBy('position')
             ->pluck('title')
             ->all();
 
-        $existing = $cycle->fiveMinuteTalks()->orderBy('position')->get();
+        $existing = $group->fiveMinuteTalks()->orderBy('position')->get();
 
         if ($existing->isEmpty()) {
-            $dates = $this->assignedDates($cycle);
-            $rows = [];
             $now = now();
-
+            $rows = [];
             foreach ($topics as $index => $topic) {
                 $rows[] = [
-                    'cycle_id' => $cycle->id,
+                    'teaching_group_id' => $group->id,
                     'topic' => $topic,
-                    'scheduled_date' => $dates[$index] ?? null,
+                    'scheduled_date' => null,
                     'status' => 'pending',
                     'participant_count' => null,
                     'observations' => null,
@@ -45,9 +48,47 @@ class FiveMinuteTalkService
             }
 
             foreach (array_chunk($rows, 400) as $chunk) {
-                DB::table('cycle_five_minute_talks')->insert($chunk);
+                DB::table('group_five_minute_talks')->insert($chunk);
             }
-            return;
+            $existing = $group->fiveMinuteTalks()->orderBy('position')->get();
+        } else {
+            // Add new official topics without overwriting historical group records.
+            $known = $existing->pluck('topic')
+                ->map(fn ($title) => mb_strtolower(trim((string) $title)))
+                ->all();
+            $maxPosition = (int) $existing->max('position');
+            $now = now();
+            $newRows = [];
+
+            foreach ($topics as $topic) {
+                $normalized = mb_strtolower(trim($topic));
+                if (in_array($normalized, $known, true)) {
+                    continue;
+                }
+
+                $maxPosition++;
+                $newRows[] = [
+                    'teaching_group_id' => $group->id,
+                    'topic' => $topic,
+                    'scheduled_date' => null,
+                    'status' => 'pending',
+                    'participant_count' => null,
+                    'observations' => null,
+                    'position' => $maxPosition,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+                $known[] = $normalized;
+            }
+
+            foreach (array_chunk($newRows, 400) as $chunk) {
+                if ($chunk) {
+                    DB::table('group_five_minute_talks')->insert($chunk);
+                }
+            }
+            if ($newRows) {
+                $existing = $group->fiveMinuteTalks()->orderBy('position')->get();
+            }
         }
 
         $completedDates = $existing
@@ -57,28 +98,23 @@ class FiveMinuteTalkService
             ->map(fn ($date) => Carbon::parse($date)->toDateString())
             ->all();
 
-        $availableDates = array_values(array_diff($this->assignedDates($cycle), $completedDates));
+        $availableDates = array_values(array_diff($this->assignedDates($group), $completedDates));
         $pending = $existing->where('status', '!=', 'done')->values();
 
-        DB::transaction(function () use ($pending, $availableDates) {
-            foreach ($pending as $talk) {
+        // Clear pending dates first to respect the unique (group, date) index
+        // if course schedules or date ranges have changed.
+        foreach ($pending as $talk) {
+            if ($talk->scheduled_date !== null) {
                 $talk->update(['scheduled_date' => null]);
             }
-            foreach ($pending as $index => $talk) {
-                $talk->update(['scheduled_date' => $availableDates[$index] ?? null]);
-            }
-        });
-    }
-
-    public function availableDays(Cycle $cycle): array
-    {
-        $days = [];
-        foreach ($this->assignedDates($cycle) as $date) {
-            $days[Carbon::parse($date)->dayOfWeekIso] = true;
         }
-        $result = array_keys($days);
-        sort($result);
-        return $result;
+
+        foreach ($pending as $index => $talk) {
+            $nextDate = $availableDates[$index] ?? null;
+            if ($talk->scheduled_date?->toDateString() !== $nextDate) {
+                $talk->update(['scheduled_date' => $nextDate]);
+            }
+        }
     }
 
     private function ensureProfessorCatalogue(int $professorId, array $catalogue): void
@@ -139,14 +175,20 @@ class FiveMinuteTalkService
         if (!$topics) {
             throw new RuntimeException('El catálogo institucional no contiene temas disponibles.');
         }
+
         return $topics;
     }
 
-    private function assignedDates(Cycle $cycle): array
+    /**
+     * Unique class dates for this group only. A date is usable when at least
+     * one of the group's modalities has a CLASS block that weekday.
+     */
+    private function assignedDates(TeachingGroup $group): array
     {
+        $cycle = $group->cycle;
         $modalities = CourseModality::query()
             ->with(['schedules' => fn ($query) => $query->where('block_type', 'CLASS')])
-            ->whereHas('assignment.group', fn ($query) => $query->where('cycle_id', $cycle->id))
+            ->whereHas('assignment', fn ($query) => $query->where('teaching_group_id', $group->id))
             ->whereNotNull('start_date')
             ->whereNotNull('end_date')
             ->get();
@@ -159,7 +201,12 @@ class FiveMinuteTalkService
                 continue;
             }
 
-            $weekdays = $modality->schedules->pluck('day_of_week')->map(fn ($day) => (int) $day)->unique()->all();
+            $weekdays = $modality->schedules
+                ->pluck('day_of_week')
+                ->map(fn ($day) => (int) $day)
+                ->unique()
+                ->all();
+
             if (!$weekdays) {
                 continue;
             }
@@ -180,7 +227,9 @@ class FiveMinuteTalkService
         $holidays = Holiday::query()
             ->where('blocks_classes', true)
             ->whereIn('holiday_date', $dateKeys)
-            ->where(fn ($query) => $query->whereNull('professor_id')->orWhere('professor_id', $cycle->professor_id))
+            ->where(fn ($query) => $query
+                ->whereNull('professor_id')
+                ->orWhere('professor_id', $group->professor_id))
             ->pluck('holiday_date')
             ->map(fn ($date) => Carbon::parse($date)->toDateString())
             ->all();
