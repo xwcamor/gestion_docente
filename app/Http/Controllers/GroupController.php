@@ -34,13 +34,11 @@ class GroupController extends Controller
     {
         $this->authorizeCycle($cycle);
 
-        // Compatibilidad con formularios anteriores que envíen un solo grupo.
+        // Crear grupos se limita al nombre. La disponibilidad y carga horaria
+        // se configuran después, desde el detalle de cada grupo.
         $groupsInput = $request->input('groups');
         if (!is_array($groupsInput)) {
-            $groupsInput = [[
-                'name' => $request->input('name'),
-                'assigned_at' => $request->input('assigned_at'),
-            ]];
+            $groupsInput = [['name' => $request->input('name')]];
         }
 
         $request->merge(['groups' => $groupsInput]);
@@ -54,116 +52,28 @@ class GroupController extends Controller
                 Rule::unique('teaching_groups', 'name')
                     ->where(fn ($query) => $query->where('cycle_id', $cycle->id)),
             ],
-            'groups.*.assigned_at' => ['nullable', 'date'],
-            'groups.*.workload_type' => ['nullable', Rule::in(['PARTIAL', 'FULL'])],
-            'groups.*.workload_start_date' => ['nullable', 'date'],
-            'groups.*.workload_end_date' => ['nullable', 'date'],
-            'groups.*.workload_days' => ['nullable', 'array'],
-            'groups.*.workload_days.*' => ['integer', 'min:1', 'max:7'],
-            'groups.*.workload_start_time' => ['nullable', 'date_format:H:i'],
-            'groups.*.workload_end_time' => ['nullable', 'date_format:H:i'],
-            'groups.*.supervisor_theory_hours' => ['nullable', 'numeric', 'min:0', 'max:9999'],
-            'groups.*.supervisor_lab_hours' => ['nullable', 'numeric', 'min:0', 'max:9999'],
         ], [
+            'groups.required' => 'Debes registrar al menos un grupo para este ciclo.',
+            'groups.min' => 'Debes registrar al menos un grupo para este ciclo.',
+            'groups.max' => 'Puedes crear hasta 30 grupos por vez.',
             'groups.*.name.required' => 'Escribe el nombre de cada grupo.',
             'groups.*.name.unique' => 'Ya existe un grupo con ese nombre en este ciclo.',
-            'groups.max' => 'Puedes crear hasta 30 grupos por vez.',
-            'groups.*.workload_type.in' => 'Selecciona si la carga es parcial o completa.',
-            'groups.*.workload_start_date.date' => 'La fecha inicial de la carga no es válida.',
-            'groups.*.workload_end_date.date' => 'La fecha final de la carga no es válida.',
-            'groups.*.workload_days.*.between' => 'Selecciona días válidos para la carga horaria.',
-            'groups.*.supervisor_theory_hours.numeric' => 'Las horas de teoría asignadas deben ser numéricas.',
-            'groups.*.supervisor_lab_hours.numeric' => 'Las horas de taller asignadas deben ser numéricas.',
         ]);
 
         $validator->after(function ($validator) use ($request) {
-            foreach ((array) $request->input('groups', []) as $index => $groupData) {
-                $days = $groupData['workload_days'] ?? [];
-                $hasWorkload = filled($groupData['workload_type'] ?? null)
-                    || !empty($days)
-                    || filled($groupData['workload_start_time'] ?? null)
-                    || filled($groupData['workload_end_time'] ?? null)
-                    || (($groupData['supervisor_theory_hours'] ?? '') !== '')
-                    || (($groupData['supervisor_lab_hours'] ?? '') !== '');
+            $names = collect((array) $request->input('groups', []))
+                ->map(fn ($row) => mb_strtolower(trim((string) ($row['name'] ?? ''))))
+                ->filter();
 
-                if (!$hasWorkload) {
-                    continue;
-                }
-
-                $required = [
-                    'workload_type' => 'Indica si la carga del grupo es parcial o completa.',
-                    'workload_start_date' => 'Indica la fecha de inicio de la carga.',
-                    'workload_end_date' => 'Indica la fecha de término de la carga.',
-                    'workload_start_time' => 'Indica la hora inicial de la disponibilidad.',
-                    'workload_end_time' => 'Indica la hora final de la disponibilidad.',
-                    'supervisor_theory_hours' => 'Indica las horas de teoría asignadas por el supervisor (usa 0 si no corresponde).',
-                    'supervisor_lab_hours' => 'Indica las horas de taller asignadas por el supervisor (usa 0 si no corresponde).',
-                ];
-
-                foreach ($required as $field => $message) {
-                    if (!array_key_exists($field, $groupData) || $groupData[$field] === null || $groupData[$field] === '') {
-                        $validator->errors()->add("groups.{$index}.{$field}", $message);
-                    }
-                }
-
-                if (empty($days)) {
-                    $validator->errors()->add("groups.{$index}.workload_days", 'Selecciona al menos un día de disponibilidad.');
-                }
-
-                if (
-                    filled($groupData['workload_start_date'] ?? null)
-                    && filled($groupData['workload_end_date'] ?? null)
-                    && $groupData['workload_end_date'] < $groupData['workload_start_date']
-                ) {
-                    $validator->errors()->add("groups.{$index}.workload_end_date", 'La fecha final no puede ser anterior a la inicial.');
-                }
-
-                foreach (['workload_start_time', 'workload_end_time'] as $timeField) {
-                    if (filled($groupData[$timeField] ?? null) && ((int) substr($groupData[$timeField], 3, 2) % 15 !== 0)) {
-                        $validator->errors()->add("groups.{$index}.{$timeField}", 'Usa intervalos de 15 minutos (por ejemplo, 08:00, 08:15 o 08:30).');
-                    }
-                }
-
-                if (
-                    filled($groupData['workload_start_time'] ?? null)
-                    && filled($groupData['workload_end_time'] ?? null)
-                    && $groupData['workload_end_time'] <= $groupData['workload_start_time']
-                ) {
-                    $validator->errors()->add("groups.{$index}.workload_end_time", 'La hora final debe ser posterior a la inicial.');
-                }
+            if ($names->unique()->count() !== $names->count()) {
+                $validator->errors()->add('groups', 'Hay nombres repetidos en la lista. Corrígelos antes de guardar.');
             }
         });
 
         $data = $validator->validate();
-
-        $groups = collect($data['groups'])->map(function ($groupData) {
-            $hasWorkload = filled($groupData['workload_type'] ?? null)
-                || !empty($groupData['workload_days'] ?? [])
-                || filled($groupData['workload_start_time'] ?? null)
-                || filled($groupData['workload_end_time'] ?? null)
-                || (($groupData['supervisor_theory_hours'] ?? '') !== '')
-                || (($groupData['supervisor_lab_hours'] ?? '') !== '');
-
-            return [
-                'name' => trim($groupData['name']),
-                'assigned_at' => $groupData['assigned_at'] ?? null,
-                'workload_type' => $hasWorkload ? $groupData['workload_type'] : null,
-                'workload_start_date' => $hasWorkload ? ($groupData['workload_start_date'] ?? null) : null,
-                'workload_end_date' => $hasWorkload ? ($groupData['workload_end_date'] ?? null) : null,
-                'workload_days' => $hasWorkload ? array_values(array_unique(array_map('intval', $groupData['workload_days'] ?? []))) : null,
-                'workload_start_time' => $hasWorkload ? ($groupData['workload_start_time'] ?? null) : null,
-                'workload_end_time' => $hasWorkload ? ($groupData['workload_end_time'] ?? null) : null,
-                'supervisor_theory_hours' => $hasWorkload ? $groupData['supervisor_theory_hours'] : null,
-                'supervisor_lab_hours' => $hasWorkload ? $groupData['supervisor_lab_hours'] : null,
-            ];
-        })->values();
-
-        $normalizedNames = $groups->pluck('name')->map(fn ($name) => mb_strtolower($name));
-        if ($normalizedNames->unique()->count() !== $normalizedNames->count()) {
-            throw ValidationException::withMessages([
-                'groups' => 'Hay nombres repetidos en la lista. Corrígelos antes de guardar.',
-            ]);
-        }
+        $groups = collect($data['groups'])
+            ->map(fn ($row) => ['name' => trim($row['name'])])
+            ->values();
 
         DB::transaction(function () use ($groups, $cycle) {
             Cycle::query()->whereKey($cycle->id)->lockForUpdate()->firstOrFail();
@@ -198,27 +108,24 @@ class GroupController extends Controller
                         ->ignore($group->id)
                         ->where(fn ($query) => $query->where('cycle_id', $group->cycle_id)),
                 ],
-                'assigned_at' => ['nullable', 'date'],
             ],
-            ['name.unique' => 'Ya existe otro grupo con ese nombre en este ciclo.']
+            [
+                'name.required' => 'Escribe el nombre del grupo.',
+                'name.unique' => 'Ya existe otro grupo con ese nombre en este ciclo.',
+            ]
         );
 
         if ($validator->fails()) {
             return redirect()
-                ->route('cycles.show', [
-                    'cycle' => $group->cycle,
-                    'dialog' => 'edit-group',
-                    'group_id' => $group->id,
-                    'page' => max(1, (int) $request->input('page', 1)),
-                ])
+                ->route('groups.show', ['group' => $group, 'dialog' => 'edit-group'])
                 ->withErrors($validator)
                 ->withInput();
         }
 
         $group->update($validator->validated());
 
-        return redirect()->route('cycles.show', $group->cycle)
-            ->with('success', 'Datos del grupo actualizados.');
+        return redirect()->route('groups.show', $group)
+            ->with('success', 'Nombre del grupo actualizado.');
     }
 
     public function show(TeachingGroup $group, FiveMinuteTalkService $talkService)
