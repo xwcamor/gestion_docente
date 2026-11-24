@@ -21,9 +21,28 @@
         </div>
     </div>
     <div class="actions">
+        <form method="POST" action="{{ route('documents.distribution', $cycle) }}">
+            @csrf
+            <button class="btn btn-secondary" type="submit"><x-icon name="file-spreadsheet" /> Exportar carga laboral</button>
+        </form>
         <button class="btn" type="button" data-modal-open="group-create-dialog"><x-icon name="plus" /> Agregar grupo</button>
+        <form method="POST" action="{{ route('cycles.destroy', $cycle) }}" data-confirm="Se eliminará este ciclo y toda su planificación asociada. Los cursos del catálogo general y los alumnos reutilizados en otros grupos se conservarán. Esta acción no se puede deshacer.">
+            @csrf
+            @method('DELETE')
+            <button class="btn btn-danger" type="submit"><x-icon name="trash-2" /> Eliminar ciclo</button>
+        </form>
     </div>
 </div>
+
+@if(session('success'))
+    <div class="alert alert-success" role="status">{{ session('success') }}</div>
+@endif
+@if($errors->any() && request()->boolean('talks'))
+    <div class="alert alert-error" role="alert">
+        <strong>No se pudo distribuir las charlas:</strong>
+        <ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+    </div>
+@endif
 
 <div class="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:17px">
     <div class="stat-card">
@@ -63,7 +82,7 @@
     </div>
 </section>
 
-<details class="card cycle-talk-panel" id="cycle-talks" @if($cycleTalks->isEmpty()) open @endif>
+<details class="card cycle-talk-panel" id="cycle-talks" @if($cycleTalks->isEmpty() || request()->boolean('talks')) open @endif>
     <summary class="cycle-talk-summary">
         <span class="cycle-talk-icon"><x-icon name="message-square" /></span>
         <span class="cycle-talk-title">
@@ -219,7 +238,7 @@
     </form>
 </dialog>
 
-<dialog class="ui-dialog sheet-dialog" id="group-create-dialog" aria-labelledby="group-create-title" data-backdrop-close @if(request()->boolean('nuevo_grupo') || ($errors->any() && !request('dialog'))) data-auto-open @endif>
+<dialog class="ui-dialog sheet-dialog" id="group-create-dialog" aria-labelledby="group-create-title" data-backdrop-close @if(request()->boolean('nuevo_grupo') || ($errors->any() && !request('dialog') && !request()->boolean('talks'))) data-auto-open @endif>
     <div class="dialog-head">
         <div><h2 id="group-create-title">Agregar grupo</h2><p>{{ $cycle->academic_year }} · Ciclo {{ $cycle->cycle_code }}</p></div>
         <button class="dialog-close" type="button" data-modal-close aria-label="Cerrar"><x-icon name="x" /></button>
@@ -227,7 +246,7 @@
     <form method="POST" action="{{ route('groups.store', $cycle) }}" data-loading-form="1">
         @csrf
         <div class="dialog-body">
-            @if($errors->any() && !request('dialog'))
+            @if($errors->any() && !request('dialog') && !request()->boolean('talks'))
                 <div class="dialog-error" role="alert"><strong>Revisa estos datos:</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
             @endif
             <div class="group-count-control">
