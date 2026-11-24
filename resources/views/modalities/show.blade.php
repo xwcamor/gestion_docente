@@ -11,11 +11,28 @@
     <a href="#calendar"><x-icon name="calendar-days" /> Calendario</a><a href="#students"><x-icon name="users" /> Alumnos</a><a href="#documents"><x-icon name="file-text" /> Documentos Excel</a><a href="#sessions"><x-icon name="clipboard-check" /> Sesiones</a>
     <a href="{{ route('evaluations.index', $modality) }}"><x-icon name="arrow-right" /> Evaluaciones y notas</a>
 </div>
-<div class="grid grid-3" style="margin-bottom:17px">
+<div class="grid grid-3" style="margin-bottom:14px">
     <div class="stat-card"><div class="stat-label">Alumnos matriculados</div><div class="stat">{{ $enrollmentsCount }}</div></div>
-    <div class="stat-card"><div class="stat-label">Sesiones calculadas</div><div class="stat">{{ $scheduledSessionCount }}</div></div>
+    <div class="stat-card"><div class="stat-label">Sesiones programadas</div><div class="stat">{{ $scheduledSessionCount }}</div></div>
     <div class="stat-card"><div class="stat-label">Documentos generados</div><div class="stat">{{ $documentCount }}</div></div>
 </div>
+
+<section class="card detail-progress-card" aria-labelledby="modality-progress-title">
+    <div class="detail-progress-heading">
+        <div><p class="eyebrow">Seguimiento del curso</p><h2 id="modality-progress-title">Avance de preparación</h2></div>
+        <strong>{{ $configurationSteps }} / 4</strong>
+    </div>
+    <div class="detail-progress-row">
+        <div class="detail-progress-label"><span>Configuración del curso</span><strong>{{ $configurationPercent }}%</strong></div>
+        <div class="detail-progress-track" role="progressbar" aria-label="Avance de configuración del curso" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $configurationPercent }}"><span style="width:{{ $configurationPercent }}%"></span></div>
+        <small>NRC · fechas de dictado · horario · calendario generado</small>
+    </div>
+    <div class="detail-progress-row">
+        <div class="detail-progress-label"><span>Sesiones con contenido preparado</span><strong>{{ $sessionsWithContentCount }} / {{ $scheduledSessionCount }} · {{ $sessionContentPercent }}%</strong></div>
+        <div class="detail-progress-track" role="progressbar" aria-label="Sesiones programadas con contenido" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $sessionContentPercent }}"><span style="width:{{ $sessionContentPercent }}%"></span></div>
+        <small>Una sesión cuenta cuando tiene tema, objetivo, actividades o evidencias.</small>
+    </div>
+</section>
 
 <section class="card" id="calendar">
     <div class="card-head"><div><h2>Calendario y horario</h2><p class="card-description">Configura el periodo y los días de clase. Las sesiones se calculan automáticamente.</p></div><span class="badge {{ $modality->modality === 'TEC' ? 'badge-blue' : 'badge-green' }}">{{ $modality->label }}</span></div>
@@ -145,6 +162,22 @@
     @endif
 </section>
 @endsection
+
+@push('styles')
+<style>
+.detail-progress-card{padding:16px 18px;margin-bottom:14px}
+.detail-progress-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:15px}
+.detail-progress-heading h2{margin:2px 0 0;font-size:17px}
+.detail-progress-heading>strong{font-size:15px;color:#347c91}
+.detail-progress-row+.detail-progress-row{margin-top:14px;padding-top:13px;border-top:1px solid #edf1f3}
+.detail-progress-label{display:flex;justify-content:space-between;gap:8px;margin-bottom:7px;font-size:12px;color:#4d626e}
+.detail-progress-label strong{color:#274d61;white-space:nowrap}
+.detail-progress-track{height:8px;overflow:hidden;border-radius:99px;background:#e8eef1}
+.detail-progress-track span{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#3a8cab,#47a88e)}
+.detail-progress-row small{display:block;margin-top:6px;color:#76868e;font-size:10px}
+@media(max-width:600px){.detail-progress-card{padding:14px}.detail-progress-label{align-items:flex-start;flex-direction:column;gap:3px}}
+</style>
+@endpush
 
 @push('styles')
 <style>
