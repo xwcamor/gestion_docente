@@ -947,6 +947,7 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
         .section-status-symbol{font-size:11px;font-weight:900}
         .section-status-complete{color:#24734b;background:#edf8f0;border-color:#cfe8d6}
         .section-status-partial{color:#98651d;background:#fff7e8;border-color:#f1dfb8}
+        .section-status-pending{color:#68747c;background:#f3f5f6;border-color:#dce2e5}
 
         /* Modo oscuro: conservar el mismo contraste y jerarquía */
         html[data-theme="dark"] .page-head h1,
