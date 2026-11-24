@@ -238,4 +238,4 @@ La importación crea o reutiliza el ciclo y el grupo indicado, registra cada cur
 
 ## Registro simplificado de cursos
 
-El alta individual y la carga rápida usan tres datos: código institucional, nombre y componente (Teoría, Taller o Ambos). El intérprete obtiene periodo, programa, código base, modalidad y NRC desde segmentos como `202620-PIAD-224-TAL-NRC_11524`. Para ambos componentes, se pueden ingresar los códigos TEC y TAL del mismo curso separados por punto y coma; cada NRC se guarda en su propia modalidad. Las fechas y horarios se completan después en la configuración de cada modalidad.
+El alta individual y la carga rápida registran el nombre y las modalidades del curso. En la carga rápida cada fila representa un curso y permite ingresar por separado el código institucional TEC y el código TAL/TALL, aunque tengan NRC diferentes. El intérprete obtiene periodo, programa, código base, modalidad y NRC desde segmentos como `202620-PIAD-222-TEC-NRC_11518`. Cada modalidad conserva su propio rango Desde/Hasta; esos campos son opcionales y, si se dejan vacíos, pueden completarse después en su configuración.
