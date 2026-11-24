@@ -17,13 +17,11 @@ class CourseModalityController extends Controller
         $modality->load(['assignment.course', 'assignment.group.cycle', 'schedules']);
         $talkService->ensureScheduled($modality->assignment->group);
 
-        $import = $modality->importBatches()->latest()->first();
         $enrollmentsCount = $modality->enrollments()->count();
         $sessionCount = $modality->sessions()->count();
         $scheduledSessionCount = $modality->sessions()->where('status', 'scheduled')->count();
         $documentCount = $modality->documents()->count();
 
-        $hasNrc = filled($modality->nrc);
         $hasCourseDates = $modality->start_date !== null && $modality->end_date !== null;
         $classSchedules = $modality->schedules
             ->where('block_type', 'CLASS')
@@ -34,18 +32,6 @@ class CourseModalityController extends Controller
         $schedulesByDay = $classSchedules->groupBy('day_of_week');
         $weeklyMinutes = $classSchedules->sum(fn ($schedule) => $schedule->duration_minutes);
         $weeklyHoursCalculated = round($weeklyMinutes / 60, 2);
-        // Los bloques asincrónicos no necesitan generar sesiones de clase.
-        $hasGeneratedCalendar = $hasClassSchedule
-            ? $scheduledSessionCount > 0
-            : $hasAnySchedule;
-        $configurationSteps = collect([
-            $hasNrc,
-            $hasCourseDates,
-            $hasAnySchedule,
-            $hasGeneratedCalendar,
-        ])->filter()->count();
-        $configurationPercent = (int) round(($configurationSteps / 4) * 100);
-
         $sessionsWithContentCount = $modality->sessions()
             ->where('status', 'scheduled')
             ->where(function ($query) {
@@ -60,9 +46,14 @@ class CourseModalityController extends Controller
                 });
             })
             ->count();
-        $sessionContentPercent = $scheduledSessionCount > 0
-            ? (int) round(($sessionsWithContentCount / $scheduledSessionCount) * 100)
-            : 0;
+        $calendarStatus = $hasCourseDates && $hasAnySchedule && $scheduledSessionCount > 0
+            ? 'complete'
+            : (($hasCourseDates || $hasAnySchedule) ? 'partial' : 'pending');
+        $studentsStatus = $enrollmentsCount > 0 ? 'complete' : 'pending';
+        $documentsStatus = $documentCount > 0 ? 'complete' : 'pending';
+        $sessionsStatus = $scheduledSessionCount === 0
+            ? 'pending'
+            : ($sessionsWithContentCount >= $scheduledSessionCount ? 'complete' : 'partial');
 
         $sessions = $modality->sessions()
             ->orderBy('session_date')
@@ -99,7 +90,6 @@ class CourseModalityController extends Controller
 
         return view('modalities.show', compact(
             'modality',
-            'import',
             'holidayDates',
             'blockedHolidays',
             'schedulesByDay',
@@ -108,12 +98,13 @@ class CourseModalityController extends Controller
             'sessionCount',
             'scheduledSessionCount',
             'documentCount',
-            'configurationSteps',
-            'configurationPercent',
+            'calendarStatus',
+            'studentsStatus',
+            'documentsStatus',
+            'sessionsStatus',
             'hasClassSchedule',
             'hasAnySchedule',
             'sessionsWithContentCount',
-            'sessionContentPercent',
             'sessions',
             'documents'
         ));

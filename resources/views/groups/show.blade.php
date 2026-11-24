@@ -456,7 +456,7 @@
         <div class="talks-intro">
             <div>
                 <strong>Catálogo institucional</strong>
-                <p>Los temas se distribuyen de forma equilibrada entre las fechas del periodo de carga horaria, en días con clases reales. Se respetan los horarios de cada curso y los feriados; las charlas realizadas conservan su fecha.</p>
+                <p>Los temas se distribuyen automáticamente entre las fechas Desde/Hasta de la carga horaria, usando los días asignados al grupo y excluyendo feriados. No depende de que cada curso tenga sus bloques configurados; las charlas realizadas conservan su fecha.</p>
             </div>
             @if($groupTalks->isNotEmpty())
                 <form method="POST" action="{{ route('documents.group-talks', $group) }}">
@@ -473,10 +473,17 @@
                     {{ \Illuminate\Support\Carbon::parse($talkScheduleSummary['range_start'])->format('d/m/Y') }}
                     – {{ \Illuminate\Support\Carbon::parse($talkScheduleSummary['range_end'])->format('d/m/Y') }}
                 </strong>
-                <span>{{ $talkScheduleSummary['eligible_dates_count'] }} días válidos de clase en el periodo</span>
+                <span>{{ $talkScheduleSummary['eligible_dates_count'] }} fechas disponibles</span>
+                <span>Días: {{ implode(', ', $talkScheduleSummary['weekday_labels']) }}</span>
+                @if($talkScheduleSummary['uses_cycle_range'])
+                    <span>Se usa el rango del ciclo porque el rango propio de carga no está completo</span>
+                @endif
+                @if($talkScheduleSummary['uses_default_weekdays'])
+                    <span>Se usa lunes a viernes como días predeterminados</span>
+                @endif
             @else
                 <strong>Periodo sin configurar</strong>
-                <span>Completa desde, hasta, días y horario en Carga horaria</span>
+                <span>Completa las fechas Desde/Hasta del ciclo o de Carga horaria; por defecto se usan lunes a viernes</span>
             @endif
         </div>
 
@@ -531,12 +538,12 @@
                 </div>
             @elseif($talkScheduleSummary['eligible_dates_count'] === 0)
                 <div class="alert alert-warning mt-16">
-                    No se encontraron días que coincidan con la carga horaria y los horarios reales de los cursos. Revisa los días, las horas y las fechas de sus modalidades.
+                    No se encontraron fechas disponibles dentro del rango del grupo. Revisa las fechas de carga horaria, los días asignados y los feriados.
                 </div>
             @elseif($talkUnscheduledCount > 0)
                 <div class="alert alert-warning mt-16">
                     Se asignaron {{ $talkScheduleSummary['scheduled_pending_count'] }} fechas a las charlas pendientes.
-                    Quedan {{ $talkUnscheduledCount }} sin fecha porque no hay suficientes fechas libres para las charlas pendientes. Amplía el periodo o revisa los días y horarios de disponibilidad.
+                    Quedan {{ $talkUnscheduledCount }} sin fecha porque no hay suficientes fechas libres para las charlas pendientes. Amplía el periodo o agrega más días de disponibilidad en la carga horaria.
                 </div>
             @endif
         @else

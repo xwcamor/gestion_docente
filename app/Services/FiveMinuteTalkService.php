@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\CourseModality;
 use App\Models\FiveMinuteTalkTopic;
 use App\Models\Holiday;
 use App\Models\TeachingGroup;
@@ -13,8 +12,8 @@ use RuntimeException;
 class FiveMinuteTalkService
 {
     /**
-     * Builds the group talk plan from the supervisor workload window and the
-     * actual class days in the group's modalities.
+     * Builds the group talk plan from the workload date range and assigned
+     * weekdays, without requiring each course modality to have class blocks.
      *
      * Pending talks are spread as evenly as possible over the available dates.
      * Completed talks keep their historical dates and are never moved.
@@ -139,8 +138,22 @@ class FiveMinuteTalkService
 
         return [
             'range_configured' => $rangeConfigured,
-            'range_start' => $group->workload_start_date?->toDateString(),
-            'range_end' => $group->workload_end_date?->toDateString(),
+            'range_start' => ($group->workload_start_date && $group->workload_end_date
+                ? $group->workload_start_date
+                : $group->cycle->start_date)?->toDateString(),
+            'range_end' => ($group->workload_start_date && $group->workload_end_date
+                ? $group->workload_end_date
+                : $group->cycle->end_date)?->toDateString(),
+            'uses_cycle_range' => $group->workload_start_date === null || $group->workload_end_date === null,
+            'uses_default_weekdays' => empty($group->workload_days),
+            'weekdays' => empty($group->workload_days)
+                ? [1, 2, 3, 4, 5]
+                : collect($group->workload_days)->map(fn ($day) => (int) $day)->unique()->values()->all(),
+            'weekday_labels' => collect(empty($group->workload_days) ? [1, 2, 3, 4, 5] : $group->workload_days)
+                ->map(fn ($day) => [1 => 'Lun', 2 => 'Mar', 3 => 'Mié', 4 => 'Jue', 5 => 'Vie', 6 => 'Sáb', 7 => 'Dom'][(int) $day] ?? null)
+                ->filter()
+                ->values()
+                ->all(),
             'eligible_dates_count' => count($eligibleDates),
             'available_dates_count' => count($availableDates),
             'scheduled_pending_count' => count(array_filter($dateAssignments)),
@@ -150,25 +163,18 @@ class FiveMinuteTalkService
 
     private function hasWorkloadWindow(TeachingGroup $group): bool
     {
-        if (
-            !$group->workload_start_date
-            || !$group->workload_end_date
-            || $group->workload_end_date->lt($group->workload_start_date)
-            || empty($group->workload_days)
-            || !filled($group->workload_start_time)
-            || !filled($group->workload_end_time)
-        ) {
-            return false;
-        }
+        $hasGroupRange = $group->workload_start_date !== null
+            && $group->workload_end_date !== null;
+        $start = $hasGroupRange ? $group->workload_start_date : $group->cycle->start_date;
+        $end = $hasGroupRange ? $group->workload_end_date : $group->cycle->end_date;
 
-        return substr((string) $group->workload_start_time, 0, 5)
-            < substr((string) $group->workload_end_time, 0, 5);
+        return $start !== null && $end !== null && !$end->lt($start);
     }
 
     /**
-     * Evenly distributes ordered pending topics across the available dates.
-     * If there are fewer class dates than topics, it schedules one topic per
-     * date and leaves the remaining topics pending without a date.
+     * Evenly distributes ordered pending topics across available work days.
+     * If there are fewer days than talks, one talk is placed on each available
+     * date and the remaining topics stay pending without a date.
      *
      * @return array<int, string|null> Talk ID mapped to its assigned date.
      */
@@ -179,7 +185,7 @@ class FiveMinuteTalkService
         $dateCount = count($availableDates);
         $assignments = [];
 
-        if ($talkCount === 0) {
+        if ($talkCount === 0 || $dateCount === 0) {
             return $assignments;
         }
 
@@ -187,13 +193,10 @@ class FiveMinuteTalkService
 
         for ($index = 0; $index < $assignableCount; $index++) {
             if ($talkCount > $dateCount) {
-                // Not enough dates: preserve topic order and use every possible day.
                 $dateIndex = $index;
             } elseif ($talkCount === 1) {
-                // A single talk belongs near the middle of the workload period.
                 $dateIndex = intdiv($dateCount - 1, 2);
             } else {
-                // Spread all talks from the beginning to the end of the period.
                 $dateIndex = (int) round(
                     $index * ($dateCount - 1) / ($talkCount - 1)
                 );
@@ -209,167 +212,57 @@ class FiveMinuteTalkService
         return $assignments;
     }
 
-    private function ensureProfessorCatalogue(int $professorId, array $catalogue): void
-    {
-        $existing = FiveMinuteTalkTopic::query()
-            ->where('professor_id', $professorId)
-            ->orderBy('position')
-            ->pluck('title')
-            ->all();
-
-        if ($existing === $catalogue) {
-            return;
-        }
-
-        DB::transaction(function () use ($professorId, $catalogue) {
-            FiveMinuteTalkTopic::where('professor_id', $professorId)->delete();
-            $now = now();
-            $rows = [];
-
-            foreach ($catalogue as $index => $title) {
-                $rows[] = [
-                    'professor_id' => $professorId,
-                    'title' => $title,
-                    'position' => $index + 1,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ];
-            }
-
-            foreach (array_chunk($rows, 400) as $chunk) {
-                DB::table('five_minute_talk_topics')->insert($chunk);
-            }
-        });
-    }
-
-    private function catalogue(): array
-    {
-        $path = base_path('system_files/charla_5_minutos_catalogo.json');
-        if (!is_file($path)) {
-            throw new RuntimeException('No se encuentra el catálogo institucional de charlas de 5 minutos.');
-        }
-
-        $data = json_decode((string) file_get_contents($path), true);
-        if (!is_array($data) || empty($data['areas']) || !is_array($data['areas'])) {
-            throw new RuntimeException('El catálogo institucional de charlas tiene un formato inválido.');
-        }
-
-        $topics = [];
-        foreach ($data['areas'] as $area) {
-            foreach (($area['topics'] ?? []) as $title) {
-                $title = trim((string) $title);
-                if ($title !== '' && mb_strlen($title) <= 255) {
-                    $topics[] = $title;
-                }
-            }
-        }
-
-        if (!$topics) {
-            throw new RuntimeException('El catálogo institucional no contiene temas disponibles.');
-        }
-
-        return $topics;
-    }
-
     /**
-     * Unique class dates for this group only. A date is usable when at least
-     * one of the group's modalities has a CLASS block that weekday.
-     */
-    /**
-     * Candidate dates must satisfy all four conditions:
-     * - fall within the group's workload start/end dates and the academic cycle;
-     * - be among the weekdays assigned by the supervisor;
-     * - have an actual CLASS block in at least one modality during its own dates;
-     * - overlap the supervisor's availability time and are not blocked holidays.
+     * Talk dates are derived from the group's supervisor workload window,
+     * not from the schedule state of an individual course modality.
+     * Each selected weekday inside the workload range is a candidate.
+     * Cycle boundaries and blocking holidays are always respected.
      */
     private function assignedDates(TeachingGroup $group): array
     {
         $cycle = $group->cycle;
-        $workloadStart = Carbon::parse($group->workload_start_date)->startOfDay();
-        $workloadEnd = Carbon::parse($group->workload_end_date)->startOfDay();
+        $usesGroupRange = $group->workload_start_date !== null && $group->workload_end_date !== null;
+        $start = ($usesGroupRange ? $group->workload_start_date : $cycle->start_date)?->copy()->startOfDay();
+        $end = ($usesGroupRange ? $group->workload_end_date : $cycle->end_date)?->copy()->startOfDay();
 
-        if ($cycle->start_date && $workloadStart->lt($cycle->start_date)) {
-            $workloadStart = $cycle->start_date->copy()->startOfDay();
-        }
-
-        if ($cycle->end_date && $workloadEnd->gt($cycle->end_date)) {
-            $workloadEnd = $cycle->end_date->copy()->startOfDay();
-        }
-
-        if ($workloadStart->gt($workloadEnd)) {
+        if (!$start || !$end) {
             return [];
         }
 
-        $workloadDays = collect($group->workload_days)
-            ->map(fn ($day) => (int) $day)
-            ->unique()
-            ->values()
-            ->all();
-
-        $availabilityStart = substr((string) $group->workload_start_time, 0, 5);
-        $availabilityEnd = substr((string) $group->workload_end_time, 0, 5);
-
-        $modalities = CourseModality::query()
-            ->with(['schedules' => fn ($query) => $query->where('block_type', 'CLASS')])
-            ->whereHas('assignment', fn ($query) => $query->where('teaching_group_id', $group->id))
-            ->whereNotNull('start_date')
-            ->whereNotNull('end_date')
-            ->where('start_date', '<=', $workloadEnd->toDateString())
-            ->where('end_date', '>=', $workloadStart->toDateString())
-            ->get();
-
-        $dates = [];
-
-        foreach ($modalities as $modality) {
-            if ($modality->start_date->gt($workloadStart)) {
-                $modalityStart = $modality->start_date->copy()->startOfDay();
-            } else {
-                $modalityStart = $workloadStart->copy();
-            }
-
-            if ($modality->end_date->lt($workloadEnd)) {
-                $modalityEnd = $modality->end_date->copy()->startOfDay();
-            } else {
-                $modalityEnd = $workloadEnd->copy();
-            }
-
-            if ($modalityStart->gt($modalityEnd)) {
-                continue;
-            }
-
-            foreach ($modality->schedules as $schedule) {
-                $weekday = (int) $schedule->day_of_week;
-                if (!in_array($weekday, $workloadDays, true)) {
-                    continue;
-                }
-
-                $classStart = substr((string) $schedule->start_time, 0, 5);
-                $classEnd = substr((string) $schedule->end_time, 0, 5);
-
-                // A talk lasts five minutes, so require at least five minutes
-                // where the class block and supervisor availability overlap.
-                $classStartMinutes = ((int) substr($classStart, 0, 2) * 60) + (int) substr($classStart, 3, 2);
-                $classEndMinutes = ((int) substr($classEnd, 0, 2) * 60) + (int) substr($classEnd, 3, 2);
-                $availabilityStartMinutes = ((int) substr($availabilityStart, 0, 2) * 60) + (int) substr($availabilityStart, 3, 2);
-                $availabilityEndMinutes = ((int) substr($availabilityEnd, 0, 2) * 60) + (int) substr($availabilityEnd, 3, 2);
-
-                $overlapMinutes = min($classEndMinutes, $availabilityEndMinutes)
-                    - max($classStartMinutes, $availabilityStartMinutes);
-
-                if ($overlapMinutes < 5) {
-                    continue;
-                }
-
-                for ($date = $modalityStart->copy(); $date->lte($modalityEnd); $date->addDay()) {
-                    if ($date->dayOfWeekIso === $weekday) {
-                        $dates[$date->toDateString()] = true;
-                    }
-                }
-            }
+        if ($cycle->start_date && $start->lt($cycle->start_date)) {
+            $start = $cycle->start_date->copy()->startOfDay();
         }
 
-        $dateKeys = array_keys($dates);
-        sort($dateKeys);
+        if ($cycle->end_date && $end->gt($cycle->end_date)) {
+            $end = $cycle->end_date->copy()->startOfDay();
+        }
+
+        if ($start->gt($end)) {
+            return [];
+        }
+
+        // Prefer supervisor-selected weekdays. If none were specified, use
+        // Monday to Friday as the neutral automatic default, not modality blocks.
+        $workloadDays = empty($group->workload_days)
+            ? [1, 2, 3, 4, 5]
+            : collect($group->workload_days)
+                ->map(fn ($day) => (int) $day)
+                ->filter(fn ($day) => $day >= 1 && $day <= 7)
+                ->unique()
+                ->values()
+                ->all();
+
+        if (!$workloadDays) {
+            return [];
+        }
+
+        $dateKeys = [];
+
+        for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
+            if (in_array($date->dayOfWeekIso, $workloadDays, true)) {
+                $dateKeys[] = $date->toDateString();
+            }
+        }
 
         if (!$dateKeys) {
             return [];
@@ -377,7 +270,7 @@ class FiveMinuteTalkService
 
         $holidays = Holiday::query()
             ->where('blocks_classes', true)
-            ->whereIn('holiday_date', $dateKeys)
+            ->whereBetween('holiday_date', [$dateKeys[0], $dateKeys[count($dateKeys) - 1]])
             ->where(fn ($query) => $query
                 ->whereNull('professor_id')
                 ->orWhere('professor_id', $group->professor_id))
@@ -387,4 +280,6 @@ class FiveMinuteTalkService
 
         return array_values(array_diff($dateKeys, $holidays));
     }
+
+
 }

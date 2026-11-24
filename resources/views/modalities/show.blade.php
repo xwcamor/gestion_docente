@@ -7,39 +7,6 @@
     <div><p class="eyebrow">Modalidad {{ $modality->label }}</p><h1>{{ $assignment->course->name }}</h1><p class="subhead">{{ $modality->modality }} · NRC {{ $modality->nrc ?: 'Pendiente' }} · Bloque {{ $modality->block_code ?: 'Pendiente' }} @if($modality->block_reference) · Ref. {{ $modality->block_reference }} @endif · {{ $assignment->group->name }} · {{ $assignment->group->cycle->academic_year }}</p></div>
     <a class="btn btn-secondary" href="{{ route('groups.show', $assignment->group) }}"><x-icon name="arrow-left" /> Volver al grupo</a>
 </div>
-<div class="quick-nav">
-    <a href="#calendar"><x-icon name="calendar-days" /> Calendario</a><a href="#students"><x-icon name="users" /> Alumnos</a><a href="#documents"><x-icon name="file-text" /> Documentos Excel</a><a href="#sessions"><x-icon name="clipboard-check" /> Sesiones</a>
-    <a href="{{ route('evaluations.index', $modality) }}"><x-icon name="arrow-right" /> Evaluaciones y notas</a>
-</div>
-<div class="grid grid-3" style="margin-bottom:14px">
-    <div class="stat-card"><div class="stat-label">Alumnos matriculados</div><div class="stat">{{ $enrollmentsCount }}</div></div>
-    <div class="stat-card"><div class="stat-label">Sesiones programadas</div><div class="stat">{{ $scheduledSessionCount }}</div></div>
-    <div class="stat-card"><div class="stat-label">Documentos generados</div><div class="stat">{{ $documentCount }}</div></div>
-</div>
-
-<section class="card detail-progress-card" aria-labelledby="modality-progress-title">
-    <div class="detail-progress-heading">
-        <div><p class="eyebrow">Seguimiento del curso</p><h2 id="modality-progress-title">Avance de preparación</h2></div>
-        <strong>{{ $configurationSteps }} / 4</strong>
-    </div>
-    <div class="detail-progress-row">
-        <div class="detail-progress-label"><span>Configuración del curso</span><strong>{{ $configurationPercent }}%</strong></div>
-        <div class="detail-progress-track" role="progressbar" aria-label="Avance de configuración del curso" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $configurationPercent }}"><span style="width:{{ $configurationPercent }}%"></span></div>
-        <small>NRC · fechas de dictado · horario · calendario de clases cuando aplica</small>
-    </div>
-    @if($hasClassSchedule)
-        <div class="detail-progress-row">
-            <div class="detail-progress-label"><span>Sesiones con contenido preparado</span><strong>{{ $sessionsWithContentCount }} / {{ $scheduledSessionCount }} · {{ $sessionContentPercent }}%</strong></div>
-            <div class="detail-progress-track" role="progressbar" aria-label="Sesiones programadas con contenido" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $sessionContentPercent }}"><span style="width:{{ $sessionContentPercent }}%"></span></div>
-            <small>Una sesión cuenta cuando tiene tema, objetivo, actividades o evidencias.</small>
-        </div>
-    @else
-        <div class="detail-progress-row">
-            <small>Falta configurar el horario de esta modalidad. Elige los días y bloques correspondientes en Calendario y horario.</small>
-        </div>
-    @endif
-</section>
-
 @php
     $scheduleWeekdays = [1 => 'Lunes', 2 => 'Martes', 3 => 'Miércoles', 4 => 'Jueves', 5 => 'Viernes', 6 => 'Sábado', 7 => 'Domingo'];
     $scheduleRows = old('schedules');
@@ -68,42 +35,44 @@
         $scheduleRows = [['days' => [], 'start_time' => '', 'end_time' => '', 'classroom' => '', 'instruction_type' => 'THEORY']];
     }
 @endphp
-<section class="card" id="calendar">
-    <div class="card-head">
-        <div>
-            <h2>Horario y calendario</h2>
-            <p class="card-description">Periodo {{ $assignment->group->cycle->academic_year }}-{{ $assignment->group->cycle->cycle_code }} · {{ $assignment->group->cycle->start_date?->format('d/m/Y') }} al {{ $assignment->group->cycle->end_date?->format('d/m/Y') }}</p>
-        </div>
-        <span class="badge {{ $modality->modality === 'TEC' ? 'badge-blue' : 'badge-green' }}">{{ $modality->label }}</span>
+<details class="card modality-section" id="calendar" @if(!$hasCourseDates || !$hasAnySchedule || $scheduledSessionCount === 0 || $errors->any()) open @endif>
+    <summary class="modality-section-summary">
+        <span class="modality-section-icon"><x-icon name="calendar-days" /></span>
+        <span class="modality-section-title">
+            <strong>Horario y calendario</strong>
+            <small>Fechas de dictado: {{ $modality->start_date?->format('d/m/Y') ?: 'Pendiente' }} – {{ $modality->end_date?->format('d/m/Y') ?: 'Pendiente' }}</small>
+        </span>
+        <span class="modality-section-count">{{ number_format($weeklyHoursCalculated, 2) }} h/semana · {{ $scheduledSessionCount }} sesiones</span>
+        <x-section-status :status="$calendarStatus" />
+        <x-icon name="chevron-right" class="modality-section-chevron" />
+    </summary>
+    <div class="modality-section-body">
+        <p class="modality-cycle-period">Ciclo {{ $assignment->group->cycle->academic_year }}-{{ $assignment->group->cycle->cycle_code }}: {{ $assignment->group->cycle->start_date?->format('d/m/Y') }} al {{ $assignment->group->cycle->end_date?->format('d/m/Y') }}. Las sesiones de esta modalidad usan únicamente sus propias fechas y bloques.</p>
+
+    <div class="modality-weekly-overview">
+        <strong>{{ number_format($weeklyHoursCalculated, 2) }} h/semana configuradas</strong>
+        @if($hasAnySchedule)
+            <div class="modality-day-chips">
+                @foreach($scheduleWeekdays as $day => $dayLabel)
+                    @if($schedulesByDay->has($day))
+                        <span class="modality-day-chip">
+                            <b>{{ $dayLabel }}</b>
+                            @foreach($schedulesByDay->get($day) as $schedule)
+                                <small>{{ substr($schedule->start_time, 0, 5) }}–{{ substr($schedule->end_time, 0, 5) }} · {{ ($schedule->instruction_type ?? 'THEORY') === 'LAB' ? 'Lab.' : 'Teoría' }}</small>
+                            @endforeach
+                        </span>
+                    @endif
+                @endforeach
+            </div>
+        @else
+            <span class="modality-no-blocks">Todavía no hay bloques de clase en esta modalidad.</span>
+        @endif
     </div>
 
-    <div class="weekly-load-summary">
-        <div class="weekly-load-head">
-            <div><strong>Resumen de carga semanal</strong><p>Solo teoría y laboratorio. Las horas se calculan desde los bloques ingresados.</p></div>
-            <span class="weekly-hours-total">{{ number_format($weeklyHoursCalculated, 2) }} h/semana</span>
-        </div>
-        <div class="weekly-load-grid">
-            @foreach($scheduleWeekdays as $day => $dayLabel)
-                <div class="weekly-load-day">
-                    <strong>{{ $dayLabel }}</strong>
-                    @forelse($schedulesByDay->get($day, collect()) as $schedule)
-                        <div class="weekly-load-block {{ ($schedule->instruction_type ?? 'THEORY') === 'LAB' ? 'is-lab' : 'is-theory' }}">
-                            <span>{{ substr($schedule->start_time, 0, 5) }}–{{ substr($schedule->end_time, 0, 5) }}</span>
-                            <b>{{ ($schedule->instruction_type ?? 'THEORY') === 'LAB' ? 'LAB' : 'Teoría' }}</b>
-                            <small>{{ $schedule->classroom ?: 'Ambiente pendiente' }}</small>
-                        </div>
-                    @empty
-                        <span class="weekly-load-empty">Sin bloque</span>
-                    @endforelse
-                </div>
-            @endforeach
-        </div>
-    </div>
-
-    <details class="panel schedule-config-panel">
+    <details class="panel schedule-config-panel" @if($errors->any()) open @endif>
         <summary>Configurar fechas y bloques de clase</summary>
         <div class="panel-body">
-            <form id="modality-schedule-form" method="POST" action="{{ route('modalities.update', $modality) }}">
+            <form id="modality-schedule-form" method="POST" action="{{ route('modalities.update', $modality) }}" data-loading-form="1">
                 @csrf
                 @method('PUT')
                 <input type="hidden" name="schedules_present" value="1">
@@ -183,47 +152,57 @@
     </details>
 
     @if($modality->start_date && $modality->end_date && !$hasClassSchedule)
-        <div class="alert alert-warning mt-16">Ya hay fechas registradas, pero falta agregar bloques de teoría o laboratorio.</div>
+        <div class="alert alert-warning mt-16">Las fechas de dictado están registradas, pero esta modalidad todavía no tiene días ni bloques de clase. Agrégalos para generar sus sesiones académicas.</div>
     @endif
-    <form method="POST" action="{{ route('modalities.rebuild', $modality) }}" class="mt-16" data-confirm="Se volverán a calcular las sesiones con los bloques de teoría/laboratorio y los feriados actuales. ¿Deseas continuar?">
-        @csrf
-        <button class="btn btn-secondary btn-sm" type="submit"><x-icon name="layers" /> Recalcular calendario</button>
-    </form>
-</section>
+    @if($hasCourseDates && $hasClassSchedule)
+        <form method="POST" action="{{ route('modalities.rebuild', $modality) }}" class="mt-16" data-loading-form="1" data-confirm="Se volverán a calcular las sesiones con los bloques de teoría/laboratorio y los feriados actuales. ¿Deseas continuar?">
+            @csrf
+            <button class="btn btn-secondary btn-sm" type="submit"><x-icon name="layers" /> Recalcular calendario</button>
+        </form>
+    @endif
+</div>
+</details>
 
-<section class="card" id="students">
-    <div class="card-head">
-        <div>
-            <h2>Padrón compartido del grupo</h2>
-            <p class="card-description">Los alumnos se cargan una sola vez desde el grupo. Este curso mantiene su propia matrícula, notas y evaluaciones.</p>
-        </div>
-        <span class="badge">{{ $enrollmentsCount }} matrículas en este curso</span>
-    </div>
-    <div class="grid grid-2">
-        <div class="stat-card">
-            <div class="stat-label">Alumnos registrados en el grupo</div>
-            <div class="stat">{{ $assignment->group->students()->count() }}</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Alumnos vinculados a este curso</div>
-            <div class="stat">{{ $enrollmentsCount }}</div>
-        </div>
-    </div>
+<details class="card modality-section" id="students">
+    <summary class="modality-section-summary">
+        <span class="modality-section-icon"><x-icon name="users" /></span>
+        <span class="modality-section-title">
+            <strong>Padrón de alumnos</strong>
+            <small>Lista compartida del grupo; matrícula y notas independientes por curso</small>
+        </span>
+        <span class="modality-section-count">{{ $enrollmentsCount }} matriculados</span>
+        <x-section-status :status="$studentsStatus" />
+        <x-icon name="chevron-right" class="modality-section-chevron" />
+    </summary>
+    <div class="modality-section-body">
     <p class="help mt-16">Para agregar o actualizar estudiantes, abre el padrón del grupo. El sistema crea las matrículas que falten sin copiar calificaciones entre cursos.</p>
     <div class="actions mt-16">
         <a class="btn" href="{{ route('groups.show', $assignment->group) }}#group-roster"><x-icon name="users" /> Administrar padrón del grupo</a>
     </div>
-</section>
+</div>
+</details>
 
-<section class="card" id="documents">
-    <div class="card-head"><div><h2>Documentos Excel</h2><p class="card-description">Genera archivos Excel con la información actual de esta modalidad.</p></div><a class="btn btn-secondary btn-sm" href="{{ route('evaluations.index', $modality) }}"><x-icon name="arrow-right" /> Evaluaciones y notas</a></div>
-    <div class="grid grid-2">
+<details class="card modality-section" id="documents">
+    <summary class="modality-section-summary">
+        <span class="modality-section-icon"><x-icon name="file-spreadsheet" /></span>
+        <span class="modality-section-title">
+            <strong>Documentos Excel</strong>
+            <small>Genera y descarga los formatos de esta modalidad</small>
+        </span>
+        <span class="modality-section-count">{{ $documentCount }} archivos</span>
+        <x-section-status :status="$documentsStatus" />
+        <x-icon name="chevron-right" class="modality-section-chevron" />
+    </summary>
+    <div class="modality-section-body">
+        <div class="modality-section-toolbar">
+            <a class="btn btn-secondary btn-sm" href="{{ route('evaluations.index', $modality) }}"><x-icon name="arrow-right" /> Evaluaciones y notas</a>
+        </div>
+    <div class="document-generator-list">
         @foreach(['plan'=>'Plan de sesión','registro'=>'Registro de formación','evaluacion'=>'Formato de evaluación'] as $type=>$label)
-            <form class="course-card" method="POST" action="{{ route('documents.generate', [$modality, $type]) }}">
+            <form class="document-generator-row" method="POST" action="{{ route('documents.generate', [$modality, $type]) }}" data-loading-form="1">
                 @csrf
-                <strong style="display:block;margin-bottom:8px">{{ $label }}</strong>
-                <span class="help" style="display:block;margin-bottom:12px">Crear archivo Excel con los datos actuales.</span>
-                <button class="btn btn-secondary btn-sm" type="submit"><x-icon name="file-text" /> Generar Excel</button>
+                <span><strong>{{ $label }}</strong><small>Archivo Excel con los datos actuales</small></span>
+                <button class="btn btn-secondary btn-sm" type="submit"><x-icon name="file-text" /> Generar</button>
             </form>
         @endforeach
     </div>
@@ -238,10 +217,21 @@
             <x-pagination :paginator="$documents" />
         @endif
     @endif
-</section>
+</div>
+</details>
 
-<section class="card" id="sessions">
-    <div class="card-head"><div><h2>Sesiones del curso</h2><p class="card-description">El calendario se calcula con las fechas, días de clase y feriados. Abre una sesión solo cuando necesites editar su contenido.</p></div><span class="badge">{{ $sessionCount }} sesiones</span></div>
+<details class="card modality-section" id="sessions" @if($scheduledSessionCount === 0) open @endif>
+    <summary class="modality-section-summary">
+        <span class="modality-section-icon"><x-icon name="clipboard-check" /></span>
+        <span class="modality-section-title">
+            <strong>Sesiones del curso</strong>
+            <small>Contenido, actividades y evidencias de cada clase</small>
+        </span>
+        <span class="modality-section-count">{{ $scheduledSessionCount }} programadas</span>
+        <x-section-status :status="$sessionsStatus" />
+        <x-icon name="chevron-right" class="modality-section-chevron" />
+    </summary>
+    <div class="modality-section-body">
     @if($sessionCount === 0)
         <div class="empty"><strong>Aún no se han calculado sesiones.</strong><span>Configura el periodo y el horario en la sección Calendario.</span><div class="mt-16"><a class="btn btn-secondary btn-sm" href="#calendar"><x-icon name="calendar-days" /> Ir a calendario</a></div></div>
     @else
@@ -254,7 +244,7 @@
                         @if($session->curriculum_week_number)<p class="help">Semana del curso {{ $session->curriculum_week_number }} @if($session->curriculumWeek?->source_week_number) · Semana fuente {{ $session->curriculumWeek->source_week_number }}@endif</p>@endif
                         @if($session->system_note)<div class="alert alert-info">{{ $session->system_note }}</div>@endif
                         @if($session->status !== 'holiday')
-                            <form method="POST" action="{{ route('sessions.update', $session) }}">
+                            <form method="POST" action="{{ route('sessions.update', $session) }}" data-loading-form="1">
                                 @csrf @method('PATCH')
                                 <label for="topic-{{ $session->id }}">Tema</label><input class="field" id="topic-{{ $session->id }}" name="topic" value="{{ $session->topic }}">
                                 <label for="objective-{{ $session->id }}">Objetivo</label><input class="field" id="objective-{{ $session->id }}" name="objective" value="{{ $session->objective }}">
@@ -272,7 +262,8 @@
         @endif
         <div class="empty" id="session-empty" hidden><strong>No hay sesiones con ese criterio.</strong><span>Prueba con otra fecha o tema.</span></div>
     @endif
-</section>
+</div>
+</details>
 @endsection
 
 @push('styles')
@@ -337,6 +328,38 @@
 @media(max-width:1050px){.weekly-load-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.schedule-row{grid-template-columns:repeat(3,minmax(0,1fr))}.schedule-days-field{grid-column:1/-1}.schedule-remove-cell{grid-column:3}}
 @media(max-width:650px){.weekly-load-head,.schedule-editor-heading{align-items:stretch;flex-direction:column}.weekly-load-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.schedule-row{grid-template-columns:repeat(2,minmax(0,1fr))}.schedule-days-field{grid-column:1/-1}.schedule-remove-cell{grid-column:2}.calendar-preview-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:390px){.weekly-load-grid{grid-template-columns:1fr}.schedule-row{grid-template-columns:1fr}.schedule-days-field{grid-column:1}.schedule-remove-cell{grid-column:1}.calendar-preview-stats{grid-template-columns:1fr}}
+
+.modality-section{padding:0;overflow:hidden}
+.modality-section-summary{display:flex;align-items:center;gap:12px;min-height:70px;padding:13px 16px;list-style:none;cursor:pointer}
+.modality-section-summary::-webkit-details-marker{display:none}
+.modality-section-summary:focus-visible{outline-offset:-3px}
+.modality-section-icon{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border-radius:9px;background:var(--surface-soft);color:var(--accent)}
+.modality-section-title{display:grid;gap:4px;flex:1;min-width:0}
+.modality-section-title strong{color:var(--ink);font-size:13px}
+.modality-section-title small{color:var(--muted);font-size:10px;line-height:1.35}
+.modality-section-count{color:var(--ink-soft);font-size:10px;font-weight:700;white-space:nowrap}
+.modality-section-chevron{color:var(--muted);transition:transform .16s ease;flex:none}
+.modality-section[open] .modality-section-chevron{transform:rotate(90deg)}
+.modality-section-body{padding:0 16px 16px;border-top:1px solid var(--line)}
+.modality-section-body>.modality-cycle-period{margin:11px 0;color:var(--muted);font-size:10px}
+.modality-section-toolbar{display:flex;justify-content:flex-end;margin:0 0 12px}
+.document-generator-list{display:grid;gap:7px}
+.document-generator-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.document-generator-row>span{display:grid;gap:3px;min-width:0}
+.document-generator-row strong{color:var(--ink);font-size:11px}
+.document-generator-row small{color:var(--muted);font-size:10px}
+@media(max-width:520px){.document-generator-row{align-items:stretch;flex-direction:column}.document-generator-row .btn{width:100%}}
+
+.modality-weekly-overview{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface-soft)}
+.modality-weekly-overview>strong{color:var(--ink);font-size:11px;white-space:nowrap}
+.modality-day-chips{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.modality-day-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface);font-size:10px}
+.modality-day-chip b{color:var(--ink-soft)}
+.modality-day-chip small{color:var(--muted)}
+.modality-no-blocks{color:var(--muted);font-size:10px}
+.modality-section .talks-summary,.modality-section .calendar-preview{margin-top:12px}
+@media(max-width:700px){.modality-section-summary{gap:8px;padding:11px}.modality-section-count{display:none}.modality-section-body{padding:0 11px 12px}.modality-day-chip{align-items:flex-start;flex-direction:column;gap:3px}}
+html[data-theme="dark"] .modality-section-icon{background:#24343b}
 </style>
 @endpush
 

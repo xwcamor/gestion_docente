@@ -176,7 +176,7 @@ La migración inicial crea las tablas de usuarios, profesores, ciclos, grupos, c
 - Gestión de notas y evaluaciones.
 - Calendario mensual consolidado por grupo, con clases y feriados; cada bloque conserva la modalidad TEC/TALL y el tipo de enseñanza de su curso.
 - Malla curricular y propuestas de contenido TEC/TALL.
-- Charlas de cinco minutos distribuidas automáticamente dentro del rango de carga del grupo, en días con clases reales, respetando disponibilidad, horarios y feriados.
+- Charlas de cinco minutos distribuidas automáticamente dentro del rango Desde/Hasta de la carga del grupo, usando los días seleccionados (o lunes a viernes por defecto) y excluyendo feriados; no dependen de los bloques de cada modalidad.
 - Generación y versionado de documentos Excel.
 
 ## Solución de problemas
