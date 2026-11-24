@@ -212,6 +212,11 @@
                             </div>
                             <div class="course-row-actions">
                                 <a class="btn btn-ghost btn-sm" href="{{ route('curricula.show', $assignment) }}"><x-icon name="book-open" /> Malla</a>
+                                <form method="POST" action="{{ route('assignments.destroy', $assignment) }}" data-confirm="Se retirará este curso de {{ $group->name }} junto con sus modalidades, matrículas, evaluaciones y documentos. El curso del catálogo general se conservará para usarlo en otros grupos. Esta acción no se puede deshacer.">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn btn-danger btn-sm" type="submit"><x-icon name="trash-2" /> Eliminar</button>
+                                </form>
                             </div>
                         </div>
                         <div class="course-row-status">
@@ -311,7 +316,7 @@
 .course-row-title{display:flex;flex-direction:column;gap:4px;min-width:0}
 .course-row-title strong{font-size:13px;color:#2f4c5b}
 .course-row-title small{font-size:10px;color:#7e8d94}
-.course-row-actions{flex:0 0 auto}
+.course-row-actions{flex:0 0 auto;display:flex;align-items:center;gap:5px}
 .course-row-status{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:15px;margin:11px 0}
 .course-row-progress{max-width:420px;min-width:0}
 .course-row-progress .progress-label{font-size:10px;margin-bottom:5px}
