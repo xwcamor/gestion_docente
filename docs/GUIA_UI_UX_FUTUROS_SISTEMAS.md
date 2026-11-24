@@ -157,45 +157,55 @@ Antes de cerrar un cambio de interfaz, revisa:
 
 ## 6. Instalación para agentes de programación
 
-Las skills se instalan en el entorno del agente (Codex, Claude Code, Cursor, etc.), no en Composer ni en la base de datos Laravel. Ejecuta únicamente las que vayas a utilizar; revisa siempre el repositorio y sus instrucciones de instalación actuales.
+Las skills se instalan en el entorno del agente (Codex, Claude Code, Cursor, etc.), no en Composer ni en la base de datos Laravel. Ejecuta únicamente las que vayas a utilizar. La CLI solicita dónde instalarlas y para qué agente; después inicia una nueva sesión del agente para que detecte las skills.
 
-Ejemplos de instalación con el CLI `npx skills`:
+Ejemplos de instalación con el CLI `npx skills` (revisa siempre la guía upstream antes de instalar o actualizar):
 
 ```bash
 # Anti UI Slop
-npx skills add minagishl/anti-ui-slop
+npx skills add https://github.com/minagishl/anti-ui-slop --skill anti-ui-slop
 
 # Emil Design Engineering
-npx skills add emilkowalski/skills@emil-design-eng
+npx skills add https://github.com/emilkowalski/skills --skill emil-design-eng
 
 # Vercel Web Design Guidelines
-npx skills add vercel-labs/agent-skills --skill web-design-guidelines
+npx skills add https://github.com/vercel-labs/agent-skills --skill web-design-guidelines
 
 # Anthropic Frontend Design
 npx skills add anthropics/skills --skill frontend-design
 
-# Taste Skill
-npx skills add https://github.com/Leonxlnx/taste-skill --skill design-taste-frontend
+# Taste Skill (Node 22+ y Chrome/Edge/Chromium)
+npx skills add https://github.com/Leonxlnx/taste-skill --skill "design-taste-frontend"
+
+# Hallmark
+npx skills add https://github.com/nutlope/hallmark --skill hallmark
 
 # Make Interfaces Feel Better
-npx skills add jakubkrehel/make-interfaces-feel-better
+npx skills add jakubkrehel/make-interfaces-feel-better --skill make-interfaces-feel-better
 
 # UI/UX Pro Max
-npx skills add nextlevelbuilder/ui-ux-pro-max-skill
+npx skills add nextlevelbuilder/ui-ux-pro-max-skill --skill ui-ux-pro-max
 
 # Stageshow
 npx skills add benjitaylor/skills --skill stageshow
 ```
 
-Para **Hallmark**, consulta el README del repositorio antes de instalarlo: [Nutlope/Hallmark](https://github.com/Nutlope/hallmark). Sus comandos pueden cambiar según la versión del CLI.
+**Think UI** se conserva como un criterio de presentación de datos en esta guía; no se encontró una skill pública canónica con ese nombre exacto, por lo que no se incluye un comando de instalación inventado.
+
+### Cuáles aplicar en Gestión Docente
+
+Para este panel administrativo, usa como núcleo Anti UI Slop + Vercel Web Design Guidelines + Emil Design Engineering. Para pulir bordes, tipografía, iconos y áreas táctiles añade Make Interfaces Feel Better. Usa UI/UX Pro Max cuando diseñes o reorganices un sistema de componentes o necesites comparar patrones.
+
+**Taste Skill tiene una limitación importante:** su documentación actual dice que está orientada a sitios públicos (landing, marketing, portfolio y páginas de producto), no a dashboards, tablas ni interfaces administrativas. No la ejecutes en las pantallas internas de Gestión Docente; resérvala para una futura web pública o página de presentación. Para el trabajo de textos, Hallmark puede criticar consistencia y contenido visible, pero combina su revisión con la lista de microcopy de esta guía y la validación de términos del negocio. Stageshow sirve para demostraciones y recorridos simulados, no para controlar la aplicación real.
 
 ### Requisitos y precauciones
 
-- Taste Skill requiere Node 22+ y un navegador Chrome, Edge o Chromium para su inspector. Sus scripts pueden obtener recursos externos; no se necesitan para una pantalla administrativa normal.
-- UI/UX Pro Max utiliza Python 3 para su buscador local.
-- Stageshow es un kit React para demostraciones de UI simulada; no se debe introducir en una aplicación Blade solo para decorar formularios reales.
-- No instales una librería de animación, fuente o framework CSS como efecto secundario de una recomendación. Evalúa primero la necesidad y compatibilidad.
+- Taste Skill requiere Node 22+ y Chrome, Edge o Chromium. Su herramienta está orientada a páginas públicas; no es una dependencia del runtime Laravel.
+- UI/UX Pro Max utiliza Python 3 para su buscador local y admite contexto específico de Laravel/Blade.
+- Stageshow produce demos de UI simulada con React y CSS. No lo introduzcas en una aplicación Blade solo para decorar formularios reales.
+- No instales librerías de animación, fuentes ni frameworks CSS como efecto secundario de una recomendación. Evalúa primero la necesidad y compatibilidad con el stack existente.
 - Las skills son instrucciones para el agente, no garantía de una interfaz correcta. El resultado debe revisarse visual y funcionalmente.
+- El usuario debe revisar las licencias, dependencias y scripts de cada skill antes de instalarla en un entorno de trabajo.
 
 ## 7. Cómo reutilizar esta guía en otro proyecto
 
