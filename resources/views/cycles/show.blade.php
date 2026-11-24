@@ -23,13 +23,13 @@
     <div class="actions">
         <form method="POST" action="{{ route('documents.distribution', $cycle) }}">
             @csrf
-            <button class="btn btn-secondary" type="submit"><x-icon name="file-spreadsheet" /> Exportar carga laboral</button>
+            <button class="btn btn-secondary" type="submit"><x-icon name="file-text" /> Exportar carga laboral</button>
         </form>
         <button class="btn" type="button" data-modal-open="group-create-dialog"><x-icon name="plus" /> Agregar grupo</button>
         <form method="POST" action="{{ route('cycles.destroy', $cycle) }}" data-confirm="Se eliminará este ciclo y toda su planificación asociada. Los cursos del catálogo general y los alumnos reutilizados en otros grupos se conservarán. Esta acción no se puede deshacer.">
             @csrf
             @method('DELETE')
-            <button class="btn btn-danger" type="submit"><x-icon name="trash-2" /> Eliminar ciclo</button>
+            <button class="btn btn-danger" type="submit"><x-icon name="x" /> Eliminar ciclo</button>
         </form>
     </div>
 </div>
@@ -84,13 +84,13 @@
 
 <details class="card cycle-talk-panel" id="cycle-talks" @if($cycleTalks->isEmpty() || request()->boolean('talks')) open @endif>
     <summary class="cycle-talk-summary">
-        <span class="cycle-talk-icon"><x-icon name="message-square" /></span>
+        <span class="cycle-talk-icon"><x-icon name="clipboard-check" /></span>
         <span class="cycle-talk-title">
             <strong>Charlas de 5 minutos</strong>
             <small>Catálogo reutilizable y distribución automática por fecha del ciclo</small>
         </span>
         <span class="cycle-talk-count">{{ $talkAssignedCount }} asignadas · {{ $talkPendingCount }} pendientes</span>
-        <x-icon name="chevron-down" class="cycle-talk-chevron" />
+        <x-icon name="chevron-right" class="cycle-talk-chevron" />
     </summary>
     <div class="cycle-talk-body">
         <div class="alert alert-info">
@@ -135,7 +135,7 @@
                 @if($cycleTalks->isNotEmpty())
                     <form method="POST" action="{{ route('documents.cycle-talks', $cycle) }}">
                         @csrf
-                        <button class="btn btn-secondary btn-sm" type="submit"><x-icon name="file-spreadsheet" /> Generar Excel de charlas</button>
+                        <button class="btn btn-secondary btn-sm" type="submit"><x-icon name="file-text" /> Generar Excel de charlas</button>
                     </form>
                 @endif
             </div>
@@ -196,7 +196,7 @@
                 <form method="POST" action="{{ route('groups.destroy', $group) }}" data-confirm="Se eliminará este grupo, sus cursos dentro del grupo, modalidades, matrículas y sesiones. Los alumnos y cursos del catálogo que se utilicen en otros grupos se conservarán. Esta acción no se puede deshacer.">
                     @csrf
                     @method('DELETE')
-                    <button class="btn btn-danger btn-sm" type="submit"><x-icon name="trash-2" /> Eliminar grupo</button>
+                    <button class="btn btn-danger btn-sm" type="submit"><x-icon name="x" /> Eliminar grupo</button>
                 </form>
             </div>
         </article>
@@ -310,7 +310,7 @@
 .cycle-talk-title small{font-size:11px;color:#7b8990}
 .cycle-talk-count{font-size:10px;font-weight:750;color:#45768a;white-space:nowrap}
 .cycle-talk-chevron{color:#78909a;transition:transform .2s ease}
-.cycle-talk-panel[open] .cycle-talk-chevron{transform:rotate(180deg)}
+.cycle-talk-panel[open] .cycle-talk-chevron{transform:rotate(90deg)}
 .cycle-talk-body{padding:0 18px 18px;border-top:1px solid #edf1f3}
 .cycle-talk-form-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(260px,.75fr);gap:22px;padding:16px 0}
 .cycle-talk-form-grid textarea{font-family:inherit;line-height:1.5}
