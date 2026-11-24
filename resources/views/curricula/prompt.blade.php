@@ -15,6 +15,12 @@
     <div class="card"><div class="stat-label">Curso de destino</div><strong>{{ $assignment->course->name }}</strong></div>
 </div>
 
+@if($textExtractionWarning)
+    <div class="alert alert-warning" role="alert">
+        El PDF contiene poco texto extraíble. No se canceló el análisis: adjunta el PDF original a ChatGPT y pídele que lea visualmente el Cuadro Programa y la Hoja de Programación, incluso si aparecen como imágenes.
+    </div>
+@endif
+
 <section class="card curriculum-source-check" aria-labelledby="curriculum-source-check-title">
     <div class="card-head">
         <div>
