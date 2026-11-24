@@ -167,7 +167,7 @@ La migración inicial crea las tablas de usuarios, profesores, ciclos, grupos, c
 ## Funcionalidades principales
 
 - Acceso individual por profesor y gestión de sus datos académicos.
-- Años, ciclos y múltiples grupos por ciclo.
+- Años y ciclos académicos con carrera, semestre, rango de fechas y múltiples grupos por ciclo.
 - Cada ciclo se crea con un primer grupo obligatorio y no permite eliminar su último grupo.
 - Cursos por grupo y modalidades TEC/TALL independientes.
 - NRC, fechas, horarios, alumnos, sesiones y evaluaciones por modalidad.
