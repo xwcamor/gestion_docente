@@ -34,12 +34,6 @@
     </div>
 </div>
 
-@if($errors->any() && request()->boolean('talks'))
-    <div class="alert alert-error" role="alert">
-        <strong>No se pudo distribuir las charlas:</strong>
-        <ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
-    </div>
-@endif
 
 <div class="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:17px">
     <div class="stat-card">
@@ -139,63 +133,7 @@
     </div>
 </section>
 
-<details class="card cycle-talk-panel" id="cycle-talks" @if(request()->boolean('talks')) open @endif>
-    <summary class="cycle-talk-summary">
-        <span class="cycle-talk-icon"><x-icon name="clipboard-check" /></span>
-        <span class="cycle-talk-title">
-            <strong>Charlas de 5 minutos</strong>
-            <small>Temas institucionales asignados automáticamente a los días reales de clase</small>
-        </span>
-        <span class="cycle-talk-count">{{ $talkDoneCount }} realizadas · {{ $talkPendingCount }} pendientes</span>
-        <x-icon name="chevron-right" class="cycle-talk-chevron" />
-    </summary>
-    <div class="cycle-talk-body">
-        <div class="alert alert-info">
-            El sistema toma los temas del catálogo institucional. Asigna uno por cada fecha lectiva del ciclo, utiliza los horarios de modalidad de clase y excluye feriados. No necesitas volver a copiar temas ni seleccionar días.
-        </div>
-        <div class="cycle-talk-results">
-            <div class="cycle-talk-results-head">
-                <div><strong>Registro de ejecución</strong><small>{{ $talkAssignedCount }} fechas programadas · {{ $cycleTalks->count() }} temas en el catálogo</small></div>
-                @if($cycleTalks->isNotEmpty())
-                    <form method="POST" action="{{ route('documents.cycle-talks', $cycle) }}">
-                        @csrf
-                        <button class="btn btn-secondary btn-sm" type="submit"><x-icon name="file-text" /> Descargar registro oficial Excel</button>
-                    </form>
-                @endif
-            </div>
-            @if($cycleTalks->isNotEmpty())
-                <div class="table-wrap">
-                    <table>
-                        <thead><tr><th>Fecha</th><th>Tema</th><th>Estado</th><th>Participantes</th><th>Observaciones</th><th></th></tr></thead>
-                        <tbody>
-                            @foreach($cycleTalks as $talk)
-                                <tr>
-                                    <td>{{ $talk->scheduled_date?->format('d/m/Y') ?? 'Sin fecha' }}</td>
-                                    <td>{{ $talk->topic }}</td>
-                                    <td colspan="4">
-                                        <form method="POST" action="{{ route('cycles.talks.update', [$cycle, $talk]) }}" class="talk-execution-form">
-                                            @csrf
-                                            @method('PATCH')
-                                            <select class="field" name="status" aria-label="Estado de la charla">
-                                                <option value="pending" @selected($talk->status !== 'done')>Pendiente</option>
-                                                <option value="done" @selected($talk->status === 'done')>Realizada</option>
-                                            </select>
-                                            <input class="field" type="number" name="participant_count" min="0" max="10000" value="{{ $talk->participant_count }}" placeholder="Participantes" aria-label="Número de participantes">
-                                            <input class="field" name="observations" value="{{ $talk->observations }}" maxlength="2000" placeholder="Observaciones" aria-label="Observaciones">
-                                            <button class="btn btn-secondary btn-sm" type="submit">Guardar</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @else
-                <div class="empty"><strong>No se detectan fechas de clase para este ciclo.</strong><span>Configura primero fechas y horarios en tus modalidades. El catálogo se distribuirá automáticamente.</span></div>
-            @endif
-        </div>
-    </div>
-</details>
+
 
 <section class="card">
     <div class="card-head">
@@ -273,7 +211,7 @@
     </form>
 </dialog>
 
-<dialog class="ui-dialog sheet-dialog" id="group-create-dialog" aria-labelledby="group-create-title" @if(request()->boolean('nuevo_grupo') || ($errors->any() && !request('dialog') && !request()->boolean('talks'))) data-auto-open @endif>
+<dialog class="ui-dialog sheet-dialog" id="group-create-dialog" aria-labelledby="group-create-title" @if(request()->boolean('nuevo_grupo') || ($errors->any() && !request('dialog'))) data-auto-open @endif>
     <div class="dialog-head">
         <div><h2 id="group-create-title">Agregar grupo</h2><p>{{ $cycle->academic_year }} · Ciclo {{ $cycle->cycle_code }}</p></div>
         <button class="dialog-close" type="button" data-modal-close aria-label="Cerrar"><x-icon name="x" /></button>
@@ -362,29 +300,6 @@
 
 @push('styles')
 <style>
-.cycle-talk-panel{padding:0;overflow:hidden;margin-bottom:15px}
-.cycle-talk-summary{display:flex;align-items:center;gap:12px;padding:15px 18px;cursor:pointer;list-style:none}
-.cycle-talk-summary::-webkit-details-marker{display:none}
-.cycle-talk-icon{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border-radius:10px;background:#edf6f8;color:#32788c}
-.cycle-talk-title{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px}
-.cycle-talk-title strong{font-size:14px;color:#294554}
-.cycle-talk-title small{font-size:11px;color:#7b8990}
-.cycle-talk-count{font-size:10px;font-weight:750;color:#45768a;white-space:nowrap}
-.cycle-talk-chevron{color:#78909a;transition:transform .2s ease}
-.cycle-talk-panel[open] .cycle-talk-chevron{transform:rotate(90deg)}
-.cycle-talk-body{padding:0 18px 18px;border-top:1px solid #edf1f3}
-.cycle-talk-form-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(260px,.75fr);gap:22px;padding:16px 0}
-.cycle-talk-form-grid textarea{font-family:inherit;line-height:1.5}
-.cycle-talk-days{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:9px}
-.cycle-talk-day{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid #e1eaee;border-radius:8px;background:#fbfdfe;font-size:12px}
-.cycle-talk-day input{accent-color:#327f91}
-.cycle-talk-results{border-top:1px solid #e9eff2;padding-top:14px}
-.cycle-talk-results-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
-.cycle-talk-results-head>div{display:flex;flex-direction:column;gap:3px}
-.cycle-talk-results-head strong{font-size:12px}
-.cycle-talk-results-head small{font-size:10px;color:#7b8990}
-@media(max-width:750px){.cycle-talk-form-grid{grid-template-columns:1fr}.cycle-talk-count{display:none}}
-@media(max-width:520px){.cycle-talk-summary{padding:13px}.cycle-talk-results-head{align-items:flex-start;flex-direction:column}.cycle-talk-results-head form,.cycle-talk-results-head .btn{width:100%}}
 </style>
 @endpush
 
