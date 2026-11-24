@@ -156,7 +156,7 @@ class ExcelDocumentService
     public function generateFiveMinuteTalks(TeachingGroup $group, int $userId): GeneratedDocument
     {
         $group->loadMissing('cycle');
-        $talks = $group->fiveMinuteTalks()->orderBy('scheduled_date')->orderBy('position')->get();
+        $talks = $group->fiveMinuteTalks()->whereNotNull('scheduled_date')->orderBy('scheduled_date')->orderBy('position')->get();
         $spreadsheet = app(InstitutionalExcelService::class)->fiveMinuteTalkRegister($group);
 
         $document = $this->storeWorkbook($spreadsheet, [
