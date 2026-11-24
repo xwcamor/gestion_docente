@@ -43,11 +43,19 @@ class CourseDistributionImportService
             }
         }
 
-        $required = ['curso', 'codigo', 'bloque tec', 'nrc tec', 'bloque taller', 'bloque', 'nrc talle', 'fecha'];
+        $required = ['curso', 'codigo', 'bloque tec', 'nrc tec', 'bloque taller', 'bloque', 'nrc talle'];
         $missing = array_values(array_filter($required, fn ($header) => !isset($headers[$header])));
         if ($missing) {
             throw ValidationException::withMessages([
                 'file' => 'La pestaña Cursos no tiene todas las columnas esperadas: '.implode(', ', $missing).'.',
+            ]);
+        }
+
+        $hasCommonDates = isset($headers['fecha']);
+        $hasSeparateDates = isset($headers['fecha tec']) && isset($headers['fecha taller']);
+        if (!$hasCommonDates && !$hasSeparateDates) {
+            throw ValidationException::withMessages([
+                'file' => 'La pestaña Cursos debe incluir FECHA (formato anterior) o ambas columnas FECHA TEC y FECHA TALLER.',
             ]);
         }
 
@@ -57,7 +65,9 @@ class CourseDistributionImportService
         $maxRow = $sheet->getHighestDataRow();
 
         for ($rowNumber = 2; $rowNumber <= $maxRow; $rowNumber++) {
-            $value = fn ($key) => trim((string) ($sheet->getCell($headers[$key].$rowNumber)->getFormattedValue() ?? ''));
+            $value = fn ($key) => isset($headers[$key])
+                ? trim((string) ($sheet->getCell($headers[$key].$rowNumber)->getFormattedValue() ?? ''))
+                : '';
             $name = $value('curso');
             $code = $value('codigo');
             $tecBlock = $value('bloque tec');
@@ -65,7 +75,12 @@ class CourseDistributionImportService
             $tallBlock = $value('bloque taller');
             $tallCode = $value('bloque');
             $tallNrc = $value('nrc talle');
-            $dateText = $value('fecha');
+            $commonDateText = $value('fecha');
+            $tecDateText = $value('fecha tec');
+            $tallDateText = $value('fecha taller');
+            $commonPeriod = $this->parsePeriod($commonDateText);
+            $tecPeriod = $tecDateText !== '' ? $this->parsePeriod($tecDateText) : $commonPeriod;
+            $tallPeriod = $tallDateText !== '' ? $this->parsePeriod($tallDateText) : $commonPeriod;
 
             if ($name === '' && $code === '' && $tecBlock === '' && $tallBlock === '' && $tallCode === '') {
                 continue;
@@ -86,25 +101,25 @@ class CourseDistributionImportService
             if ($tecNrc !== '' || $tecBlock !== '') {
                 $modalities[] = [
                     'type' => 'TEC', 'nrc' => $this->cleanNrc($tecNrc),
-                    'block_code' => $tecBlock, 'start_date' => $period['start'],
-                    'end_date' => $period['end'],
+                    'block_code' => $tecBlock, 'start_date' => $tecPeriod['start'],
+                    'end_date' => $tecPeriod['end'],
                 ];
             }
             if ($tallNrc !== '' || $tallBlock !== '' || $tallCode !== '') {
                 $modalities[] = [
                     'type' => 'TALL', 'nrc' => $this->cleanNrc($tallNrc),
-                    'block_code' => $tallCode ?: $tallBlock, 'start_date' => $period['start'],
-                    'end_date' => $period['end'],
+                    'block_code' => $tallCode ?: $tallBlock, 'start_date' => $tallPeriod['start'],
+                    'end_date' => $tallPeriod['end'],
                 ];
             }
             if (!$modalities) {
                 $errors[] = "Fila {$rowNumber}: no hay NRC ni bloque TEC/TALL.";
                 continue;
             }
-            if (!$period['start'] || !$period['end']) {
-                $warnings[] = "Fila {$rowNumber} ({$name}): no tiene fechas completas; se importará sin periodo y deberás completarlo.";
-            }
             foreach ($modalities as $modality) {
+                if (!$modality['start_date'] || !$modality['end_date']) {
+                    $warnings[] = "Fila {$rowNumber} ({$name}): modalidad {$modality['type']} sin rango de fechas completo; deberás completarlo.";
+                }
                 if (!$modality['nrc']) {
                     $warnings[] = "Fila {$rowNumber} ({$name}): modalidad {$modality['type']} sin NRC.";
                 }
@@ -140,11 +155,16 @@ class CourseDistributionImportService
         }
 
         $dateValues = $allDates->values();
+        $hasCompletePeriod = collect($rows)
+            ->flatMap(fn ($row) => $row['modalities'])
+            ->contains(fn ($modality) => filled($modality['start_date']) && filled($modality['end_date']));
+
         return [
             'academic_year' => (int) $cycleMatch[1],
             'cycle_code' => $cycleMatch[2],
             'start_date' => $dateValues->isNotEmpty() ? min($dateValues->all()) : null,
             'end_date' => $dateValues->isNotEmpty() ? max($dateValues->all()) : null,
+            'has_complete_period' => $hasCompletePeriod,
             'rows' => $rows, 'errors' => $errors, 'warnings' => array_values(array_unique($warnings)),
             'course_count' => count($rows),
             'modality_count' => collect($rows)->sum(fn ($row) => count($row['modalities'])),
