@@ -235,6 +235,14 @@ class FiveMinuteTalkService
             }
         }
 
+        // A common fixed template starts with an item number and the topic in column B.
+        if ($topicColumn === null && count($header) > 1) {
+            $firstHeader = trim($header[0] ?? '');
+            if (preg_match('/^(#|n[.º°]?|número|numero)$/u', $firstHeader)) {
+                $topicColumn = 1;
+            }
+        }
+
         $values = [];
         foreach ($rows as $rowIndex => $row) {
             $cells = array_values($row);
