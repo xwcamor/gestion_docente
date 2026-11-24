@@ -49,13 +49,17 @@ class ExcelDocumentService
             $cycle->academic_year.'-'.$cycle->cycle_code,
         ]));
 
-        [$headers, $rows] = match ($type) {
-            'plan' => $this->sessionPlanRows($modality),
-            'registro' => $this->trainingRegisterRows($modality),
-            'evaluacion' => $this->evaluationRows($modality),
+        $institutional = app(InstitutionalExcelService::class);
+        $spreadsheet = match ($type) {
+            'plan' => $institutional->sessionPlan($modality),
+            'registro' => $institutional->trainingRegister($modality),
+            'evaluacion' => $institutional->evaluationRegister($modality),
+        };
+        $rowCount = match ($type) {
+            'plan' => $modality->sessions()->count(),
+            'registro', 'evaluacion' => $modality->enrollments()->count(),
         };
 
-        $spreadsheet = $this->makeWorkbook(self::DOCUMENTS[$type], $subtitle, $headers, $rows);
         $document = $this->storeWorkbook($spreadsheet, [
             'course_modality_id' => $modality->id,
             'teaching_group_id' => null,
@@ -64,7 +68,7 @@ class ExcelDocumentService
             'course' => $course->name,
             'modality' => $modality->modality,
             'nrc' => $modality->nrc,
-            'rows' => count($rows),
+            'rows' => $rowCount,
         ]);
 
         $spreadsheet->disconnectWorksheets();
@@ -146,25 +150,8 @@ class ExcelDocumentService
 
     public function generateFiveMinuteTalks(Cycle $cycle, int $userId): GeneratedDocument
     {
-        $talks = $cycle->fiveMinuteTalks()
-            ->orderByRaw('scheduled_date IS NULL')
-            ->orderBy('scheduled_date')
-            ->orderBy('position')
-            ->get();
-
-        $rows = $talks->map(fn ($talk) => [
-            $talk->position,
-            $talk->scheduled_date?->format('d/m/Y') ?? 'Pendiente de fecha',
-            $talk->topic,
-            $talk->scheduled_date ? 'Programada' : 'Pendiente',
-        ])->all();
-
-        $spreadsheet = $this->makeWorkbook(
-            'Charlas de 5 minutos',
-            $cycle->academic_year.' · Ciclo '.$cycle->cycle_code.' · Temas distribuidos según los días asignados',
-            ['N.º', 'Fecha asignada', 'Tema de la charla', 'Estado'],
-            $rows
-        );
+        $talks = $cycle->fiveMinuteTalks()->orderBy('scheduled_date')->orderBy('position')->get();
+        $spreadsheet = app(InstitutionalExcelService::class)->fiveMinuteTalkRegister($cycle);
 
         $document = $this->storeWorkbook($spreadsheet, [
             'course_modality_id' => null,
@@ -174,7 +161,8 @@ class ExcelDocumentService
             'cycle' => $cycle->academic_year.'-'.$cycle->cycle_code,
             'topics' => $talks->count(),
             'assigned' => $talks->whereNotNull('scheduled_date')->count(),
-            'pending' => $talks->whereNull('scheduled_date')->count(),
+            'completed' => $talks->where('status', 'done')->count(),
+            'pending' => $talks->where('status', '!=', 'done')->count(),
         ]);
 
         $spreadsheet->disconnectWorksheets();
