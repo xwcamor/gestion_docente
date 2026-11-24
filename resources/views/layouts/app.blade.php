@@ -628,6 +628,20 @@ html[data-theme="dark"] .top-theme-toggle:hover{border-color:var(--accent);backg
 html[data-theme="dark"] .workflow-intro{background:#17232c;border-color:#344752;color:#a8bac4}
 html[data-theme="dark"] .modal-step-index{background:#203641;border-color:#426070;color:#a9d8e8}
 
+
+/* La identidad visual configurada debe controlar todos los acentos principales */
+.brand-mark{color:var(--accent)!important}
+.nav-link.active,.nav-link:hover{background:var(--accent-soft)!important;color:var(--accent)!important}
+.nav-link.active .icon{color:var(--accent)!important}
+.stat{color:var(--accent)!important}
+.workflow-icon{background:var(--accent-soft)!important;color:var(--accent)!important}
+.inline-edit{border-color:color-mix(in srgb,var(--accent) 28%,transparent)!important;background:var(--accent-soft)!important;color:var(--accent)!important}
+.inline-edit:hover{border-color:var(--accent)!important;color:var(--accent-hover)!important}
+.pagination [aria-current="page"] span,.pagination-links .is-current{border-color:var(--accent)!important;background:var(--accent)!important;color:#fff!important}
+.btn:not(.btn-secondary):not(.btn-ghost):not(.btn-danger):not(.btn-success){border-color:var(--accent);background:var(--accent)}
+.btn:not(.btn-secondary):not(.btn-ghost):not(.btn-danger):not(.btn-success):hover{border-color:var(--accent-hover);background:var(--accent-hover)}
+html[data-theme="dark"] .nav-link.active,html[data-theme="dark"] .nav-link:hover{background:color-mix(in srgb,var(--accent) 20%,#14222c)!important;color:#fff!important}
+
 </style>
     @stack('styles')
 </head>
