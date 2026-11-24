@@ -1,9 +1,10 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" style="--accent: {{ $appBranding['primary_color'] ?? '#28677d' }}; --accent-hover: {{ $appBranding['primary_hover'] ?? '#20566a' }};">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script>try{if(localStorage.getItem('gd-theme')==='dark')document.documentElement.dataset.theme='dark';}catch(e){}</script>
     <title>@yield('title', 'Panel') · {{ $appBranding['name'] ?? 'Gestión Docente' }}</title>
     <style>
         :root{
@@ -480,6 +481,139 @@
         .table-wrap table th{color:#294b5d}
         .table-wrap table td{color:#334b58}
         @media(max-width:720px){.form-grid{grid-template-columns:1fr}.top-help{padding:7px}.top-help .icon{display:none}.top-user{max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
+
+/* Sidebar configurable: expandir, contraer y ajustar ancho */
+:root{--sidebar-width:250px}
+.app-shell{grid-template-columns:var(--sidebar-width) minmax(0,1fr);transition:grid-template-columns .2s ease}
+.sidebar{padding:15px 11px 13px;display:flex;flex-direction:column;min-width:0}
+.sidebar-inner{display:flex;flex:1;flex-direction:column;gap:12px;min-height:0}
+.sidebar-toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 5px 8px;border-bottom:1px solid var(--line)}
+.sidebar-toolbar-label{color:var(--muted);font-size:9px;font-weight:800;letter-spacing:1px}
+.sidebar-icon-button{width:32px;height:30px;display:grid;place-items:center;border:1px solid var(--line-strong);border-radius:7px;background:var(--surface);color:var(--ink-soft);cursor:pointer}
+.sidebar-icon-button:hover{border-color:var(--accent);color:var(--accent)}
+.sidebar-nav{display:grid;align-content:start;gap:2px;min-width:0}
+.sidebar .nav-label{padding:9px 10px 6px}
+.sidebar .nav-section-label{margin-top:10px}
+.sidebar .nav-link{gap:11px;min-height:39px;padding:9px 10px;color:var(--ink-soft)}
+.sidebar .nav-link .icon{width:17px;height:17px;color:var(--muted)}
+.sidebar .nav-link.active{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 22%,transparent);color:var(--accent)}
+.sidebar .nav-link.active .icon{color:var(--accent)}
+.sidebar-preferences{display:grid;gap:8px;margin-top:auto;padding:12px 5px 2px;border-top:1px solid var(--line)}
+.sidebar-width-setting label{display:block;margin:0 0 6px;color:var(--muted);font-size:10px;font-weight:700}
+.sidebar-width-row{display:flex;align-items:center;gap:8px}
+.sidebar-width-row input{width:100%;min-width:0;accent-color:var(--accent);cursor:ew-resize}
+.sidebar-width-row output{width:48px;flex:none;color:var(--muted);font-size:9px;text-align:right;font-variant-numeric:tabular-nums}
+.sidebar-preference-button{display:flex;align-items:center;gap:9px;min-height:36px;padding:8px 9px;border:1px solid transparent;border-radius:7px;background:transparent;color:var(--ink-soft);font-size:11px;font-weight:620;text-align:left;cursor:pointer}
+.sidebar-preference-button:hover{border-color:var(--line);background:var(--surface);color:var(--accent)}
+.sidebar-preference-button .icon{color:var(--accent)}
+.sidebar-preference-button small{margin-left:auto;color:var(--muted);font-size:9px;font-weight:500}
+body.sidebar-collapsed .app-shell{grid-template-columns:70px minmax(0,1fr)}
+body.sidebar-collapsed .sidebar{padding-right:8px;padding-left:8px}
+body.sidebar-collapsed .sidebar-toolbar{justify-content:center;padding-right:0;padding-left:0;border-bottom:0}
+body.sidebar-collapsed .sidebar-toolbar-label,
+body.sidebar-collapsed .sidebar .nav-label,
+body.sidebar-collapsed .sidebar .nav-link span,
+body.sidebar-collapsed .sidebar-width-setting,
+body.sidebar-collapsed .sidebar-preference-button span,
+body.sidebar-collapsed .sidebar-preference-button small{display:none}
+body.sidebar-collapsed .sidebar .nav-link{justify-content:center;padding:10px 5px}
+body.sidebar-collapsed .sidebar .nav-link .icon{width:19px;height:19px}
+body.sidebar-collapsed .sidebar-preferences{padding:10px 0 0}
+body.sidebar-collapsed .sidebar-preference-button{justify-content:center;padding:8px 5px}
+body.sidebar-collapsed .sidebar-preference-button .icon{width:18px;height:18px}
+body.sidebar-collapsed .sidebar-icon-button{width:36px}
+body.sidebar-collapsed .sidebar-icon-button .icon{transform:rotate(180deg)}
+@media(max-width:1050px){
+  .app-shell,body.sidebar-collapsed .app-shell{grid-template-columns:minmax(0,1fr)}
+  .sidebar{height:auto;max-height:none;overflow:visible;padding:7px 10px}
+  .sidebar-inner{height:auto;flex-direction:row;align-items:center;gap:6px}
+  .sidebar-toolbar,.sidebar-preferences{display:none}
+  .sidebar-nav{display:flex;align-items:center;gap:4px;min-width:max-content}
+  .sidebar .nav-label{display:none}
+  .sidebar .nav-link{justify-content:center;min-height:34px;white-space:nowrap}
+  .sidebar .nav-link span{display:inline}
+  body.sidebar-collapsed .sidebar .nav-link span{display:inline}
+  body.sidebar-collapsed .sidebar .nav-link{justify-content:center;padding:8px 10px}
+}
+@media(max-width:720px){
+  .sidebar{overflow-x:auto;overflow-y:hidden}
+  .sidebar-inner{width:max-content;min-width:100%}
+  .sidebar-nav{width:max-content;min-width:0}
+  .sidebar .nav-link{font-size:10px;gap:5px;padding:8px 7px}
+}
+@media(prefers-reduced-motion:reduce){.app-shell{transition:none}}
+
+/* Modo oscuro completo, conserva el color institucional configurado */
+html[data-theme="dark"]{color-scheme:dark;--ink:#e6edf2;--ink-soft:#c3d0d8;--muted:#9aabb6;--faint:#7c8c97;--line:#2b3a45;--line-strong:#3a4d59;--canvas:#0b1218;--surface:#141f28;--surface-soft:#192630;--accent-soft:color-mix(in srgb,var(--accent) 20%,#14222c);--success-bg:#132b22;--warning-bg:#332717;--danger-bg:#341d20;--info-bg:#172b38}
+html[data-theme="dark"] body{background:#0b1218!important;color:var(--ink)}
+html[data-theme="dark"] .topbar{background:#121c25!important;border-bottom-color:#2b3b47;box-shadow:0 2px 12px rgba(0,0,0,.22)}
+html[data-theme="dark"] .brand,html[data-theme="dark"] .top-user{color:#e3edf2}
+html[data-theme="dark"] .brand small{color:#9aabb6}
+html[data-theme="dark"] .brand-mark{background:#1e303b!important;border-color:#38505d;color:#e4edf2}
+html[data-theme="dark"] .sidebar{background:#101a22!important;border-right-color:#2b3a45;border-bottom-color:#2b3a45}
+html[data-theme="dark"] .sidebar-toolbar{border-bottom-color:#2b3a45}
+html[data-theme="dark"] .sidebar-icon-button,html[data-theme="dark"] .sidebar-preference-button{background:#17232d;border-color:#30414d;color:#c5d2da}
+html[data-theme="dark"] .sidebar-preference-button:hover,html[data-theme="dark"] .sidebar-icon-button:hover{background:#20313d;border-color:var(--accent);color:#fff}
+html[data-theme="dark"] .sidebar .nav-link{color:#b6c5ce}
+html[data-theme="dark"] .sidebar .nav-link:hover,html[data-theme="dark"] .sidebar .nav-link.active{background:color-mix(in srgb,var(--accent) 20%,#14222c);border-color:color-mix(in srgb,var(--accent) 45%,#233642);color:#fff}
+html[data-theme="dark"] .sidebar .nav-link.active .icon{color:var(--accent)}
+html[data-theme="dark"] .nav-label,html[data-theme="dark"] .sidebar-width-setting label{color:#91a3ae}
+html[data-theme="dark"] .main{color:var(--ink)}
+html[data-theme="dark"] h1,html[data-theme="dark"] h2,html[data-theme="dark"] h3,html[data-theme="dark"] .list-title,html[data-theme="dark"] .cycle-item-title{color:#e0e9ee}
+html[data-theme="dark"] p,html[data-theme="dark"] .subhead,html[data-theme="dark"] .muted,html[data-theme="dark"] .card-description,html[data-theme="dark"] .help,html[data-theme="dark"] .list-meta{color:#9aabb6}
+html[data-theme="dark"] .card,html[data-theme="dark"] .stat-card,html[data-theme="dark"] .course-card,html[data-theme="dark"] .choice-card,html[data-theme="dark"] .settings-accordion{background:#141f28!important;border-color:#2b3a45!important;box-shadow:none}
+html[data-theme="dark"] .stat-card,html[data-theme="dark"] .course-card,html[data-theme="dark"] .choice-card{color:#d9e3e9}
+html[data-theme="dark"] .stat-label,html[data-theme="dark"] .eyebrow,html[data-theme="dark"] .breadcrumbs,html[data-theme="dark"] .breadcrumbs a{color:#91a3ae}
+html[data-theme="dark"] .stat{color:#d6e7ee}
+html[data-theme="dark"] .filter-bar,html[data-theme="dark"] .empty,html[data-theme="dark"] .quick-nav{background:#17232c!important;border-color:#30414d!important;color:#afbdc5}
+html[data-theme="dark"] .quick-nav a{color:#b5c7d1}
+html[data-theme="dark"] .quick-nav a:hover{background:#22333e;border-color:#3c515e}
+html[data-theme="dark"] .field,html[data-theme="dark"] .filter-input,html[data-theme="dark"] .form-control,html[data-theme="dark"] select,html[data-theme="dark"] textarea{background:#0f1921!important;border-color:#354955!important;color:#e0e9ee!important}
+html[data-theme="dark"] .field::placeholder,html[data-theme="dark"] textarea::placeholder{color:#71838e}
+html[data-theme="dark"] label,html[data-theme="dark"] .field-label{color:#bdcbd3}
+html[data-theme="dark"] .btn-secondary,html[data-theme="dark"] .btn-ghost,html[data-theme="dark"] .logout,html[data-theme="dark"] .top-help{background:#1b2a34!important;border-color:#3a4e5a!important;color:#d6e1e7!important}
+html[data-theme="dark"] .btn-secondary:hover,html[data-theme="dark"] .btn-ghost:hover,html[data-theme="dark"] .logout:hover,html[data-theme="dark"] .top-help:hover{background:#263945!important;color:#fff!important}
+html[data-theme="dark"] .btn-danger{background:#351f22!important;border-color:#714044!important;color:#ffc4c1!important}
+html[data-theme="dark"] th{background:#1c2b35!important;color:#b2c2cb!important}
+html[data-theme="dark"] td{color:#d0dbe1}
+html[data-theme="dark"] tbody tr:hover{background:#1b2a34}
+html[data-theme="dark"] th,html[data-theme="dark"] td{border-bottom-color:#2b3b46}
+html[data-theme="dark"] details.panel,html[data-theme="dark"] details.panel>summary{background:#141f28!important;color:#d6e1e7;border-color:#2b3a45}
+html[data-theme="dark"] details.panel[open]>summary{border-bottom-color:#2b3a45}
+html[data-theme="dark"] .panel-body{background:#141f28}
+html[data-theme="dark"] .ui-dialog{background:#141f28!important;border-color:#354955;color:#e2eaf0}
+html[data-theme="dark"] .dialog-head,html[data-theme="dark"] .dialog-footer{background:#17232c;border-color:#2b3a45}
+html[data-theme="dark"] .dialog-close{background:#1b2a34;border-color:#3a4c57;color:#d5e0e6}
+html[data-theme="dark"] .modal-help-item{background:#1a2832;border-color:#344752}
+html[data-theme="dark"] .modal-help-item strong{color:#d7e4ea}
+html[data-theme="dark"] .modal-help-item p{color:#9aabb6}
+html[data-theme="dark"] .flash{background:#17232c}
+html[data-theme="dark"] .flash-success{background:#132b22;color:#a6dbb8;border-color:#285b43}
+html[data-theme="dark"] .flash-error{background:#341d20;color:#ffc3bf;border-color:#754144}
+html[data-theme="dark"] .flash-info{background:#172b38;color:#b6d9ee;border-color:#355a70}
+html[data-theme="dark"] .alert-success{background:#132b22;color:#a6dbb8;border-color:#285b43}
+html[data-theme="dark"] .alert-error{background:#341d20;color:#ffc3bf;border-color:#754144}
+html[data-theme="dark"] .alert-info{background:#172b38;color:#b6d9ee;border-color:#355a70}
+html[data-theme="dark"] .alert-warning{background:#332717;color:#f1d09a;border-color:#6a502d}
+html[data-theme="dark"] .badge,html[data-theme="dark"] .badge-blue,html[data-theme="dark"] .badge-green,html[data-theme="dark"] .badge-orange,html[data-theme="dark"] .badge-red{background:#1d2a33!important;border-color:#3a4c57!important;color:#d0dce2!important}
+html[data-theme="dark"] .pagination a,html[data-theme="dark"] .pagination span{background:#1a2832;border-color:#374a56;color:#cedae0}
+html[data-theme="dark"] .pagination [aria-current="page"] span{background:var(--accent);border-color:var(--accent);color:#fff}
+html[data-theme="dark"] .cycle-item,html[data-theme="dark"] .list-row{border-bottom-color:#2b3b46}
+html[data-theme="dark"] .workflow-step{background:#17232c;border-color:#334650}
+html[data-theme="dark"] .workflow-step strong{color:#d5e1e7}
+html[data-theme="dark"] .step-number{background:#1b2a34;border-color:#3a4e5a;color:#c6d3da}
+html[data-theme="dark"] .step-line{background:#354955}
+html[data-theme="dark"] .calendar-preview,html[data-theme="dark"] .weekly-load-summary{background:#172732!important;border-color:#344b58!important}
+html[data-theme="dark"] .calendar-preview-stats>div,html[data-theme="dark"] .weekly-load-day{background:#13202a!important;border-color:#344b58!important}
+html[data-theme="dark"] .weekly-load-block.is-theory{background:#1b3240!important;color:#b8d9e9;border-color:#365d70}
+html[data-theme="dark"] .weekly-load-block.is-lab{background:#1a352a!important;color:#b9e1c7;border-color:#37674a}
+html[data-theme="dark"] .preview-date{background:#182833;border-color:#3a5360;color:#c6dce6}
+html[data-theme="dark"] .preview-holiday-warning{background:#351f22;border-color:#754144;color:#ffc3bf}
+html[data-theme="dark"] .preview-no-holidays{background:#153126;border-color:#2d6448;color:#b0e0bf}
+html[data-theme="dark"] .holiday-row,html[data-theme="dark"] .calendar-grid{border-color:#2b3b46}
+html[data-theme="dark"] .holiday-date{background:#1a2b35;border-color:#3b515e}
+html[data-theme="dark"] .holiday-date strong{color:#d7e6ed}
+
 </style>
     @stack('styles')
 </head>
@@ -514,6 +648,12 @@
  <symbol id="icon-building-2" viewBox="0 0 24 24"><path d="M3 21V5l9-3 9 3v16M3 21h18M8 8h1m6 0h1M8 12h1m6 0h1M10 21v-4h4v4"/></symbol>
  <symbol id="icon-arrow-up-right" viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10"/></symbol>
  <symbol id="icon-sparkles" viewBox="0 0 24 24"><path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3zM19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15z"/></symbol>
+ <symbol id="icon-panel-left" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M15 9l-3 3 3 3"/></symbol>
+ <symbol id="icon-user-round" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+ <symbol id="icon-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="m19.4 15 .1.1 1.4 1.1-1.4 2.4-1.7-.7a8 8 0 0 1-1.7 1l-.3 1.8h-2.8l-.3-1.8a8 8 0 0 1-1.7-1l-1.7.7-1.4-2.4 1.4-1.1a7 7 0 0 1 0-2l-1.4-1.1 1.4-2.4 1.7.7a8 8 0 0 1 1.7-1l.3-1.8h2.8l.3 1.8a8 8 0 0 1 1.7 1l1.7-.7 1.4 2.4-1.4 1.1a7 7 0 0 1 0 2z"/></symbol>
+ <symbol id="icon-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5m4-1v5l3 2"/></symbol>
+ <symbol id="icon-moon" viewBox="0 0 24 24"><path d="M20.5 15.2A8.5 8.5 0 0 1 8.8 3.5 8.5 8.5 0 1 0 20.5 15.2z"/></symbol>
+ <symbol id="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></symbol>
 </svg>
 
 <header class="topbar">
@@ -521,7 +661,7 @@
         @if(!empty($appBranding['logo_path']))
             <img class="brand-logo" src="{{ asset('storage/'.$appBranding['logo_path']) }}" alt="Logo del sistema">
         @else
-            <span class="brand-mark">{{ $appBranding['short_name'] ?? 'GD' }}</span>
+            <span class="brand-mark" style="background:var(--accent-soft);color:var(--accent)">{{ $appBranding['short_name'] ?? 'GD' }}</span>
         @endif
         <span>{{ $appBranding['name'] ?? 'Gestión Docente' }}<small>{{ $appBranding['subtitle'] ?? 'Organización académica' }}</small></span>
     </a>
@@ -532,22 +672,61 @@
     </div>
 </header>
 <div class="app-shell">
-    <aside class="sidebar">
-        <div>
-            <div class="nav-label">Espacio de trabajo</div>
-            <a class="nav-link {{ request()->routeIs('dashboard*') ? 'active' : '' }}" href="{{ route('dashboard') }}"><x-icon name="layout-dashboard" />Resumen</a>
-            <a class="nav-link {{ request()->routeIs('cycles.*','groups.*','assignments.*','modalities.*','evaluations.*','curricula.*','students.*','documents.*','distribution.*') ? 'active' : '' }}" href="{{ route('cycles.index') }}"><x-icon name="calendar-days" />Ciclos y cursos</a>
-            <a class="nav-link {{ request()->routeIs('holidays.*') ? 'active' : '' }}" href="{{ route('holidays.index') }}"><x-icon name="calendar-range" />Feriados</a>
-            @if(auth()->user()->isAdmin())
-                <div class="nav-label" style="margin-top:15px">Administración</div>
-                <a class="nav-link {{ request()->routeIs('admin.*') ? 'active' : '' }}" href="{{ route('admin.professors.index') }}"><x-icon name="users-round" />Profesores y cuentas</a>
-            @endif
-            <div class="sidebar-note">
-                <strong><x-icon name="clipboard-check" size="13" /> Tu flujo de trabajo</strong>
-                <div><x-icon name="calendar-days" size="12" /> 1. Ciclo académico</div>
-                <div><x-icon name="users" size="12" /> 2. Grupo asignado</div>
-                <div><x-icon name="book-open" size="12" /> 3. Curso y modalidades</div>
-                <div><x-icon name="file-text" size="12" /> 4. Alumnos y documentos</div>
+    <aside class="sidebar" id="app-sidebar" aria-label="Navegación principal">
+        <div class="sidebar-inner">
+            <div class="sidebar-toolbar">
+                <span class="sidebar-toolbar-label">MENÚ PRINCIPAL</span>
+                <button class="sidebar-icon-button" type="button" id="sidebar-collapse" aria-label="Contraer menú" aria-expanded="true" title="Contraer menú">
+                    <x-icon name="panel-left" size="17" />
+                </button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-label">Espacio de trabajo</div>
+                <a class="nav-link {{ request()->routeIs('dashboard*') ? 'active' : '' }}" href="{{ route('dashboard') }}" title="Resumen">
+                    <x-icon name="layout-dashboard" /><span>Resumen</span>
+                </a>
+                <a class="nav-link {{ request()->routeIs('cycles.*','groups.*','assignments.*','modalities.*','evaluations.*','curricula.*','students.*','documents.*','distribution.*') ? 'active' : '' }}" href="{{ route('cycles.index') }}" title="Ciclos y cursos">
+                    <x-icon name="calendar-days" /><span>Ciclos y cursos</span>
+                </a>
+                <a class="nav-link {{ request()->routeIs('holidays.*') ? 'active' : '' }}" href="{{ route('holidays.index') }}" title="Feriados">
+                    <x-icon name="calendar-range" /><span>Feriados</span>
+                </a>
+
+                <div class="nav-label nav-section-label">Mi cuenta</div>
+                <a class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}" href="{{ route('profile.edit') }}" title="Mi perfil">
+                    <x-icon name="user-round" /><span>Mi perfil</span>
+                </a>
+
+                @if(auth()->user()->isAdmin())
+                    <div class="nav-label nav-section-label">Administración</div>
+                    <a class="nav-link {{ request()->routeIs('admin.professors.*') ? 'active' : '' }}" href="{{ route('admin.professors.index') }}" title="Profesores y cuentas">
+                        <x-icon name="users-round" /><span>Profesores y cuentas</span>
+                    </a>
+                    <a class="nav-link {{ request()->routeIs('admin.audit.*') ? 'active' : '' }}" href="{{ route('admin.audit.index') }}" title="Auditoría">
+                        <x-icon name="history" /><span>Auditoría</span>
+                    </a>
+                    <a class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}" href="{{ route('admin.settings.edit') }}" title="Ajustes del sistema">
+                        <x-icon name="settings" /><span>Ajustes del sistema</span>
+                    </a>
+                @endif
+            </nav>
+
+            <div class="sidebar-preferences">
+                <div class="sidebar-width-setting">
+                    <label for="sidebar-width">Ancho del menú</label>
+                    <div class="sidebar-width-row">
+                        <input type="range" id="sidebar-width" min="200" max="330" step="10" value="250" aria-label="Cambiar ancho del menú">
+                        <output id="sidebar-width-value" for="sidebar-width">250 px</output>
+                    </div>
+                </div>
+                <button class="sidebar-preference-button" type="button" id="theme-toggle" aria-pressed="false">
+                    <x-icon name="moon" size="16" /><span id="theme-toggle-label">Modo oscuro</span>
+                    <small id="theme-toggle-state">Desactivado</small>
+                </button>
+                <button class="sidebar-preference-button" type="button" data-modal-open="workflow-help-dialog">
+                    <x-icon name="circle-help" size="16" /><span>Ayuda del flujo</span>
+                </button>
             </div>
         </div>
     </aside>
@@ -600,6 +779,55 @@
 
 <script>
 (() => {
+    const root = document.documentElement;
+    const body = document.body;
+    const collapseButton = document.getElementById('sidebar-collapse');
+    const widthInput = document.getElementById('sidebar-width');
+    const widthOutput = document.getElementById('sidebar-width-value');
+    const themeButton = document.getElementById('theme-toggle');
+    const themeLabel = document.getElementById('theme-toggle-label');
+    const themeState = document.getElementById('theme-toggle-state');
+
+    const storage = {
+        get(key, fallback) { try { return localStorage.getItem(key) ?? fallback; } catch (_) { return fallback; } },
+        set(key, value) { try { localStorage.setItem(key, value); } catch (_) {} }
+    };
+
+    const savedWidth = Math.min(330, Math.max(200, Number(storage.get('gd-sidebar-width', '250')) || 250));
+    root.style.setProperty('--sidebar-width', savedWidth + 'px');
+    if (widthInput) widthInput.value = String(savedWidth);
+    if (widthOutput) widthOutput.value = savedWidth + ' px';
+    widthInput?.addEventListener('input', () => {
+        const width = Math.min(330, Math.max(200, Number(widthInput.value) || 250));
+        root.style.setProperty('--sidebar-width', width + 'px');
+        if (widthOutput) widthOutput.value = width + ' px';
+        storage.set('gd-sidebar-width', String(width));
+    });
+
+    const setCollapsed = collapsed => {
+        body.classList.toggle('sidebar-collapsed', collapsed);
+        if (collapseButton) {
+            collapseButton.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+            collapseButton.setAttribute('aria-label', collapsed ? 'Expandir menú' : 'Contraer menú');
+            collapseButton.title = collapsed ? 'Expandir menú' : 'Contraer menú';
+        }
+        storage.set('gd-sidebar-collapsed', collapsed ? '1' : '0');
+    };
+    setCollapsed(storage.get('gd-sidebar-collapsed', '0') === '1');
+    collapseButton?.addEventListener('click', () => setCollapsed(!body.classList.contains('sidebar-collapsed')));
+
+    const setTheme = dark => {
+        root.dataset.theme = dark ? 'dark' : 'light';
+        themeButton?.setAttribute('aria-pressed', dark ? 'true' : 'false');
+        if (themeLabel) themeLabel.textContent = dark ? 'Modo claro' : 'Modo oscuro';
+        if (themeState) themeState.textContent = dark ? 'Activado' : 'Desactivado';
+        const icon = themeButton?.querySelector('.icon use');
+        if (icon) icon.setAttribute('href', dark ? '#icon-sun' : '#icon-moon');
+        storage.set('gd-theme', dark ? 'dark' : 'light');
+    };
+    setTheme(storage.get('gd-theme', root.dataset.theme || 'light') === 'dark');
+    themeButton?.addEventListener('click', () => setTheme(root.dataset.theme !== 'dark'));
+
     let pendingForm = null;
     let lastModalTrigger = null;
     const confirmDialog = document.getElementById('app-confirm-dialog');
