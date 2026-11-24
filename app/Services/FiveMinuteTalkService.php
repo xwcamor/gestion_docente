@@ -18,9 +18,18 @@ class FiveMinuteTalkService
      * Pending talks are spread as evenly as possible over the available dates.
      * Completed talks keep their historical dates and are never moved.
      */
+    /**
+     * Builds exactly one scheduled talk for each eligible group work date.
+     * The official catalogue is cyclic: after its last topic, it starts again
+     * from the first topic. Completed talks keep their original date and topic.
+     *
+     * Pending records without a usable date stay in storage for possible reuse,
+     * but they are not part of the scheduled list shown to the user.
+     */
     public function ensureScheduled(TeachingGroup $group): array
     {
         $group->loadMissing('cycle');
+
         $catalogue = $this->catalogue();
         $this->ensureProfessorCatalogue((int) $group->professor_id, $catalogue);
 
@@ -30,43 +39,119 @@ class FiveMinuteTalkService
             ->pluck('title')
             ->all();
 
+        if (!$topics) {
+            throw new RuntimeException('El catálogo institucional no contiene temas disponibles.');
+        }
+
+        $rangeConfigured = $this->hasWorkloadWindow($group);
+        $eligibleDates = $rangeConfigured ? $this->assignedDates($group) : [];
+        $eligibleDateLookup = array_fill_keys($eligibleDates, true);
+        $participantCount = (int) $group->students()->count();
         $existing = $group->fiveMinuteTalks()->orderBy('position')->get();
 
-        if ($existing->isEmpty()) {
-            $now = now();
-            $rows = [];
+        $completedByDate = [];
+        $pendingByDate = [];
+        $reusablePending = collect();
 
-            foreach ($topics as $index => $topic) {
-                $rows[] = [
-                    'teaching_group_id' => $group->id,
-                    'topic' => $topic,
-                    'scheduled_date' => null,
-                    'status' => 'pending',
-                    'participant_count' => null,
-                    'observations' => null,
-                    'position' => $index + 1,
-                    'created_at' => $now,
+        foreach ($existing as $talk) {
+            $date = $talk->scheduled_date?->toDateString();
+
+            if ($talk->status === 'done') {
+                if ($date !== null) {
+                    $completedByDate[$date] = $talk;
+                }
+
+                continue;
+            }
+
+            if ($date !== null && isset($eligibleDateLookup[$date])) {
+                $pendingByDate[$date] = $talk;
+            } else {
+                $reusablePending->push($talk);
+            }
+        }
+
+        $completedEligibleCount = count(array_intersect(
+            array_keys($completedByDate),
+            $eligibleDates
+        ));
+        $pendingDateCount = max(0, count($eligibleDates) - $completedEligibleCount);
+
+        DB::transaction(function () use (
+            $group,
+            $existing,
+            $reusablePending,
+            $pendingByDate,
+            $completedByDate,
+            $eligibleDates,
+            $participantCount,
+            $topics
+        ) {
+            $now = now();
+
+            // Participant count always mirrors the current shared group roster.
+            DB::table('group_five_minute_talks')
+                ->where('teaching_group_id', $group->id)
+                ->where(function ($query) use ($participantCount) {
+                    $query->whereNull('participant_count')
+                        ->orWhere('participant_count', '<>', $participantCount);
+                })
+                ->update([
+                    'participant_count' => $participantCount,
                     'updated_at' => $now,
-                ];
-            }
+                ]);
 
-            foreach (array_chunk($rows, 400) as $chunk) {
-                DB::table('group_five_minute_talks')->insert($chunk);
-            }
-
-            $existing = $group->fiveMinuteTalks()->orderBy('position')->get();
-        } else {
-            // Add new official topics without overwriting historical group records.
-            $known = $existing->pluck('topic')
-                ->map(fn ($title) => mb_strtolower(trim((string) $title)))
+            // Pending dates removed from the workload range become reusable,
+            // rather than remaining visible as stale or undated agenda entries.
+            $obsoleteIds = $reusablePending
+                ->whereNotNull('scheduled_date')
+                ->pluck('id')
                 ->all();
+
+            if ($obsoleteIds) {
+                DB::table('group_five_minute_talks')
+                    ->whereIn('id', $obsoleteIds)
+                    ->update([
+                        'scheduled_date' => null,
+                        'updated_at' => $now,
+                    ]);
+            }
+
             $maxPosition = (int) $existing->max('position');
-            $now = now();
             $newRows = [];
 
-            foreach ($topics as $topic) {
-                $normalized = mb_strtolower(trim($topic));
-                if (in_array($normalized, $known, true)) {
+            foreach ($eligibleDates as $dateIndex => $date) {
+                // A completed talk owns its date and is never overwritten.
+                if (isset($completedByDate[$date])) {
+                    continue;
+                }
+
+                $topic = $topics[$dateIndex % count($topics)];
+                $talk = $pendingByDate[$date] ?? $reusablePending->shift();
+
+                if ($talk) {
+                    $changes = [];
+
+                    if ($talk->topic !== $topic) {
+                        $changes['topic'] = $topic;
+                    }
+
+                    if ($talk->scheduled_date?->toDateString() !== $date) {
+                        $changes['scheduled_date'] = $date;
+                    }
+
+                    if ($talk->participant_count !== $participantCount) {
+                        $changes['participant_count'] = $participantCount;
+                    }
+
+                    if ($changes) {
+                        $changes['updated_at'] = $now;
+
+                        DB::table('group_five_minute_talks')
+                            ->where('id', $talk->id)
+                            ->update($changes);
+                    }
+
                     continue;
                 }
 
@@ -74,76 +159,32 @@ class FiveMinuteTalkService
                 $newRows[] = [
                     'teaching_group_id' => $group->id,
                     'topic' => $topic,
-                    'scheduled_date' => null,
+                    'scheduled_date' => $date,
                     'status' => 'pending',
-                    'participant_count' => null,
+                    'participant_count' => $participantCount,
                     'observations' => null,
                     'position' => $maxPosition,
                     'created_at' => $now,
                     'updated_at' => $now,
                 ];
-                $known[] = $normalized;
             }
 
             foreach (array_chunk($newRows, 400) as $chunk) {
-                if ($chunk) {
-                    DB::table('group_five_minute_talks')->insert($chunk);
-                }
+                DB::table('group_five_minute_talks')->insert($chunk);
             }
+        });
 
-            if ($newRows) {
-                $existing = $group->fiveMinuteTalks()->orderBy('position')->get();
-            }
-        }
-
-        $rangeConfigured = $this->hasWorkloadWindow($group);
-        $eligibleDates = $rangeConfigured ? $this->assignedDates($group) : [];
-
-        $completedDates = $existing
-            ->where('status', 'done')
-            ->pluck('scheduled_date')
-            ->filter()
-            ->map(fn ($date) => Carbon::parse($date)->toDateString())
-            ->all();
-
-        // A completed talk reserves its date; pending talks use the remaining slots.
-        $availableDates = array_values(array_diff($eligibleDates, $completedDates));
-        $pending = $existing->where('status', '!=', 'done')->values();
-        $dateAssignments = $this->distributeDates($pending, $availableDates);
-
-        // Avoid writes on every page view when the workload and dates have not changed.
-        $hasChanges = $pending->contains(
-            fn ($talk) => $talk->scheduled_date?->toDateString() !== ($dateAssignments[$talk->id] ?? null)
-        );
-
-        if ($hasChanges) {
-            DB::transaction(function () use ($pending, $dateAssignments) {
-                // Temporarily clear pending dates so the unique (group, date) index
-                // cannot reject dates being exchanged between talks.
-                foreach ($pending as $talk) {
-                    if ($talk->scheduled_date !== null) {
-                        $talk->update(['scheduled_date' => null]);
-                    }
-                }
-
-                foreach ($pending as $talk) {
-                    $nextDate = $dateAssignments[$talk->id] ?? null;
-
-                    if ($nextDate !== null) {
-                        $talk->update(['scheduled_date' => $nextDate]);
-                    }
-                }
-            });
-        }
+        $rangeStart = $group->workload_start_date && $group->workload_end_date
+            ? $group->workload_start_date
+            : $group->cycle->start_date;
+        $rangeEnd = $group->workload_start_date && $group->workload_end_date
+            ? $group->workload_end_date
+            : $group->cycle->end_date;
 
         return [
             'range_configured' => $rangeConfigured,
-            'range_start' => ($group->workload_start_date && $group->workload_end_date
-                ? $group->workload_start_date
-                : $group->cycle->start_date)?->toDateString(),
-            'range_end' => ($group->workload_start_date && $group->workload_end_date
-                ? $group->workload_end_date
-                : $group->cycle->end_date)?->toDateString(),
+            'range_start' => $rangeStart?->toDateString(),
+            'range_end' => $rangeEnd?->toDateString(),
             'uses_cycle_range' => $group->workload_start_date === null || $group->workload_end_date === null,
             'uses_default_weekdays' => empty($group->workload_days),
             'weekdays' => empty($group->workload_days)
@@ -155,9 +196,13 @@ class FiveMinuteTalkService
                 ->values()
                 ->all(),
             'eligible_dates_count' => count($eligibleDates),
-            'available_dates_count' => count($availableDates),
-            'scheduled_pending_count' => count(array_filter($dateAssignments)),
-            'unassigned_count' => $pending->count() - count(array_filter($dateAssignments)),
+            'available_dates_count' => $pendingDateCount,
+            'scheduled_pending_count' => $pendingDateCount,
+            'unassigned_count' => 0,
+            'catalogue_topic_count' => count($topics),
+            'catalogue_cycles' => count($topics) > 0
+                ? (int) ceil(count($eligibleDates) / count($topics))
+                : 0,
         ];
     }
 
