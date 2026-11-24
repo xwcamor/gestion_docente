@@ -298,7 +298,7 @@ class CourseDistributionImportController extends Controller
 
             $group = TeachingGroup::firstOrCreate(
                 ['cycle_id' => $cycle->id, 'professor_id' => $professor->id, 'name' => $validated['group_name']],
-                ['assigned_at' => now()->toDateString(), 'notes' => 'Creado mediante importación de la pestaña Cursos.']
+                ['assigned_at' => now()->toDateString(), 'notes' => 'Creado mediante importación de las hojas Cursos y Horarios.']
             );
 
             foreach ($data['rows'] as $row) {
@@ -320,6 +320,7 @@ class CourseDistributionImportController extends Controller
                     ]);
                     $modality->fill([
                         'nrc' => $item['nrc'] ?: $modality->nrc,
+                        'block_code' => $item['block_code'] ?: $modality->block_code,
                         'start_date' => $item['start_date'] ?: $modality->start_date?->toDateString(),
                         'end_date' => $item['end_date'] ?: $modality->end_date?->toDateString(),
                         'curriculum_start_week' => $modality->curriculum_start_week ?: 1,
