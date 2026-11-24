@@ -82,81 +82,59 @@
     </div>
 </section>
 
-<details class="card cycle-talk-panel" id="cycle-talks" @if($cycleTalks->isEmpty() || request()->boolean('talks')) open @endif>
+<details class="card cycle-talk-panel" id="cycle-talks" @if(request()->boolean('talks')) open @endif>
     <summary class="cycle-talk-summary">
         <span class="cycle-talk-icon"><x-icon name="clipboard-check" /></span>
         <span class="cycle-talk-title">
             <strong>Charlas de 5 minutos</strong>
-            <small>Catálogo reutilizable y distribución automática por fecha del ciclo</small>
+            <small>Temas institucionales asignados automáticamente a los días reales de clase</small>
         </span>
-        <span class="cycle-talk-count">{{ $talkAssignedCount }} asignadas · {{ $talkPendingCount }} pendientes</span>
+        <span class="cycle-talk-count">{{ $talkDoneCount }} realizadas · {{ $talkPendingCount }} pendientes</span>
         <x-icon name="chevron-right" class="cycle-talk-chevron" />
     </summary>
     <div class="cycle-talk-body">
         <div class="alert alert-info">
-            Los temas se guardan como catálogo reutilizable del profesor. Cada ciclo conserva su propia distribución. El sistema usa los días y rangos reales de cada curso/modalidad, evita repetir fechas y excluye feriados.
+            El sistema toma los temas del catálogo institucional. Asigna uno por cada fecha lectiva del ciclo, utiliza los horarios de modalidad de clase y excluye feriados. No necesitas volver a copiar temas ni seleccionar días.
         </div>
-
-        <form method="POST" action="{{ route('cycles.five-minute-talks.update', $cycle) }}" enctype="multipart/form-data" data-confirm="Se volverán a distribuir los temas en este ciclo. Las fechas y asignaciones anteriores de charlas de este ciclo serán reemplazadas. ¿Deseas continuar?">
-            @csrf
-            @method('PUT')
-            <div class="cycle-talk-form-grid">
-                <div>
-                    <label for="talk-topics">Temas del documento fijo</label>
-                    <textarea class="field" id="talk-topics" name="topics" rows="10" placeholder="Pega un tema por línea, respetando el orden del documento original.">{{ old('topics', $talkTopics->pluck('title')->implode("\n")) }}</textarea>
-                    <p class="help">Un tema por línea. Al guardar, esta lista se convierte en el catálogo reutilizable para tus siguientes ciclos.</p>
-                    <label for="talk-topics-file" class="mt-16">O importar el Excel con los temas</label>
-                    <input class="field" id="talk-topics-file" type="file" name="topics_file" accept=".xlsx,.xls,.csv">
-                    <p class="help">Se lee la columna llamada “Tema” o, si no existe, la primera columna.</p>
-                </div>
-                <div>
-                    <label>Días permitidos para programar charlas</label>
-                    <div class="cycle-talk-days">
-                        @foreach([1=>'Lunes',2=>'Martes',3=>'Miércoles',4=>'Jueves',5=>'Viernes',6=>'Sábado',7=>'Domingo'] as $day=>$label)
-                            <label class="cycle-talk-day">
-                                <input type="checkbox" name="days[]" value="{{ $day }}" @checked(in_array($day, $selectedTalkDays, true))>
-                                <span>{{ $label }}</span>
-                            </label>
-                        @endforeach
-                    </div>
-                    @if(!$availableTalkDays)
-                        <div class="alert alert-warning mt-16">Todavía no se detectan días con horario en este ciclo. Primero configura las fechas y los días de tus cursos.</div>
-                    @else
-                        <p class="help mt-16">Días detectados en tus horarios: {{ collect($availableTalkDays)->map(fn ($day) => [1=>'Lun',2=>'Mar',3=>'Mié',4=>'Jue',5=>'Vie',6=>'Sáb',7=>'Dom'][$day])->join(', ') }}.</p>
-                    @endif
-                    <button class="btn mt-16" type="submit"><x-icon name="calendar-check" /> Guardar y distribuir charlas</button>
-                </div>
-            </div>
-        </form>
-
         <div class="cycle-talk-results">
             <div class="cycle-talk-results-head">
-                <div><strong>Distribución de este ciclo</strong><small>{{ $cycleTalks->count() }} temas en el catálogo de este ciclo</small></div>
+                <div><strong>Registro de ejecución</strong><small>{{ $talkAssignedCount }} fechas programadas · {{ $cycleTalks->count() }} temas en el catálogo</small></div>
                 @if($cycleTalks->isNotEmpty())
                     <form method="POST" action="{{ route('documents.cycle-talks', $cycle) }}">
                         @csrf
-                        <button class="btn btn-secondary btn-sm" type="submit"><x-icon name="file-text" /> Generar Excel de charlas</button>
+                        <button class="btn btn-secondary btn-sm" type="submit"><x-icon name="file-text" /> Descargar registro oficial Excel</button>
                     </form>
                 @endif
             </div>
             @if($cycleTalks->isNotEmpty())
                 <div class="table-wrap">
                     <table>
-                        <thead><tr><th>N.º</th><th>Fecha asignada</th><th>Tema</th><th>Estado</th></tr></thead>
+                        <thead><tr><th>Fecha</th><th>Tema</th><th>Estado</th><th>Participantes</th><th>Observaciones</th><th></th></tr></thead>
                         <tbody>
                             @foreach($cycleTalks as $talk)
                                 <tr>
-                                    <td>{{ $talk->position }}</td>
-                                    <td>{{ $talk->scheduled_date?->format('d/m/Y') ?? 'Pendiente' }}</td>
+                                    <td>{{ $talk->scheduled_date?->format('d/m/Y') ?? 'Sin fecha' }}</td>
                                     <td>{{ $talk->topic }}</td>
-                                    <td>@if($talk->scheduled_date)<span class="badge badge-green">Programada</span>@else<span class="badge badge-orange">Sin fecha disponible</span>@endif</td>
+                                    <td colspan="4">
+                                        <form method="POST" action="{{ route('cycles.talks.update', [$cycle, $talk]) }}" class="talk-execution-form">
+                                            @csrf
+                                            @method('PATCH')
+                                            <select class="field" name="status" aria-label="Estado de la charla">
+                                                <option value="pending" @selected($talk->status !== 'done')>Pendiente</option>
+                                                <option value="done" @selected($talk->status === 'done')>Realizada</option>
+                                            </select>
+                                            <input class="field" type="number" name="participant_count" min="0" max="10000" value="{{ $talk->participant_count }}" placeholder="Participantes" aria-label="Número de participantes">
+                                            <input class="field" name="observations" value="{{ $talk->observations }}" maxlength="2000" placeholder="Observaciones" aria-label="Observaciones">
+                                            <button class="btn btn-secondary btn-sm" type="submit">Guardar</button>
+                                        </form>
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
                 </div>
             @else
-                <div class="empty"><strong>Aún no hay charlas distribuidas.</strong><span>Importa o pega los temas y selecciona los días para asignar una fecha a cada tema.</span></div>
+                <div class="empty"><strong>No se detectan fechas de clase para este ciclo.</strong><span>Configura primero fechas y horarios en tus modalidades. El catálogo se distribuirá automáticamente.</span></div>
             @endif
         </div>
     </div>
@@ -296,6 +274,9 @@
 .cycle-progress-track span{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#3a8cab,#47a88e)}
 .cycle-progress-grid small{display:block;margin-top:6px;color:#76868e;font-size:10px}
 @media(max-width:650px){.cycle-progress-grid{grid-template-columns:1fr}.cycle-progress-heading{align-items:flex-start;flex-direction:column}}
+    .talk-execution-form{display:grid;grid-template-columns:110px 115px minmax(140px,1fr) auto;gap:6px;align-items:center;min-width:520px}
+    .talk-execution-form .field{width:100%;min-width:0;min-height:33px;padding:6px 8px;font-size:10px}
+    @media(max-width:800px){.talk-execution-form{grid-template-columns:1fr 1fr;min-width:0}.talk-execution-form input[name=observations]{grid-column:1/-1}}
 </style>
 @endpush
 
