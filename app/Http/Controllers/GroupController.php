@@ -520,6 +520,7 @@ class GroupController extends Controller
 
         $validator = Validator::make($request->all(), [
             'status' => ['required', 'in:pending,done'],
+            'participant_count' => ['required', 'integer', 'min:0', 'max:9999'],
             'observations' => ['nullable', 'string', 'max:2000'],
         ]);
 
@@ -540,8 +541,7 @@ class GroupController extends Controller
         $before = $talk->only(['status', 'participant_count', 'observations']);
         $talk->update([
             'status' => $data['status'],
-            // Attendance is automatic: it always reflects the current group roster.
-            'participant_count' => $group->students()->count(),
+            'participant_count' => (int) $data['participant_count'],
             'observations' => $data['observations'] ?? null,
         ]);
 
