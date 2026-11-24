@@ -385,7 +385,8 @@ class ExcelDocumentService
         }
 
         $version = ((int) $versionQuery->max('version')) + 1;
-        $filename = Str::slug($label).'-v'.$version.'-'.now()->format('Ymd-His').'.xlsx';
+        $scopeId = $scope['course_modality_id'] ?? $scope['cycle_id'] ?? 'general';
+        $filename = Str::slug($label).'-'.$scopeId.'-v'.$version.'-'.now()->format('Ymd-His').'-'.Str::lower(Str::random(6)).'.xlsx';
         $storedPath = 'generated-documents/'.$filename;
         $temporaryPath = tempnam(sys_get_temp_dir(), 'gestion-docente-');
 
