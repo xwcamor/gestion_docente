@@ -501,32 +501,42 @@ class InstitutionalExcelService
         $sheet->mergeCells('B3:E3');
         $sheet->setCellValue('B2', 'TEMAS DE LAS CHARLAS DE SEGURIDAD, SALUD EN EL TRABAJO Y MEDIO AMBIENTE');
         $sheet->setCellValue('B3', '(CHARLAS FORMATIVAS DE 5 MINUTOS)');
-        $left = 5;
-        $right = 5;
-        foreach ($areas as $area) {
-            $name = mb_strtolower($area['name'] ?? '');
-            if (str_contains($name, 'ambiental')) {
-                $sheet->setCellValue('B'.$left, mb_strtoupper($area['name']));
-                $left++;
-                foreach (($area['topics'] ?? []) as $topic) {
-                    $this->setText($sheet, 'B'.$left, $topic);
-                    $left++;
-                }
-            } else {
-                $sheet->setCellValue('B'.$left, mb_strtoupper($area['name']));
-                $left++;
-                foreach (($area['topics'] ?? []) as $topic) {
-                    $this->setText($sheet, 'B'.$left, $topic);
-                    $left++;
-                }
-            }
+
+        $environment = $areas[0] ?? ['name' => 'SISTEMA DE GESTIÓN AMBIENTAL', 'topics' => []];
+        $safety = $areas[1] ?? ['name' => 'SEGURIDAD Y SALUD EN EL TRABAJO', 'topics' => []];
+
+        $sheet->setCellValue('B5', mb_strtoupper($environment['name'] ?? 'SISTEMA DE GESTIÓN AMBIENTAL'));
+        $row = 6;
+        foreach (($environment['topics'] ?? []) as $topic) {
+            $this->setText($sheet, 'B'.$row, $topic);
+            $row++;
         }
+
+        $sheet->setCellValue('B37', mb_strtoupper($safety['name'] ?? 'SEGURIDAD Y SALUD EN EL TRABAJO'));
+        $safetyTopics = array_values($safety['topics'] ?? []);
+        $leftTopics = array_slice($safetyTopics, 0, 16);
+        $rightTopics = array_slice($safetyTopics, 16);
+
+        $row = 38;
+        foreach ($leftTopics as $topic) {
+            $this->setText($sheet, 'B'.$row, $topic);
+            $row++;
+        }
+
+        $row = 6;
+        foreach ($rightTopics as $topic) {
+            $this->setText($sheet, 'E'.$row, $topic);
+            $row++;
+        }
+
         $sheet->getColumnDimension('B')->setWidth(65);
+        $sheet->getColumnDimension('E')->setWidth(65);
         $sheet->getStyle('B2:E3')->applyFromArray([
             'font'=>['bold'=>true, 'color'=>['rgb'=>'174B63']],
             'alignment'=>['horizontal'=>Alignment::HORIZONTAL_CENTER, 'wrapText'=>true],
         ]);
-        $sheet->getStyle('B5:B'.max(5,$left))->getAlignment()->setWrapText(true);
+        $sheet->getStyle('B5:B53')->getAlignment()->setWrapText(true);
+        $sheet->getStyle('E6:E53')->getAlignment()->setWrapText(true);
         $sheet->getSheetView()->setShowGridLines(false);
     }
 
