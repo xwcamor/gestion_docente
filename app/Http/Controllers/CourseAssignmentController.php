@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Course;
+use App\Models\CourseAssignment;
 use App\Models\CourseModality;
 use App\Models\TeachingGroup;
 use App\Models\GeneratedDocument;
@@ -224,7 +225,7 @@ class CourseAssignmentController extends Controller
         );
     }
 
-    public function destroy(\\App\\Models\\CourseAssignment $assignment)
+    public function destroy(CourseAssignment $assignment)
     {
         $assignment->load('group');
         $group = $assignment->group;
