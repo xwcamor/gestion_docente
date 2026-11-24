@@ -174,6 +174,11 @@
                     data-assigned-at="{{ $group->assigned_at?->format('Y-m-d') }}"
                 ><x-icon name="file-text" /> Editar</button>
                 <a class="btn btn-secondary btn-sm" href="{{ route('groups.show', $group) }}">Abrir grupo <x-icon name="arrow-right" /></a>
+                <form method="POST" action="{{ route('groups.destroy', $group) }}" data-confirm="Se eliminará este grupo, sus cursos dentro del grupo, modalidades, matrículas y sesiones. Los alumnos y cursos del catálogo que se utilicen en otros grupos se conservarán. Esta acción no se puede deshacer.">
+                    @csrf
+                    @method('DELETE')
+                    <button class="btn btn-danger btn-sm" type="submit"><x-icon name="trash-2" /> Eliminar grupo</button>
+                </form>
             </div>
         </article>
     @empty
