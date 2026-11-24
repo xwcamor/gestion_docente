@@ -378,6 +378,16 @@
             }
             field.id = id;
             field.name = name;
+            const match = name.match(/^groups\[(\d+)\]\[([^\]]+)\]/);
+            if (match) {
+                const groupIndex = Number(match[1]);
+                const fieldName = match[2];
+                const syncValue = () => {
+                    values[groupIndex] = {...(values[groupIndex] || {}), [fieldName]: field.value};
+                };
+                field.addEventListener('input', syncValue);
+                field.addEventListener('change', syncValue);
+            }
             wrapper.append(label, field);
             return wrapper;
         };
@@ -453,6 +463,12 @@
                     checkbox.name = prefix + '[workload_days][]';
                     checkbox.value = String(day);
                     checkbox.checked = selectedDays.has(String(day));
+                    checkbox.addEventListener('change', () => {
+                        values[index] = {
+                            ...(values[index] || {}),
+                            workload_days: [...daysOptions.querySelectorAll('input:checked')].map(input => input.value)
+                        };
+                    });
                     label.append(checkbox, document.createTextNode(' ' + labelText));
                     daysOptions.appendChild(label);
                 });
