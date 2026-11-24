@@ -307,7 +307,7 @@
                                         @method('PATCH')
                                         <select class="field" name="status" aria-label="Estado de la charla">
                                             <option value="pending" @selected($talk->status !== 'done')>Pendiente</option>
-                                            <option value="done" @selected($talk->status === 'done')>Realizada</option>
+                                            <option value="done" @selected($talk->status === 'done') @disabled(!$talk->scheduled_date)>Realizada</option>
                                         </select>
                                         <input class="field" type="number" name="participant_count" min="0" max="10000" value="{{ $talk->participant_count }}" placeholder="N.º participantes" aria-label="Número de participantes">
                                         <input class="field" name="observations" value="{{ $talk->observations }}" maxlength="2000" placeholder="Observaciones del grupo" aria-label="Observaciones">
