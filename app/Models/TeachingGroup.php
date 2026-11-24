@@ -45,6 +45,11 @@ class TeachingGroup extends Model
             ->withTimestamps();
     }
 
+    public function fiveMinuteTalks(): HasMany
+    {
+        return $this->hasMany(GroupFiveMinuteTalk::class, 'teaching_group_id');
+    }
+
     public function importBatches(): HasMany
     {
         return $this->hasMany(ImportBatch::class);
