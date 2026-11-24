@@ -64,7 +64,7 @@
             <input class="field" id="edit_group_name" name="name" value="{{ old('name', $group->name) }}" required maxlength="100" autofocus>
         </div>
         <div class="dialog-footer">
-            <button class="btn btn-secondary" type="button" data-modal-close>Cancelar</button>
+            <button class="btn btn-secondary" type="button" data-modal-close><x-icon name="x" /> Cancelar</button>
             <button class="btn" type="submit"><x-icon name="check" /> Guardar nombre</button>
         </div>
     </form>
@@ -287,7 +287,7 @@
                                     <input type="hidden" name="students_page" value="{{ request('students_page', 1) }}">
                                     <button class="btn btn-ghost btn-sm" type="button" data-student-edit @if($editing) hidden @endif><x-icon name="file-text" /> Editar</button>
                                     <button class="btn btn-sm" type="submit" data-student-save @unless($editing) hidden @endunless><x-icon name="check" /> Guardar</button>
-                                    <button class="btn btn-ghost btn-sm" type="button" data-student-cancel @unless($editing) hidden @endunless>Cancelar</button>
+                                    <button class="btn btn-ghost btn-sm" type="button" data-student-cancel @unless($editing) hidden @endunless><x-icon name="x" /> Cancelar</button>
                                 </form>
                                 @if($studentCount > 1)
                                     <form method="POST" action="{{ route('groups.students.destroy', [$group, $student]) }}"
@@ -368,7 +368,7 @@
             <p class="help">Si el ID o el usuario ya existe en tu padrón general, se reutilizará esa ficha y se conservarán sus notas.</p>
         </div>
         <div class="dialog-footer">
-            <button class="btn btn-secondary" type="button" data-modal-close>Cancelar</button>
+            <button class="btn btn-secondary" type="button" data-modal-close><x-icon name="x" /> Cancelar</button>
             <button class="btn" type="submit"><x-icon name="plus" /> Agregar al grupo</button>
         </div>
     </form>
