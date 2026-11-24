@@ -144,6 +144,9 @@ class GroupController extends Controller
 
         $tecCount = (int) ($modalityCounts['TEC'] ?? 0);
         $tallCount = (int) ($modalityCounts['TALL'] ?? 0);
+        $declaredWeeklyHours = (float) $group->assignments()
+            ->join('course_modalities', 'course_modalities.course_assignment_id', '=', 'course_assignments.id')
+            ->sum('course_modalities.total_hours');
 
         $studentCount = $group->students()->count();
         $students = $group->students()
@@ -159,6 +162,7 @@ class GroupController extends Controller
             'courseCount',
             'tecCount',
             'tallCount',
+            'declaredWeeklyHours',
             'studentCount',
             'students',
             'lastRosterImport'
