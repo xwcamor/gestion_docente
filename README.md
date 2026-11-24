@@ -174,7 +174,7 @@ El trabajo se organiza alrededor de la carga laboral recibida. El ciclo y sus gr
 4. **Preparar los Excel con IA:** organizar por separado Plan de sesión y Control de avance para teoría y taller/práctica.
 5. **Registrar las charlas de 5 minutos:** completar la charla correspondiente a cada fecha del grupo cuando ya exista su padrón de alumnos.
 
-**Límite actual de la importación:** el lector de carga laboral procesa la pestaña `Cursos` (curso, código, bloques TEC/TALL, NRC y fechas). Todavía no importa los días, horas y ambientes desde la hoja de horarios; estos se configuran en cada modalidad. No se deben dar por importados esos horarios hasta implementar y validar el lector de esa hoja.
+**Plantilla de carga laboral:** se descarga desde la pantalla Importar carga laboral y contiene tres hojas. `Cursos` registra curso, código institucional, bloques, NRC y rango de fechas; `Horarios` registra una fila por día y bloque con CODIGO, modalidad TEC/TALL, NRC opcional, día, hora inicial/final, tipo de enseñanza y ambiente; `Instrucciones` explica el llenado. El importador valida la correspondencia curso/modalidad, cruces de horario e intervalos de 15 minutos. Al confirmar, guarda los horarios, calcula horas semanales y reconstruye las sesiones excluyendo feriados bloqueados. Si una modalidad ya tenía horarios configurados manualmente, se conservan para no sobrescribirlos al reimportar.
 
 ## Funcionalidades principales
 
@@ -182,6 +182,7 @@ El trabajo se organiza alrededor de la carga laboral recibida. El ciclo y sus gr
 - Años y ciclos académicos con carrera, semestre, rango de fechas y múltiples grupos por ciclo.
 - Cada ciclo se crea con un primer grupo obligatorio y no permite eliminar su último grupo.
 - Cursos por grupo y modalidades TEC/TALL independientes.
+- Importación de carga laboral con plantilla Excel descargable: hoja Cursos para datos del curso y hoja Horarios para días, horas, tipo de bloque y ambiente; genera las sesiones iniciales con el motor de calendario.
 - NRC, fechas, horarios, alumnos, sesiones y evaluaciones por modalidad.
 - Importación de listados de alumnos exportados desde el campus.
 - Altas y retiros individuales del padrón por grupo, conservando fichas y calificaciones; no se permite retirar al último alumno.
@@ -257,11 +258,11 @@ https://github.com/xwcamor/gestion_docente
 
 ## Importar cursos desde Excel institucional
 
-En **Ciclos y cursos → Importar carga Excel**, sube uno de los formatos institucionales que contenga la pestaña **Cursos**. El importador lee las columnas CURSO, CODIGO, BLOQUE TEC, NRC TEC, BLOQUE TALLER, BLOQUE, NRC TALLE y FECHA, y muestra una vista previa antes de guardar.
+En **Cargas laborales → Importar carga laboral**, descarga la plantilla y completa las hojas **Cursos** y **Horarios**. En Cursos utiliza CURSO, CODIGO, BLOQUE TEC, NRC TEC, BLOQUE TALLER, BLOQUE, NRC TALLER y FECHA. En Horarios utiliza CODIGO, MODALIDAD, NRC, DIA, DESDE, HASTA, TIPO y AMBIENTE.
 
-La importación crea o reutiliza el ciclo y el grupo indicado, registra cada curso y mantiene TEC/TALL como modalidades independientes con su NRC y periodo. Se puede volver a importar el mismo archivo al mismo grupo sin duplicar asignaciones ni modalidades.
+La importación crea o reutiliza el ciclo y el grupo indicado, registra cada curso, conserva TEC/TALL como modalidades independientes y asocia cada bloque horario mediante CODIGO + MODALIDAD. Se puede volver a importar el mismo archivo al mismo grupo sin duplicar asignaciones ni modalidades; los horarios manuales que ya existían se conservan.
 
-**Límite de la fuente:** la pestaña Cursos no contiene días, horas ni ambientes. Por eso el importador no inventa horarios ni crea sesiones. Después de confirmar, abre cada modalidad y completa su horario; el calendario podrá calcular las sesiones con los feriados configurados.
+El ciclo se reconoce desde el patrón `202620-PIAD-...` en CODIGO (año + ciclo). Las horas usan formato HH:MM y bloques de 15 minutos. La vista previa muestra los bloques detectados; si hay errores, no permite confirmar hasta corregir el archivo. Al confirmar, calcula horas semanales y genera sesiones con los feriados bloqueados excluidos.
 
 
 ## Registro simplificado de cursos
