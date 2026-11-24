@@ -73,7 +73,7 @@
                             <small>{{ $group->assignments_count }} {{ $group->assignments_count === 1 ? 'curso' : 'cursos' }}</small>
                         </span>
                         <span class="cycle-group-state is-{{ $groupState }}">{{ $groupStateLabel }}</span>
-                        <x-icon name="chevron-down" class="cycle-group-chevron" size="17" />
+                        <x-icon name="chevron-right" class="cycle-group-chevron" size="17" />
                     </summary>
 
                     <div class="cycle-group-body">
@@ -244,7 +244,7 @@
 .cycle-group-state.is-partial{border-color:#eadfc9;background:var(--warning-bg);color:var(--warning)}
 .cycle-group-state.is-complete{border-color:#d5e5d8;background:var(--success-bg);color:var(--success)}
 .cycle-group-chevron{flex:none;color:var(--muted);transition:transform .16s ease}
-.cycle-group[open] .cycle-group-chevron{transform:rotate(180deg)}
+.cycle-group[open] .cycle-group-chevron{transform:rotate(90deg)}
 .cycle-group-body{padding:3px 0 15px 50px}
 .cycle-group-progress{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
 .cycle-group-progress-item{min-width:0}
