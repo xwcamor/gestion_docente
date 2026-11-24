@@ -114,7 +114,7 @@
 </section>
 
 <section class="card" id="documents">
-    <div class="card-head"><div><h2>Documentos Excel</h2><p class="card-description">Genera los formatos oficiales usando los datos de esta modalidad.</p></div><a class="btn btn-secondary btn-sm" href="{{ route('evaluations.index', $modality) }}"><x-icon name="arrow-right" /> Evaluaciones y notas</a></div>
+    <div class="card-head"><div><h2>Documentos Excel</h2><p class="card-description">Genera archivos Excel con la información actual de esta modalidad.</p></div><a class="btn btn-secondary btn-sm" href="{{ route('evaluations.index', $modality) }}"><x-icon name="arrow-right" /> Evaluaciones y notas</a></div>
     <div class="grid grid-2">
         @foreach(['plan'=>'Plan de sesión','registro'=>'Registro de formación','evaluacion'=>'Formato de evaluación'] as $type=>$label)
             <form class="course-card" method="POST" action="{{ route('documents.generate', [$modality, $type]) }}">
