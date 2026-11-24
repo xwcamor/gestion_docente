@@ -6,7 +6,8 @@ use App\Models\Cycle;
 use App\Models\CourseModality;
 use App\Models\GeneratedDocument;
 use App\Models\ImportBatch;
-use App\Models\FiveMinuteTalkTopic;
+use App\Models\CycleFiveMinuteTalk;
+use App\Services\AuditLogger;
 use App\Services\FiveMinuteTalkService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -131,6 +132,7 @@ class CycleController extends Controller
     public function show(Cycle $cycle, FiveMinuteTalkService $talkService)
     {
         $this->authorizeCycle($cycle);
+        $talkService->ensureScheduled($cycle);
 
         $groups = $cycle->groups()
             ->withCount(['assignments', 'students'])
@@ -181,19 +183,14 @@ class CycleController extends Controller
             ->where('teaching_groups.cycle_id', $cycle->id)
             ->sum('course_modalities.total_hours');
 
-        $talkTopics = FiveMinuteTalkTopic::query()
-            ->where('professor_id', $cycle->professor_id)
-            ->orderBy('position')
-            ->get();
         $cycleTalks = $cycle->fiveMinuteTalks()
             ->orderByRaw('scheduled_date IS NULL')
             ->orderBy('scheduled_date')
             ->orderBy('position')
             ->get();
-        $availableTalkDays = $talkService->availableDays($cycle);
-        $selectedTalkDays = $cycle->five_minute_talk_days ?: $availableTalkDays;
-        $talkAssignedCount = $cycleTalks->filter(fn ($talk) => $talk->scheduled_date !== null)->count();
-        $talkPendingCount = $cycleTalks->count() - $talkAssignedCount;
+        $talkAssignedCount = $cycleTalks->whereNotNull('scheduled_date')->count();
+        $talkDoneCount = $cycleTalks->where('status', 'done')->count();
+        $talkPendingCount = $cycleTalks->count() - $talkDoneCount;
 
         return view('cycles.show', compact(
             'cycle',
@@ -206,60 +203,42 @@ class CycleController extends Controller
             'configuredModalityCount',
             'curriculumPercent',
             'schedulePercent',
-            'talkTopics',
             'cycleTalks',
-            'availableTalkDays',
-            'selectedTalkDays',
             'talkAssignedCount',
+            'talkDoneCount',
             'talkPendingCount'
         ));
     }
 
-    public function updateFiveMinuteTalks(Request $request, Cycle $cycle, FiveMinuteTalkService $service)
+    public function updateTalkExecution(Request $request, Cycle $cycle, CycleFiveMinuteTalk $talk, AuditLogger $audit)
     {
         $this->authorizeCycle($cycle);
+        abort_unless((int) $talk->cycle_id === (int) $cycle->id, 404);
 
-        $validator = Validator::make($request->all(), [
-            'days' => ['required', 'array', 'min:1'],
-            'days.*' => ['required', 'integer', 'min:1', 'max:7'],
-            'topics' => ['nullable', 'string', 'max:50000'],
-            'topics_file' => ['nullable', 'file', 'mimes:xlsx,xls,csv', 'max:10240'],
-        ], [
-            'days.required' => 'Selecciona al menos un día para programar las charlas.',
-            'topics_file.mimes' => 'Adjunta un archivo Excel .xlsx, .xls o .csv.',
-            'topics_file.max' => 'El archivo de temas no puede superar los 10 MB.',
+        $data = $request->validate([
+            'status' => ['required', 'in:pending,done'],
+            'participant_count' => ['nullable', 'integer', 'min:0', 'max:10000'],
+            'observations' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        if ($validator->fails()) {
-            return redirect()
-                ->route('cycles.show', ['cycle' => $cycle, 'talks' => 1])
-                ->withErrors($validator)
-                ->withInput();
+        if ($data['status'] === 'done' && !array_key_exists('participant_count', $data)) {
+            throw ValidationException::withMessages([
+                'participant_count' => 'Indica cuántos participantes asistieron a la charla.',
+            ]);
         }
 
-        $data = $validator->validated();
+        $before = $talk->only(['status', 'participant_count', 'observations']);
+        $talk->update([
+            'status' => $data['status'],
+            'participant_count' => $data['participant_count'] ?? null,
+            'observations' => $data['observations'] ?? null,
+        ]);
 
-        try {
-            $result = $service->updateAndDistribute(
-                $cycle,
-                $data['days'],
-                $data['topics'] ?? null,
-                $request->file('topics_file')
-            );
-        } catch (ValidationException $exception) {
-            return redirect()
-                ->route('cycles.show', ['cycle' => $cycle, 'talks' => 1])
-                ->withErrors($exception->errors())
-                ->withInput();
-        }
+        $audit->record('charlas', 'updated', 'Se registró la ejecución de la charla: '.$talk->topic, $talk,
+            $before, $talk->only(['status', 'participant_count', 'observations']));
 
-        $message = "{$result['topics']} temas guardados: {$result['assigned']} asignados a fechas y {$result['pending']} pendientes.";
-        if ($result['available_dates'] === 0) {
-            $message .= ' No se encontraron días lectivos coincidentes; revisa los horarios y los días seleccionados.';
-        }
-
-        return redirect()->route('cycles.show', $cycle)
-            ->with('success', $message);
+        return redirect()->route('cycles.show', ['cycle' => $cycle, 'talks' => 1])
+            ->with('success', 'Registro de ejecución actualizado.');
     }
 
     public function destroy(Cycle $cycle)
