@@ -643,6 +643,18 @@ html[data-theme="dark"] .group-workload-panel[open]>.group-panel-summary{backgro
 @media(max-width:600px){.roster-head-actions{align-items:stretch;flex-direction:column}.roster-head-actions .btn{width:100%}.roster-head-actions .roster-search{max-width:none;width:100%}}
 
 .roster-table-wrap{border:1px solid #e7edf0;border-radius:9px}
+/* Encabezados fijos: cada tabla conserva su cabecera mientras se recorren sus filas. */
+.roster-table-wrap,.talks-table-wrap{
+    max-height:min(65vh,560px);
+    overflow:auto;
+    overscroll-behavior:contain;
+}
+.roster-table-wrap .roster-table thead th,
+.talks-table-wrap .talks-table thead th{
+    position:sticky;
+    top:0;
+    z-index:4;
+}
 .roster-table{min-width:800px}
 .roster-table th{background:#f2f7f9;color:#4d6d7b;font-size:10px}
 .roster-table td{font-size:11px;vertical-align:middle}
