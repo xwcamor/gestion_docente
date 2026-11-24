@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Ciclos académicos')
+@section('title', 'Cargas laborales')
 @section('content')
 <div class="breadcrumbs">
     <a href="{{ route('dashboard') }}">Resumen</a>
