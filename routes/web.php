@@ -28,11 +28,14 @@ Route::middleware(['auth', 'professor'])->group(function () {
     Route::get('/ciclos/crear', [CycleController::class, 'create'])->name('cycles.create');
     Route::post('/ciclos', [CycleController::class, 'store'])->name('cycles.store');
     Route::patch('/ciclos/{cycle}', [CycleController::class, 'update'])->name('cycles.update');
+    Route::delete('/ciclos/{cycle}', [CycleController::class, 'destroy'])->name('cycles.destroy');
+    Route::put('/ciclos/{cycle}/charlas-5-minutos', [CycleController::class, 'updateFiveMinuteTalks'])->name('cycles.five-minute-talks.update');
     Route::get('/ciclos/{cycle}', [CycleController::class, 'show'])->name('cycles.show');
 
     Route::get('/ciclos/{cycle}/grupos/crear', [GroupController::class, 'create'])->name('groups.create');
     Route::post('/ciclos/{cycle}/grupos', [GroupController::class, 'store'])->name('groups.store');
     Route::patch('/grupos/{group}', [GroupController::class, 'update'])->name('groups.update');
+    Route::delete('/grupos/{group}', [GroupController::class, 'destroy'])->name('groups.destroy');
     Route::patch('/grupos/{group}/alumnos/{student}', [GroupController::class, 'updateStudent'])->name('groups.students.update');
     Route::get('/grupos/{group}', [GroupController::class, 'show'])->name('groups.show');
 
@@ -40,6 +43,7 @@ Route::middleware(['auth', 'professor'])->group(function () {
     Route::get('/grupos/{group}/carga-rapida', [QuickCourseEntryController::class, 'create'])->name('assignments.quick');
     Route::post('/grupos/{group}/carga-rapida', [QuickCourseEntryController::class, 'store'])->name('assignments.quick.store');
     Route::post('/grupos/{group}/cursos', [CourseAssignmentController::class, 'store'])->name('assignments.store');
+    Route::delete('/asignaciones/{assignment}', [CourseAssignmentController::class, 'destroy'])->name('assignments.destroy');
     Route::post('/grupos/{group}/alumnos/previsualizar', [StudentImportController::class, 'previewGroup'])->name('groups.students.preview');
     Route::post('/grupos/{group}/alumnos/confirmar', [StudentImportController::class, 'confirmGroup'])->name('groups.students.confirm');
 
@@ -62,8 +66,9 @@ Route::middleware(['auth', 'professor'])->group(function () {
     Route::patch('/sesiones/{session}', [SessionController::class, 'update'])->name('sessions.update');
     Route::post('/modalidades/{modality}/alumnos/previsualizar', [StudentImportController::class, 'preview'])->name('students.preview');
     Route::post('/modalidades/{modality}/alumnos/confirmar', [StudentImportController::class, 'confirm'])->name('students.confirm');
-    Route::post('/modalidades/{modality}/documentos/{type}', [DocumentController::class, 'generate'])->whereIn('type', ['plan', 'registro', 'evaluacion', 'charla'])->name('documents.generate');
+    Route::post('/modalidades/{modality}/documentos/{type}', [DocumentController::class, 'generate'])->whereIn('type', ['plan', 'registro', 'evaluacion'])->name('documents.generate');
     Route::post('/ciclos/{cycle}/distribucion', [DocumentController::class, 'distribution'])->name('documents.distribution');
+    Route::post('/ciclos/{cycle}/charlas-5-minutos/excel', [DocumentController::class, 'fiveMinuteTalks'])->name('documents.cycle-talks');
     Route::get('/documentos/{document}/descargar', [DocumentController::class, 'download'])->name('documents.download');
 
     Route::get('/feriados', [HolidayController::class, 'index'])->name('holidays.index');
