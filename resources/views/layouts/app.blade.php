@@ -865,6 +865,9 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
         }
         .btn:active:not(:disabled){transform:translateY(1px)}
         .btn:disabled,[aria-disabled="true"]{cursor:not-allowed}
+        .btn:hover:not(:disabled){filter:brightness(.98)}
+        a.card[href],button.card{transition:border-color .16s ease,box-shadow .16s ease,transform .16s ease}
+        a.card[href]:hover,button.card:hover{border-color:var(--gd-border-strong)!important;box-shadow:var(--gd-shadow-hover)!important;transform:translateY(-1px)}
 
         /* Búsqueda y filtros */
         .filter-bar,.accounts-toolbar,.course-toolbar{
@@ -980,6 +983,9 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
         html[data-theme="dark"] .section-status-pending{color:#c0cbd0;background:#26343a;border-color:#40515a}
 
         @media(max-width:700px){
+            .btn{min-height:44px}
+            .btn.btn-sm{min-height:40px}
+            .weekday{min-height:44px;display:inline-flex;align-items:center;justify-content:center}
             .page-head{align-items:flex-start!important;flex-direction:column!important}
             .page-head .actions{width:100%;justify-content:flex-start}
             .card>.card-head{align-items:flex-start;flex-direction:column}
