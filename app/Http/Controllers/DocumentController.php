@@ -44,7 +44,7 @@ class DocumentController extends Controller
     public function groupFiveMinuteTalks(TeachingGroup $group, ExcelDocumentService $service)
     {
         abort_unless($group->professor_id === auth()->user()->professor->id, 404);
-        abort_unless($group->fiveMinuteTalks()->exists(), 404, 'Primero abre el grupo para distribuir sus charlas institucionales.');
+        abort_unless($group->fiveMinuteTalks()->whereNotNull('scheduled_date')->exists(), 404, 'Primero configura las fechas de carga horaria del grupo para programar sus charlas.');
 
         $document = $service->generateFiveMinuteTalks($group, auth()->id());
 
