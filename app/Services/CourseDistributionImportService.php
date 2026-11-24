@@ -139,7 +139,11 @@ class CourseDistributionImportService
 
         $scheduleCount = $this->parseSchedules($spreadsheet, $rows, $warnings, $errors);
 
-        $allDates = collect($rows)->flatMap(fn ($row) => collect($row['modalities'])->flatMap(fn ($modality) => array_filter([$modality['start_date'], $modality['end_date']])));
+        $completeDateValues = collect($rows)
+            ->flatMap(fn ($row) => collect($row['modalities']))
+            ->filter(fn ($modality) => filled($modality['start_date']) && filled($modality['end_date']))
+            ->flatMap(fn ($modality) => [$modality['start_date'], $modality['end_date']])
+            ->values();
         // CODIGO identifica el periodo académico. BLOQUE TEC/TALL puede conservar un periodo interno distinto.
         $sourceCodes = collect($rows)->pluck('source_code')->filter()->all();
         $cycleMatch = [];
@@ -154,16 +158,13 @@ class CourseDistributionImportService
             ]);
         }
 
-        $dateValues = $allDates->values();
-        $hasCompletePeriod = collect($rows)
-            ->flatMap(fn ($row) => $row['modalities'])
-            ->contains(fn ($modality) => filled($modality['start_date']) && filled($modality['end_date']));
+        $hasCompletePeriod = $completeDateValues->isNotEmpty();
 
         return [
             'academic_year' => (int) $cycleMatch[1],
             'cycle_code' => $cycleMatch[2],
-            'start_date' => $dateValues->isNotEmpty() ? min($dateValues->all()) : null,
-            'end_date' => $dateValues->isNotEmpty() ? max($dateValues->all()) : null,
+            'start_date' => $hasCompletePeriod ? min($completeDateValues->all()) : null,
+            'end_date' => $hasCompletePeriod ? max($completeDateValues->all()) : null,
             'has_complete_period' => $hasCompletePeriod,
             'rows' => $rows, 'errors' => $errors, 'warnings' => array_values(array_unique($warnings)),
             'course_count' => count($rows),
