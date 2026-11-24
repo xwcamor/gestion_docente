@@ -204,7 +204,7 @@ La estructura usa nombres explícitos y cortos para los índices que podrían su
 
 ### Error SQLSTATE[42S22]: columna `slug` desconocida
 
-Las migraciones correctivas `2026_11_24_000008_repair_curricula_slug_column.php` y `2026_11_24_000009_repair_missing_slug_columns.php` reparan columnas slug faltantes. La segunda revisa todas las tablas cuyos modelos usan `HasSlugRouteKey`, completa los valores que falten y asegura sus índices únicos. Conserva los registros académicos existentes.
+Las migraciones correctivas `2026_11_24_000008_repair_curricula_slug_column.php` y `2026_11_24_000009_repair_missing_slug_columns.php` reparan columnas slug faltantes. Las migraciones `2026_11_24_000010_repair_class_sessions_slug_column.php` y `2026_11_24_000011_repair_generated_documents_slug_column.php` refuerzan la reparación de sesiones y documentos generados cuando una base local conserva un esquema anterior. Completan los valores faltantes y aseguran índices únicos sin eliminar registros académicos.
 
 Actualiza el repositorio y ejecuta:
 
@@ -215,6 +215,8 @@ php artisan optimize:clear
 ```
 
 No ejecutes `migrate:fresh`: borraría los datos de la instalación.
+
+Los archivos **Plan de sesión** y **Control de avance** solo se habilitan cuando la malla vinculada contiene temas semanales oficiales (o títulos HT válidos de una malla anterior). El **Formato de evaluación** no depende de la malla.
 
 ### Error de tabla `cache` inexistente
 
