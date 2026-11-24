@@ -64,7 +64,7 @@ class CycleController extends Controller
         ]);
 
         $data = $request->validate(
-            $this->cycleValidationRules($professorId),
+            $this->cycleValidationRules($professorId, $request),
             $this->cycleValidationMessages()
         );
 
@@ -98,7 +98,7 @@ class CycleController extends Controller
 
         $validator = Validator::make(
             $request->all(),
-            $this->cycleValidationRules($professorId, $cycle),
+            $this->cycleValidationRules($professorId, $request, $cycle),
             $this->cycleValidationMessages(true)
         );
 
@@ -223,12 +223,13 @@ class CycleController extends Controller
      * Mantiene las mismas reglas al crear y editar un ciclo.
      * El nombre del primer grupo solo se exige al crear el ciclo.
      */
-    private function cycleValidationRules(int $professorId, ?Cycle $cycle = null): array
+    private function cycleValidationRules(int $professorId, Request $request, ?Cycle $cycle = null): array
     {
+        $academicYear = $request->input('academic_year');
         $uniqueCycleCode = Rule::unique('cycles', 'cycle_code')
             ->where(fn ($query) => $query
                 ->where('professor_id', $professorId)
-                ->where('academic_year', request()->input('academic_year')));
+                ->where('academic_year', $academicYear));
 
         if ($cycle) {
             $uniqueCycleCode->ignore($cycle->id);
