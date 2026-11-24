@@ -142,7 +142,13 @@ class CycleController extends Controller
             ->where('teaching_groups.cycle_id', $cycle->id)
             ->count();
 
-        return view('cycles.show', compact('cycle', 'groups', 'groupCount', 'courseCount', 'modalityCount'));
+        $declaredWeeklyHours = (float) DB::table('course_modalities')
+            ->join('course_assignments', 'course_assignments.id', '=', 'course_modalities.course_assignment_id')
+            ->join('teaching_groups', 'teaching_groups.id', '=', 'course_assignments.teaching_group_id')
+            ->where('teaching_groups.cycle_id', $cycle->id)
+            ->sum('course_modalities.total_hours');
+
+        return view('cycles.show', compact('cycle', 'groups', 'groupCount', 'courseCount', 'modalityCount', 'declaredWeeklyHours'));
     }
 
     private function authorizeCycle(Cycle $cycle): void
