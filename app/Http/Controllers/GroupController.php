@@ -8,6 +8,9 @@ use App\Models\Student;
 use App\Models\CourseModality;
 use App\Models\GeneratedDocument;
 use App\Models\ImportBatch;
+use App\Models\GroupFiveMinuteTalk;
+use App\Services\AuditLogger;
+use App\Services\FiveMinuteTalkService;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -128,10 +131,11 @@ class GroupController extends Controller
             ->with('success', 'Datos del grupo actualizados.');
     }
 
-    public function show(TeachingGroup $group)
+    public function show(TeachingGroup $group, FiveMinuteTalkService $talkService)
     {
         $this->authorizeGroup($group);
         $group->load('cycle');
+        $talkService->ensureScheduled($group);
 
         $assignments = $group->assignments()
             ->with(['course', 'curriculum', 'modalities.schedules'])
@@ -151,7 +155,7 @@ class GroupController extends Controller
         $configuredModalityCount = (clone $modalityQuery)
             ->whereNotNull('start_date')
             ->whereNotNull('end_date')
-            ->whereHas('schedules')
+            ->whereHas('schedules', fn ($query) => $query->where('block_type', 'CLASS'))
             ->count();
 
         $courseModalityPercent = $courseCount > 0
@@ -176,6 +180,15 @@ class GroupController extends Controller
             ->withQueryString();
         $lastRosterImport = $group->importBatches()->latest()->first();
 
+        $groupTalks = $group->fiveMinuteTalks()
+            ->orderByRaw('scheduled_date IS NULL')
+            ->orderBy('scheduled_date')
+            ->orderBy('position')
+            ->get();
+        $talkAssignedCount = $groupTalks->whereNotNull('scheduled_date')->count();
+        $talkDoneCount = $groupTalks->where('status', 'done')->count();
+        $talkPendingCount = $groupTalks->count() - $talkDoneCount;
+
         return view('groups.show', compact(
             'group',
             'assignments',
@@ -190,8 +203,62 @@ class GroupController extends Controller
             'declaredWeeklyHours',
             'studentCount',
             'students',
-            'lastRosterImport'
+            'lastRosterImport',
+            'groupTalks',
+            'talkAssignedCount',
+            'talkDoneCount',
+            'talkPendingCount'
         ));
+    }
+
+    public function updateTalkExecution(
+        Request $request,
+        TeachingGroup $group,
+        GroupFiveMinuteTalk $talk,
+        AuditLogger $audit
+    ) {
+        $this->authorizeGroup($group);
+        abort_unless((int) $talk->teaching_group_id === (int) $group->id, 404);
+
+        $validator = Validator::make($request->all(), [
+            'status' => ['required', 'in:pending,done'],
+            'participant_count' => ['nullable', 'integer', 'min:0', 'max:10000'],
+            'observations' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $validator->after(function ($validator) use ($request) {
+            if ($request->input('status') === 'done' && $request->input('participant_count') === null) {
+                $validator->errors()->add('participant_count', 'Indica cuántos participantes asistieron a la charla.');
+            }
+        });
+
+        if ($validator->fails()) {
+            return redirect()
+                ->to(route('groups.show', ['group' => $group, 'talks' => 1]).'#group-talks')
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $data = $validator->validated();
+        $before = $talk->only(['status', 'participant_count', 'observations']);
+        $talk->update([
+            'status' => $data['status'],
+            'participant_count' => $data['participant_count'] ?? null,
+            'observations' => $data['observations'] ?? null,
+        ]);
+
+        $audit->record(
+            'charlas',
+            'updated',
+            'Se registró la ejecución de la charla del grupo '.$group->name.': '.$talk->topic,
+            $talk,
+            $before,
+            $talk->only(['status', 'participant_count', 'observations'])
+        );
+
+        return redirect()
+            ->to(route('groups.show', ['group' => $group, 'talks' => 1]).'#group-talks')
+            ->with('success', 'Registro de charla de '.$group->name.' actualizado.');
     }
 
     public function destroy(TeachingGroup $group)
