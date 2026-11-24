@@ -83,7 +83,7 @@
                         : null;
                 @endphp
 
-                <details class="cycle-group">
+                <details class="cycle-group" open>
                     <summary class="cycle-group-summary">
                         <span class="cycle-group-icon"><x-icon name="users" size="17" /></span>
                         <span class="cycle-group-title">
