@@ -224,9 +224,7 @@ class QuickCourseEntryController extends Controller
                     foreach ($exception->errors() as $field => $messages) {
                         $target = match ($field) {
                             'course_name' => 'course_name',
-                            default => filled($row['tall_code'] ?? null) && blank($row['tec_code'] ?? null)
-                                ? 'tall_code'
-                                : 'tec_code',
+                            default => 'row_error',
                         };
                         $errors["rows.{$index}.{$target}"] = $messages;
                     }
