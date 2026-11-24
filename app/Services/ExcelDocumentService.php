@@ -1,0 +1,428 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\CourseModality;
+use App\Models\Cycle;
+use App\Models\GeneratedDocument;
+use App\Models\Grade;
+use App\Models\Evaluation;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
+class ExcelDocumentService
+{
+    private const DOCUMENTS = [
+        'plan' => 'Plan de sesión',
+        'registro' => 'Registro de formación',
+        'evaluacion' => 'Formato de evaluación',
+    ];
+
+    public function generateForModality(CourseModality $modality, string $type, int $userId): GeneratedDocument
+    {
+        if (!array_key_exists($type, self::DOCUMENTS)) {
+            throw ValidationException::withMessages([
+                'document' => 'El tipo de Excel solicitado no está disponible. Las charlas de 5 minutos se generan desde el ciclo.',
+            ]);
+        }
+
+        $modality->loadMissing([
+            'assignment.course',
+            'assignment.group.cycle',
+            'schedules',
+        ]);
+
+        $course = $modality->assignment->course;
+        $group = $modality->assignment->group;
+        $cycle = $group->cycle;
+        $subtitle = implode(' · ', array_filter([
+            $course->name,
+            $course->code ? 'Código '.$course->code : null,
+            $modality->modality,
+            $modality->nrc ? 'NRC '.$modality->nrc : null,
+            $group->name,
+            $cycle->academic_year.'-'.$cycle->cycle_code,
+        ]));
+
+        [$headers, $rows] = match ($type) {
+            'plan' => $this->sessionPlanRows($modality),
+            'registro' => $this->trainingRegisterRows($modality),
+            'evaluacion' => $this->evaluationRows($modality),
+        };
+
+        $spreadsheet = $this->makeWorkbook(self::DOCUMENTS[$type], $subtitle, $headers, $rows);
+        $document = $this->storeWorkbook($spreadsheet, [
+            'course_modality_id' => $modality->id,
+            'teaching_group_id' => null,
+            'cycle_id' => null,
+        ], $type, self::DOCUMENTS[$type], $userId, [
+            'course' => $course->name,
+            'modality' => $modality->modality,
+            'nrc' => $modality->nrc,
+            'rows' => count($rows),
+        ]);
+
+        $spreadsheet->disconnectWorksheets();
+
+        return $document;
+    }
+
+    public function generateLoadDistribution(Cycle $cycle, int $userId): GeneratedDocument
+    {
+        $cycle->loadMissing('groups');
+        $modalities = CourseModality::query()
+            ->with(['assignment.course', 'assignment.group', 'schedules'])
+            ->whereHas('assignment.group', fn ($query) => $query->where('cycle_id', $cycle->id))
+            ->get();
+
+        $dayNames = [
+            1 => 'Lunes', 2 => 'Martes', 3 => 'Miércoles',
+            4 => 'Jueves', 5 => 'Viernes', 6 => 'Sábado', 7 => 'Domingo',
+        ];
+
+        $rows = [];
+        foreach ($modalities as $modality) {
+            foreach ($modality->schedules as $schedule) {
+                $rows[] = [
+                    $dayNames[(int) $schedule->day_of_week] ?? 'Sin día',
+                    substr((string) $schedule->start_time, 0, 5),
+                    substr((string) $schedule->end_time, 0, 5),
+                    $modality->assignment->group->name,
+                    $modality->assignment->course->name,
+                    $modality->assignment->course->code,
+                    $modality->modality,
+                    $modality->nrc,
+                    $schedule->block_type === 'ASYNC' ? 'Asincrónica' : 'Clase',
+                    $schedule->classroom,
+                    $modality->start_date?->format('d/m/Y'),
+                    $modality->end_date?->format('d/m/Y'),
+                    $modality->total_hours,
+                ];
+            }
+        }
+
+        usort($rows, function ($a, $b) {
+            $dayOrder = ['Lunes' => 1, 'Martes' => 2, 'Miércoles' => 3, 'Jueves' => 4, 'Viernes' => 5, 'Sábado' => 6, 'Domingo' => 7];
+            return [
+                $dayOrder[$a[0]] ?? 8,
+                $a[1],
+                $a[3],
+                $a[4],
+            ] <=> [
+                $dayOrder[$b[0]] ?? 8,
+                $b[1],
+                $b[3],
+                $b[4],
+            ];
+        });
+
+        $spreadsheet = $this->makeWorkbook(
+            'Distribución de carga laboral',
+            $cycle->academic_year.' · Ciclo '.$cycle->cycle_code.' · Rango general '.$cycle->start_date?->format('d/m/Y').' al '.$cycle->end_date?->format('d/m/Y'),
+            ['Día', 'Desde', 'Hasta', 'Grupo', 'Curso', 'Código', 'Modalidad', 'NRC', 'Tipo de bloque', 'Aula / ambiente', 'Inicio del curso', 'Fin del curso', 'Horas semanales declaradas'],
+            $rows
+        );
+
+        $document = $this->storeWorkbook($spreadsheet, [
+            'course_modality_id' => null,
+            'teaching_group_id' => null,
+            'cycle_id' => $cycle->id,
+        ], 'carga_laboral', 'Distribución de carga laboral', $userId, [
+            'cycle' => $cycle->academic_year.'-'.$cycle->cycle_code,
+            'groups' => $cycle->groups()->count(),
+            'modalities' => $modalities->count(),
+            'rows' => count($rows),
+        ]);
+
+        $spreadsheet->disconnectWorksheets();
+
+        return $document;
+    }
+
+    public function generateFiveMinuteTalks(Cycle $cycle, int $userId): GeneratedDocument
+    {
+        $talks = $cycle->fiveMinuteTalks()
+            ->orderByRaw('scheduled_date IS NULL')
+            ->orderBy('scheduled_date')
+            ->orderBy('position')
+            ->get();
+
+        $rows = $talks->map(fn ($talk) => [
+            $talk->position,
+            $talk->scheduled_date?->format('d/m/Y') ?? 'Pendiente de fecha',
+            $talk->topic,
+            $talk->scheduled_date ? 'Programada' : 'Pendiente',
+        ])->all();
+
+        $spreadsheet = $this->makeWorkbook(
+            'Charlas de 5 minutos',
+            $cycle->academic_year.' · Ciclo '.$cycle->cycle_code.' · Temas distribuidos según los días asignados',
+            ['N.º', 'Fecha asignada', 'Tema de la charla', 'Estado'],
+            $rows
+        );
+
+        $document = $this->storeWorkbook($spreadsheet, [
+            'course_modality_id' => null,
+            'teaching_group_id' => null,
+            'cycle_id' => $cycle->id,
+        ], 'charla', 'Charlas de 5 minutos', $userId, [
+            'cycle' => $cycle->academic_year.'-'.$cycle->cycle_code,
+            'topics' => $talks->count(),
+            'assigned' => $talks->whereNotNull('scheduled_date')->count(),
+            'pending' => $talks->whereNull('scheduled_date')->count(),
+        ]);
+
+        $spreadsheet->disconnectWorksheets();
+
+        return $document;
+    }
+
+    private function sessionPlanRows(CourseModality $modality): array
+    {
+        $sessions = $modality->sessions()
+            ->with('curriculumWeek')
+            ->orderBy('session_date')
+            ->orderBy('session_number')
+            ->get();
+
+        $rows = $sessions->map(fn ($session) => [
+            $session->session_date?->format('d/m/Y'),
+            $session->session_number,
+            $session->curriculum_week_number,
+            $session->duration_minutes,
+            $session->topic,
+            $session->objective,
+            $session->activities,
+            $session->evidence,
+            $session->status,
+        ])->all();
+
+        return [
+            ['Fecha', 'Sesión', 'Semana', 'Duración (min)', 'Tema', 'Objetivo', 'Actividades / materiales', 'Evidencias', 'Estado'],
+            $rows,
+        ];
+    }
+
+    private function trainingRegisterRows(CourseModality $modality): array
+    {
+        $enrollments = $modality->enrollments()
+            ->with('student')
+            ->get()
+            ->sortBy(fn ($enrollment) => mb_strtolower(
+                ($enrollment->student?->surnames ?? '').' '.($enrollment->student?->given_names ?? '')
+            ))
+            ->values();
+
+        $rows = $enrollments->values()->map(fn ($enrollment, $index) => [
+            $index + 1,
+            $enrollment->student?->institutional_id,
+            $enrollment->student?->surnames,
+            $enrollment->student?->given_names,
+            $enrollment->student?->username,
+            $enrollment->status,
+            '',
+        ])->all();
+
+        return [
+            ['N.º', 'ID institucional', 'Apellidos', 'Nombres', 'Usuario', 'Estado de matrícula', 'Firma / observaciones'],
+            $rows,
+        ];
+    }
+
+    private function evaluationRows(CourseModality $modality): array
+    {
+        $enrollments = $modality->enrollments()
+            ->with('student')
+            ->get()
+            ->sortBy(fn ($enrollment) => mb_strtolower(
+                ($enrollment->student?->surnames ?? '').' '.($enrollment->student?->given_names ?? '')
+            ))
+            ->values();
+
+        $evaluations = $modality->evaluations()->with('grades')->orderBy('id')->get();
+        $headers = ['N.º', 'ID institucional', 'Apellidos', 'Nombres'];
+
+        foreach ($evaluations as $evaluation) {
+            $headers[] = $evaluation->title.' (máx. '.$evaluation->maximum_score.')';
+        }
+        $headers[] = 'Promedio simple';
+        $headers[] = 'Estado';
+
+        $rows = [];
+        foreach ($enrollments as $index => $enrollment) {
+            $scores = [];
+            $numericScores = [];
+
+            foreach ($evaluations as $evaluation) {
+                $grade = $evaluation->grades->firstWhere('enrollment_id', $enrollment->id);
+                $score = $grade?->score;
+                $scores[] = $score;
+
+                if ($score !== null) {
+                    $numericScores[] = (float) $score;
+                }
+            }
+
+            $average = $numericScores
+                ? round(array_sum($numericScores) / count($numericScores), 2)
+                : null;
+
+            $rows[] = array_merge([
+                $index + 1,
+                $enrollment->student?->institutional_id,
+                $enrollment->student?->surnames,
+                $enrollment->student?->given_names,
+            ], $scores, [
+                $average,
+                $enrollment->status,
+            ]);
+        }
+
+        return [$headers, $rows];
+    }
+
+    private function makeWorkbook(string $title, string $subtitle, array $headers, array $rows): Spreadsheet
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle(Str::limit(Str::ascii($title), 31, ''));
+
+        $columnCount = max(1, count($headers));
+        $lastColumn = $this->columnName($columnCount);
+
+        $sheet->mergeCells('A1:'.$lastColumn.'1');
+        $sheet->setCellValue('A1', $title);
+        $sheet->mergeCells('A2:'.$lastColumn.'2');
+        $sheet->setCellValue('A2', $subtitle);
+        $sheet->fromArray($headers, null, 'A4');
+
+        $lastRow = 4;
+        foreach ($rows as $row) {
+            $lastRow++;
+            $sheet->fromArray($row, null, 'A'.$lastRow);
+        }
+
+        $sheet->getRowDimension(1)->setRowHeight(28);
+        $sheet->getRowDimension(2)->setRowHeight(24);
+        $sheet->getRowDimension(4)->setRowHeight(32);
+
+        $sheet->getStyle('A1:'.$lastColumn.'1')->applyFromArray([
+            'font' => ['bold' => true, 'size' => 16, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '174B63']],
+            'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
+        ]);
+        $sheet->getStyle('A2:'.$lastColumn.'2')->applyFromArray([
+            'font' => ['size' => 10, 'color' => ['rgb' => '526B78']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'EDF4F7']],
+            'alignment' => ['vertical' => Alignment::VERTICAL_CENTER, 'wrapText' => true],
+        ]);
+        $sheet->getStyle('A4:'.$lastColumn.'4')->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 10],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '327C91']],
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                'vertical' => Alignment::VERTICAL_CENTER,
+                'wrapText' => true,
+            ],
+        ]);
+
+        if ($lastRow > 4) {
+            $sheet->getStyle('A5:'.$lastColumn.$lastRow)->applyFromArray([
+                'alignment' => ['vertical' => Alignment::VERTICAL_TOP, 'wrapText' => true],
+                'borders' => [
+                    'bottom' => ['borderStyle' => Border::BORDER_HAIR, 'color' => ['rgb' => 'DCE6EB']],
+                ],
+            ]);
+            $sheet->getStyle('A5:'.$lastColumn.$lastRow)
+                ->getNumberFormat()
+                ->setFormatCode('@');
+        }
+
+        $sheet->setAutoFilter('A4:'.$lastColumn.max(4, $lastRow));
+        $sheet->freezePane('A5');
+
+        foreach (range(1, $columnCount) as $columnIndex) {
+            $column = $this->columnName($columnIndex);
+            $sheet->getColumnDimension($column)->setAutoSize(true);
+        }
+
+        $sheet->getPageSetup()
+            ->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE)
+            ->setFitToWidth(1)
+            ->setFitToHeight(0);
+        $sheet->getPageMargins()->setTop(0.35)->setBottom(0.35)->setLeft(0.25)->setRight(0.25);
+        $sheet->getSheetView()->setShowGridLines(false);
+
+        return $spreadsheet;
+    }
+
+    private function storeWorkbook(
+        Spreadsheet $spreadsheet,
+        array $scope,
+        string $type,
+        string $label,
+        int $userId,
+        array $metadata
+    ): GeneratedDocument {
+        $versionQuery = GeneratedDocument::query()->where('document_type', $type);
+
+        if (!empty($scope['course_modality_id'])) {
+            $versionQuery->where('course_modality_id', $scope['course_modality_id']);
+        } elseif (!empty($scope['cycle_id'])) {
+            $versionQuery->where('cycle_id', $scope['cycle_id']);
+        }
+
+        $version = ((int) $versionQuery->max('version')) + 1;
+        $filename = Str::slug($label).'-v'.$version.'-'.now()->format('Ymd-His').'.xlsx';
+        $storedPath = 'generated-documents/'.$filename;
+        $temporaryPath = tempnam(sys_get_temp_dir(), 'gestion-docente-');
+
+        if ($temporaryPath === false) {
+            throw new \RuntimeException('No se pudo preparar el archivo temporal de Excel.');
+        }
+
+        try {
+            (new Xlsx($spreadsheet))->save($temporaryPath);
+            $contents = file_get_contents($temporaryPath);
+            if ($contents === false || !Storage::disk('local')->put($storedPath, $contents)) {
+                throw new \RuntimeException('No se pudo guardar el Excel generado.');
+            }
+        } finally {
+            if (is_file($temporaryPath)) {
+                @unlink($temporaryPath);
+            }
+        }
+
+        try {
+            return GeneratedDocument::create(array_merge($scope, [
+                'document_type' => $type,
+                'version' => $version,
+                'filename' => $filename,
+                'stored_path' => $storedPath,
+                'generated_by' => $userId,
+                'metadata' => array_merge($metadata, ['stale' => false, 'generated_at' => now()->toIso8601String()]),
+            ]));
+        } catch (\Throwable $exception) {
+            Storage::disk('local')->delete($storedPath);
+            throw $exception;
+        }
+    }
+
+    private function columnName(int $columnNumber): string
+    {
+        $name = '';
+        while ($columnNumber > 0) {
+            $remainder = ($columnNumber - 1) % 26;
+            $name = chr(65 + $remainder).$name;
+            $columnNumber = intdiv($columnNumber - 1, 26);
+        }
+
+        return $name;
+    }
+}
