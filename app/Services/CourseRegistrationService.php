@@ -66,16 +66,8 @@ class CourseRegistrationService
             ]);
         }
 
-        $sameName = Course::query()
-            ->where('professor_id', $group->professor_id)
-            ->whereRaw('LOWER(name) = ?', [mb_strtolower($courseName)])
-            ->first();
-
-        if ($sameName && (!$course || (int) $sameName->id !== (int) $course->id)) {
-            throw ValidationException::withMessages([
-                'course_code' => "Ya existe «{$courseName}» con el código {$sameName->code}. Reutiliza ese curso para evitar duplicados.",
-            ]);
-        }
+        // Course identity is its institutional code, not its display name.
+        // Different institutional codes may legitimately share the same course name.
 
         return DB::transaction(function () use ($group, $courseName, $parsed, $requestedTypes, $course, $students, $modalityDates) {
             $courseRecord = $course ?: Course::firstOrCreate(
