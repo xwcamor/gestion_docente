@@ -5,6 +5,7 @@ use App\Models\CourseModality;
 use App\Models\Student;
 use App\Models\Enrollment;
 use App\Models\ImportBatch;
+use App\Models\TeachingGroup;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -89,6 +90,186 @@ class StudentImportService
         });
         $batch->update(['created_count'=>$created,'updated_count'=>$updated,'skipped_count'=>$skipped,'errors'=>$errors]);
         return $batch->fresh();
+    }
+
+    /**
+     * Importa una sola lista de alumnos en el grupo y crea matrículas vacías
+     * para los cursos actuales. Las notas y datos de actividad no se copian
+     * entre cursos: pertenecen a cada matrícula individual.
+     */
+    public function importGroupStored(TeachingGroup $group, string $stored, string $originalFilename, string $extension, int $userId): ImportBatch
+    {
+        $path = Storage::disk('local')->path($stored);
+        [$rows, $format] = $this->readRows($path, $extension);
+
+        if (count($rows) < 2) {
+            throw ValidationException::withMessages(['roster' => 'El archivo no contiene filas de alumnos.']);
+        }
+
+        $headers = array_map(fn ($value) => $this->normalize((string) $value), array_shift($rows));
+        $map = $this->mapHeaders($headers);
+
+        foreach (['surnames', 'given_names'] as $required) {
+            if (!isset($map[$required])) {
+                throw ValidationException::withMessages(['roster' => 'No se reconoce la columna obligatoria de apellidos o nombre.']);
+            }
+        }
+
+        if (!isset($map['institutional_id']) && !isset($map['username'])) {
+            throw ValidationException::withMessages(['roster' => 'No se reconoce ID de estudiante ni Nombre de usuario para identificar alumnos.']);
+        }
+
+        $batch = ImportBatch::create([
+            'course_modality_id' => null,
+            'teaching_group_id' => $group->id,
+            'user_id' => $userId,
+            'original_filename' => $originalFilename,
+            'stored_path' => $stored,
+            'detected_format' => $format,
+            'total_rows' => count($rows),
+        ]);
+
+        $created = 0;
+        $updated = 0;
+        $skipped = 0;
+        $errors = [];
+        $seen = [];
+        $groupStudentIds = [];
+
+        DB::transaction(function () use ($rows, $map, $group, &$created, &$updated, &$skipped, &$errors, &$seen, &$groupStudentIds) {
+            foreach ($rows as $index => $row) {
+                $value = fn ($key) => isset($map[$key]) ? trim((string) ($row[$map[$key]] ?? '')) : '';
+                $id = $value('institutional_id');
+                $username = $value('username');
+                $surnames = $value('surnames');
+                $names = $value('given_names');
+
+                if ($surnames === '' && $names === '' && $id === '' && $username === '') {
+                    $skipped++;
+                    continue;
+                }
+
+                if ($surnames === '' || $names === '' || ($id === '' && $username === '')) {
+                    $skipped++;
+                    $errors[] = 'Fila '.($index + 2).': falta nombre/apellido o identificador.';
+                    continue;
+                }
+
+                $identity = $id !== '' ? 'ID:'.$id : 'USER:'.$username;
+                if (isset($seen[$identity])) {
+                    $skipped++;
+                    $errors[] = 'Fila '.($index + 2).': identificador repetido dentro del archivo.';
+                    continue;
+                }
+                $seen[$identity] = true;
+
+                $query = Student::where('professor_id', $group->professor_id);
+                if ($id !== '') {
+                    $query->where('institutional_id', $id);
+                } else {
+                    $query->where('username', $username);
+                }
+
+                $student = $query->first();
+                $attributes = [
+                    'professor_id' => $group->professor_id,
+                    'institutional_id' => $id ?: ($student?->institutional_id),
+                    'username' => $username ?: ($student?->username),
+                    'surnames' => $surnames,
+                    'given_names' => $names,
+                    'last_access_source' => $value('last_access') ?: $student?->last_access_source,
+                    'availability_source' => $value('availability') ?: $student?->availability_source,
+                ];
+
+                if ($student) {
+                    $student->update($attributes);
+                    $updated++;
+                } else {
+                    $student = Student::create($attributes);
+                    $created++;
+                }
+
+                $groupStudentIds[] = $student->id;
+            }
+
+            $timestamp = now();
+            foreach (array_chunk(array_values(array_unique($groupStudentIds)), 500) as $studentChunk) {
+                $pivotRows = array_map(fn ($studentId) => [
+                    'teaching_group_id' => $group->id,
+                    'student_id' => $studentId,
+                    'created_at' => $timestamp,
+                    'updated_at' => $timestamp,
+                ], $studentChunk);
+
+                if ($pivotRows) {
+                    DB::table('teaching_group_students')->insertOrIgnore($pivotRows);
+                }
+            }
+
+            $modalityIds = $group->assignments()
+                ->with('modalities:id,course_assignment_id')
+                ->get()
+                ->flatMap(fn ($assignment) => $assignment->modalities)
+                ->pluck('id')
+                ->all();
+
+            $studentIds = $group->students()->pluck('students.id')->all();
+            $timestamp = now();
+            foreach (array_chunk($studentIds, 500) as $studentChunk) {
+                $enrollmentRows = [];
+                foreach ($modalityIds as $modalityId) {
+                    foreach ($studentChunk as $studentId) {
+                        $enrollmentRows[] = [
+                            'course_modality_id' => $modalityId,
+                            'student_id' => $studentId,
+                            'status' => 'active',
+                            'created_at' => $timestamp,
+                            'updated_at' => $timestamp,
+                        ];
+                    }
+                }
+                foreach (array_chunk($enrollmentRows, 500) as $enrollmentChunk) {
+                    DB::table('enrollments')->insertOrIgnore($enrollmentChunk);
+                }
+            }
+        });
+
+        $batch->update([
+            'created_count' => $created,
+            'updated_count' => $updated,
+            'skipped_count' => $skipped,
+            'errors' => $errors,
+        ]);
+
+        return $batch->fresh();
+    }
+
+    /**
+     * When a course is added after the group roster, enrol its existing students
+     * without overwriting course-specific grades or platform data.
+     */
+    public function syncGroupRosterToModality(CourseModality $modality): int
+    {
+        $group = $modality->assignment()->with('group')->firstOrFail()->group;
+        $studentIds = $group->students()->pluck('students.id')->all();
+        $created = 0;
+        $timestamp = now();
+
+        foreach (array_chunk($studentIds, 500) as $studentChunk) {
+            $rows = array_map(fn ($studentId) => [
+                'course_modality_id' => $modality->id,
+                'student_id' => $studentId,
+                'status' => 'active',
+                'created_at' => $timestamp,
+                'updated_at' => $timestamp,
+            ], $studentChunk);
+
+            if ($rows) {
+                $created += DB::table('enrollments')->insertOrIgnore($rows);
+            }
+        }
+
+        return $created;
     }
 
     private function readRows(string $path, string $extension): array

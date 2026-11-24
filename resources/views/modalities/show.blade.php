@@ -24,7 +24,8 @@
         <div class="panel-body">
             <form method="POST" action="{{ route('modalities.update', $modality) }}">
                 @csrf @method('PUT')
-                <div class="form-row-3">
+                <p class="help">Estas son las fechas reales de dictado de este curso/modalidad. Pueden terminar antes del fin del rango general del ciclo; el calendario solo generará sesiones dentro de estas fechas.</p>
+            <div class="form-row-3">
                     <div><label for="nrc">NRC de esta modalidad</label><input class="field" id="nrc" name="nrc" value="{{ old('nrc', $modality->nrc) }}"></div>
                     <div><label for="start_date">Fecha de inicio</label><input class="field" id="start_date" type="date" name="start_date" value="{{ old('start_date', $modality->start_date?->format('Y-m-d')) }}"></div>
                     <div><label for="end_date">Fecha de fin</label><input class="field" id="end_date" type="date" name="end_date" value="{{ old('end_date', $modality->end_date?->format('Y-m-d')) }}"></div>
@@ -62,13 +63,27 @@
 </section>
 
 <section class="card" id="students">
-    <div class="card-head"><div><h2>Alumnos del campus</h2><p class="card-description">Importa el archivo original que recibes de la plataforma. Primero revisarás una vista previa.</p></div><span class="badge">{{ $enrollmentsCount }} alumnos</span></div>
-    <form method="POST" enctype="multipart/form-data" action="{{ route('students.preview', $modality) }}">
-        @csrf
-        <label for="roster">Archivo de alumnos (.xls, .xlsx o .csv)</label>
-        <input class="field" id="roster" type="file" name="roster" accept=".xls,.xlsx,.csv,.txt" required>
-        <div class="actions mt-16"><button class="btn" type="submit"><x-icon name="file-text" /> Seleccionar archivo y revisar</button>@if($import)<span class="help">Última importación: {{ $import->original_filename }} · {{ $import->created_count }} nuevos · {{ $import->updated_count }} actualizados · {{ $import->skipped_count }} omitidos.</span>@endif</div>
-    </form>
+    <div class="card-head">
+        <div>
+            <h2>Padrón compartido del grupo</h2>
+            <p class="card-description">Los alumnos se cargan una sola vez desde el grupo. Este curso mantiene su propia matrícula, notas y evaluaciones.</p>
+        </div>
+        <span class="badge">{{ $enrollmentsCount }} matrículas en este curso</span>
+    </div>
+    <div class="grid grid-2">
+        <div class="stat-card">
+            <div class="stat-label">Alumnos registrados en el grupo</div>
+            <div class="stat">{{ $assignment->group->students()->count() }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Alumnos vinculados a este curso</div>
+            <div class="stat">{{ $enrollmentsCount }}</div>
+        </div>
+    </div>
+    <p class="help mt-16">Para agregar o actualizar estudiantes, abre el padrón del grupo. El sistema crea las matrículas que falten sin copiar calificaciones entre cursos.</p>
+    <div class="actions mt-16">
+        <a class="btn" href="{{ route('groups.show', $assignment->group) }}#group-roster"><x-icon name="users" /> Administrar padrón del grupo</a>
+    </div>
 </section>
 
 <section class="card" id="documents">

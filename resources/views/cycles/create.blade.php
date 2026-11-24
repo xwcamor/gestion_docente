@@ -15,10 +15,10 @@
             <div><label for="cycle_code">Código del ciclo</label><input class="field" id="cycle_code" name="cycle_code" value="{{ old('cycle_code', '10') }}" maxlength="20" required placeholder="10 o 20"><p class="help">Ejemplo: ciclo 10 o ciclo 20.</p></div>
         </div>
         <div class="form-row">
-            <div><label for="start_date">Fecha de inicio</label><input class="field" id="start_date" type="date" name="start_date" value="{{ old('start_date') }}" required></div>
-            <div><label for="end_date">Fecha de fin</label><input class="field" id="end_date" type="date" name="end_date" value="{{ old('end_date') }}" min="{{ old('start_date') }}" required></div>
+            <div><label for="start_date">Inicio del rango de carga laboral</label><input class="field" id="start_date" type="date" name="start_date" value="{{ old('start_date') }}" required></div>
+            <div><label for="end_date">Fin del rango de carga laboral</label><input class="field" id="end_date" type="date" name="end_date" value="{{ old('end_date') }}" min="{{ old('start_date') }}" required></div>
         </div>
-        <div class="alert alert-info mt-16">La fecha de fin debe ser igual o posterior a la fecha de inicio. Puedes editar tus grupos y cursos después de crear el ciclo.</div>
+        <div class="alert alert-info mt-16">Este es el rango general de la carga laboral. No obliga a que todos los cursos terminen el mismo día. Cada curso tendrá sus propias fechas reales de dictado y su horario.</div>
         <div class="form-actions">
             <a class="btn btn-secondary" href="{{ route('cycles.index') }}">← Cancelar y volver</a>
             <button class="btn" type="submit">Guardar ciclo y continuar →</button>

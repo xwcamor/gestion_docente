@@ -15,7 +15,7 @@
         <p class="eyebrow"><x-icon name="calendar-days" size="12" /> Ciclo académico</p>
         <h1>{{ $cycle->academic_year }} · Ciclo {{ $cycle->cycle_code }}</h1>
         <div class="cycle-item-meta">
-            <span><x-icon name="calendar-range" size="12" /> {{ $cycle->start_date?->format('d/m/Y') }} – {{ $cycle->end_date?->format('d/m/Y') }}</span>
+            <span><x-icon name="calendar-range" size="12" /> Rango de carga: {{ $cycle->start_date?->format('d/m/Y') }} – {{ $cycle->end_date?->format('d/m/Y') }}</span>
             <span class="badge badge-green">{{ $cycle->status === 'active' ? 'Activo' : 'Registrado' }}</span>
             <button class="inline-edit" type="button" data-modal-open="cycle-edit-dialog"><x-icon name="file-text" size="13" /> Editar ciclo</button>
         </div>
@@ -25,7 +25,7 @@
     </div>
 </div>
 
-<div class="grid grid-3" style="margin-bottom:17px">
+<div class="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:17px">
     <div class="stat-card">
         <div class="stat-top"><span class="stat-label">Grupos</span><span class="stat-icon"><x-icon name="users" /></span></div>
         <div class="stat">{{ $groupCount }}</div>
@@ -37,6 +37,10 @@
     <div class="stat-card">
         <div class="stat-top"><span class="stat-label">Modalidades</span><span class="stat-icon"><x-icon name="layers" /></span></div>
         <div class="stat">{{ $modalityCount }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-top"><span class="stat-label">Horas declaradas / semana</span><span class="stat-icon"><x-icon name="clock" /></span></div>
+        <div class="stat">{{ number_format($declaredWeeklyHours, 1) }} h</div>
     </div>
 </div>
 
@@ -101,8 +105,8 @@
                 <div><label for="edit_cycle_code">Código del ciclo</label><input class="field" id="edit_cycle_code" name="cycle_code" maxlength="20" value="{{ old('cycle_code', $cycle->cycle_code) }}" required></div>
             </div>
             <div class="form-row">
-                <div><label for="edit_cycle_start">Fecha de inicio</label><input class="field" id="edit_cycle_start" type="date" name="start_date" value="{{ old('start_date', $cycle->start_date?->format('Y-m-d')) }}" required></div>
-                <div><label for="edit_cycle_end">Fecha de fin</label><input class="field" id="edit_cycle_end" type="date" name="end_date" value="{{ old('end_date', $cycle->end_date?->format('Y-m-d')) }}" required></div>
+                <div><label for="edit_cycle_start">Inicio del rango de carga</label><input class="field" id="edit_cycle_start" type="date" name="start_date" value="{{ old('start_date', $cycle->start_date?->format('Y-m-d')) }}" required></div>
+                <div><label for="edit_cycle_end">Fin del rango de carga</label><input class="field" id="edit_cycle_end" type="date" name="end_date" value="{{ old('end_date', $cycle->end_date?->format('Y-m-d')) }}" required></div>
             </div>
         </div>
         <div class="dialog-footer"><button class="btn btn-secondary" type="button" data-modal-close>Cancelar</button><button class="btn" type="submit"><x-icon name="check" /> Guardar cambios</button></div>
@@ -120,14 +124,15 @@
             @if($errors->any() && !request('dialog'))
                 <div class="dialog-error" role="alert"><strong>Revisa estos datos:</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
             @endif
-            <label for="group_name">Nombre del grupo</label>
-            <input class="field" id="group_name" name="name" value="{{ old('name') }}" required maxlength="100" placeholder="Ej. Grupo 01 o A1">
-            @error('name')<p class="field-error">{{ $message }}</p>@enderror
-            <div class="mt-16">
-                <label for="group_assigned_at">Fecha de asignación <span class="muted">(opcional)</span></label>
-                <input class="field" id="group_assigned_at" type="date" name="assigned_at" value="{{ old('assigned_at') }}">
-                @error('assigned_at')<p class="field-error">{{ $message }}</p>@enderror
+            <div class="group-count-control">
+                <label for="group-count">¿Cuántos grupos vas a crear?</label>
+                <input class="field" id="group-count" type="number" min="1" max="30" value="{{ max(1, count(old('groups', [])) ?: 1) }}">
+                <p class="help">Indica la cantidad y escribe el nombre de cada grupo. Puedes crear hasta 30 de una sola vez.</p>
             </div>
+            @if($errors->has('groups') || $errors->has('groups.*.name'))
+                <div class="dialog-error" role="alert">@foreach($errors->all() as $error)<div>{{ $error }}</div>@endforeach</div>
+            @endif
+            <div class="group-fields" id="group-fields"></div>
         </div>
         <div class="dialog-footer"><button class="btn btn-secondary" type="button" data-modal-close>Cancelar</button><button class="btn" type="submit"><x-icon name="check" /> Guardar grupo</button></div>
     </form>
@@ -156,7 +161,60 @@
 </dialog>
 @endsection
 
+@push('styles')
+<style>
+.group-count-control{display:grid;grid-template-columns:minmax(0,1fr) 110px;align-items:center;gap:10px}
+.group-count-control label{margin:0}
+.group-count-control .help{grid-column:1/-1;margin:0}
+.group-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px}
+.group-name-field{padding:11px;border:1px solid #dce7ed;border-radius:10px;background:#f9fcfd}
+.group-name-field label{display:block;margin-bottom:6px;font-size:11px;font-weight:700;color:#477085}
+@media(max-width:560px){.group-fields{grid-template-columns:1fr}}
+</style>
+@endpush
+
 @push('scripts')
+<script>
+(() => {
+    const countInput = document.getElementById('group-count');
+    const groupFields = document.getElementById('group-fields');
+    if (countInput && groupFields) {
+        const oldGroups = @json(array_values(old('groups', [])));
+        const values = oldGroups.map(group => group?.name || '');
+        const render = () => {
+            const count = Math.max(1, Math.min(30, Number.parseInt(countInput.value, 10) || 1));
+            countInput.value = count;
+            groupFields.replaceChildren();
+
+            for (let index = 0; index < count; index++) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'group-name-field';
+
+                const label = document.createElement('label');
+                label.htmlFor = 'group-name-' + index;
+                label.textContent = 'Grupo ' + (index + 1);
+
+                const input = document.createElement('input');
+                input.className = 'field';
+                input.id = 'group-name-' + index;
+                input.name = 'groups[' + index + '][name]';
+                input.maxLength = 100;
+                input.required = true;
+                input.placeholder = 'Ej. IA 20' + (index + 1);
+                input.value = values[index] || '';
+                input.addEventListener('input', () => { values[index] = input.value; });
+
+                wrapper.append(label, input);
+                groupFields.append(wrapper);
+            }
+        };
+
+        countInput.addEventListener('input', render);
+        countInput.addEventListener('change', render);
+        render();
+    }
+})();
+</script>
 <script>
 (() => {
     const dialog = document.getElementById('group-edit-dialog');
