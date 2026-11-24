@@ -7,16 +7,25 @@ use App\Models\Cycle;
 use App\Models\TeachingGroup;
 use App\Models\GeneratedDocument;
 use App\Services\ExcelDocumentService;
+use App\Services\FiveMinuteTalkService;
 use Illuminate\Support\Facades\Storage;
 
 class DocumentController extends Controller
 {
-    public function generate(CourseModality $modality, string $type, ExcelDocumentService $service)
-    {
+    public function generate(
+        CourseModality $modality,
+        string $type,
+        ExcelDocumentService $service,
+        FiveMinuteTalkService $talkService
+    ) {
         abort_unless(
             $modality->assignment->group->professor_id === auth()->user()->professor->id,
             404
         );
+
+        if ($type === 'plan') {
+            $talkService->ensureScheduled($modality->assignment->group);
+        }
 
         $document = $service->generateForModality($modality, $type, auth()->id());
 
