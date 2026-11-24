@@ -178,17 +178,42 @@
                 <div class="dialog-error" role="alert"><strong>Revisa estos datos:</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
             @endif
             <div class="form-row">
-                <div><label for="edit_academic_year">Año académico</label><input class="field" id="edit_academic_year" type="number" name="academic_year" min="2020" max="2100" value="{{ old('academic_year', $cycle->academic_year) }}" required></div>
-                <div><label for="edit_cycle_code">Código del ciclo</label><input class="field" id="edit_cycle_code" name="cycle_code" maxlength="20" value="{{ old('cycle_code', $cycle->cycle_code) }}" required></div>
+                <div>
+                    <label for="edit_academic_year">Año académico <span class="muted">*</span></label>
+                    <input class="field" id="edit_academic_year" type="number" name="academic_year" min="2020" max="2100" value="{{ old('academic_year', $cycle->academic_year) }}" required>
+                    @error('academic_year')<p class="field-error">{{ $message }}</p>@enderror
+                </div>
+                <div>
+                    <label for="edit_cycle_code">Código del ciclo <span class="muted">*</span></label>
+                    <input class="field" id="edit_cycle_code" name="cycle_code" maxlength="20" value="{{ old('cycle_code', $cycle->cycle_code) }}" required placeholder="Ej. 10 o 20">
+                    @error('cycle_code')<p class="field-error">{{ $message }}</p>@enderror
+                </div>
             </div>
             <div class="form-row">
-                <div><label for="edit_cycle_career">Carrera</label><input class="field" id="edit_cycle_career" name="career" maxlength="255" value="{{ old('career', $cycle->career) }}" required placeholder="Ej. Desarrollo de Software">@error('career')<small class="field-error">{{ $message }}</small>@enderror</div>
-                <div><label for="edit_cycle_semester">Semestre académico</label><input class="field" id="edit_cycle_semester" name="semester" maxlength="60" value="{{ old('semester', $cycle->semester) }}" required placeholder="Ej. IV semestre">@error('semester')<small class="field-error">{{ $message }}</small>@enderror</div>
+                <div>
+                    <label for="edit_cycle_career">Nombre de la carrera <span class="muted">*</span></label>
+                    <input class="field" id="edit_cycle_career" name="career" maxlength="255" value="{{ old('career', $cycle->career) }}" required placeholder="Ej. Desarrollo de Software">
+                    @error('career')<p class="field-error">{{ $message }}</p>@enderror
+                </div>
+                <div>
+                    <label for="edit_cycle_semester">Semestre académico <span class="muted">*</span></label>
+                    <input class="field" id="edit_cycle_semester" name="semester" maxlength="60" value="{{ old('semester', $cycle->semester) }}" required placeholder="Ej. IV semestre">
+                    @error('semester')<p class="field-error">{{ $message }}</p>@enderror
+                </div>
             </div>
             <div class="form-row">
-                <div><label for="edit_cycle_start">Inicio del rango de carga</label><input class="field" id="edit_cycle_start" type="date" name="start_date" value="{{ old('start_date', $cycle->start_date?->format('Y-m-d')) }}" required></div>
-                <div><label for="edit_cycle_end">Fin del rango de carga</label><input class="field" id="edit_cycle_end" type="date" name="end_date" value="{{ old('end_date', $cycle->end_date?->format('Y-m-d')) }}" required></div>
+                <div>
+                    <label for="edit_cycle_start">Fecha de inicio <span class="muted">*</span></label>
+                    <input class="field" id="edit_cycle_start" type="date" name="start_date" value="{{ old('start_date', $cycle->start_date?->format('Y-m-d')) }}" required data-cycle-start>
+                    @error('start_date')<p class="field-error">{{ $message }}</p>@enderror
+                </div>
+                <div>
+                    <label for="edit_cycle_end">Fecha de fin <span class="muted">*</span></label>
+                    <input class="field" id="edit_cycle_end" type="date" name="end_date" value="{{ old('end_date', $cycle->end_date?->format('Y-m-d')) }}" min="{{ old('start_date', $cycle->start_date?->format('Y-m-d')) }}" required data-cycle-end>
+                    @error('end_date')<p class="field-error">{{ $message }}</p>@enderror
+                </div>
             </div>
+            <p class="help mt-16"><x-icon name="calendar-range" size="12" /> La fecha de fin debe ser igual o posterior al inicio.</p>
         </div>
         <div class="dialog-footer"><button class="btn btn-secondary" type="button" data-modal-close><x-icon name="x" /> Cancelar</button><button class="btn" type="submit"><x-icon name="check" /> Guardar cambios</button></div>
     </form>
@@ -318,6 +343,24 @@ html[data-theme="dark"] .cycle-group-state.is-complete{border-color:#365845}
 @push('scripts')
 <script>
 (() => {
+    const cycleStart = document.querySelector('#cycle-edit-dialog [data-cycle-start]');
+    const cycleEnd = document.querySelector('#cycle-edit-dialog [data-cycle-end]');
+
+    if (cycleStart && cycleEnd) {
+        const syncCycleDates = () => {
+            cycleEnd.min = cycleStart.value || '';
+            cycleEnd.setCustomValidity(
+                cycleStart.value && cycleEnd.value && cycleEnd.value < cycleStart.value
+                    ? 'La fecha de fin debe ser igual o posterior al inicio.'
+                    : ''
+            );
+        };
+
+        cycleStart.addEventListener('change', syncCycleDates);
+        cycleEnd.addEventListener('change', syncCycleDates);
+        syncCycleDates();
+    }
+
     const countInput = document.getElementById('group-count');
     const groupFields = document.getElementById('group-fields');
 
