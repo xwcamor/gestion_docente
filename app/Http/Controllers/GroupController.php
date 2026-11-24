@@ -225,7 +225,7 @@ class GroupController extends Controller
     {
         $this->authorizeGroup($group);
         $group->load('cycle');
-        $talkService->ensureScheduled($group);
+        $talkScheduleSummary = $talkService->ensureScheduled($group);
 
         $assignments = $group->assignments()
             ->with(['course', 'curriculum', 'modalities.schedules'])
@@ -362,6 +362,7 @@ class GroupController extends Controller
         $talkAssignedCount = $groupTalks->whereNotNull('scheduled_date')->count();
         $talkDoneCount = $groupTalks->where('status', 'done')->count();
         $talkPendingCount = $groupTalks->count() - $talkDoneCount;
+        $talkUnscheduledCount = $groupTalks->whereNull('scheduled_date')->count();
 
         $rosterStatus = $studentCount > 0 ? 'complete' : 'pending';
         $coursesStatus = $courseCount === 0
@@ -408,7 +409,9 @@ class GroupController extends Controller
             'groupTalks',
             'talkAssignedCount',
             'talkDoneCount',
-            'talkPendingCount'
+            'talkPendingCount',
+            'talkUnscheduledCount',
+            'talkScheduleSummary'
         ));
     }
 

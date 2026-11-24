@@ -446,7 +446,7 @@
         <span class="group-panel-icon group-talk-icon"><x-icon name="clipboard-check" /></span>
         <span class="group-panel-title">
             <strong>Charlas de 5 minutos</strong>
-            <small>Programación exclusiva de {{ $group->name }} según sus propios días de clase</small>
+            <small>Fechas calculadas automáticamente según la carga horaria del grupo</small>
         </span>
         <span class="group-panel-count">{{ $talkDoneCount }} realizadas · {{ $talkPendingCount }} pendientes</span>
         <x-section-status :status="$talkStatus" />
@@ -456,13 +456,27 @@
         <div class="talks-intro">
             <div>
                 <strong>Catálogo institucional</strong>
-                <p>Los temas se toman automáticamente del catálogo oficial. Cada grupo conserva sus propias fechas, estado, asistencia y observaciones. No se mezclan con otros grupos del mismo ciclo.</p>
+                <p>Los temas se distribuyen de forma equilibrada entre las fechas del periodo de carga horaria, en días con clases reales. Se respetan los horarios de cada curso y los feriados; las charlas realizadas conservan su fecha.</p>
             </div>
             @if($groupTalks->isNotEmpty())
                 <form method="POST" action="{{ route('documents.group-talks', $group) }}">
                     @csrf
                     <button class="btn btn-secondary btn-sm" type="submit"><x-icon name="file-text" /> Descargar Excel del grupo</button>
                 </form>
+            @endif
+        </div>
+
+        <div class="talks-period">
+            <x-icon name="calendar-range" size="15" />
+            @if($talkScheduleSummary['range_configured'])
+                <strong>
+                    {{ \Illuminate\Support\Carbon::parse($talkScheduleSummary['range_start'])->format('d/m/Y') }}
+                    – {{ \Illuminate\Support\Carbon::parse($talkScheduleSummary['range_end'])->format('d/m/Y') }}
+                </strong>
+                <span>{{ $talkScheduleSummary['eligible_dates_count'] }} días válidos de clase en el periodo</span>
+            @else
+                <strong>Periodo sin configurar</strong>
+                <span>Completa desde, hasta, días y horario en Carga horaria</span>
             @endif
         </div>
 
@@ -484,7 +498,10 @@
                             <tr>
                                 <td>
                                     @if($talk->scheduled_date)
-                                        <span class="talk-date">{{ $talk->scheduled_date->format('d/m/Y') }}</span>
+                                        <span class="talk-date">
+                                            <small>{{ $talk->scheduled_date->copy()->locale('es')->translatedFormat('l') }}</small>
+                                            <strong>{{ $talk->scheduled_date->format('d/m/Y') }}</strong>
+                                        </span>
                                     @else
                                         <span class="badge badge-orange">Sin fecha</span>
                                     @endif
@@ -508,8 +525,19 @@
                     </tbody>
                 </table>
             </div>
-            @if($groupTalks->whereNull('scheduled_date')->isNotEmpty())
-                <div class="alert alert-warning mt-16">Hay temas sin fecha porque este grupo todavía no tiene suficientes días de clase configurados. Completa los horarios de sus cursos para distribuirlos automáticamente.</div>
+            @if(!$talkScheduleSummary['range_configured'])
+                <div class="alert alert-info mt-16">
+                    Para calcular las fechas automáticamente, completa en <strong>Carga horaria</strong> el inicio, el término, los días asignados y la franja de disponibilidad.
+                </div>
+            @elseif($talkScheduleSummary['eligible_dates_count'] === 0)
+                <div class="alert alert-warning mt-16">
+                    No se encontraron días que coincidan con la carga horaria y los horarios reales de los cursos. Revisa los días, las horas y las fechas de sus modalidades.
+                </div>
+            @elseif($talkUnscheduledCount > 0)
+                <div class="alert alert-warning mt-16">
+                    Se asignaron {{ $talkScheduleSummary['scheduled_pending_count'] }} fechas a las charlas pendientes.
+                    Quedan {{ $talkUnscheduledCount }} sin fecha porque no hay suficientes fechas libres para las charlas pendientes. Amplía el periodo o revisa los días y horarios de disponibilidad.
+                </div>
             @endif
         @else
             <div class="empty"><strong>Este grupo todavía no tiene temas de charla.</strong><span>El catálogo institucional se cargará automáticamente al abrir este grupo.</span></div>
@@ -648,13 +676,18 @@ html[data-theme="dark"] .group-workload-panel[open]>.group-panel-summary{backgro
 .talks-intro strong{display:block;color:#315d4b;font-size:12px}
 .talks-intro p{max-width:650px;margin:4px 0 0;color:#71857a;font-size:10px;line-height:1.55}
 .talks-summary{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 13px}
+.talks-period{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 11px;padding:9px 11px;border:1px solid #dce9e6;border-radius:8px;background:#f5faf8;color:#567166;font-size:10px}
+.talks-period strong{color:#315e4a;font-size:11px}
+.talks-period>span{color:#75877e}
+html[data-theme="dark"] .talks-period{background:#172b25;border-color:#355448;color:#b7d0c1}
+html[data-theme="dark"] .talks-period strong{color:#c5e8d2}
 .talks-summary span{padding:6px 9px;border:1px solid #dfe9e5;border-radius:6px;background:#f8fbfa;color:#688077;font-size:10px}
 .talks-summary strong{color:#32664f;font-size:11px}
 .talks-table-wrap{border:1px solid #e3ece8;border-radius:8px}
 .talks-table{min-width:1050px}
 .talks-table th{background:#eff6f3;color:#557568}
 .talks-table td{vertical-align:middle}
-.talk-date{white-space:nowrap;color:#436957;font-weight:750;font-size:11px}
+.talk-date{display:grid;gap:2px;white-space:nowrap;color:#436957}.talk-date small{color:#75877e;font-size:9px;font-weight:650;text-transform:capitalize}.talk-date strong{font-size:11px;font-weight:800}
 .talk-topic{min-width:260px;color:#344f43;font-size:11px;font-weight:600}
 .talk-execution-form{display:grid;grid-template-columns:115px 130px minmax(170px,1fr) auto;align-items:center;gap:7px;min-width:540px}
 .talk-execution-form .field{min-height:33px;padding:6px 8px;font-size:10px}
