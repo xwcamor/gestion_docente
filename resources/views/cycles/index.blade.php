@@ -77,7 +77,7 @@
                 </div>
             </div>
             <div class="cycle-item-actions">
-                <a class="btn btn-secondary btn-sm" href="{{ route('cycles.show', $cycle) }}">Ver grupos <x-icon name="arrow-right" /></a>
+                <a class="btn btn-secondary btn-sm" href="{{ route('cycles.show', $cycle) }}">Ver ciclo <x-icon name="arrow-right" /></a>
                 <form method="POST" action="{{ route('cycles.destroy', $cycle) }}" data-confirm="Se eliminará este ciclo junto con sus grupos, asignaciones, modalidades, matrículas, sesiones y documentos generados. El catálogo general de cursos y los alumnos que se utilicen en otros grupos se conservarán. Esta acción no se puede deshacer.">
                     @csrf
                     @method('DELETE')
