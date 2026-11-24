@@ -11,7 +11,7 @@ class GeneratedDocument extends Model
     use HasSlugRouteKey;
 
     protected $fillable = [
-        'course_modality_id', 'teaching_group_id', 'document_type', 'version',
+        'course_modality_id', 'teaching_group_id', 'cycle_id', 'document_type', 'version',
         'filename', 'stored_path', 'generated_by', 'metadata',
     ];
 
@@ -33,5 +33,10 @@ class GeneratedDocument extends Model
     public function group(): BelongsTo
     {
         return $this->belongsTo(TeachingGroup::class, 'teaching_group_id');
+    }
+
+    public function cycle(): BelongsTo
+    {
+        return $this->belongsTo(Cycle::class);
     }
 }
