@@ -5,13 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\CourseModality;
 use App\Models\Holiday;
 use App\Services\CalendarService;
+use App\Services\ExcelDocumentService;
 use App\Services\FiveMinuteTalkService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
 class CourseModalityController extends Controller
 {
-    public function show(CourseModality $modality, FiveMinuteTalkService $talkService)
+    public function show(CourseModality $modality, FiveMinuteTalkService $talkService, ExcelDocumentService $excelDocuments)
     {
         $this->owned($modality);
         $modality->load(['assignment.course', 'assignment.group.cycle', 'schedules']);
@@ -21,6 +22,7 @@ class CourseModalityController extends Controller
         $sessionCount = $modality->sessions()->count();
         $scheduledSessionCount = $modality->sessions()->where('status', 'scheduled')->count();
         $documentCount = $modality->documents()->count();
+        $hasCurriculumTopics = $excelDocuments->hasCurriculumTopics($modality);
 
         $hasCourseDates = $modality->start_date !== null && $modality->end_date !== null;
         $classSchedules = $modality->schedules
@@ -98,6 +100,7 @@ class CourseModalityController extends Controller
             'sessionCount',
             'scheduledSessionCount',
             'documentCount',
+            'hasCurriculumTopics',
             'calendarStatus',
             'hasCourseDates',
             'studentsStatus',
