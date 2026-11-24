@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\CourseModality;
 use App\Models\Cycle;
+use App\Models\TeachingGroup;
 use App\Models\GeneratedDocument;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -152,17 +153,19 @@ class ExcelDocumentService
         return $document;
     }
 
-    public function generateFiveMinuteTalks(Cycle $cycle, int $userId): GeneratedDocument
+    public function generateFiveMinuteTalks(TeachingGroup $group, int $userId): GeneratedDocument
     {
-        $talks = $cycle->fiveMinuteTalks()->orderBy('scheduled_date')->orderBy('position')->get();
-        $spreadsheet = app(InstitutionalExcelService::class)->fiveMinuteTalkRegister($cycle);
+        $group->loadMissing('cycle');
+        $talks = $group->fiveMinuteTalks()->orderBy('scheduled_date')->orderBy('position')->get();
+        $spreadsheet = app(InstitutionalExcelService::class)->fiveMinuteTalkRegister($group);
 
         $document = $this->storeWorkbook($spreadsheet, [
             'course_modality_id' => null,
-            'teaching_group_id' => null,
-            'cycle_id' => $cycle->id,
-        ], 'charla', 'Charlas de 5 minutos', $userId, [
-            'cycle' => $cycle->academic_year.'-'.$cycle->cycle_code,
+            'teaching_group_id' => $group->id,
+            'cycle_id' => null,
+        ], 'charla', 'Charlas de 5 minutos '.$group->name, $userId, [
+            'cycle' => $group->cycle->academic_year.'-'.$group->cycle->cycle_code,
+            'group' => $group->name,
             'topics' => $talks->count(),
             'assigned' => $talks->whereNotNull('scheduled_date')->count(),
             'completed' => $talks->where('status', 'done')->count(),
@@ -372,12 +375,14 @@ class ExcelDocumentService
 
         if (!empty($scope['course_modality_id'])) {
             $versionQuery->where('course_modality_id', $scope['course_modality_id']);
+        } elseif (!empty($scope['teaching_group_id'])) {
+            $versionQuery->where('teaching_group_id', $scope['teaching_group_id']);
         } elseif (!empty($scope['cycle_id'])) {
             $versionQuery->where('cycle_id', $scope['cycle_id']);
         }
 
         $version = ((int) $versionQuery->max('version')) + 1;
-        $scopeId = $scope['course_modality_id'] ?? $scope['cycle_id'] ?? 'general';
+        $scopeId = $scope['course_modality_id'] ?? $scope['teaching_group_id'] ?? $scope['cycle_id'] ?? 'general';
         $filename = Str::slug($label).'-'.$scopeId.'-v'.$version.'-'.now()->format('Ymd-His').'-'.Str::lower(Str::random(6)).'.xlsx';
         $storedPath = 'generated-documents/'.$filename;
         $temporaryPath = tempnam(sys_get_temp_dir(), 'gestion-docente-');
