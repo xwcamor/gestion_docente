@@ -28,9 +28,6 @@
     </div>
 </div>
 
-@if(session('success'))
-    <div class="alert alert-success" role="status">{{ session('success') }}</div>
-@endif
 @if($errors->any())
     <div class="alert alert-error" role="alert">
         <strong>No se pudieron guardar los cambios.</strong>

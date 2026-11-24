@@ -34,9 +34,6 @@
     </div>
 </div>
 
-@if(session('success'))
-    <div class="alert alert-success" role="status">{{ session('success') }}</div>
-@endif
 @if($errors->any() && request()->boolean('talks'))
     <div class="alert alert-error" role="alert">
         <strong>No se pudo distribuir las charlas:</strong>
@@ -251,7 +248,7 @@
     @endif
 </section>
 
-<dialog class="ui-dialog sheet-dialog" id="cycle-edit-dialog" aria-labelledby="cycle-edit-title" data-backdrop-close @if(request('dialog') === 'edit-cycle') data-auto-open @endif>
+<dialog class="ui-dialog sheet-dialog" id="cycle-edit-dialog" aria-labelledby="cycle-edit-title" @if(request('dialog') === 'edit-cycle') data-auto-open @endif>
     <div class="dialog-head">
         <div><h2 id="cycle-edit-title">Editar ciclo</h2><p>{{ $cycle->academic_year }} · Ciclo {{ $cycle->cycle_code }}</p></div>
         <button class="dialog-close" type="button" data-modal-close aria-label="Cerrar"><x-icon name="x" /></button>
@@ -276,7 +273,7 @@
     </form>
 </dialog>
 
-<dialog class="ui-dialog sheet-dialog" id="group-create-dialog" aria-labelledby="group-create-title" data-backdrop-close @if(request()->boolean('nuevo_grupo') || ($errors->any() && !request('dialog') && !request()->boolean('talks'))) data-auto-open @endif>
+<dialog class="ui-dialog sheet-dialog" id="group-create-dialog" aria-labelledby="group-create-title" @if(request()->boolean('nuevo_grupo') || ($errors->any() && !request('dialog') && !request()->boolean('talks'))) data-auto-open @endif>
     <div class="dialog-head">
         <div><h2 id="group-create-title">Agregar grupo</h2><p>{{ $cycle->academic_year }} · Ciclo {{ $cycle->cycle_code }}</p></div>
         <button class="dialog-close" type="button" data-modal-close aria-label="Cerrar"><x-icon name="x" /></button>
@@ -301,7 +298,7 @@
     </form>
 </dialog>
 
-<dialog class="ui-dialog sheet-dialog" id="group-edit-dialog" aria-labelledby="group-edit-title" data-backdrop-close>
+<dialog class="ui-dialog sheet-dialog" id="group-edit-dialog" aria-labelledby="group-edit-title">
     <div class="dialog-head">
         <div><h2 id="group-edit-title">Editar grupo</h2><p>Actualiza el nombre o la fecha de asignación.</p></div>
         <button class="dialog-close" type="button" data-modal-close aria-label="Cerrar"><x-icon name="x" /></button>

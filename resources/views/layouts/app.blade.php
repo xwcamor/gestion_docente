@@ -642,6 +642,48 @@ html[data-theme="dark"] .modal-step-index{background:#203641;border-color:#42607
 .btn:not(.btn-secondary):not(.btn-ghost):not(.btn-danger):not(.btn-success):hover{border-color:var(--accent-hover);background:var(--accent-hover)}
 html[data-theme="dark"] .nav-link.active,html[data-theme="dark"] .nav-link:hover{background:color-mix(in srgb,var(--accent) 20%,#14222c)!important;color:#fff!important}
 
+
+/* Aviso global único: animado, visible y fuera del flujo de la página */
+.app-notice-wrap{position:fixed;top:76px;right:22px;z-index:120;display:grid;width:min(420px,calc(100vw - 28px));pointer-events:none}
+.app-notice{position:relative;display:flex;align-items:center;gap:12px;min-width:0;padding:15px 16px 17px;overflow:hidden;border:1px solid #b9e0c8;border-left:4px solid #23834d;border-radius:12px;background:#fff;color:#203d2d;box-shadow:0 16px 42px rgba(18,47,31,.18);pointer-events:auto;animation:notice-enter .42s cubic-bezier(.18,.89,.32,1.22) both}
+.app-notice-icon{width:39px;height:39px;flex:none;display:grid;place-items:center;border-radius:50%;background:#e5f6eb;color:#17713e;animation:notice-pop .48s .08s cubic-bezier(.18,.89,.32,1.35) both}
+.app-notice-copy{flex:1;min-width:0}
+.app-notice-copy strong{display:block;color:#185d35;font-size:12px;font-weight:800;line-height:1.35}
+.app-notice-copy p{margin:3px 0 0;color:#526d5c;font-size:11px;line-height:1.5;overflow-wrap:anywhere}
+.app-notice-close{width:28px;height:28px;flex:none;display:grid;place-items:center;border:0;border-radius:7px;background:transparent;color:#668273;cursor:pointer}
+.app-notice-close:hover{background:#edf7f0;color:#185d35}
+.app-notice-progress{position:absolute;right:0;bottom:0;left:0;height:3px;background:#e7f3eb}
+.app-notice-progress>span{display:block;width:100%;height:100%;transform-origin:left;background:#32925b;animation:notice-progress 5.2s linear both}
+.app-notice-error{border-color:#ecc4c1;border-left-color:#b93b3b;background:#fff;color:#572222}
+.app-notice-error .app-notice-icon{background:#fde9e7;color:#a92f2f}
+.app-notice-error .app-notice-copy strong{color:#9d2929}
+.app-notice-error .app-notice-copy p{color:#774646}
+.app-notice-error .app-notice-progress{background:#f8e5e3}
+.app-notice-error .app-notice-progress>span{background:#be4141;animation:none}
+.app-notice-info{border-color:#c7ddea;border-left-color:#347da4;background:#fff;color:#24465b}
+.app-notice-info .app-notice-icon{background:#e7f3f9;color:#286b91}
+.app-notice-info .app-notice-copy strong{color:#245e7e}
+.app-notice-info .app-notice-copy p{color:#587184}
+.app-notice-info .app-notice-progress{background:#e6f1f7}
+.app-notice-info .app-notice-progress>span{background:#4389b1}
+.app-notice.is-leaving{animation:notice-exit .24s ease-in both}
+@keyframes notice-enter{from{opacity:0;transform:translate3d(0,-16px,0) scale(.97)}to{opacity:1;transform:translate3d(0,0,0) scale(1)}}
+@keyframes notice-pop{0%{transform:scale(.5);opacity:.4}70%{transform:scale(1.12)}100%{transform:scale(1)}}
+@keyframes notice-progress{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+@keyframes notice-exit{to{opacity:0;transform:translate3d(0,-8px,0) scale(.98)}}
+html[data-theme="dark"] .app-notice{background:#17282f;border-color:#335a45;color:#dbece0;box-shadow:0 16px 42px rgba(0,0,0,.42)}
+html[data-theme="dark"] .app-notice-copy strong{color:#a9e2bd}
+html[data-theme="dark"] .app-notice-copy p{color:#bdd0c3}
+html[data-theme="dark"] .app-notice-icon{background:#1e3b2b;color:#9ee2b4}
+html[data-theme="dark"] .app-notice-error{background:#2d1c20;border-color:#704045}
+html[data-theme="dark"] .app-notice-error .app-notice-copy strong{color:#ffb8b2}
+html[data-theme="dark"] .app-notice-error .app-notice-copy p{color:#e7b8b5}
+html[data-theme="dark"] .app-notice-info{background:#182a35;border-color:#35566b}
+html[data-theme="dark"] .app-notice-info .app-notice-copy strong{color:#a9d8ef}
+html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
+@media(max-width:600px){.app-notice-wrap{top:62px;right:10px;width:calc(100vw - 20px)}.app-notice{padding:12px 13px 15px;gap:9px}.app-notice-icon{width:34px;height:34px}}
+@media(prefers-reduced-motion:reduce){.app-notice,.app-notice-icon,.app-notice-progress>span{animation:none!important}}
+
 </style>
     @stack('styles')
 </head>
@@ -758,33 +800,41 @@ html[data-theme="dark"] .nav-link.active,html[data-theme="dark"] .nav-link:hover
         </div>
     </aside>
     <main class="main">
-        @if(session('success') || session('error') || session('info') || $errors->any())
-        <div class="flash-stack" aria-live="polite" aria-atomic="false">
-            @if(session('success'))
-                <div class="flash flash-success" role="status"><span class="flash-mark" aria-hidden="true"><x-icon name="check" size="12" /></span><div class="flash-content"><strong>Listo</strong>{{ session('success') }}</div><button class="flash-close" type="button" data-alert-close aria-label="Cerrar mensaje"><x-icon name="x" size="13" /></button></div>
-            @endif
-            @if(session('error'))
-                <div class="flash flash-error" role="alert"><span class="flash-mark" aria-hidden="true"><x-icon name="circle-alert" size="12" /></span><div class="flash-content"><strong>No se pudo completar</strong>{{ session('error') }}</div><button class="flash-close" type="button" data-alert-close aria-label="Cerrar mensaje">×</button></div>
-            @endif
-            @if(session('info'))
-                <div class="flash flash-info" role="status"><span class="flash-mark" aria-hidden="true"><x-icon name="info" size="12" /></span><div class="flash-content">{{ session('info') }}</div><button class="flash-close" type="button" data-alert-close aria-label="Cerrar mensaje">×</button></div>
-            @endif
-            @if($errors->any())
-                <div class="flash flash-error" role="alert"><span class="flash-mark" aria-hidden="true"><x-icon name="circle-alert" size="12" /></span><div class="flash-content"><strong>Revisa los datos ingresados</strong><ul style="margin:5px 0 0;padding-left:17px">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div><button class="flash-close" type="button" data-alert-close aria-label="Cerrar mensaje">×</button></div>
-            @endif
-        </div>
-        @endif
+
         @yield('content')
     </main>
 </div>
 
-<dialog class="ui-dialog confirm-dialog" id="app-confirm-dialog" aria-labelledby="app-confirm-title" data-backdrop-close>
+@if(session('success') || session('error') || session('info'))
+    @php
+        $noticeType = session('error') ? 'error' : (session('info') ? 'info' : 'success');
+        $noticeTitle = $noticeType === 'error' ? 'No se pudo completar' : ($noticeType === 'info' ? 'Información' : '¡Listo! Se guardó correctamente');
+        $noticeMessage = session('error') ?? session('info') ?? session('success');
+    @endphp
+    <div class="app-notice-wrap" aria-live="polite" aria-atomic="true">
+        <section class="app-notice app-notice-{{ $noticeType }}" id="app-notice" role="{{ $noticeType === 'error' ? 'alert' : 'status' }}">
+            <span class="app-notice-icon" aria-hidden="true">
+                @if($noticeType === 'error')<x-icon name="circle-alert" size="20" />
+                @elseif($noticeType === 'info')<x-icon name="info" size="20" />
+                @else<x-icon name="check" size="20" />@endif
+            </span>
+            <div class="app-notice-copy">
+                <strong>{{ $noticeTitle }}</strong>
+                <p>{{ $noticeMessage }}</p>
+            </div>
+            <button class="app-notice-close" type="button" data-alert-close aria-label="Cerrar aviso"><x-icon name="x" size="15" /></button>
+            <span class="app-notice-progress" aria-hidden="true"><span></span></span>
+        </section>
+    </div>
+@endif
+
+<dialog class="ui-dialog confirm-dialog" id="app-confirm-dialog" aria-labelledby="app-confirm-title">
     <div class="dialog-head"><div><h2 id="app-confirm-title">Confirmar acción</h2><p id="app-confirm-message">¿Deseas continuar?</p></div><button class="dialog-close" type="button" data-modal-close aria-label="Cerrar"><x-icon name="x" size="15" /></button></div>
     <div class="dialog-footer"><button class="btn btn-secondary" type="button" data-modal-close>Cancelar</button><button class="btn" type="button" id="app-confirm-submit"><x-icon name="check" /> Continuar</button></div>
 </dialog>
 
 
-<dialog class="ui-dialog sheet-dialog" id="workflow-help-dialog" aria-labelledby="workflow-help-title" data-backdrop-close>
+<dialog class="ui-dialog sheet-dialog" id="workflow-help-dialog" aria-labelledby="workflow-help-title">
     <div class="dialog-head">
         <div>
             <p class="eyebrow">Ayuda rápida</p>
@@ -878,6 +928,16 @@ html[data-theme="dark"] .nav-link.active,html[data-theme="dark"] .nav-link:hover
 
     let pendingForm = null;
     let lastModalTrigger = null;
+    const dismissNotice = notice => {
+        if (!notice || notice.classList.contains('is-leaving')) return;
+        notice.classList.add('is-leaving');
+        window.setTimeout(() => notice.remove(), 250);
+    };
+    const activeNotice = document.getElementById('app-notice');
+    if (activeNotice && !activeNotice.classList.contains('app-notice-error')) {
+        window.setTimeout(() => dismissNotice(activeNotice), 5200);
+    }
+
     const confirmDialog = document.getElementById('app-confirm-dialog');
     const confirmMessage = document.getElementById('app-confirm-message');
     const confirmSubmit = document.getElementById('app-confirm-submit');
@@ -895,12 +955,10 @@ html[data-theme="dark"] .nav-link.active,html[data-theme="dark"] .nav-link:hover
         const closer = event.target.closest('[data-modal-close]');
         if (closer) closer.closest('dialog')?.close();
         const alertClose = event.target.closest('[data-alert-close]');
-        if (alertClose) alertClose.closest('.flash')?.remove();
-    });
-
-    document.addEventListener('click', event => {
-        if (event.target instanceof HTMLDialogElement && event.target.hasAttribute('data-backdrop-close')) {
-            event.target.close();
+        if (alertClose) {
+            const notice = alertClose.closest('.app-notice');
+            if (notice) dismissNotice(notice);
+            else alertClose.closest('.flash')?.remove();
         }
     });
 
@@ -928,6 +986,8 @@ html[data-theme="dark"] .nav-link.active,html[data-theme="dark"] .nav-link:hover
 
     confirmDialog?.addEventListener('close', () => { pendingForm = null; });
     document.querySelectorAll('dialog').forEach(dialog => {
+        // Escape no cierra el modal: debe usarse el botón Cerrar o Cancelar.
+        dialog.addEventListener('cancel', event => event.preventDefault());
         dialog.addEventListener('close', () => {
             if (lastModalTrigger?.isConnected) lastModalTrigger.focus();
         });

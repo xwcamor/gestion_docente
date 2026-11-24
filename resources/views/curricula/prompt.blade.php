@@ -9,10 +9,6 @@
     <a class="btn btn-secondary" href="{{ route('curricula.show',$assignment) }}"><x-icon name="arrow-left" /> Volver</a>
 </div>
 
-@if(session('success'))
-    <div class="alert alert-success" role="status">{{ session('success') }}</div>
-@endif
-
 <div class="grid grid-3">
     <div class="card"><div class="stat-label">Versión del prompt</div><div class="stat" style="font-size:20px">{{ $promptVersion }}</div></div>
     <div class="card"><div class="stat-label">Fecha y hora de generación</div><strong>{{ $promptGeneratedAt->format('d/m/Y H:i:s P') }}</strong></div>

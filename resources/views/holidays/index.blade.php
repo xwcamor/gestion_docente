@@ -192,7 +192,7 @@
 @endunless
 
 @if($isCalendarView)
-<dialog class="ui-dialog sheet-dialog" id="calendar-day-dialog" aria-labelledby="calendar-day-title" data-backdrop-close>
+<dialog class="ui-dialog sheet-dialog" id="calendar-day-dialog" aria-labelledby="calendar-day-title">
     <div class="dialog-head">
         <div>
             <h2 id="calendar-day-title">Detalle de la fecha</h2>
@@ -215,7 +215,7 @@
 </dialog>
 @endif
 
-<dialog class="ui-dialog sheet-dialog" id="holiday-create-dialog" aria-labelledby="holiday-create-title" data-backdrop-close @if($errors->any()) data-auto-open @endif>
+<dialog class="ui-dialog sheet-dialog" id="holiday-create-dialog" aria-labelledby="holiday-create-title" @if($errors->any()) data-auto-open @endif>
     <div class="dialog-head">
         <div>
             <h2 id="holiday-create-title">Registrar feriado o cierre</h2>

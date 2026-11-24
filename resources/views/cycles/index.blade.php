@@ -21,10 +21,6 @@
     </div>
 </div>
 
-@if(session('success'))
-    <div class="alert alert-success" role="status">{{ session('success') }}</div>
-@endif
-
 <div class="grid grid-3" style="margin-bottom:16px">
     <div class="stat-card">
         <div class="stat-top"><span class="stat-label">Ciclos registrados</span><span class="stat-icon"><x-icon name="calendar-days" /></span></div>
@@ -102,7 +98,7 @@
     @endif
 </section>
 
-<dialog class="ui-dialog sheet-dialog" id="cycle-create-dialog" aria-labelledby="cycle-create-title" data-backdrop-close @if(request()->boolean('nuevo') || $errors->any()) data-auto-open @endif>
+<dialog class="ui-dialog sheet-dialog" id="cycle-create-dialog" aria-labelledby="cycle-create-title" @if(request()->boolean('nuevo') || $errors->any()) data-auto-open @endif>
     <div class="dialog-head">
         <div>
             <h2 id="cycle-create-title">Crear ciclo académico</h2>
