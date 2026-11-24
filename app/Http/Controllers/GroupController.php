@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Cycle;
 use App\Models\TeachingGroup;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class GroupController extends Controller
 {
@@ -23,29 +25,63 @@ class GroupController extends Controller
     public function store(Request $request, Cycle $cycle)
     {
         $this->authorizeCycle($cycle);
-        $request->merge(['name' => trim((string) $request->input('name'))]);
+
+        // Compatibilidad: un formulario antiguo que envíe "name" sigue creando un grupo.
+        $groupsInput = $request->input('groups');
+        if (!is_array($groupsInput)) {
+            $groupsInput = [[
+                'name' => $request->input('name'),
+                'assigned_at' => $request->input('assigned_at'),
+            ]];
+        }
+
+        $request->merge(['groups' => $groupsInput]);
 
         $data = $request->validate(
             [
-                'name' => [
+                'groups' => ['required', 'array', 'min:1', 'max:30'],
+                'groups.*.name' => [
                     'required',
                     'string',
                     'max:100',
                     Rule::unique('teaching_groups', 'name')
                         ->where(fn ($query) => $query->where('cycle_id', $cycle->id)),
                 ],
-                'assigned_at' => ['nullable', 'date'],
+                'groups.*.assigned_at' => ['nullable', 'date'],
             ],
-            ['name.unique' => 'Ya existe un grupo con ese nombre en este ciclo.']
+            [
+                'groups.*.name.required' => 'Escribe el nombre de cada grupo.',
+                'groups.*.name.unique' => 'Ya existe un grupo con ese nombre en este ciclo.',
+                'groups.max' => 'Puedes crear hasta 30 grupos por vez.',
+            ]
         );
 
-        $group = $cycle->groups()->create([
-            'professor_id' => $cycle->professor_id,
-            ...$data,
-        ]);
+        $groups = collect($data['groups'])->map(fn ($group) => [
+            'name' => trim($group['name']),
+            'assigned_at' => $group['assigned_at'] ?? null,
+        ])->values();
 
-        return redirect()->route('groups.show', $group)
-            ->with('success', 'Grupo creado correctamente.');
+        $normalizedNames = $groups->pluck('name')->map(fn ($name) => mb_strtolower($name));
+        if ($normalizedNames->unique()->count() !== $normalizedNames->count()) {
+            throw ValidationException::withMessages([
+                'groups' => 'Hay nombres repetidos en la lista. Corrígelos antes de guardar.',
+            ]);
+        }
+
+        DB::transaction(function () use ($groups, $cycle) {
+            foreach ($groups as $groupData) {
+                $cycle->groups()->create([
+                    'professor_id' => $cycle->professor_id,
+                    'name' => $groupData['name'],
+                    'assigned_at' => $groupData['assigned_at'],
+                ]);
+            }
+        });
+
+        $count = $groups->count();
+
+        return redirect()->route('cycles.show', $cycle)
+            ->with('success', $count.' '.($count === 1 ? 'grupo creado' : 'grupos creados').' correctamente.');
     }
 
     public function update(Request $request, TeachingGroup $group)
