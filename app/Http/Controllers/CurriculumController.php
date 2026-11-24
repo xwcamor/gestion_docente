@@ -18,30 +18,7 @@ class CurriculumController extends Controller
     {
         $this->owned($assignment);
 
-        $curricula = Curriculum::with(['tasks.operations', 'weeks.task', 'weeks.contentItems'])
-            ->where('course_id', $assignment->course_id)
-            ->where('professor_id', auth()->user()->professor->id)
-            ->orderByDesc('version')
-            ->get();
-
-        $activeCurriculum = $curricula->firstWhere('is_active', true);
-        $suggestions = $activeCurriculum
-            ? $activeCurriculum->weeks->flatMap->contentItems
-                ->where('source_kind', 'AI_SUGGESTION')
-                ->values()
-            : collect();
-
-        $suggestionStats = [
-            'total' => $suggestions->count(),
-            'pending' => $suggestions->where('approved', false)->count(),
-        ];
-
-        return view('curricula.index', compact(
-            'assignment',
-            'curricula',
-            'activeCurriculum',
-            'suggestionStats'
-        ));
+        return view('curricula.index', compact('assignment'));
     }
 
     public function extractGet(CourseAssignment $assignment)
