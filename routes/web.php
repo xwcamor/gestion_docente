@@ -39,6 +39,8 @@ Route::middleware(['auth', 'professor'])->group(function () {
     Route::get('/grupos/{group}/carga-rapida', [QuickCourseEntryController::class, 'create'])->name('assignments.quick');
     Route::post('/grupos/{group}/carga-rapida', [QuickCourseEntryController::class, 'store'])->name('assignments.quick.store');
     Route::post('/grupos/{group}/cursos', [CourseAssignmentController::class, 'store'])->name('assignments.store');
+    Route::post('/grupos/{group}/alumnos/previsualizar', [StudentImportController::class, 'previewGroup'])->name('groups.students.preview');
+    Route::post('/grupos/{group}/alumnos/confirmar', [StudentImportController::class, 'confirmGroup'])->name('groups.students.confirm');
 
     Route::get('/asignaciones/{assignment}/malla-curricular', [CurriculumController::class, 'show'])->name('curricula.show');
     Route::post('/asignaciones/{assignment}/malla-curricular/extraer', [CurriculumController::class, 'extract'])->name('curricula.extract');
