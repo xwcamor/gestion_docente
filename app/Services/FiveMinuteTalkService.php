@@ -82,11 +82,17 @@ class FiveMinuteTalkService
         ) {
             $now = now();
 
-            // Use the current roster only as an initial value. Once a talk has
-            // its own participant count, preserve it as an editable execution record.
+            // Initialize legacy pending talks that were created before the roster
+            // existed. Preserve positive per-talk edits and completed execution records.
             DB::table('group_five_minute_talks')
                 ->where('teaching_group_id', $group->id)
-                ->whereNull('participant_count')
+                ->where(function ($query) {
+                    $query->whereNull('participant_count')
+                        ->orWhere(function ($query) {
+                            $query->where('status', 'pending')
+                                ->where('participant_count', 0);
+                        });
+                })
                 ->update([
                     'participant_count' => $participantCount,
                     'updated_at' => $now,
