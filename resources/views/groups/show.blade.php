@@ -28,6 +28,13 @@
     </div>
 </div>
 
+@if($errors->any())
+    <div class="alert alert-error" role="alert">
+        <strong>No se pudo procesar el archivo:</strong>
+        <ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+    </div>
+@endif
+
 <div class="grid grid-3" style="margin-bottom:17px">
     <div class="stat-card">
         <div class="stat-top"><span class="stat-label">Cursos</span><span class="stat-icon"><x-icon name="book-open" /></span></div>
