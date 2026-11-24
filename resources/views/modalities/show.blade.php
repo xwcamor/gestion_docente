@@ -62,13 +62,27 @@
 </section>
 
 <section class="card" id="students">
-    <div class="card-head"><div><h2>Alumnos del campus</h2><p class="card-description">Importa el archivo original que recibes de la plataforma. Primero revisarás una vista previa.</p></div><span class="badge">{{ $enrollmentsCount }} alumnos</span></div>
-    <form method="POST" enctype="multipart/form-data" action="{{ route('students.preview', $modality) }}">
-        @csrf
-        <label for="roster">Archivo de alumnos (.xls, .xlsx o .csv)</label>
-        <input class="field" id="roster" type="file" name="roster" accept=".xls,.xlsx,.csv,.txt" required>
-        <div class="actions mt-16"><button class="btn" type="submit"><x-icon name="file-text" /> Seleccionar archivo y revisar</button>@if($import)<span class="help">Última importación: {{ $import->original_filename }} · {{ $import->created_count }} nuevos · {{ $import->updated_count }} actualizados · {{ $import->skipped_count }} omitidos.</span>@endif</div>
-    </form>
+    <div class="card-head">
+        <div>
+            <h2>Padrón compartido del grupo</h2>
+            <p class="card-description">Los alumnos se cargan una sola vez desde el grupo. Este curso mantiene su propia matrícula, notas y evaluaciones.</p>
+        </div>
+        <span class="badge">{{ $enrollmentsCount }} matrículas en este curso</span>
+    </div>
+    <div class="grid grid-2">
+        <div class="stat-card">
+            <div class="stat-label">Alumnos registrados en el grupo</div>
+            <div class="stat">{{ $assignment->group->students()->count() }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Alumnos vinculados a este curso</div>
+            <div class="stat">{{ $enrollmentsCount }}</div>
+        </div>
+    </div>
+    <p class="help mt-16">Para agregar o actualizar estudiantes, abre el padrón del grupo. El sistema crea las matrículas que falten sin copiar calificaciones entre cursos.</p>
+    <div class="actions mt-16">
+        <a class="btn" href="{{ route('groups.show', $assignment->group) }}#group-roster"><x-icon name="users" /> Administrar padrón del grupo</a>
+    </div>
 </section>
 
 <section class="card" id="documents">
