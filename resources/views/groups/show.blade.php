@@ -115,7 +115,7 @@
         @if($students->isNotEmpty())
             <div class="roster-list-head">
                 <div><strong>Alumnos registrados</strong><small>Usa Editar para cambiar los datos sin salir de esta tabla.</small></div>
-                <input class="filter-input roster-search" id="student-search" type="search" placeholder="Buscar alumno…" aria-label="Buscar alumno">
+                <input class="filter-input roster-search" id="student-search" type="search" placeholder="Buscar en esta página…" aria-label="Buscar alumno en esta página">
             </div>
             <div class="table-wrap roster-table-wrap">
                 <table class="roster-table">
