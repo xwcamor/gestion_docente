@@ -297,19 +297,21 @@
 .weekly-load-block.is-theory{border:1px solid #cfe2eb;background:#edf6fa;color:#2e667d}
 .weekly-load-block.is-lab{border:1px solid #cfe4d5;background:#eff7f1;color:#326b49}
 .weekly-load-empty{color:#a0aaa4;font-size:9px}
-.schedule-config-panel{margin-top:10px}
-.schedule-editor-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px 0 9px}
-.schedule-editor-heading h3{margin:0 0 3px}
+.schedule-config-panel{margin-top:8px}
+.schedule-editor-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 0 7px}
+.schedule-editor-heading h3{margin:0 0 2px}
 .schedule-editor-heading .help{margin:0}
-.schedule-editor{display:grid;gap:8px}
-.schedule-row{display:grid;grid-template-columns:minmax(240px,1.5fr .8fr .8fr 1.1fr auto);align-items:end;gap:9px;padding:10px;border:1px solid #e0e8e5;border-radius:8px;background:#fbfcfb}
+.schedule-editor{display:grid;gap:6px}
+.schedule-row{display:grid;grid-template-columns:minmax(300px,1.7fr) minmax(125px,.8fr) minmax(110px,.7fr) minmax(110px,.7fr) minmax(145px,1fr) auto;align-items:end;gap:7px;padding:8px;border:1px solid #e0e8e5;border-radius:8px;background:#fbfcfb}
+.schedule-days-field{min-width:0}
 .schedule-days-options{display:flex;align-items:center;flex-wrap:wrap;gap:4px}
-.schedule-days-options .weekday{margin:0;padding:5px 6px;font-size:9px}
+.schedule-days-options .weekday{margin:0;padding:4px 5px;font-size:9px}
 .schedule-days-options .weekday input{width:13px;height:13px}
-.schedule-row label{margin-top:0;font-size:10px}
-.schedule-row .field{min-height:37px;font-size:11px}
-.schedule-remove-cell .btn{min-height:37px}
-.schedule-editor-actions{margin:9px 0 0}
+.schedule-row label{margin-top:0;font-size:9px}
+.schedule-row .field{min-height:35px;font-size:11px}
+.schedule-remove-cell .btn{min-height:35px;padding:6px 8px}
+.schedule-editor-actions{margin:7px 0 0}
+@media(min-width:1051px){.schedule-days-options{flex-wrap:nowrap}}
 .calendar-preview{margin-top:18px;padding:16px;border:1px solid #cfe1e9;border-radius:9px;background:linear-gradient(135deg,#eff7fa,#f8fbfc)}
 .calendar-preview-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
 .calendar-preview-head strong{color:#274b5b;font-size:13px}
