@@ -52,8 +52,12 @@ class QuickCourseEntryController extends Controller
                     'TALL' => trim((string) ($row['tall_code'] ?? '')),
                 ];
                 $hasAnyCode = $codes['TEC'] !== '' || $codes['TALL'] !== '';
+                $hasAnyDate = filled($row['tec_start_date'] ?? null)
+                    || filled($row['tec_end_date'] ?? null)
+                    || filled($row['tall_start_date'] ?? null)
+                    || filled($row['tall_end_date'] ?? null);
 
-                if ($courseName === '' && !$hasAnyCode) {
+                if ($courseName === '' && !$hasAnyCode && !$hasAnyDate) {
                     continue;
                 }
 
@@ -64,7 +68,10 @@ class QuickCourseEntryController extends Controller
                 }
 
                 if (!$hasAnyCode) {
-                    $validator->errors()->add("rows.{$index}.tec_code", 'Ingresa al menos un código: TEC o TAL.');
+                    $message = $hasAnyDate
+                        ? 'Ingresa el código TEC o TAL antes de indicar sus fechas.'
+                        : 'Ingresa al menos un código: TEC o TAL.';
+                    $validator->errors()->add("rows.{$index}.tec_code", $message);
                     continue;
                 }
 
@@ -114,12 +121,15 @@ class QuickCourseEntryController extends Controller
 
                     $parsedByType[$type] = $parsed;
 
-                    if (filled($startDate) xor filled($endDate)) {
+                    $hasStartDate = filled($startDate);
+                    $hasEndDate = filled($endDate);
+
+                    if ($hasStartDate !== $hasEndDate) {
                         $validator->errors()->add(
                             "rows.{$index}.{$prefix}_end_date",
                             "Completa Desde y Hasta de {$type}, o deja ambas fechas vacías."
                         );
-                    } elseif (filled($startDate) && filled($endDate) && $endDate < $startDate) {
+                    } elseif ($hasStartDate && $hasEndDate && $endDate < $startDate) {
                         $validator->errors()->add(
                             "rows.{$index}.{$prefix}_end_date",
                             "La fecha Hasta de {$type} no puede ser anterior a Desde."
@@ -207,7 +217,12 @@ class QuickCourseEntryController extends Controller
                     $errors = [];
 
                     foreach ($exception->errors() as $field => $messages) {
-                        $target = $field === 'course_name' ? 'course_name' : 'tec_code';
+                        $target = match ($field) {
+                            'course_name' => 'course_name',
+                            default => filled($row['tall_code'] ?? null) && blank($row['tec_code'] ?? null)
+                                ? 'tall_code'
+                                : 'tec_code',
+                        };
                         $errors["rows.{$index}.{$target}"] = $messages;
                     }
 
