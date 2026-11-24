@@ -33,7 +33,7 @@
         <div class="actions"><a class="btn btn-secondary btn-sm" href="{{ route('groups.show',$assignment->group) }}"><x-icon name="book-open" /> Ir a cursos</a><a class="btn btn-secondary btn-sm" href="#suggestions" data-filter="TALL"><x-icon name="graduation-cap" /> Revisar taller</a></div>
     </article>
 </section>
-<dialog class="ui-dialog sheet-dialog" id="curriculum-help-dialog" aria-labelledby="curriculum-help-title" data-backdrop-close>
+<dialog class="ui-dialog sheet-dialog" id="curriculum-help-dialog" aria-labelledby="curriculum-help-title">
     <div class="dialog-head">
         <div><p class="eyebrow">Ayuda de malla curricular</p><h2 id="curriculum-help-title">Cómo completar la programación</h2><p>Este resumen te orienta; puedes cerrar y seguir trabajando cuando quieras.</p></div>
         <button class="dialog-close" type="button" data-modal-close aria-label="Cerrar"><x-icon name="x" /></button>

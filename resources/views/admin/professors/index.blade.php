@@ -126,7 +126,7 @@
     @endif
 </section>
 
-<dialog class="ui-dialog sheet-dialog" id="account-create-dialog" aria-labelledby="account-create-title" data-backdrop-close @if($errors->any() && request('dialog') !== 'edit-account') data-auto-open @endif>
+<dialog class="ui-dialog sheet-dialog" id="account-create-dialog" aria-labelledby="account-create-title" @if($errors->any() && request('dialog') !== 'edit-account') data-auto-open @endif>
     <div class="dialog-head">
         <div>
             <h2 id="account-create-title">Crear cuenta docente</h2>
@@ -187,7 +187,7 @@
     </form>
 </dialog>
 
-<dialog class="ui-dialog sheet-dialog" id="account-edit-dialog" aria-labelledby="account-edit-title" data-backdrop-close @if(request('dialog') === 'edit-account' && $errors->any()) data-auto-open @endif>
+<dialog class="ui-dialog sheet-dialog" id="account-edit-dialog" aria-labelledby="account-edit-title" @if(request('dialog') === 'edit-account' && $errors->any()) data-auto-open @endif>
  <div class="dialog-head"><div><h2 id="account-edit-title">Editar perfil docente</h2><p>Actualiza los datos de acceso y del perfil.</p></div><button class="dialog-close" type="button" data-modal-close aria-label="Cerrar"><x-icon name="x" /></button></div>
  <form method="POST" action="#" id="account-edit-form" data-loading-form="1">
   @csrf
