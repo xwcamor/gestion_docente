@@ -88,7 +88,7 @@
             <small>Una sola lista para todos los cursos del grupo</small>
         </span>
         <span class="group-panel-count">{{ number_format($studentCount) }} alumnos</span>
-        <x-icon name="chevron-down" class="group-panel-chevron" />
+        <x-icon name="chevron-right" class="group-panel-chevron" />
     </summary>
     <div class="group-panel-body">
         <div class="roster-toolbar">
@@ -105,7 +105,7 @@
 
         @if($lastRosterImport)
             <div class="import-summary">
-                <span><x-icon name="file-check" /> Última carga: <strong>{{ $lastRosterImport->original_filename }}</strong></span>
+                <span><x-icon name="file-text" /> Última carga: <strong>{{ $lastRosterImport->original_filename }}</strong></span>
                 <span>{{ $lastRosterImport->created_count }} nuevos</span>
                 <span>{{ $lastRosterImport->updated_count }} actualizados</span>
                 <span>{{ $lastRosterImport->skipped_count }} omitidos</span>
@@ -152,7 +152,7 @@
                                     @method('PATCH')
                                     <input type="hidden" name="editing_student_id" value="{{ $student->id }}">
                                     <input type="hidden" name="students_page" value="{{ request('students_page', 1) }}">
-                                    <button class="btn btn-ghost btn-sm" type="button" data-student-edit @if($editing) hidden @endif><x-icon name="pencil" /> Editar</button>
+                                    <button class="btn btn-ghost btn-sm" type="button" data-student-edit @if($editing) hidden @endif><x-icon name="file-text" /> Editar</button>
                                     <button class="btn btn-sm" type="submit" data-student-save @unless($editing) hidden @endunless><x-icon name="check" /> Guardar</button>
                                     <button class="btn btn-ghost btn-sm" type="button" data-student-cancel @unless($editing) hidden @endunless>Cancelar</button>
                                 </form>
@@ -184,7 +184,7 @@
             <small>Consulta NRC, modalidad, malla y avance de configuración</small>
         </span>
         <span class="group-panel-count">{{ number_format($courseCount) }} cursos</span>
-        <x-icon name="chevron-down" class="group-panel-chevron" />
+        <x-icon name="chevron-right" class="group-panel-chevron" />
     </summary>
     <div class="group-panel-body">
         @if($assignments->isNotEmpty())
@@ -215,7 +215,7 @@
                                 <form method="POST" action="{{ route('assignments.destroy', $assignment) }}" data-confirm="Se retirará este curso de {{ $group->name }} junto con sus modalidades, matrículas, evaluaciones y documentos. El curso del catálogo general se conservará para usarlo en otros grupos. Esta acción no se puede deshacer.">
                                     @csrf
                                     @method('DELETE')
-                                    <button class="btn btn-danger btn-sm" type="submit"><x-icon name="trash-2" /> Eliminar</button>
+                                    <button class="btn btn-danger btn-sm" type="submit"><x-icon name="x" /> Eliminar</button>
                                 </form>
                             </div>
                         </div>
@@ -281,7 +281,7 @@
 .group-panel-title small{font-size:11px;color:#7b8990}
 .group-panel-count{padding:5px 9px;border-radius:20px;background:#edf4f7;color:#3d7187;font-size:11px;font-weight:750;white-space:nowrap}
 .group-panel-chevron{color:#78909a;transition:transform .2s ease}
-.group-panel[open] .group-panel-chevron{transform:rotate(180deg)}
+.group-panel[open] .group-panel-chevron{transform:rotate(90deg)}
 .group-panel-body{padding:0 18px 18px;border-top:1px solid #edf1f3}
 .roster-toolbar{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;padding:15px 0}
 .roster-toolbar>div{max-width:480px}
