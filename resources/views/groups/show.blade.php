@@ -110,7 +110,7 @@
                 <div class="weekday-list">
                     @foreach([1=>'Lun',2=>'Mar',3=>'Mié',4=>'Jue',5=>'Vie',6=>'Sáb',7=>'Dom'] as $day=>$dayLabel)
                         <label class="weekday">
-                            <input type="checkbox" name="workload_days[]" value="{{ $day }}" @checked(in_array($day, array_map('intval', old('workload_days', $group->workload_days ?? [])), true))>
+                            <input type="checkbox" name="workload_days[]" value="{{ $day }}" @checked(in_array($day, array_map('intval', (array) old('workload_days', $group->workload_days ?? [])), true))>
                             {{ $dayLabel }}
                         </label>
                     @endforeach
