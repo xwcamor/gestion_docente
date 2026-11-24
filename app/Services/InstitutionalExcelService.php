@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\CourseModality;
 use App\Models\Cycle;
+use App\Models\TeachingGroup;
 use App\Models\CurriculumWeek;
 use App\Models\GeneratedDocument;
 use App\Models\SystemSetting;
@@ -237,41 +238,31 @@ class InstitutionalExcelService
         return $spreadsheet;
     }
 
-    public function fiveMinuteTalkRegister(Cycle $cycle): Spreadsheet
+    public function fiveMinuteTalkRegister(TeachingGroup $group): Spreadsheet
     {
         $cataloguePath = base_path('system_files/charla_5_minutos_catalogo.json');
         $catalogue = json_decode((string) file_get_contents($cataloguePath), true);
-        $talks = $cycle->fiveMinuteTalks()->orderBy('scheduled_date')->orderBy('position')->get();
+        $group->loadMissing(['cycle', 'professor']);
+        $talks = $group->fiveMinuteTalks()->orderBy('scheduled_date')->orderBy('position')->get();
 
-        $modalities = CourseModality::query()
-            ->with(['assignment.course', 'assignment.group', 'schedules'])
-            ->whereHas('assignment.group', fn ($query) => $query->where('cycle_id', $cycle->id))
-            ->get();
+        $programs = $group->assignments()
+            ->with('course')
+            ->get()
+            ->pluck('course.career')
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Registro de Charlas 5 Min.');
-        $this->buildTalkRegisterHeader($sheet, $cycle);
+        $this->buildTalkRegisterHeader($sheet, $group);
 
         $row = 12;
         foreach ($talks as $talk) {
-            $matching = $modalities->filter(function ($modality) use ($talk) {
-                if (!$talk->scheduled_date) {
-                    return false;
-                }
-                $weekday = $talk->scheduled_date->dayOfWeekIso;
-                return $modality->schedules->contains(fn ($schedule) =>
-                    (int) $schedule->day_of_week === $weekday && $schedule->block_type === 'CLASS'
-                );
-            });
-
-            $programs = $matching->map(fn ($modality) => $modality->assignment->course->career)
-                ->filter()->unique()->values()->all();
-            $groups = $matching->map(fn ($modality) => $modality->assignment->group->name)
-                ->filter()->unique()->values()->all();
-
-            $this->setText($sheet, 'C'.$row, implode(', ', $programs) ?: ($cycle->professor->career ?? ''));
-            $this->setText($sheet, 'D'.$row, implode(', ', $groups));
+            $this->setText($sheet, 'C'.$row, implode(', ', $programs) ?: ($group->professor->career ?? ''));
+            $this->setText($sheet, 'D'.$row, $group->name);
             if ($talk->participant_count !== null) {
                 $sheet->setCellValue('E'.$row, $talk->participant_count);
             }
@@ -292,9 +283,9 @@ class InstitutionalExcelService
             'alignment' => ['vertical' => Alignment::VERTICAL_TOP, 'wrapText' => true],
             'borders' => ['bottom' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'B7B7B7']]],
         ]);
-        $sheet->getColumnDimension('C')->setWidth(28);
+        $sheet->getColumnDimension('C')->setWidth(30);
         $sheet->getColumnDimension('D')->setWidth(18);
-        $sheet->getColumnDimension('E')->setWidth(15);
+        $sheet->getColumnDimension('E')->setWidth(16);
         $sheet->getColumnDimension('F')->setWidth(14);
         $sheet->getColumnDimension('G')->setWidth(55);
         $sheet->getColumnDimension('H')->setWidth(34);
@@ -357,7 +348,7 @@ class InstitutionalExcelService
         $sheet->setCellValue('K11', 'PREVENCIÓN DE RECURSOS');
 
         $talk = $date
-            ? $cycle->fiveMinuteTalks()->whereDate('scheduled_date', $date->toDateString())->first()
+            ? $group->fiveMinuteTalks()->whereDate('scheduled_date', $date->toDateString())->first()
             : null;
         $motivation = "1) MOTIVACIÓN (Presentar los objetivos, charla de cinco minutos)\n";
         if ($talk) {
@@ -454,7 +445,7 @@ class InstitutionalExcelService
         $sheet->getPageSetup()->setPrintArea('A1:N23');
     }
 
-    private function buildTalkRegisterHeader(Worksheet $sheet, Cycle $cycle): void
+    private function buildTalkRegisterHeader(Worksheet $sheet, TeachingGroup $group): void
     {
         $sheet->mergeCells('C2:H2');
         $sheet->mergeCells('C3:H3');
@@ -466,6 +457,8 @@ class InstitutionalExcelService
         $sheet->setCellValue('D6', SystemSetting::valueFor('school_label', 'ETI'));
         $sheet->setCellValue('C7', 'Instructor:');
         $this->setText($sheet, 'D7', auth()->user()?->name ?? '');
+        $sheet->setCellValue('C8', 'Grupo:');
+        $this->setText($sheet, 'D8', $group->name);
         foreach (['C','D','E','F','G','H'] as $index => $column) {
             $sheet->setCellValue($column.'10', [
                 'Programa de Formación', 'Grupo', 'Nº de Participantes', 'Fecha', 'Tema', 'Observaciones'
