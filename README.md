@@ -175,7 +175,7 @@ La migración inicial crea las tablas de usuarios, profesores, ciclos, grupos, c
 - Altas y retiros individuales del padrón por grupo, conservando fichas y calificaciones; no se permite retirar al último alumno.
 - Gestión de notas y evaluaciones.
 - Calendario mensual consolidado por grupo, con clases y feriados; cada bloque conserva la modalidad TEC/TALL y el tipo de enseñanza de su curso.
-- Malla curricular y propuestas de contenido TEC/TALL.
+- Malla curricular: extracción diferenciada del Cuadro Programa (HT/HO, conocimientos y horas) y la Hoja de Programación (tema semanal); el tema oficial se conserva por semana y alimenta el calendario y los Excel de sesión. El ciclo registra carrera y semestre para completar el contexto cuando la fuente no lo indique.
 - Charlas de cinco minutos: una por cada fecha disponible del grupo (sin filas sin fecha), excluyendo feriados; el catálogo institucional de 96 temas vuelve al primero cuando se agota. El check marca la charla como realizada; el número de participantes es editable por charla y se inicializa con la cantidad de alumnos del padrón.
 - Generación y versionado de documentos Excel.
 
