@@ -40,6 +40,7 @@ Route::middleware(['auth', 'professor'])->group(function () {
     Route::get('/ciclos/{cycle}/grupos/crear', [GroupController::class, 'create'])->name('groups.create');
     Route::post('/ciclos/{cycle}/grupos', [GroupController::class, 'store'])->name('groups.store');
     Route::patch('/grupos/{group}', [GroupController::class, 'update'])->name('groups.update');
+    Route::patch('/grupos/{group}/carga-horaria', [GroupController::class, 'updateWorkload'])->name('groups.workload.update');
     Route::patch('/grupos/{group}/charlas/{talk}', [GroupController::class, 'updateTalkExecution'])->name('groups.talks.update');
     Route::post('/grupos/{group}/charlas-5-minutos/excel', [DocumentController::class, 'groupFiveMinuteTalks'])->name('documents.group-talks');
     Route::delete('/grupos/{group}', [GroupController::class, 'destroy'])->name('groups.destroy');
