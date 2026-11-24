@@ -11,11 +11,11 @@ class Cycle extends Model
 {
     use HasSlugRouteKey;
 
-    protected $fillable = ['professor_id', 'academic_year', 'cycle_code', 'start_date', 'end_date', 'status', 'five_minute_talk_days'];
+    protected $fillable = ['professor_id', 'academic_year', 'cycle_code', 'start_date', 'end_date', 'status'];
 
     protected function casts(): array
     {
-        return ['start_date' => 'date', 'end_date' => 'date', 'five_minute_talk_days' => 'array'];
+        return ['start_date' => 'date', 'end_date' => 'date'];
     }
 
     protected function slugSource(): string
