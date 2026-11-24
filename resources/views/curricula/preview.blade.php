@@ -22,6 +22,7 @@
 <div class="muted small">Horas T/P/V: {{ $week['hours']['T'] ?? '—' }} / {{ $week['hours']['P'] ?? '—' }} / {{ $week['hours']['V'] ?? '—' }}</div></div>
 @if($week['is_evaluation'])<span class="badge badge-orange">Evaluación</span>@endif</div>
 @if($week['task_code'] ?? false)<p><strong>{{ $week['task_code'] }}</strong> · {{ $week['task_title'] ?? '' }}</p>@endif
+@if(!empty($week['programming_topic']))<p class="curriculum-week-topic"><strong>Tema oficial · Hoja de Programación:</strong> {{ $week['programming_topic'] }}</p>@endif
 <div class="grid grid-2">
 <div><h3>Conocimientos tecnológicos (fuente)</h3><ul>@foreach($week['technological_knowledge'] as $item)<li>{{ $item }}</li>@endforeach</ul>
 <h3>Conocimientos complementarios</h3><ul>@foreach($week['complementary_knowledge'] as $item)<li>{{ $item }}</li>@endforeach</ul>
@@ -36,4 +37,10 @@
 <section class="card"><h2>Confirmar importación</h2><div class="alert alert-info">Los datos oficiales de la malla se guardarán como fuente. Las propuestas TEC/TALL de IA quedarán pendientes de aprobación. Podrás revisarlas y aprobarlas después.</div>
 <form method="POST" action="{{ route('curricula.confirm',$assignment) }}">@csrf<input type="hidden" name="token" value="{{ $token }}"><button class="btn" type="submit"><x-icon name="check" /> Confirmar e importar esta malla</button></form>
 </section>
+@push('styles')
+<style>
+.curriculum-week-topic{margin:7px 0;padding:8px 10px;border-left:3px solid var(--info);border-radius:5px;background:var(--info-bg);color:var(--ink);font-size:11px;line-height:1.5}
+.curriculum-week-topic strong{color:var(--info)}
+</style>
+@endpush
 @endsection
