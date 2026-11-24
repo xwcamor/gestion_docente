@@ -94,7 +94,7 @@
         <div class="roster-toolbar">
             <div>
                 <strong>Importar o actualizar padrón</strong>
-                <p class="help">La importación actualiza los datos existentes y evita duplicados por ID o usuario. Las notas de cada curso se conservan.</p>
+                <p class="help">La importación actualiza los datos existentes y evita duplicados por ID o usuario. La ficha del alumno se comparte donde esté vinculado; las notas se conservan por curso.</p>
             </div>
             <form method="POST" enctype="multipart/form-data" action="{{ route('groups.students.preview', $group) }}" class="roster-upload">
                 @csrf
@@ -128,22 +128,22 @@
                         <tr data-student-row data-search="{{ mb_strtolower($student->institutional_id.' '.$student->surnames.' '.$student->given_names.' '.$student->username) }}" data-editing="{{ $editing ? 'true' : 'false' }}">
                             <td>
                                 <span data-student-display @if($editing) hidden @endif>{{ $student->institutional_id ?: '—' }}</span>
-                                <input class="field student-edit-input mono" form="{{ $formId }}" name="institutional_id" maxlength="80" value="{{ $useOldValues ? old('institutional_id') : $student->institutional_id }}" placeholder="ID institucional" @unless($editing) hidden disabled @endunless>
+                                <input class="field student-edit-input mono" form="{{ $formId }}" name="institutional_id" maxlength="80" data-original-value="{{ $student->institutional_id }}" value="{{ $useOldValues ? old('institutional_id') : $student->institutional_id }}" placeholder="ID institucional" @unless($editing) hidden disabled @endunless>
                                 @if($editing) @error('institutional_id')<small class="field-error">{{ $message }}</small>@enderror @endif
                             </td>
                             <td>
                                 <span data-student-display @if($editing) hidden @endif>{{ $student->surnames }}</span>
-                                <input class="field student-edit-input" form="{{ $formId }}" name="surnames" maxlength="255" value="{{ $useOldValues ? old('surnames') : $student->surnames }}" required @unless($editing) hidden disabled @endunless>
+                                <input class="field student-edit-input" form="{{ $formId }}" name="surnames" maxlength="255" data-original-value="{{ $student->surnames }}" value="{{ $useOldValues ? old('surnames') : $student->surnames }}" required @unless($editing) hidden disabled @endunless>
                                 @if($editing) @error('surnames')<small class="field-error">{{ $message }}</small>@enderror @endif
                             </td>
                             <td>
                                 <span data-student-display @if($editing) hidden @endif>{{ $student->given_names }}</span>
-                                <input class="field student-edit-input" form="{{ $formId }}" name="given_names" maxlength="255" value="{{ $useOldValues ? old('given_names') : $student->given_names }}" required @unless($editing) hidden disabled @endunless>
+                                <input class="field student-edit-input" form="{{ $formId }}" name="given_names" maxlength="255" data-original-value="{{ $student->given_names }}" value="{{ $useOldValues ? old('given_names') : $student->given_names }}" required @unless($editing) hidden disabled @endunless>
                                 @if($editing) @error('given_names')<small class="field-error">{{ $message }}</small>@enderror @endif
                             </td>
                             <td>
                                 <span data-student-display @if($editing) hidden @endif>{{ $student->username ?: '—' }}</span>
-                                <input class="field student-edit-input mono" form="{{ $formId }}" name="username" maxlength="255" value="{{ $useOldValues ? old('username') : $student->username }}" placeholder="Usuario" @unless($editing) hidden disabled @endunless>
+                                <input class="field student-edit-input mono" form="{{ $formId }}" name="username" maxlength="255" data-original-value="{{ $student->username }}" value="{{ $useOldValues ? old('username') : $student->username }}" placeholder="Usuario" @unless($editing) hidden disabled @endunless>
                                 @if($editing) @error('username')<small class="field-error">{{ $message }}</small>@enderror @endif
                             </td>
                             <td class="roster-actions">
@@ -346,9 +346,13 @@
         const saveButton = row.querySelector('[data-student-save]');
         const cancelButton = row.querySelector('[data-student-cancel]');
 
-        const setEditing = editing => {
+        const setEditing = (editing, discardChanges = false) => {
             row.dataset.editing = editing ? 'true' : 'false';
-            inputs.forEach(input => { input.hidden = !editing; input.disabled = !editing; });
+            inputs.forEach(input => {
+                if (!editing && discardChanges) input.value = input.dataset.originalValue || '';
+                input.hidden = !editing;
+                input.disabled = !editing;
+            });
             displays.forEach(display => { display.hidden = editing; });
             if (editButton) editButton.hidden = editing;
             if (saveButton) saveButton.hidden = !editing;
@@ -362,7 +366,7 @@
             });
             setEditing(true);
         });
-        cancelButton?.addEventListener('click', () => setEditing(false));
+        cancelButton?.addEventListener('click', () => setEditing(false, true));
     });
 
     const studentSearch = document.getElementById('student-search');
