@@ -456,7 +456,7 @@
         <div class="talks-intro">
             <div>
                 <strong>Catálogo institucional</strong>
-                <p>Los temas se distribuyen automáticamente entre las fechas Desde/Hasta de la carga horaria, usando los días asignados al grupo y excluyendo feriados. No depende de que cada curso tenga sus bloques configurados; las charlas realizadas conservan su fecha.</p>
+                <p>Se programa una charla por cada día disponible del grupo y se excluyen los feriados. Al terminar los 96 temas oficiales, el catálogo vuelve automáticamente al primero. Las charlas realizadas conservan su fecha.</p>
             </div>
             @if($groupTalks->isNotEmpty())
                 <form method="POST" action="{{ route('documents.group-talks', $group) }}">
@@ -488,8 +488,8 @@
         </div>
 
         <div class="talks-summary">
-            <span><strong>{{ $groupTalks->count() }}</strong> temas del catálogo</span>
-            <span><strong>{{ $talkAssignedCount }}</strong> fechas asignadas</span>
+            <span><strong>{{ $talkScheduleSummary['catalogue_topic_count'] }}</strong> temas oficiales</span>
+            <span><strong>{{ $talkAssignedCount }}</strong> charlas programadas</span>
             <span><strong>{{ $talkDoneCount }}</strong> realizadas</span>
             <span><strong>{{ $talkPendingCount }}</strong> pendientes</span>
         </div>
@@ -504,25 +504,33 @@
                         @foreach($groupTalks as $talk)
                             <tr>
                                 <td>
-                                    @if($talk->scheduled_date)
-                                        <span class="talk-date">
-                                            <small>{{ $talk->scheduled_date->copy()->locale('es')->translatedFormat('l') }}</small>
-                                            <strong>{{ $talk->scheduled_date->format('d/m/Y') }}</strong>
-                                        </span>
-                                    @else
-                                        <span class="badge badge-orange">Sin fecha</span>
-                                    @endif
+                                    <span class="talk-date">
+                                        <small>{{ $talk->scheduled_date->copy()->locale('es')->translatedFormat('l') }}</small>
+                                        <strong>{{ $talk->scheduled_date->format('d/m/Y') }}</strong>
+                                    </span>
                                 </td>
                                 <td class="talk-topic">{{ $talk->topic }}</td>
                                 <td colspan="4">
                                     <form method="POST" action="{{ route('groups.talks.update', [$group, $talk]) }}" class="talk-execution-form">
                                         @csrf
                                         @method('PATCH')
-                                        <select class="field" name="status" aria-label="Estado de la charla">
-                                            <option value="pending" @selected($talk->status !== 'done')>Pendiente</option>
-                                            <option value="done" @selected($talk->status === 'done') @disabled(!$talk->scheduled_date)>Realizada</option>
-                                        </select>
-                                        <input class="field" type="number" name="participant_count" min="0" max="10000" value="{{ $talk->participant_count }}" placeholder="N.º participantes" aria-label="Número de participantes">
+                                        <input type="hidden" name="status" value="pending">
+                                        <label class="talk-status-toggle">
+                                            <input
+                                                type="checkbox"
+                                                name="status"
+                                                value="done"
+                                                @checked($talk->status === 'done')
+                                                data-auto-submit-change
+                                                aria-label="{{ $talk->status === 'done' ? 'Marcar charla como pendiente' : 'Marcar charla como realizada' }}"
+                                            >
+                                            <span class="talk-status-mark" aria-hidden="true"></span>
+                                            <span class="talk-status-label">{{ $talk->status === 'done' ? 'Realizada' : 'Pendiente' }}</span>
+                                        </label>
+                                        <div class="talk-participants" title="Se calcula automáticamente con el padrón del grupo">
+                                            <strong>{{ number_format($talk->participant_count ?? $studentCount) }}</strong>
+                                            <small>alumnos</small>
+                                        </div>
                                         <input class="field" name="observations" value="{{ $talk->observations }}" maxlength="2000" placeholder="Observaciones del grupo" aria-label="Observaciones">
                                         <button class="btn btn-secondary btn-sm" type="submit"><x-icon name="check" /> Guardar</button>
                                     </form>
@@ -534,20 +542,21 @@
             </div>
             @if(!$talkScheduleSummary['range_configured'])
                 <div class="alert alert-info mt-16">
-                    Para calcular las fechas automáticamente, completa en <strong>Carga horaria</strong> el inicio, el término, los días asignados y la franja de disponibilidad.
+                    Para programar las charlas, completa en <strong>Carga horaria</strong> el inicio, el término y los días de disponibilidad.
                 </div>
             @elseif($talkScheduleSummary['eligible_dates_count'] === 0)
                 <div class="alert alert-warning mt-16">
                     No se encontraron fechas disponibles dentro del rango del grupo. Revisa las fechas de carga horaria, los días asignados y los feriados.
                 </div>
-            @elseif($talkUnscheduledCount > 0)
-                <div class="alert alert-warning mt-16">
-                    Se asignaron {{ $talkScheduleSummary['scheduled_pending_count'] }} fechas a las charlas pendientes.
-                    Quedan {{ $talkUnscheduledCount }} sin fecha porque no hay suficientes fechas libres para las charlas pendientes. Amplía el periodo o agrega más días de disponibilidad en la carga horaria.
-                </div>
             @endif
         @else
-            <div class="empty"><strong>Este grupo todavía no tiene temas de charla.</strong><span>El catálogo institucional se cargará automáticamente al abrir este grupo.</span></div>
+            @if(!$talkScheduleSummary['range_configured'])
+                <div class="empty"><strong>Configura la carga horaria del grupo.</strong><span>Al guardar las fechas y los días disponibles, el sistema programará automáticamente las charlas.</span></div>
+            @elseif($talkScheduleSummary['eligible_dates_count'] === 0)
+                <div class="empty"><strong>No hay días disponibles para programar charlas.</strong><span>Revisa el rango de carga horaria, los días seleccionados y los feriados.</span></div>
+            @else
+                <div class="empty"><strong>Las charlas del grupo están al día.</strong><span>No hay temas adicionales sin fecha. El catálogo se repetirá automáticamente cuando existan más días disponibles.</span></div>
+            @endif
         @endif
     </div>
 </details>
@@ -708,8 +717,24 @@ html[data-theme="dark"] .talks-period strong{color:#c5e8d2}
 .talks-table td{vertical-align:middle}
 .talk-date{display:grid;gap:2px;white-space:nowrap;color:#436957}.talk-date small{color:#75877e;font-size:9px;font-weight:650;text-transform:capitalize}.talk-date strong{font-size:11px;font-weight:800}
 .talk-topic{min-width:260px;color:#344f43;font-size:11px;font-weight:600}
-.talk-execution-form{display:grid;grid-template-columns:115px 130px minmax(170px,1fr) auto;align-items:center;gap:7px;min-width:540px}
+.talk-execution-form{display:grid;grid-template-columns:132px 80px minmax(170px,1fr) auto;align-items:center;gap:7px;min-width:540px}
 .talk-execution-form .field{min-height:33px;padding:6px 8px;font-size:10px}
+.talk-status-toggle{position:relative;display:inline-flex;align-items:center;gap:8px;min-height:36px;color:#65766c;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap}
+.talk-status-toggle input{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.talk-status-mark{display:grid;place-items:center;width:19px;height:19px;flex:none;border:1.5px solid #aebdb3;border-radius:5px;background:#fff;color:#fff;transition:background .14s ease,border-color .14s ease}
+.talk-status-mark::after{content:"✓";font-size:13px;font-weight:900;line-height:1;opacity:0;transform:scale(.7);transition:opacity .14s ease,transform .14s ease}
+.talk-status-toggle input:checked+.talk-status-mark{border-color:var(--accent);background:var(--accent)}
+.talk-status-toggle input:checked+.talk-status-mark::after{opacity:1;transform:scale(1)}
+.talk-status-toggle input:focus-visible+.talk-status-mark{outline:3px solid color-mix(in srgb,var(--accent) 28%,transparent);outline-offset:2px}
+.talk-status-toggle:has(input:checked){color:#2d7550}
+.talk-participants{display:flex;align-items:baseline;justify-content:center;gap:4px;min-height:34px;padding:7px 8px;border:1px solid #e1e9e3;border-radius:7px;background:#f7faf8;color:#395e49;font-variant-numeric:tabular-nums;white-space:nowrap}
+.talk-participants strong{font-size:12px;font-weight:800}
+.talk-participants small{color:#77887e;font-size:9px}
+html[data-theme="dark"] .talk-status-toggle{color:#bdcfc3}
+html[data-theme="dark"] .talk-status-mark{border-color:#587263;background:#172820}
+html[data-theme="dark"] .talk-status-toggle input:checked+.talk-status-mark{border-color:var(--accent);background:var(--accent)}
+html[data-theme="dark"] .talk-participants{border-color:#355144;background:#172820;color:#c4e6d0}
+html[data-theme="dark"] .talk-participants small{color:#9eb7aa}
 html[data-theme="dark"] .group-talk-panel[open]>.group-panel-summary{background:#172b27}
 html[data-theme="dark"] .talks-intro{background:#152a24;border-color:#355448}
 html[data-theme="dark"] .talks-intro strong{color:#b9e2cb}
@@ -718,7 +743,7 @@ html[data-theme="dark"] .talks-summary span{background:#172a24;border-color:#355
 html[data-theme="dark"] .talks-summary strong{color:#b9e2cb}
 html[data-theme="dark"] .talks-table th{background:#1b3029;color:#b7d0c1}
 html[data-theme="dark"] .talk-topic{color:#d1e2d8}
-@media(max-width:760px){.talks-intro{align-items:stretch;flex-direction:column}.talks-intro form,.talks-intro .btn{width:100%}.talk-execution-form{grid-template-columns:repeat(2,minmax(0,1fr));min-width:0}.talk-execution-form input[name="observations"]{grid-column:1/-1}}
+@media(max-width:760px){.talks-intro{align-items:stretch;flex-direction:column}.talks-intro form,.talks-intro .btn{width:100%}.talk-execution-form{grid-template-columns:repeat(2,minmax(0,1fr));min-width:0}.talk-execution-form input[name="observations"]{grid-column:1/-1}.talk-execution-form>button{width:100%}}
 
 @media(max-width:850px){.progress-grid{grid-template-columns:1fr;gap:13px}.roster-toolbar{flex-direction:column}.roster-upload{width:100%;max-width:none}.roster-upload .field{flex:1}.course-row-status{grid-template-columns:1fr}}
 @media(max-width:600px){.group-page-head{align-items:flex-start}.group-page-head .actions{flex-wrap:wrap}.group-progress{padding:14px}.group-panel-summary{padding:13px}.group-panel-count{font-size:10px}.roster-upload{align-items:stretch;flex-direction:column}.roster-upload .field{width:100%;min-width:0}.roster-list-head{align-items:stretch;flex-direction:column}.roster-search{max-width:none;width:100%}.course-toolbar{align-items:stretch;flex-direction:column}.course-toolbar .filter-input{max-width:none;width:100%}.course-row-main{align-items:flex-start}.course-row-status{gap:8px}.modality-link{width:100%;flex-wrap:wrap}.modality-link span:nth-of-type(2){white-space:normal}}
@@ -739,6 +764,13 @@ html[data-theme="dark"] .talk-topic{color:#d1e2d8}
     if (coursesPanel && location.hash === '#group-courses') coursesPanel.open = true;
     const talksPanel = document.getElementById('group-talks');
     if (talksPanel && (location.hash === '#group-talks' || new URLSearchParams(location.search).get('talks') === '1')) talksPanel.open = true;
+
+    document.querySelectorAll('[data-auto-submit-change]').forEach(control => {
+        control.addEventListener('change', () => {
+            const form = control.form;
+            if (form && typeof form.requestSubmit === 'function') form.requestSubmit();
+        });
+    });
 
     document.querySelectorAll('[data-student-row]').forEach(row => {
         const inputs = [...row.querySelectorAll('.student-edit-input')];
