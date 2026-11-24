@@ -7,6 +7,7 @@ use App\Models\Cycle;
 use App\Models\CourseModality;
 use App\Models\TeachingGroup;
 use App\Services\CourseDistributionImportService;
+use App\Services\CalendarService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -262,7 +263,7 @@ class CourseDistributionImportController extends Controller
         return view('distribution.preview', ['data' => $data]);
     }
 
-    public function confirm(Request $request)
+    public function confirm(Request $request, CalendarService $calendar)
     {
         $data = session('distribution_import.preview');
         abort_unless(is_array($data) && !empty($data['rows']), 419, 'La vista previa expiró. Vuelve a subir el Excel.');
@@ -272,7 +273,18 @@ class CourseDistributionImportController extends Controller
         ]);
 
         $professor = auth()->user()->professor;
-        $cycle = DB::transaction(function () use ($data, $validated, $professor) {
+        $calendarModalityIds = [];
+        $scheduleBlocksImported = 0;
+        $modalitiesWithExistingSchedules = 0;
+
+        $cycle = DB::transaction(function () use (
+            $data,
+            $validated,
+            $professor,
+            &$calendarModalityIds,
+            &$scheduleBlocksImported,
+            &$modalitiesWithExistingSchedules
+        ) {
             $cycle = Cycle::firstOrCreate(
                 ['professor_id' => $professor->id, 'academic_year' => $data['academic_year'], 'cycle_code' => $data['cycle_code']],
                 ['start_date' => $data['start_date'], 'end_date' => $data['end_date'], 'status' => 'active']
@@ -315,15 +327,75 @@ class CourseDistributionImportController extends Controller
                         'period_label' => $data['academic_year'].'-'.$data['cycle_code'].'-'.$item['type'],
                     ]);
                     $modality->save();
-                    // La hoja Cursos no contiene días ni horas: no se crean horarios ficticios.
+
+                    $incomingSchedules = $item['schedules'] ?? [];
+                    if ($incomingSchedules) {
+                        // No reemplazar horarios ya configurados manualmente ni duplicar
+                        // bloques si el mismo archivo se importa nuevamente.
+                        if ($modality->schedules()->exists()) {
+                            $modalitiesWithExistingSchedules++;
+                        } else {
+                            $weeklyMinutes = 0;
+                            foreach ($incomingSchedules as $schedule) {
+                                $modality->schedules()->create([
+                                    'day_of_week' => $schedule['day_of_week'],
+                                    'start_time' => $schedule['start_time'],
+                                    'end_time' => $schedule['end_time'],
+                                    'classroom' => $schedule['classroom'],
+                                    'block_type' => 'CLASS',
+                                    'instruction_type' => $schedule['instruction_type'],
+                                ]);
+                                $weeklyMinutes += max(
+                                    0,
+                                    (int) ((strtotime($schedule['end_time']) - strtotime($schedule['start_time'])) / 60)
+                                );
+                                $scheduleBlocksImported++;
+                            }
+
+                            $modality->update(['total_hours' => round($weeklyMinutes / 60, 2)]);
+                            if ($modality->start_date && $modality->end_date) {
+                                $calendarModalityIds[] = $modality->id;
+                            }
+                        }
+                    }
                 }
             }
 
             return $cycle;
         });
 
+        $calendarRebuilt = 0;
+        $calendarWarnings = [];
+        foreach (array_unique($calendarModalityIds) as $modalityId) {
+            try {
+                $calendar->rebuild(CourseModality::findOrFail($modalityId));
+                $calendarRebuilt++;
+            } catch (\\Throwable $exception) {
+                report($exception);
+                $calendarWarnings[] = 'No se pudo calcular automáticamente el calendario de una modalidad. Revisa su horario y usa «Recalcular calendario».';
+            }
+        }
+
         session()->forget('distribution_import.preview');
-        return redirect()->route('cycles.show', $cycle)
-            ->with('success', 'Importación confirmada: ciclo, grupo, cursos, NRC y periodos registrados. Los horarios quedaron pendientes porque la pestaña Cursos no contiene días ni horas.');
+
+        $message = 'Importación confirmada: ciclo, grupo, cursos, NRC y fechas registrados.';
+        if ($scheduleBlocksImported > 0) {
+            $message .= " También se importaron {$scheduleBlocksImported} bloques horarios.";
+            if ($calendarRebuilt > 0) {
+                $message .= " Se calcularon los calendarios de {$calendarRebuilt} modalidades.";
+            }
+        } else {
+            $message .= ' No se importaron bloques horarios; podrás configurarlos en cada modalidad.';
+        }
+        if ($modalitiesWithExistingSchedules > 0) {
+            $message .= " Se conservaron los horarios que ya estaban configurados en {$modalitiesWithExistingSchedules} modalidades.";
+        }
+
+        $redirect = redirect()->route('cycles.show', $cycle)->with('success', $message);
+        if ($calendarWarnings) {
+            $redirect->with('warning', implode(' ', array_unique($calendarWarnings)));
+        }
+
+        return $redirect;
     }
 }
