@@ -190,7 +190,7 @@
                 <div><label for="edit_cycle_end">Fin del rango de carga</label><input class="field" id="edit_cycle_end" type="date" name="end_date" value="{{ old('end_date', $cycle->end_date?->format('Y-m-d')) }}" required></div>
             </div>
         </div>
-        <div class="dialog-footer"><button class="btn btn-secondary" type="button" data-modal-close>Cancelar</button><button class="btn" type="submit"><x-icon name="check" /> Guardar cambios</button></div>
+        <div class="dialog-footer"><button class="btn btn-secondary" type="button" data-modal-close><x-icon name="x" /> Cancelar</button><button class="btn" type="submit"><x-icon name="check" /> Guardar cambios</button></div>
     </form>
 </dialog>
 
@@ -232,7 +232,7 @@
         </div>
         <div class="dialog-footer">
             @if($groupCount > 0)
-                <button class="btn btn-secondary" type="button" data-modal-close>Cancelar</button>
+                <button class="btn btn-secondary" type="button" data-modal-close><x-icon name="x" /> Cancelar</button>
             @endif
             <button class="btn" type="submit"><x-icon name="check" /> {{ $groupCount === 0 ? 'Crear primer grupo' : 'Guardar grupos' }}</button>
         </div>
