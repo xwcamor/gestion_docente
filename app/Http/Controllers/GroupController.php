@@ -254,17 +254,65 @@ class GroupController extends Controller
             ->join('course_modalities', 'course_modalities.course_assignment_id', '=', 'course_assignments.id')
             ->sum('course_modalities.total_hours');
 
-        $actualHoursByType = DB::table('modality_schedules')
+        // Sumar tiempo efectivo sin duplicar minutos cuando dos bloques del mismo tipo
+        // se superponen en el mismo día dentro del grupo.
+        $actualScheduleBlocks = DB::table('modality_schedules')
             ->join('course_modalities', 'course_modalities.id', '=', 'modality_schedules.course_modality_id')
             ->join('course_assignments', 'course_assignments.id', '=', 'course_modalities.course_assignment_id')
             ->where('course_assignments.teaching_group_id', $group->id)
             ->where('modality_schedules.block_type', 'CLASS')
-            ->selectRaw('modality_schedules.instruction_type, SUM(TIME_TO_SEC(TIMEDIFF(modality_schedules.end_time, modality_schedules.start_time)) / 3600) AS hours')
-            ->groupBy('modality_schedules.instruction_type')
-            ->pluck('hours', 'instruction_type');
+            ->get([
+                'modality_schedules.day_of_week',
+                'modality_schedules.start_time',
+                'modality_schedules.end_time',
+                'modality_schedules.instruction_type',
+            ]);
 
-        $actualTheoryHours = round((float) ($actualHoursByType['THEORY'] ?? 0), 2);
-        $actualLabHours = round((float) ($actualHoursByType['LAB'] ?? 0), 2);
+        $actualHoursByType = $actualScheduleBlocks
+            ->groupBy('instruction_type')
+            ->map(function ($typeBlocks) {
+                $totalMinutes = 0;
+
+                foreach ($typeBlocks->groupBy('day_of_week') as $dayBlocks) {
+                    $intervals = $dayBlocks->map(function ($block) {
+                        $start = ((int) substr((string) $block->start_time, 0, 2) * 60)
+                            + (int) substr((string) $block->start_time, 3, 2);
+                        $end = ((int) substr((string) $block->end_time, 0, 2) * 60)
+                            + (int) substr((string) $block->end_time, 3, 2);
+
+                        return [$start, $end];
+                    })->sortBy(fn ($interval) => $interval[0])->values();
+
+                    $mergedStart = null;
+                    $mergedEnd = null;
+
+                    foreach ($intervals as [$start, $end]) {
+                        if ($mergedStart === null) {
+                            $mergedStart = $start;
+                            $mergedEnd = $end;
+                            continue;
+                        }
+
+                        if ($start <= $mergedEnd) {
+                            $mergedEnd = max($mergedEnd, $end);
+                            continue;
+                        }
+
+                        $totalMinutes += max(0, $mergedEnd - $mergedStart);
+                        $mergedStart = $start;
+                        $mergedEnd = $end;
+                    }
+
+                    if ($mergedStart !== null) {
+                        $totalMinutes += max(0, $mergedEnd - $mergedStart);
+                    }
+                }
+
+                return round($totalMinutes / 60, 2);
+            });
+
+        $actualTheoryHours = (float) ($actualHoursByType['THEORY'] ?? 0);
+        $actualLabHours = (float) ($actualHoursByType['LAB'] ?? 0);
         $supervisorTheoryHours = (float) ($group->supervisor_theory_hours ?? 0);
         $supervisorLabHours = (float) ($group->supervisor_lab_hours ?? 0);
         $theoryHoursDifference = round($supervisorTheoryHours - $actualTheoryHours, 2);
