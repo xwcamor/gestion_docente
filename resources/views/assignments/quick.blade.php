@@ -124,7 +124,7 @@
             const input='<input class="field '+(type==='date'?'date-field':'mono')+'" type="'+type+'" name="'+inputName+'" placeholder="'+placeholder+'">';
             if(modality)return '<td data-modality-cell="'+modality+'">'+input+'<span class="modality-na">Elige modalidad</span></td>';
             return '<td>'+input+'</td>';
-        }).join('')+'<td><button class="btn btn-ghost btn-sm remove-row" type="button" aria-label="Quitar fila"><x-icon name="x" size="13" /></button></td>';
+        }).join('')+'<td><button class="btn btn-ghost btn-sm remove-row" type="button" aria-label="Quitar fila">×</button></td>';
         return tr;
     };
     const updateModalityFields = row => {
