@@ -226,9 +226,13 @@ class GroupController extends Controller
             'observations' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        $validator->after(function ($validator) use ($request) {
+        $validator->after(function ($validator) use ($request, $talk) {
             if ($request->input('status') === 'done' && $request->input('participant_count') === null) {
                 $validator->errors()->add('participant_count', 'Indica cuántos participantes asistieron a la charla.');
+            }
+
+            if ($request->input('status') === 'done' && !$talk->scheduled_date) {
+                $validator->errors()->add('status', 'No puedes marcarla como realizada hasta que el grupo tenga una fecha de clase asignada.');
             }
         });
 
