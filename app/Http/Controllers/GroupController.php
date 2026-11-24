@@ -148,7 +148,7 @@ class GroupController extends Controller
         $configuredModalityCount = (clone $modalityQuery)
             ->whereNotNull('start_date')
             ->whereNotNull('end_date')
-            ->whereHas('schedules', fn ($query) => $query->where('block_type', 'CLASS'))
+            ->whereHas('schedules')
             ->count();
 
         $courseModalityPercent = $courseCount > 0
