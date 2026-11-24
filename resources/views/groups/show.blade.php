@@ -552,8 +552,8 @@
 .section-status-complete{color:#24734b;background:#edf8f0;border-color:#cfe8d6}
 .section-status-partial{color:#98651d;background:#fff7e8;border-color:#f1dfb8}
 .section-status-pending{color:#68747c;background:#f3f5f6;border-color:#dce2e5}
-.course-progress-summary{margin:13px 0 15px;padding:13px 14px;border:1px solid #e5ebea;border-radius:9px;background:#fafcfb}
-.course-progress-summary-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;color:#425c53;font-size:12px}
+
+
 .group-workload-panel{border-color:#d9e6e1}
 .group-workload-icon{background:#edf6f1;color:#35765b}
 .group-workload-panel[open]>.group-panel-summary{background:#f7fbf8}
@@ -584,8 +584,8 @@
 html[data-theme="dark"] .section-status-complete{color:#b9e9ca;background:#173a29;border-color:#285a40}
 html[data-theme="dark"] .section-status-partial{color:#f1d49a;background:#3b2e17;border-color:#65502a}
 html[data-theme="dark"] .section-status-pending{color:#c0cbd0;background:#26343a;border-color:#40515a}
-html[data-theme="dark"] .course-progress-summary,html[data-theme="dark"] .workload-comparison-item{background:#172820;border-color:#355144}
-html[data-theme="dark"] .course-progress-summary-head,html[data-theme="dark"] .workload-comparison-title,html[data-theme="dark"] .workload-comparison-values strong{color:#d0e6d8}
+html[data-theme="dark"] .workload-comparison-item{background:#172820;border-color:#355144}
+html[data-theme="dark"] .workload-comparison-title,html[data-theme="dark"] .workload-comparison-values strong{color:#d0e6d8}
 html[data-theme="dark"] .workload-date-summary{background:#172820;border-color:#355144}
 html[data-theme="dark"] .workload-date-summary strong{color:#c4e6d0}
 html[data-theme="dark"] .workload-date-summary small,html[data-theme="dark"] .workload-comparison-values small{color:#9eb7aa}
@@ -723,7 +723,7 @@ html[data-theme="dark"] .talk-topic{color:var(--ink)}
 @media(max-width:760px){.talks-intro{align-items:stretch;flex-direction:column}.talks-intro form,.talks-intro .btn{width:100%}.talk-execution-form{grid-template-columns:repeat(2,minmax(0,1fr));min-width:0}.talk-execution-form input[name="observations"],.talk-execution-form>button{grid-column:1/-1}.talk-execution-form>button{width:100%}}
 
 @media(max-width:850px){.progress-grid{grid-template-columns:1fr;gap:13px}.roster-toolbar{flex-direction:column}.roster-upload{width:100%;max-width:none}.roster-upload .field{flex:1}.course-row-status{grid-template-columns:1fr}}
-@media(max-width:600px){.group-page-head{align-items:flex-start}.group-page-head .actions{flex-wrap:wrap}.group-progress{padding:14px}.group-panel-summary{padding:13px}.group-panel-count{font-size:10px}.roster-upload{align-items:stretch;flex-direction:column}.roster-upload .field{width:100%;min-width:0}.roster-list-head{align-items:stretch;flex-direction:column}.roster-search{max-width:none;width:100%}.course-toolbar{align-items:stretch;flex-direction:column}.course-toolbar .filter-input{max-width:none;width:100%}.course-row-main{align-items:flex-start}.course-row-status{gap:8px}.modality-link{width:100%;flex-wrap:wrap}.modality-link span:nth-of-type(2){white-space:normal}}
+@media(max-width:600px){.group-page-head{align-items:flex-start}.group-page-head .actions{flex-wrap:wrap}.group-progress{padding:14px}.group-panel-summary{padding:13px}.group-panel-count{font-size:10px}.roster-upload{align-items:stretch;flex-direction:column}.roster-upload .field{width:100%;min-width:0}.roster-list-head{align-items:stretch;flex-direction:column}.roster-search{max-width:none;width:100%}.course-row-main{align-items:flex-start}.course-row-status{gap:8px}.modality-link{width:100%;flex-wrap:wrap}.modality-link span:nth-of-type(2){white-space:normal}}
 </style>
 @endpush
 
