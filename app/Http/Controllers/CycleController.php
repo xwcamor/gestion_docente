@@ -126,7 +126,7 @@ class CycleController extends Controller
         $this->authorizeCycle($cycle);
 
         $groups = $cycle->groups()
-            ->withCount('assignments')
+            ->withCount(['assignments', 'students'])
             ->orderBy('name')
             ->paginate(12)
             ->withQueryString();
