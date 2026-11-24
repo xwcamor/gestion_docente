@@ -15,6 +15,8 @@
         <p class="eyebrow"><x-icon name="calendar-days" size="12" /> Ciclo académico</p>
         <h1>{{ $cycle->academic_year }} · Ciclo {{ $cycle->cycle_code }}</h1>
         <div class="cycle-item-meta">
+            <span><x-icon name="graduation-cap" size="12" /> {{ $cycle->career ?: 'Carrera pendiente' }}</span>
+            <span>Semestre {{ $cycle->semester ?: '—' }}</span>
             <span><x-icon name="calendar-range" size="12" /> {{ $cycle->start_date?->format('d/m/Y') }} – {{ $cycle->end_date?->format('d/m/Y') }}</span>
             <span class="badge badge-green">{{ $cycle->status === 'active' ? 'Activo' : 'Registrado' }}</span>
         </div>
@@ -165,6 +167,10 @@
             <div class="form-row">
                 <div><label for="edit_academic_year">Año académico</label><input class="field" id="edit_academic_year" type="number" name="academic_year" min="2020" max="2100" value="{{ old('academic_year', $cycle->academic_year) }}" required></div>
                 <div><label for="edit_cycle_code">Código del ciclo</label><input class="field" id="edit_cycle_code" name="cycle_code" maxlength="20" value="{{ old('cycle_code', $cycle->cycle_code) }}" required></div>
+            </div>
+            <div class="form-row">
+                <div><label for="edit_cycle_career">Carrera</label><input class="field" id="edit_cycle_career" name="career" maxlength="255" value="{{ old('career', $cycle->career) }}" required placeholder="Ej. Desarrollo de Software">@error('career')<small class="field-error">{{ $message }}</small>@enderror</div>
+                <div><label for="edit_cycle_semester">Semestre académico</label><input class="field" id="edit_cycle_semester" name="semester" maxlength="60" value="{{ old('semester', $cycle->semester) }}" required placeholder="Ej. IV semestre">@error('semester')<small class="field-error">{{ $message }}</small>@enderror</div>
             </div>
             <div class="form-row">
                 <div><label for="edit_cycle_start">Inicio del rango de carga</label><input class="field" id="edit_cycle_start" type="date" name="start_date" value="{{ old('start_date', $cycle->start_date?->format('Y-m-d')) }}" required></div>
