@@ -192,8 +192,7 @@ class CurriculumImportService
 }
 JSON;
 
-        return "PROMPT VERSION: ".self::PROMPT_VERSION."\nGENERADO POR GESTIÓN DOCENTE: {$generatedAt}\n\n"
-            ."ROL: Actúa como especialista en planificación curricular técnico-profesional, diseño de sesiones TEC/TALL y estructuración de datos académicos.\n\n"
+        return "ROL: Actúa como especialista en planificación curricular técnico-profesional, diseño de sesiones TEC/TALL y estructuración de datos académicos.\n\n"
             ."TAREA: analiza completamente el PDF de malla curricular que adjunto a este chat y el texto extraído que incluyo abajo. Revisa todas sus páginas, tablas, imágenes, matrices, leyendas, encabezados y continuaciones. Devuelve UN ÚNICO objeto JSON válido, sin Markdown, sin bloque de código y sin texto fuera del JSON. El sistema lo importará en una aplicación PHP/MySQL y lo utilizará para planificar y generar Excel.\n\n"
             ."CURSO DESTINO EN EL SISTEMA: {$course->name}. Código interno: ".($course->code ?: 'no indicado').". Este dato es contexto de asignación, no reemplaza ni corrige lo que diga la fuente oficial.\n\n"
             ."CONTEXTO DEL CICLO REGISTRADO: carrera = {$career}; semestre = {$semester}. Usa estos datos para metadata.career y metadata.semester solo si la fuente PDF no indica otros valores. Si hay discrepancia, conserva el dato de la malla y explica la diferencia en notes.\n\n"
