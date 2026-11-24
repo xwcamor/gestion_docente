@@ -52,7 +52,7 @@ No ejecutes las diez skills en cada tarea. Escoge las que resuelvan el problema:
 
 - Auditoría y simplificación: Anti UI Slop + Vercel Web Design Guidelines.
 - Interacciones y animaciones: Emil Design Engineering o Make Interfaces Feel Better.
-- Dirección visual de una pantalla nueva: Anthropic Frontend Design o Taste Skill (no hace falta usar ambas).
+- Dirección visual de una pantalla interna o dashboard: Anthropic Frontend Design o UI/UX Pro Max. Taste Skill se reserva para páginas públicas/marketing; su documentación no la recomienda para dashboards ni tablas.
 - Sistema de diseño, componentes y datos: UI/UX Pro Max.
 - Revisión de microcopy: Hallmark más la lista de textos de la guía.
 - Demostración animada de un recorrido: Stageshow. No uses su kit de UI falsa como lógica de la aplicación real.
