@@ -15,12 +15,18 @@ use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\AdminProfessorController;
 use App\Http\Controllers\EvaluationController;
 use App\Http\Controllers\CurriculumController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SystemSettingController;
+use App\Http\Controllers\AuditLogController;
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1')->name('login.store');
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
 Route::middleware(['auth', 'professor'])->group(function () {
+    Route::get('/perfil', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/perfil', [ProfileController::class, 'update'])->name('profile.update');
+
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
 
@@ -78,5 +84,10 @@ Route::middleware(['auth', 'professor'])->group(function () {
         Route::get('/profesores', [AdminProfessorController::class, 'index'])->name('professors.index');
         Route::post('/profesores', [AdminProfessorController::class, 'store'])->name('professors.store');
         Route::patch('/profesores/{user}', [AdminProfessorController::class, 'update'])->name('professors.update');
+        Route::patch('/profesores/{user}/estado', [AdminProfessorController::class, 'toggleStatus'])->name('professors.status');
+        Route::delete('/profesores/{user}', [AdminProfessorController::class, 'destroy'])->name('professors.destroy');
+        Route::get('/auditoria', [AuditLogController::class, 'index'])->name('audit.index');
+        Route::get('/configuracion', [SystemSettingController::class, 'edit'])->name('settings.edit');
+        Route::patch('/configuracion', [SystemSettingController::class, 'update'])->name('settings.update');
     });
 });
