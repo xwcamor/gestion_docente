@@ -20,7 +20,7 @@ class ExcelDocumentService
 {
     private const DOCUMENTS = [
         'plan' => 'Plan de sesión',
-        'registro' => 'Registro de formación',
+        'registro' => 'Control de avance',
         'evaluacion' => 'Formato de evaluación',
     ];
 
