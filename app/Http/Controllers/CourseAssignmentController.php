@@ -62,6 +62,30 @@ class CourseAssignmentController extends Controller
         );
     }
 
+    public function updateName(Request $request, TeachingGroup $group, Course $course)
+    {
+        $this->authorizeGroup($group);
+
+        abort_unless(
+            (int) $course->professor_id === (int) $group->professor_id
+                && $group->assignments()->where('course_id', $course->id)->exists(),
+            404
+        );
+
+        $request->merge(['name' => trim((string) $request->input('name'))]);
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+        ], [
+            'name.required' => 'Escribe el nombre del curso.',
+            'name.max' => 'El nombre del curso no puede superar los 255 caracteres.',
+        ]);
+
+        $course->update(['name' => $data['name']]);
+
+        return redirect()->route('groups.show', $group)
+            ->with('success', 'Nombre del curso actualizado. El cambio se refleja en todos los grupos donde se utiliza este curso.');
+    }
+
     public function destroy(CourseAssignment $assignment)
     {
         $assignment->load('group');
