@@ -253,12 +253,12 @@
     if (!body || !addButton || !template) return;
 
     let nextIndex = Math.max(-1, ...[...body.querySelectorAll('[name]')].map(input => {
-        const match = input.name.match(/^rows\\[(\\d+)\\]/);
+        const match = input.name.match(/^rows\[(\d+)\]/);
         return match ? Number(match[1]) : -1;
     })) + 1;
 
     const parseCode = value => {
-        const pattern = /(?:(20\\d{4})-)?([A-Z][A-Z0-9]{1,9})-([A-Z0-9]{1,12})-(TEC|TALL|TAL)(?:[-_\\s]*NRC[_\\s-]*(\\d{3,12}))?/gi;
+        const pattern = /(?:(20\d{4})-)?([A-Z][A-Z0-9]{1,9})-([A-Z0-9]{1,12})-(TEC|TALL|TAL)(?:[-_\s]*NRC[_\s-]*(\d{3,12}))?/gi;
         const entries = [...value.matchAll(pattern)].map(match => ({
             base: [match[1], match[2], match[3]].filter(Boolean).join('-'),
             period: match[1] || '',
