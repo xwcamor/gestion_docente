@@ -173,7 +173,7 @@ label.prompt-step{cursor:pointer}
             completed.add(3);
             persist();
             render();
-            button.innerHTML = '<x-icon name="check" /> Copiado';
+            button.textContent = '✓ Copiado';
             if (status) status.textContent = 'Prompt copiado correctamente. Ya puedes pegarlo en ChatGPT.';
         } catch (error) {
             if (status) status.textContent = 'No se pudo copiar automáticamente. Selecciona el texto y usa Ctrl+C.';
