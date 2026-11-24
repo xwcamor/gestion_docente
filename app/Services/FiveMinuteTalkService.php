@@ -282,4 +282,81 @@ class FiveMinuteTalkService
     }
 
 
+
+    /**
+     * Keeps the professor's topic catalogue synchronized with the official
+     * institutional source. Group execution records are stored separately, so
+     * refreshing this source catalogue does not alter historical group talks.
+     */
+    private function ensureProfessorCatalogue(int $professorId, array $catalogue): void
+    {
+        $existing = FiveMinuteTalkTopic::query()
+            ->where('professor_id', $professorId)
+            ->orderBy('position')
+            ->pluck('title')
+            ->all();
+
+        if ($existing === $catalogue) {
+            return;
+        }
+
+        DB::transaction(function () use ($professorId, $catalogue) {
+            FiveMinuteTalkTopic::where('professor_id', $professorId)->delete();
+            $now = now();
+            $rows = [];
+
+            foreach ($catalogue as $index => $title) {
+                $rows[] = [
+                    'professor_id' => $professorId,
+                    'title' => $title,
+                    'position' => $index + 1,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }
+
+            foreach (array_chunk($rows, 400) as $chunk) {
+                DB::table('five_minute_talk_topics')->insert($chunk);
+            }
+        });
+    }
+
+    /**
+     * Reads and validates the official five-minute-talk topics catalog.
+     *
+     * @return array<int, string>
+     */
+    private function catalogue(): array
+    {
+        $path = base_path('system_files/charla_5_minutos_catalogo.json');
+
+        if (!is_file($path)) {
+            throw new RuntimeException('No se encuentra el catálogo institucional de charlas de 5 minutos.');
+        }
+
+        $data = json_decode((string) file_get_contents($path), true);
+
+        if (!is_array($data) || empty($data['areas']) || !is_array($data['areas'])) {
+            throw new RuntimeException('El catálogo institucional de charlas tiene un formato inválido.');
+        }
+
+        $topics = [];
+
+        foreach ($data['areas'] as $area) {
+            foreach (($area['topics'] ?? []) as $title) {
+                $title = trim((string) $title);
+
+                if ($title !== '' && mb_strlen($title) <= 255) {
+                    $topics[] = $title;
+                }
+            }
+        }
+
+        if (!$topics) {
+            throw new RuntimeException('El catálogo institucional no contiene temas disponibles.');
+        }
+
+        return array_values(array_unique($topics));
+    }
+
 }
