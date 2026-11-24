@@ -146,7 +146,8 @@ class CourseModalityController extends Controller
         if ($request->has('schedules_present')) {
             foreach (($data['schedules'] ?? []) as $index => $schedule) {
                 // El tipo por defecto no convierte una fila vacía en un bloque incompleto.
-                $hasValues = filled($schedule['day_of_week'] ?? null)
+                $hasValues = !empty($schedule['days'] ?? [])
+                    || filled($schedule['day_of_week'] ?? null)
                     || filled($schedule['start_time'] ?? null)
                     || filled($schedule['end_time'] ?? null)
                     || filled($schedule['classroom'] ?? null);
