@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Panel') · Gestión Docente</title>
+    <title>@yield('title', 'Panel') · {{ $appBranding['name'] ?? 'Gestión Docente' }}</title>
     <style>
         :root{
             color-scheme:light;
@@ -435,10 +435,55 @@
         .pagination-links .is-disabled{color:#a7b5bc;background:#f5f8f9}
         .pagination-links .pagination-ellipsis{min-width:18px;padding:0;border:0;background:transparent;color:#899da7}
         @media(max-width:600px){.pagination{align-items:flex-start;flex-direction:column}.pagination-links{width:100%}.pagination-links a,.pagination-links>span{flex:1}}
-    </style>
+    
+        /* Tema global de alto contraste y acciones coherentes */
+        .brand-logo{width:34px;height:34px;object-fit:contain;border-radius:8px;background:#fff}
+        .top-help{display:inline-flex;align-items:center;gap:6px;border:1px solid #c8d8e1;border-radius:7px;background:#f3f8fb;color:#16485d;padding:7px 10px;font-size:11px;font-weight:700;cursor:pointer}
+        .top-help:hover{background:#e6f2f7;border-color:#82b4c8}
+        .top-user{color:#244556;font-weight:650}
+        .btn,.btn:visited,a.btn,button.btn{background:var(--accent);border:1px solid var(--accent);color:#fff!important;text-decoration:none;font-weight:700;letter-spacing:.005em;box-shadow:0 1px 1px rgba(12,38,52,.08)}
+        .btn .icon,.btn svg,.btn span{color:inherit}
+        .btn:hover,button.btn:hover,a.btn:hover{background:var(--accent-hover);border-color:var(--accent-hover);color:#fff!important}
+        .btn:focus-visible,.top-help:focus-visible,.logout:focus-visible,.nav-link:focus-visible{outline:3px solid rgba(23,107,135,.25);outline-offset:2px}
+        .btn-secondary,.btn-secondary:visited,a.btn-secondary,button.btn-secondary{background:#f1f5f8!important;border-color:#c8d5dd!important;color:#213f50!important}
+        .btn-secondary:hover,button.btn-secondary:hover,a.btn-secondary:hover{background:#e4edf2!important;border-color:#aebfc9!important;color:#183545!important}
+        .btn-ghost,.btn-ghost:visited,a.btn-ghost,button.btn-ghost{background:#fff!important;border-color:#d5e0e5!important;color:#385667!important}
+        .btn-ghost:hover,button.btn-ghost:hover,a.btn-ghost:hover{background:#eef5f8!important;color:#1d4d63!important}
+        .btn-danger,.btn-danger:visited,a.btn-danger,button.btn-danger{background:#fff1f0!important;border-color:#edc5c1!important;color:#9f252b!important}
+        .btn-danger:hover,button.btn-danger:hover,a.btn-danger:hover{background:#ffe2df!important;border-color:#d99a94!important;color:#861c23!important}
+        .btn-success,.btn-success:visited,a.btn-success,button.btn-success{background:#e9f7ef!important;border-color:#b9e1c7!important;color:#17663a!important}
+        .btn-success:hover,button.btn-success:hover,a.btn-success:hover{background:#d8f0e2!important;color:#0c512b!important}
+        .inline-edit{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid #bfd3df;border-radius:7px;background:#eff7fa;color:#15536b!important;font-weight:700;cursor:pointer}
+        .inline-edit:hover{background:#e0f0f5;border-color:#8fb8ca;color:#0d4055!important}
+        .logout{border:1px solid #d5e0e5;border-radius:7px;background:#fff;color:#365464;padding:7px 10px;font-weight:650;cursor:pointer}
+        .logout:hover{background:#f0f6f8;color:#153f54}
+        .badge-green,.status-done{background:#e7f6ed!important;color:#166534!important;border:1px solid #bce3ca}
+        .badge-orange,.status-pending{background:#fff6df!important;color:#87530b!important;border:1px solid #efd99b}
+        .badge-blue{background:#e9f3fa!important;color:#145578!important;border:1px solid #c2deed}
+        .badge-red{background:#fff0ef!important;color:#a3292a!important;border:1px solid #efc2bf}
+        .field,.form-control,select.field,textarea.field{color:#183746;border-color:#cbd8df;background:#fff}
+        .field:focus,.form-control:focus,select.field:focus,textarea.field:focus{border-color:#4b9bb3;box-shadow:0 0 0 3px rgba(34,132,160,.13);outline:0}
+        .field::placeholder,textarea.field::placeholder{color:#889aa4;opacity:1}
+        .field-error{color:#a3262c}
+        .flash{opacity:1;transform:none}
+        .settings-accordion{margin-top:18px;border:1px solid #d9e3e8;border-radius:9px;background:#f8fbfc}
+        .settings-accordion summary{padding:13px 15px;color:#1e4d63;font-weight:700;cursor:pointer}
+        .settings-accordion>div{padding:0 15px 15px}
+        .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+        .form-field{min-width:0}
+        .form-field label{display:block;margin-bottom:6px;color:#29495b;font-size:12px;font-weight:700}
+        .form-field .field{width:100%;min-height:39px}
+        .field-error{margin:5px 0 0;font-size:11px}
+        .status-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:750}
+        .status-active{background:#e8f7ed;color:#176337;border:1px solid #bfe5ca}
+        .status-inactive{background:#f1f3f5;color:#596774;border:1px solid #d6dde2}
+        .table-wrap table th{color:#294b5d}
+        .table-wrap table td{color:#334b58}
+        @media(max-width:720px){.form-grid{grid-template-columns:1fr}.top-help{padding:7px}.top-help .icon{display:none}.top-user{max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
+</style>
     @stack('styles')
 </head>
-<body>
+<body style="--accent: {{ $appBranding['primary_color'] ?? '#176B87' }}; --accent-hover: {{ $appBranding['primary_hover'] ?? '#10546B' }};">
 
 <svg class="icon-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
  <symbol id="icon-layout-dashboard" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="5" rx="1.5"/><rect x="13" y="10" width="8" height="11" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/></symbol>
@@ -473,11 +518,16 @@
 
 <header class="topbar">
     <a class="brand" href="{{ route('dashboard') }}">
-        <span class="brand-mark">GD</span>
-        <span>Gestión Docente<small>Organización académica</small></span>
+        @if(!empty($appBranding['logo_path']))
+            <img class="brand-logo" src="{{ asset('storage/'.$appBranding['logo_path']) }}" alt="Logo del sistema">
+        @else
+            <span class="brand-mark">{{ $appBranding['short_name'] ?? 'GD' }}</span>
+        @endif
+        <span>{{ $appBranding['name'] ?? 'Gestión Docente' }}<small>{{ $appBranding['subtitle'] ?? 'Organización académica' }}</small></span>
     </a>
     <div class="top-actions">
-        <span class="top-user">{{ auth()->user()->name ?? '' }}</span>
+        <a class="top-user" href="{{ route('profile.edit') }}">{{ auth()->user()->name ?? '' }} · Mi perfil</a>
+        <button class="top-help" type="button" data-modal-open="workflow-help-dialog"><x-icon name="circle-help" size="15" /> Ayuda</button>
         <form method="POST" action="{{ route('logout') }}">@csrf<button class="logout" type="submit"><x-icon name="log-out" size="15" />Cerrar sesión</button></form>
     </div>
 </header>
@@ -502,18 +552,18 @@
         </div>
     </aside>
     <main class="main">
-        @if(session('success') || session('error') || session('info') || ($errors->any() && !request()->routeIs('holidays.index', 'admin.professors.index', 'cycles.index', 'cycles.show')))
+        @if(session('success') || session('error') || session('info') || $errors->any())
         <div class="flash-stack" aria-live="polite" aria-atomic="false">
             @if(session('success'))
-                <div class="flash flash-success" data-auto-dismiss role="status"><span class="flash-mark" aria-hidden="true"><x-icon name="check" size="12" /></span><div class="flash-content"><strong>Listo</strong>{{ session('success') }}</div><button class="flash-close" type="button" data-alert-close aria-label="Cerrar mensaje"><x-icon name="x" size="13" /></button></div>
+                <div class="flash flash-success" role="status"><span class="flash-mark" aria-hidden="true"><x-icon name="check" size="12" /></span><div class="flash-content"><strong>Listo</strong>{{ session('success') }}</div><button class="flash-close" type="button" data-alert-close aria-label="Cerrar mensaje"><x-icon name="x" size="13" /></button></div>
             @endif
             @if(session('error'))
                 <div class="flash flash-error" role="alert"><span class="flash-mark" aria-hidden="true"><x-icon name="circle-alert" size="12" /></span><div class="flash-content"><strong>No se pudo completar</strong>{{ session('error') }}</div><button class="flash-close" type="button" data-alert-close aria-label="Cerrar mensaje">×</button></div>
             @endif
             @if(session('info'))
-                <div class="flash flash-info" data-auto-dismiss role="status"><span class="flash-mark" aria-hidden="true"><x-icon name="info" size="12" /></span><div class="flash-content">{{ session('info') }}</div><button class="flash-close" type="button" data-alert-close aria-label="Cerrar mensaje">×</button></div>
+                <div class="flash flash-info" role="status"><span class="flash-mark" aria-hidden="true"><x-icon name="info" size="12" /></span><div class="flash-content">{{ session('info') }}</div><button class="flash-close" type="button" data-alert-close aria-label="Cerrar mensaje">×</button></div>
             @endif
-            @if($errors->any() && !request()->routeIs('holidays.index', 'admin.professors.index', 'cycles.index', 'cycles.show'))
+            @if($errors->any())
                 <div class="flash flash-error" role="alert"><span class="flash-mark" aria-hidden="true"><x-icon name="circle-alert" size="12" /></span><div class="flash-content"><strong>Revisa los datos ingresados</strong><ul style="margin:5px 0 0;padding-left:17px">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div><button class="flash-close" type="button" data-alert-close aria-label="Cerrar mensaje">×</button></div>
             @endif
         </div>
@@ -620,16 +670,6 @@
             submit.classList.add('is-loading');
             submit.setAttribute('aria-busy', 'true');
         }
-    });
-
-    document.querySelectorAll('.flash[data-auto-dismiss]').forEach(message => {
-        window.setTimeout(() => {
-            if (message.isConnected) {
-                message.style.opacity = '0';
-                message.style.transform = 'translateY(-3px)';
-                window.setTimeout(() => message.remove(), 130);
-            }
-        }, 7500);
     });
 
     document.querySelectorAll('dialog[data-auto-open]').forEach(dialog => {
