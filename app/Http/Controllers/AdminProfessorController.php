@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\AuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -13,7 +14,7 @@ class AdminProfessorController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::with('professor')->orderBy('name');
+        $query = User::with('professor');
 
         if ($request->filled('q')) {
             $term = trim($request->string('q')->toString());
@@ -28,16 +29,28 @@ class AdminProfessorController extends Controller
             });
         }
 
+        if ($request->filled('status')) {
+            $query->where('is_active', $request->input('status') === 'active');
+        }
+
+        $sort = $request->input('sort', 'name');
+        $direction = strtolower($request->input('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
+        if (!in_array($sort, ['name', 'email', 'created_at', 'is_active'], true)) {
+            $sort = 'name';
+        }
+
+        $perPage = (int) $request->input('per_page', 15);
+        if (!in_array($perPage, [10, 25, 50, 100], true)) {
+            $perPage = 15;
+        }
+
         $accountCount = User::count();
         $professorCount = User::where('role', 'profesor')->count();
         $adminCount = User::where('role', 'admin')->count();
-        $professors = $query->paginate(15)->withQueryString();
+        $professors = $query->orderBy($sort, $direction)->paginate($perPage)->withQueryString();
 
         return view('admin.professors.index', compact(
-            'professors',
-            'accountCount',
-            'professorCount',
-            'adminCount'
+            'professors', 'accountCount', 'professorCount', 'adminCount', 'perPage', 'sort', 'direction'
         ));
     }
 
@@ -69,6 +82,7 @@ class AdminProfessorController extends Controller
                 'email' => mb_strtolower(trim($data['email'])),
                 'password' => Hash::make($data['password']),
                 'role' => 'profesor',
+                'is_active' => true,
             ]);
 
             $user->professor()->create([
@@ -85,7 +99,7 @@ class AdminProfessorController extends Controller
         ]))->with('success', 'Cuenta docente creada.');
     }
 
-    public function update(Request $request, User $user)
+    public function update(Request $request, User $user, AuditLogger $audit)
     {
         abort_unless($user->role === 'profesor' && $user->professor, 404);
 
@@ -101,9 +115,7 @@ class AdminProfessorController extends Controller
             'full_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'institutional_id' => [
-                'nullable',
-                'string',
-                'max:80',
+                'nullable', 'string', 'max:80',
                 Rule::unique('professors', 'institutional_id')->ignore($user->professor->id),
             ],
             'school' => ['nullable', 'string', 'max:255'],
@@ -129,13 +141,11 @@ class AdminProfessorController extends Controller
         }
 
         $data = $validator->validated();
+        $before = ['name' => $user->name, 'email' => $user->email, 'institutional_id' => $user->professor->institutional_id,
+            'school' => $user->professor->school, 'career' => $user->professor->career];
 
         DB::transaction(function () use ($user, $data) {
-            $user->update([
-                'name' => $data['full_name'],
-                'email' => $data['email'],
-            ]);
-
+            $user->update(['name' => $data['full_name'], 'email' => $data['email']]);
             $user->professor->update([
                 'full_name' => $data['full_name'],
                 'institutional_id' => $data['institutional_id'] ?? null,
@@ -144,7 +154,59 @@ class AdminProfessorController extends Controller
             ]);
         });
 
+        $audit->record('cuentas', 'updated', 'Se actualizó el perfil de '.$user->name, $user, $before, $data);
+
         return redirect()->route('admin.professors.index', $returnParams)
             ->with('success', 'Perfil docente actualizado.');
+    }
+
+    public function toggleStatus(Request $request, User $user, AuditLogger $audit)
+    {
+        abort_if($user->id === $request->user()->id, 422, 'No puedes desactivar la cuenta con la que has iniciado sesión.');
+
+        if ($user->isAdmin() && $user->is_active && User::where('role', 'admin')->where('is_active', true)->count() <= 1) {
+            return back()->with('error', 'No se puede desactivar al último administrador activo.');
+        }
+
+        $before = ['is_active' => (bool) $user->is_active];
+        $user->is_active = !$user->is_active;
+        $user->save();
+
+        $audit->record('cuentas', $user->is_active ? 'activated' : 'deactivated',
+            ($user->is_active ? 'Se activó ' : 'Se desactivó ').$user->name, $user, $before, ['is_active' => (bool) $user->is_active]);
+
+        return back()->with('success', $user->is_active ? 'Cuenta activada. Puede iniciar sesión.' : 'Cuenta desactivada. Se conservaron sus datos académicos.');
+    }
+
+    public function destroy(Request $request, User $user, AuditLogger $audit)
+    {
+        abort_if($user->id === $request->user()->id, 422, 'No puedes eliminar tu propia cuenta.');
+
+        if ($user->isAdmin() && User::where('role', 'admin')->where('is_active', true)->count() <= 1) {
+            return back()->with('error', 'No se puede eliminar al último administrador activo.');
+        }
+
+        $professor = $user->professor;
+        $hasAcademicData = $professor && (
+            $professor->cycles()->exists()
+            || $professor->groups()->exists()
+            || $professor->courses()->exists()
+            || $professor->holidays()->exists()
+            || $professor->fiveMinuteTalkTopics()->exists()
+        );
+
+        if ($hasAcademicData) {
+            return back()->with('error', 'No se eliminó la cuenta porque tiene historial académico. Desactívala para retirar el acceso sin perder sus registros.');
+        }
+
+        $audit->record('cuentas', 'deleted', 'Se eliminó la cuenta sin historial académico: '.$user->email, $user,
+            ['name' => $user->name, 'email' => $user->email, 'role' => $user->role], null);
+
+        DB::transaction(function () use ($professor, $user) {
+            $professor?->delete();
+            $user->delete();
+        });
+
+        return back()->with('success', 'Cuenta eliminada. No se encontraron registros académicos asociados.');
     }
 }
