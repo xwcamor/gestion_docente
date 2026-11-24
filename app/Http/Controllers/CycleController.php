@@ -64,31 +64,8 @@ class CycleController extends Controller
         ]);
 
         $data = $request->validate(
-            [
-                'academic_year' => ['required', 'integer', 'min:2020', 'max:2100'],
-                'cycle_code' => [
-                    'required',
-                    'string',
-                    'max:20',
-                    Rule::unique('cycles', 'cycle_code')->where(
-                        fn ($query) => $query
-                            ->where('professor_id', $professorId)
-                            ->where('academic_year', $request->input('academic_year'))
-                    ),
-                ],
-                'career' => ['required', 'string', 'max:255'],
-                'semester' => ['required', 'string', 'max:60'],
-                'start_date' => ['required', 'date'],
-                'end_date' => ['required', 'date', 'after_or_equal:start_date'],
-                'group_name' => ['required', 'string', 'max:100'],
-            ],
-            [
-                'cycle_code.unique' => 'Ya existe un ciclo con ese año y código.',
-                'career.required' => 'Indica el nombre de la carrera.',
-                'semester.required' => 'Indica el semestre académico.',
-                'end_date.after_or_equal' => 'La fecha de fin debe ser igual o posterior al inicio.',
-                'group_name.required' => 'Registra el nombre del primer grupo del ciclo.',
-            ]
+            $this->cycleValidationRules($professorId),
+            $this->cycleValidationMessages()
         );
 
         $groupName = $data['group_name'];
@@ -121,29 +98,8 @@ class CycleController extends Controller
 
         $validator = Validator::make(
             $request->all(),
-            [
-                'academic_year' => ['required', 'integer', 'min:2020', 'max:2100'],
-                'cycle_code' => [
-                    'required',
-                    'string',
-                    'max:20',
-                    Rule::unique('cycles', 'cycle_code')
-                        ->ignore($cycle->id)
-                        ->where(fn ($query) => $query
-                            ->where('professor_id', $professorId)
-                            ->where('academic_year', $request->input('academic_year'))),
-                ],
-                'career' => ['required', 'string', 'max:255'],
-                'semester' => ['required', 'string', 'max:60'],
-                'start_date' => ['required', 'date'],
-                'end_date' => ['required', 'date', 'after_or_equal:start_date'],
-            ],
-            [
-                'cycle_code.unique' => 'Ya existe otro ciclo con ese año y código.',
-                'career.required' => 'Indica el nombre de la carrera.',
-                'semester.required' => 'Indica el semestre académico.',
-                'end_date.after_or_equal' => 'La fecha de fin debe ser igual o posterior al inicio.',
-            ]
+            $this->cycleValidationRules($professorId, $cycle),
+            $this->cycleValidationMessages(true)
         );
 
         if ($validator->fails()) {
@@ -261,6 +217,50 @@ class CycleController extends Controller
 
         return redirect()->route('cycles.index')
             ->with('success', 'Ciclo y sus grupos fueron eliminados. Los registros del catálogo de cursos se conservaron para reutilizarlos en otros ciclos.');
+    }
+
+    /**
+     * Mantiene las mismas reglas al crear y editar un ciclo.
+     * El nombre del primer grupo solo se exige al crear el ciclo.
+     */
+    private function cycleValidationRules(int $professorId, ?Cycle $cycle = null): array
+    {
+        $uniqueCycleCode = Rule::unique('cycles', 'cycle_code')
+            ->where(fn ($query) => $query
+                ->where('professor_id', $professorId)
+                ->where('academic_year', request()->input('academic_year')));
+
+        if ($cycle) {
+            $uniqueCycleCode->ignore($cycle->id);
+        }
+
+        $rules = [
+            'academic_year' => ['required', 'integer', 'min:2020', 'max:2100'],
+            'cycle_code' => ['required', 'string', 'max:20', $uniqueCycleCode],
+            'career' => ['required', 'string', 'max:255'],
+            'semester' => ['required', 'string', 'max:60'],
+            'start_date' => ['required', 'date'],
+            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+        ];
+
+        if (!$cycle) {
+            $rules['group_name'] = ['required', 'string', 'max:100'];
+        }
+
+        return $rules;
+    }
+
+    private function cycleValidationMessages(bool $updating = false): array
+    {
+        return [
+            'cycle_code.unique' => $updating
+                ? 'Ya existe otro ciclo con ese año y código.'
+                : 'Ya existe un ciclo con ese año y código.',
+            'career.required' => 'Indica el nombre de la carrera.',
+            'semester.required' => 'Indica el semestre académico.',
+            'end_date.after_or_equal' => 'La fecha de fin debe ser igual o posterior al inicio.',
+            'group_name.required' => 'Registra el nombre del primer grupo del ciclo.',
+        ];
     }
 
     private function authorizeCycle(Cycle $cycle): void
