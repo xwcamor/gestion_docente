@@ -11,6 +11,7 @@ use App\Services\FiveMinuteTalkService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 
@@ -218,23 +219,39 @@ class CycleController extends Controller
     {
         $this->authorizeCycle($cycle);
 
-        $data = $request->validate([
+        $validator = Validator::make($request->all(), [
             'days' => ['required', 'array', 'min:1'],
             'days.*' => ['required', 'integer', 'min:1', 'max:7'],
             'topics' => ['nullable', 'string', 'max:50000'],
             'topics_file' => ['nullable', 'file', 'mimes:xlsx,xls,csv', 'max:10240'],
         ], [
-            'days.required' => 'Selecciona los días de la semana en los que se pueden programar charlas.',
+            'days.required' => 'Selecciona al menos un día para programar las charlas.',
             'topics_file.mimes' => 'Adjunta un archivo Excel .xlsx, .xls o .csv.',
             'topics_file.max' => 'El archivo de temas no puede superar los 10 MB.',
         ]);
 
-        $result = $service->updateAndDistribute(
-            $cycle,
-            $data['days'],
-            $data['topics'] ?? null,
-            $request->file('topics_file')
-        );
+        if ($validator->fails()) {
+            return redirect()
+                ->route('cycles.show', ['cycle' => $cycle, 'talks' => 1])
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $data = $validator->validated();
+
+        try {
+            $result = $service->updateAndDistribute(
+                $cycle,
+                $data['days'],
+                $data['topics'] ?? null,
+                $request->file('topics_file')
+            );
+        } catch (ValidationException $exception) {
+            return redirect()
+                ->route('cycles.show', ['cycle' => $cycle, 'talks' => 1])
+                ->withErrors($exception->errors())
+                ->withInput();
+        }
 
         $message = "{$result['topics']} temas guardados: {$result['assigned']} asignados a fechas y {$result['pending']} pendientes.";
         if ($result['available_dates'] === 0) {
