@@ -621,6 +621,13 @@ html[data-theme="dark"] .top-theme-toggle{border-color:#3a4e5a;background:#1b2a3
 html[data-theme="dark"] .top-theme-toggle:hover{border-color:var(--accent);background:#263945;color:#fff}
 @media(max-width:720px){.top-theme-toggle{width:32px;min-width:32px;height:32px;padding:6px}.top-theme-toggle span{display:none}}
 
+
+.workflow-intro{margin:0 0 13px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface-soft);color:var(--muted);font-size:11px;line-height:1.55}
+.modal-help-item{position:relative;align-items:center;min-height:94px}
+.modal-step-index{width:28px;height:28px;flex:none;display:grid;place-items:center;border:1px solid color-mix(in srgb,var(--accent) 28%,transparent);border-radius:8px;background:var(--accent-soft);color:var(--accent);font-size:10px;font-weight:800;font-variant-numeric:tabular-nums}
+html[data-theme="dark"] .workflow-intro{background:#17232c;border-color:#344752;color:#a8bac4}
+html[data-theme="dark"] .modal-step-index{background:#203641;border-color:#426070;color:#a9d8e8}
+
 </style>
     @stack('styles')
 </head>
@@ -732,9 +739,6 @@ html[data-theme="dark"] .top-theme-toggle:hover{border-color:var(--accent);backg
                     <x-icon name="moon" size="16" /><span id="theme-toggle-label">Modo oscuro</span>
                     <small id="theme-toggle-state">Desactivado</small>
                 </button>
-                <button class="sidebar-preference-button" type="button" data-modal-open="workflow-help-dialog">
-                    <x-icon name="circle-help" size="16" /><span>Ayuda del flujo</span>
-                </button>
             </div>
         </div>
     </aside>
@@ -775,11 +779,28 @@ html[data-theme="dark"] .top-theme-toggle:hover{border-color:var(--accent);backg
         <button class="dialog-close" type="button" data-modal-close aria-label="Cerrar"><x-icon name="x" /></button>
     </div>
     <div class="dialog-body">
+        <p class="workflow-intro">Sigue este orden para configurar un periodo sin repetir información. Puedes volver a cada sección cuando necesites hacer cambios.</p>
         <div class="modal-help-grid">
-            <div class="modal-help-item"><span class="workflow-icon"><x-icon name="calendar-days" /></span><div><strong>Ciclos</strong><p>Registra el año, el código y las fechas del periodo académico.</p></div></div>
-            <div class="modal-help-item"><span class="workflow-icon"><x-icon name="users" /></span><div><strong>Grupos</strong><p>Agrega las secciones que tienes asignadas dentro de cada ciclo.</p></div></div>
-            <div class="modal-help-item"><span class="workflow-icon"><x-icon name="book-open" /></span><div><strong>Cursos</strong><p>Asigna cursos a cada grupo y define si trabajan con TEC, TALL o ambas.</p></div></div>
-            <div class="modal-help-item"><span class="workflow-icon"><x-icon name="clipboard-check" /></span><div><strong>Gestión académica</strong><p>Configura horarios, importa alumnos, registra notas y genera documentos.</p></div></div>
+            <div class="modal-help-item">
+                <span class="modal-step-index">01</span>
+                <span class="workflow-icon"><x-icon name="calendar-days" /></span>
+                <div><strong>Crear el ciclo</strong><p>Indica el año, código y rango general del periodo académico.</p></div>
+            </div>
+            <div class="modal-help-item">
+                <span class="modal-step-index">02</span>
+                <span class="workflow-icon"><x-icon name="users" /></span>
+                <div><strong>Registrar los grupos</strong><p>Agrega las secciones que tienes asignadas para ese ciclo.</p></div>
+            </div>
+            <div class="modal-help-item">
+                <span class="modal-step-index">03</span>
+                <span class="workflow-icon"><x-icon name="book-open" /></span>
+                <div><strong>Asignar los cursos</strong><p>Vincula cada curso con su modalidad: teoría, taller o ambas.</p></div>
+            </div>
+            <div class="modal-help-item">
+                <span class="modal-step-index">04</span>
+                <span class="workflow-icon"><x-icon name="clipboard-check" /></span>
+                <div><strong>Completar la planificación</strong><p>Registra horarios y fechas, importa alumnos, prepara sesiones y genera los formatos.</p></div>
+            </div>
         </div>
     </div>
     <div class="dialog-footer"><button class="btn" type="button" data-modal-close>Entendido</button></div>
