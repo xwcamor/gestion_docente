@@ -118,6 +118,12 @@ class GroupController extends Controller
                     $validator->errors()->add("groups.{$index}.workload_end_date", 'La fecha final no puede ser anterior a la inicial.');
                 }
 
+                foreach (['workload_start_time', 'workload_end_time'] as $timeField) {
+                    if (filled($groupData[$timeField] ?? null) && ((int) substr($groupData[$timeField], 3, 2) % 15 !== 0)) {
+                        $validator->errors()->add("groups.{$index}.{$timeField}", 'Usa intervalos de 15 minutos (por ejemplo, 08:00, 08:15 o 08:30).');
+                    }
+                }
+
                 if (
                     filled($groupData['workload_start_time'] ?? null)
                     && filled($groupData['workload_end_time'] ?? null)
@@ -457,6 +463,13 @@ class GroupController extends Controller
                 && $request->input('workload_end_date') < $request->input('workload_start_date')
             ) {
                 $validator->errors()->add('workload_end_date', 'La fecha final no puede ser anterior a la inicial.');
+            }
+
+            foreach (['workload_start_time', 'workload_end_time'] as $timeField) {
+                $timeValue = $request->input($timeField);
+                if (filled($timeValue) && ((int) substr($timeValue, 3, 2) % 15 !== 0)) {
+                    $validator->errors()->add($timeField, 'Usa intervalos de 15 minutos (por ejemplo, 08:00, 08:15 o 08:30).');
+                }
             }
 
             if (
