@@ -28,8 +28,8 @@
         </div>
 
         <div class="form-actions">
-            <a class="btn btn-secondary" href="{{ route('cycles.show', $cycle) }}">Cancelar</a>
-            <button class="btn" type="submit">Guardar grupo</button>
+            <a class="btn btn-secondary" href="{{ route('cycles.show', $cycle) }}"><x-icon name="x" /> Cancelar</a>
+            <button class="btn" type="submit"><x-icon name="check" /> Guardar grupo</button>
         </div>
     </form>
 </section>
