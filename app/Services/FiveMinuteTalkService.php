@@ -12,13 +12,6 @@ use RuntimeException;
 class FiveMinuteTalkService
 {
     /**
-     * Builds the group talk plan from the workload date range and assigned
-     * weekdays, without requiring each course modality to have class blocks.
-     *
-     * Pending talks are spread as evenly as possible over the available dates.
-     * Completed talks keep their historical dates and are never moved.
-     */
-    /**
      * Builds exactly one scheduled talk for each eligible group work date.
      * The official catalogue is cyclic: after its last topic, it starts again
      * from the first topic. Completed talks keep their original date and topic.
