@@ -94,13 +94,17 @@ class CalendarService
                 $planPrefix = $modality->modality === 'TEC' ? 'TEC' : 'TALL';
                 $planTopic = $approvedSuggestions->firstWhere('category', $planPrefix.'_TOPIC')?->content;
                 $planObjective = $approvedSuggestions->firstWhere('category', $planPrefix.'_OBJECTIVE')?->content;
-                $topic = $week?->is_evaluation ? 'Evaluación curricular' : ($planTopic ?: ($task?->title ?: null));
+                $sourceTopic = trim((string) ($week?->source_topic ?? ''));
+                $topic = $week?->is_evaluation
+                    ? 'Evaluación curricular'
+                    : ($planTopic ?: ($sourceTopic ?: ($task?->title ?: null)));
                 $activityLines = [];
                 if ($week) {
                     $activityLines[] = 'SEMANA DEL CURSO '.$week->week_number.($week->source_week_number ? ' (SEMANA ORIGINAL MALLA '.$week->source_week_number.')' : '');
                     $activityLines[] = 'Horas malla T/P/V: '.($week->hours_theory ?? '—').' / '.($week->hours_practice ?? '—').' / '.($week->hours_virtual ?? '—');
                 }
                 if ($task) $activityLines[] = $task->task_code.': '.$task->title;
+                if ($sourceTopic !== '') $activityLines[] = 'TEMA OFICIAL HOJA DE PROGRAMACIÓN: '.$sourceTopic;
                 if ($planTopic) $activityLines[] = 'TEMA '.$planPrefix.': '.$planTopic;
                 if ($planObjective) $activityLines[] = 'OBJETIVO '.$planPrefix.': '.$planObjective;
                 if ($operations->isNotEmpty()) {
