@@ -51,7 +51,9 @@ Route::middleware(['auth', 'professor'])->group(function () {
     Route::patch('/grupos/{group}/charlas/{talk}', [GroupController::class, 'updateTalkExecution'])->name('groups.talks.update');
     Route::post('/grupos/{group}/charlas-5-minutos/excel', [DocumentController::class, 'groupFiveMinuteTalks'])->name('documents.group-talks');
     Route::delete('/grupos/{group}', [GroupController::class, 'destroy'])->name('groups.destroy');
+    Route::post('/grupos/{group}/alumnos', [GroupController::class, 'storeStudent'])->name('groups.students.store');
     Route::patch('/grupos/{group}/alumnos/{student}', [GroupController::class, 'updateStudent'])->name('groups.students.update');
+    Route::delete('/grupos/{group}/alumnos/{student}', [GroupController::class, 'destroyStudent'])->name('groups.students.destroy');
     Route::get('/grupos/{group}/calendario', [GroupCalendarController::class, 'index'])->name('groups.calendar');
     Route::post('/grupos/{group}/calendario/recalcular', [GroupCalendarController::class, 'rebuild'])->name('groups.calendar.rebuild');
     Route::get('/grupos/{group}', [GroupController::class, 'show'])->name('groups.show');

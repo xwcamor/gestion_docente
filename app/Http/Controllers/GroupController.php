@@ -611,6 +611,234 @@ class GroupController extends Controller
             ->with('success', 'Grupo eliminado. Los cursos del catálogo y los alumnos que se usan en otros grupos se conservaron.');
     }
 
+    public function storeStudent(Request $request, TeachingGroup $group, AuditLogger $audit)
+    {
+        $this->authorizeGroup($group);
+
+        $request->merge([
+            'institutional_id' => trim((string) $request->input('institutional_id')) ?: null,
+            'username' => trim((string) $request->input('username')) ?: null,
+            'surnames' => trim((string) $request->input('surnames')),
+            'given_names' => trim((string) $request->input('given_names')),
+        ]);
+
+        $studentById = filled($request->input('institutional_id'))
+            ? Student::query()
+                ->where('professor_id', $group->professor_id)
+                ->where('institutional_id', $request->input('institutional_id'))
+                ->first()
+            : null;
+
+        $studentByUsername = filled($request->input('username'))
+            ? Student::query()
+                ->where('professor_id', $group->professor_id)
+                ->where('username', $request->input('username'))
+                ->first()
+            : null;
+
+        $student = $studentById ?: $studentByUsername;
+
+        $validator = Validator::make($request->all(), [
+            'institutional_id' => [
+                'nullable',
+                'string',
+                'max:80',
+                Rule::unique('students', 'institutional_id')
+                    ->where(fn ($query) => $query->where('professor_id', $group->professor_id))
+                    ->ignore($student?->id),
+            ],
+            'username' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::unique('students', 'username')
+                    ->where(fn ($query) => $query->where('professor_id', $group->professor_id))
+                    ->ignore($student?->id),
+            ],
+            'surnames' => ['required', 'string', 'max:255'],
+            'given_names' => ['required', 'string', 'max:255'],
+        ], [
+            'institutional_id.unique' => 'Ese ID institucional ya está registrado para otro alumno.',
+            'username.unique' => 'Ese usuario ya está registrado para otro alumno.',
+            'surnames.required' => 'Los apellidos son obligatorios.',
+            'given_names.required' => 'Los nombres son obligatorios.',
+        ]);
+
+        $validator->after(function ($validator) use ($request, $studentById, $studentByUsername, $group, $student) {
+            if (blank($request->input('institutional_id')) && blank($request->input('username'))) {
+                $validator->errors()->add('institutional_id', 'Indica el ID institucional o el usuario del alumno.');
+            }
+
+            if (
+                $studentById
+                && $studentByUsername
+                && (int) $studentById->id !== (int) $studentByUsername->id
+            ) {
+                $validator->errors()->add('username', 'El ID y el usuario pertenecen a alumnos diferentes.');
+            }
+
+            if ($student && $group->students()->whereKey($student->id)->exists()) {
+                $validator->errors()->add('institutional_id', 'Este alumno ya pertenece al padrón del grupo.');
+            }
+        });
+
+        if ($validator->fails()) {
+            return redirect()
+                ->to(route('groups.show', ['group' => $group, 'dialog' => 'student-create']).'#group-roster')
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $data = $validator->validated();
+
+        $student = DB::transaction(function () use ($group, $student, $data) {
+            $lockedGroup = TeachingGroup::query()
+                ->whereKey($group->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $studentRecord = $student
+                ? Student::query()->whereKey($student->id)->lockForUpdate()->firstOrFail()
+                : new Student(['professor_id' => $lockedGroup->professor_id]);
+
+            if ($lockedGroup->students()->whereKey($studentRecord->id)->exists()) {
+                throw ValidationException::withMessages([
+                    'institutional_id' => 'Este alumno ya pertenece al padrón del grupo.',
+                ]);
+            }
+
+            $studentRecord->fill([
+                'professor_id' => $lockedGroup->professor_id,
+                'institutional_id' => $data['institutional_id'] ?: $studentRecord->institutional_id,
+                'username' => $data['username'] ?: $studentRecord->username,
+                'surnames' => $data['surnames'],
+                'given_names' => $data['given_names'],
+            ]);
+            $studentRecord->save();
+
+            DB::table('teaching_group_students')->insertOrIgnore([
+                'teaching_group_id' => $lockedGroup->id,
+                'student_id' => $studentRecord->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            // Reactiva matrículas existentes sin tocar notas ni datos del campus.
+            $modalityIds = DB::table('course_modalities')
+                ->join('course_assignments', 'course_assignments.id', '=', 'course_modalities.course_assignment_id')
+                ->where('course_assignments.teaching_group_id', $lockedGroup->id)
+                ->pluck('course_modalities.id');
+
+            $timestamp = now();
+            foreach ($modalityIds as $modalityId) {
+                DB::table('enrollments')->upsert(
+                    [[
+                        'course_modality_id' => $modalityId,
+                        'student_id' => $studentRecord->id,
+                        'status' => 'active',
+                        'created_at' => $timestamp,
+                        'updated_at' => $timestamp,
+                    ]],
+                    ['course_modality_id', 'student_id'],
+                    ['status', 'updated_at']
+                );
+            }
+
+            return $studentRecord;
+        });
+
+        $audit->record(
+            'alumnos',
+            'added_to_group',
+            'Se agregó a '.$student->given_names.' '.$student->surnames.' al grupo '.$group->name,
+            $student,
+            null,
+            ['teaching_group_id' => $group->id]
+        );
+
+        return redirect()
+            ->to(route('groups.show', $group).'#group-roster')
+            ->with('success', $student->given_names.' '.$student->surnames.' fue agregado al padrón del grupo.');
+    }
+
+    public function destroyStudent(Request $request, TeachingGroup $group, Student $student, AuditLogger $audit)
+    {
+        $this->authorizeGroup($group);
+
+        $page = max(1, (int) $request->input('students_page', 1));
+
+        abort_unless(
+            $group->students()->whereKey($student->getKey())->exists(),
+            404
+        );
+
+        $removed = DB::transaction(function () use ($group, $student) {
+            $lockedGroup = TeachingGroup::query()
+                ->whereKey($group->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            // El bloqueo de la fila del grupo serializa las operaciones del padrón.
+            $studentCount = DB::table('teaching_group_students')
+                ->where('teaching_group_id', $lockedGroup->id)
+                ->count();
+
+            if ($studentCount <= 1) {
+                return false;
+            }
+
+            $detached = DB::table('teaching_group_students')
+                ->where('teaching_group_id', $lockedGroup->id)
+                ->where('student_id', $student->id)
+                ->delete();
+
+            if (!$detached) {
+                abort(404);
+            }
+
+            $modalityIds = DB::table('course_modalities')
+                ->join('course_assignments', 'course_assignments.id', '=', 'course_modalities.course_assignment_id')
+                ->where('course_assignments.teaching_group_id', $lockedGroup->id)
+                ->pluck('course_modalities.id');
+
+            if ($modalityIds->isNotEmpty()) {
+                DB::table('enrollments')
+                    ->whereIn('course_modality_id', $modalityIds)
+                    ->where('student_id', $student->id)
+                    ->where('status', 'active')
+                    ->update([
+                        'status' => 'inactive',
+                        'updated_at' => now(),
+                    ]);
+            }
+
+            return true;
+        });
+
+        if (!$removed) {
+            return redirect()
+                ->to(route('groups.show', ['group' => $group, 'students_page' => $page]).'#group-roster')
+                ->with('error', 'Cada grupo debe conservar al menos un alumno. Agrega otro antes de retirar este.');
+        }
+
+        $audit->record(
+            'alumnos',
+            'removed_from_group',
+            'Se retiró a '.$student->given_names.' '.$student->surnames.' del grupo '.$group->name,
+            $student,
+            ['teaching_group_id' => $group->id],
+            null
+        );
+
+        $remaining = $group->students()->count();
+        $lastPage = max(1, (int) ceil($remaining / 20));
+        $page = min($page, $lastPage);
+
+        return redirect()
+            ->to(route('groups.show', ['group' => $group, 'students_page' => $page]).'#group-roster')
+            ->with('success', 'El alumno fue retirado de este grupo. Su ficha y sus calificaciones se conservaron.');
+    }
+
     public function updateStudent(Request $request, TeachingGroup $group, Student $student)
     {
         $this->authorizeGroup($group);

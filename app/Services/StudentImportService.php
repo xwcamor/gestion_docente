@@ -137,6 +137,7 @@ class StudentImportService
         $groupStudentIds = [];
 
         DB::transaction(function () use ($rows, $map, $group, &$created, &$updated, &$skipped, &$errors, &$seen, &$groupStudentIds) {
+            TeachingGroup::query()->whereKey($group->id)->lockForUpdate()->firstOrFail();
             foreach ($rows as $index => $row) {
                 $value = fn ($key) => isset($map[$key]) ? trim((string) ($row[$map[$key]] ?? '')) : '';
                 $id = $value('institutional_id');
@@ -229,7 +230,11 @@ class StudentImportService
                     }
                 }
                 foreach (array_chunk($enrollmentRows, 500) as $enrollmentChunk) {
-                    DB::table('enrollments')->insertOrIgnore($enrollmentChunk);
+                    DB::table('enrollments')->upsert(
+                        $enrollmentChunk,
+                        ['course_modality_id', 'student_id'],
+                        ['status', 'updated_at']
+                    );
                 }
             }
         });
@@ -266,6 +271,12 @@ class StudentImportService
 
             if ($rows) {
                 $created += DB::table('enrollments')->insertOrIgnore($rows);
+
+                // Reactiva matrículas existentes sin sobrescribir notas ni datos del campus.
+                DB::table('enrollments')
+                    ->where('course_modality_id', $modality->id)
+                    ->whereIn('student_id', $studentChunk)
+                    ->update(['status' => 'active', 'updated_at' => $timestamp]);
             }
         }
 

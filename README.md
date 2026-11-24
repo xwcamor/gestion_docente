@@ -172,6 +172,7 @@ La migración inicial crea las tablas de usuarios, profesores, ciclos, grupos, c
 - Cursos por grupo y modalidades TEC/TALL independientes.
 - NRC, fechas, horarios, alumnos, sesiones y evaluaciones por modalidad.
 - Importación de listados de alumnos exportados desde el campus.
+- Altas y retiros individuales del padrón por grupo, conservando fichas y calificaciones; no se permite retirar al último alumno.
 - Gestión de notas y evaluaciones.
 - Calendario mensual consolidado por grupo, con clases y feriados; cada bloque conserva la modalidad TEC/TALL y el tipo de enseñanza de su curso.
 - Malla curricular y propuestas de contenido TEC/TALL.

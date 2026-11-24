@@ -167,7 +167,7 @@
     </div>
 </details>
 
-<details class="card group-panel" id="group-roster" data-group-panel @if(($studentCount === 0 && !request('workload')) || request('edit_student')) open @endif>
+<details class="card group-panel" id="group-roster" data-group-panel @if(($studentCount === 0 && !request('workload')) || request('edit_student') || request('dialog') === 'student-create') open @endif>
     <summary class="group-panel-summary">
         <span class="group-panel-icon"><x-icon name="users" /></span>
         <span class="group-panel-title">
@@ -199,12 +199,23 @@
                 <span>{{ $lastRosterImport->skipped_count }} omitidos</span>
             </div>
         @endif
+            <div class="roster-list-head">
+                <div>
+                    <strong>Alumnos registrados</strong>
+                    <small>{{ $studentCount > 0 ? 'Agrega un alumno, edita sus datos o retíralo de este grupo.' : 'Todavía no hay alumnos. Puedes registrar el primero aquí.' }}</small>
+                </div>
+                <div class="roster-head-actions">
+                    @if($students->isNotEmpty())
+                        <input class="filter-input roster-search" id="student-search" type="search" placeholder="Buscar en esta página…" aria-label="Buscar alumno en esta página">
+                    @endif
+                    <button class="btn btn-sm" type="button" data-modal-open="student-create-dialog">
+                        <x-icon name="plus" /> Agregar alumno
+                    </button>
+                </div>
+            </div>
+
 
         @if($students->isNotEmpty())
-            <div class="roster-list-head">
-                <div><strong>Alumnos registrados</strong><small>Usa Editar para cambiar los datos sin salir de esta tabla.</small></div>
-                <input class="filter-input roster-search" id="student-search" type="search" placeholder="Buscar en esta página…" aria-label="Buscar alumno en esta página">
-            </div>
             <div class="table-wrap roster-table-wrap">
                 <table class="roster-table">
                     <thead><tr><th>ID institucional</th><th>Apellidos</th><th>Nombres</th><th>Usuario</th><th class="roster-actions-heading">Acciones</th></tr></thead>
@@ -244,6 +255,23 @@
                                     <button class="btn btn-sm" type="submit" data-student-save @unless($editing) hidden @endunless><x-icon name="check" /> Guardar</button>
                                     <button class="btn btn-ghost btn-sm" type="button" data-student-cancel @unless($editing) hidden @endunless>Cancelar</button>
                                 </form>
+                                @if($studentCount > 1)
+                                    <form method="POST" action="{{ route('groups.students.destroy', [$group, $student]) }}"
+                                          data-confirm="Se retirará a {{ $student->given_names }} {{ $student->surnames }} de este grupo. Sus calificaciones y su ficha se conservarán; solo quedará inactivo en los cursos de este grupo.">
+                                        @csrf
+                                        @method('DELETE')
+                                        <input type="hidden" name="students_page" value="{{ request('students_page', 1) }}">
+                                        <button class="btn btn-danger btn-sm" type="submit" title="Retirar del grupo">
+                                            <x-icon name="x" /> Quitar
+                                        </button>
+                                    </form>
+                                @else
+                                    <button class="btn btn-danger btn-sm" type="button" disabled
+                                            title="Cada grupo debe conservar al menos un alumno"
+                                            aria-label="No se puede retirar al último alumno">
+                                        <x-icon name="x" /> Quitar
+                                    </button>
+                                @endif
                             </td>
                         </tr>
                     @endforeach
@@ -258,11 +286,59 @@
             <div class="empty roster-empty">
                 <span class="stat-icon" style="margin:0 auto 10px;width:42px;height:42px"><x-icon name="users" size="20" /></span>
                 <strong>Este grupo todavía no tiene alumnos.</strong>
-                <span>Selecciona el archivo oficial del campus y revisa la vista previa antes de importarlo.</span>
+                <span>Agrega el primer alumno manualmente o importa el padrón oficial del campus.</span>
             </div>
         @endif
     </div>
 </details>
+
+
+<dialog class="ui-dialog sheet-dialog" id="student-create-dialog" aria-labelledby="student-create-title" @if(request('dialog') === 'student-create') data-auto-open @endif>
+    <div class="dialog-head">
+        <div>
+            <h2 id="student-create-title">Agregar alumno</h2>
+            <p>{{ $group->name }} · El padrón se comparte con todos los cursos del grupo.</p>
+        </div>
+        <button class="dialog-close" type="button" data-modal-close aria-label="Cerrar"><x-icon name="x" /></button>
+    </div>
+    <form method="POST" action="{{ route('groups.students.store', $group) }}" data-loading-form="1">
+        @csrf
+        <div class="dialog-body">
+            @if($errors->any() && request('dialog') === 'student-create')
+                <div class="dialog-error" role="alert">
+                    <strong>Revisa estos datos:</strong>
+                    <ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+                </div>
+            @endif
+            <div class="form-row">
+                <div>
+                    <label for="new_student_id">ID institucional</label>
+                    <input class="field" id="new_student_id" name="institutional_id" maxlength="80" value="{{ old('institutional_id') }}" placeholder="Código del alumno">
+                </div>
+                <div>
+                    <label for="new_student_username">Usuario</label>
+                    <input class="field" id="new_student_username" name="username" maxlength="255" value="{{ old('username') }}" placeholder="Usuario del campus">
+                </div>
+            </div>
+            <p class="help">Registra al menos uno: ID institucional o usuario.</p>
+            <div class="form-row">
+                <div>
+                    <label for="new_student_surnames">Apellidos <span class="muted">*</span></label>
+                    <input class="field" id="new_student_surnames" name="surnames" maxlength="255" value="{{ old('surnames') }}" required>
+                </div>
+                <div>
+                    <label for="new_student_names">Nombres <span class="muted">*</span></label>
+                    <input class="field" id="new_student_names" name="given_names" maxlength="255" value="{{ old('given_names') }}" required>
+                </div>
+            </div>
+            <p class="help">Si el ID o el usuario ya existe en tu padrón general, se reutilizará esa ficha y se conservarán sus notas.</p>
+        </div>
+        <div class="dialog-footer">
+            <button class="btn btn-secondary" type="button" data-modal-close>Cancelar</button>
+            <button class="btn" type="submit"><x-icon name="plus" /> Agregar al grupo</button>
+        </div>
+    </form>
+</dialog>
 
 <details class="card group-panel" id="group-courses" data-group-panel @if($courseCount === 0) open @endif>
     <summary class="group-panel-summary">
@@ -526,6 +602,11 @@ html[data-theme="dark"] .group-workload-panel[open]>.group-panel-summary{backgro
 .roster-list-head strong{font-size:12px}
 .roster-list-head small{font-size:10px;color:#819098}
 .roster-search{max-width:250px}
+.roster-head-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.roster-table .roster-actions{min-width:175px}
+.roster-table .roster-actions form{display:inline-flex;gap:5px;align-items:center}
+@media(max-width:600px){.roster-head-actions{align-items:stretch;flex-direction:column}.roster-head-actions .btn{width:100%}.roster-head-actions .roster-search{max-width:none;width:100%}}
+
 .roster-table-wrap{border:1px solid #e7edf0;border-radius:9px}
 .roster-table{min-width:800px}
 .roster-table th{background:#f2f7f9;color:#4d6d7b;font-size:10px}
