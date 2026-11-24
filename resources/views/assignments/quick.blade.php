@@ -54,15 +54,11 @@
             <table class="quick-course-table">
                 <thead>
                     <tr>
-                        <th rowspan="2" class="quick-number-heading">#</th>
-                        <th rowspan="2" class="quick-course-heading">Nombre del curso</th>
-                        <th colspan="3" class="quick-modality-heading quick-tec-heading">Teoría (TEC)</th>
-                        <th colspan="3" class="quick-modality-heading quick-tall-heading">Taller (TAL)</th>
-                        <th rowspan="2" class="quick-actions-heading"></th>
-                    </tr>
-                    <tr>
-                        <th>Código TEC</th><th>Desde</th><th>Hasta</th>
-                        <th>Código TAL</th><th>Desde</th><th>Hasta</th>
+                        <th class="quick-number-heading">#</th>
+                        <th class="quick-course-heading">Curso</th>
+                        <th class="quick-modality-heading quick-tec-heading">Teoría (TEC)</th>
+                        <th class="quick-modality-heading quick-tall-heading">Taller (TAL)</th>
+                        <th class="quick-actions-heading" aria-label="Acciones"></th>
                     </tr>
                 </thead>
                 <tbody id="quick-course-rows">
@@ -76,45 +72,50 @@
                                 </label>
                                 <small class="quick-row-preview" data-row-preview aria-live="polite">Ingresa uno o ambos componentes.</small>
                                 @error("rows.$index.course_name")<small class="field-error">{{ $message }}</small>@enderror
+                                @error("rows.$index.row_error")<small class="field-error quick-row-error">{{ $message }}</small>@enderror
                             </td>
-                            <td colspan="3" class="quick-modality-cell">
+                            <td class="quick-modality-cell">
                                 <div class="quick-modality-fields">
                                     <label class="quick-field-label quick-code-field">
-                                        <span>Código completo TEC</span>
+                                        <span>Código institucional TEC</span>
                                         <input class="field mono quick-modality-code" data-code-input data-modality="TEC" name="rows[{{ $index }}][tec_code]" value="{{ $row['tec_code'] ?? '' }}" maxlength="200" placeholder="202620-PIAD-222-TEC-NRC_11518" aria-label="Código completo TEC">
                                         <small class="quick-code-preview" data-code-preview aria-live="polite"></small>
                                         @error("rows.$index.tec_code")<small class="field-error">{{ $message }}</small>@enderror
                                     </label>
-                                    <label class="quick-field-label">
-                                        <span>Desde</span>
-                                        <input class="field" type="date" name="rows[{{ $index }}][tec_start_date]" value="{{ $row['tec_start_date'] ?? '' }}" aria-label="Fecha Desde de TEC">
-                                        @error("rows.$index.tec_start_date")<small class="field-error">{{ $message }}</small>@enderror
-                                    </label>
-                                    <label class="quick-field-label">
-                                        <span>Hasta</span>
-                                        <input class="field" type="date" name="rows[{{ $index }}][tec_end_date]" value="{{ $row['tec_end_date'] ?? '' }}" aria-label="Fecha Hasta de TEC">
-                                        @error("rows.$index.tec_end_date")<small class="field-error">{{ $message }}</small>@enderror
-                                    </label>
+                                    <div class="quick-date-fields">
+                                        <label class="quick-field-label">
+                                            <span>Desde</span>
+                                            <input class="field" type="date" name="rows[{{ $index }}][tec_start_date]" value="{{ $row['tec_start_date'] ?? '' }}" aria-label="Fecha Desde de TEC">
+                                            @error("rows.$index.tec_start_date")<small class="field-error">{{ $message }}</small>@enderror
+                                        </label>
+                                        <label class="quick-field-label">
+                                            <span>Hasta</span>
+                                            <input class="field" type="date" name="rows[{{ $index }}][tec_end_date]" value="{{ $row['tec_end_date'] ?? '' }}" aria-label="Fecha Hasta de TEC">
+                                            @error("rows.$index.tec_end_date")<small class="field-error">{{ $message }}</small>@enderror
+                                        </label>
+                                    </div>
                                 </div>
                             </td>
-                            <td colspan="3" class="quick-modality-cell">
+                            <td class="quick-modality-cell">
                                 <div class="quick-modality-fields">
                                     <label class="quick-field-label quick-code-field">
-                                        <span>Código completo TAL</span>
+                                        <span>Código institucional TAL</span>
                                         <input class="field mono quick-modality-code" data-code-input data-modality="TALL" name="rows[{{ $index }}][tall_code]" value="{{ $row['tall_code'] ?? '' }}" maxlength="200" placeholder="202620-PIAD-222-TAL-NRC_11520" aria-label="Código completo TAL">
                                         <small class="quick-code-preview" data-code-preview aria-live="polite"></small>
                                         @error("rows.$index.tall_code")<small class="field-error">{{ $message }}</small>@enderror
                                     </label>
-                                    <label class="quick-field-label">
-                                        <span>Desde</span>
-                                        <input class="field" type="date" name="rows[{{ $index }}][tall_start_date]" value="{{ $row['tall_start_date'] ?? '' }}" aria-label="Fecha Desde de TAL">
-                                        @error("rows.$index.tall_start_date")<small class="field-error">{{ $message }}</small>@enderror
-                                    </label>
-                                    <label class="quick-field-label">
-                                        <span>Hasta</span>
-                                        <input class="field" type="date" name="rows[{{ $index }}][tall_end_date]" value="{{ $row['tall_end_date'] ?? '' }}" aria-label="Fecha Hasta de TAL">
-                                        @error("rows.$index.tall_end_date")<small class="field-error">{{ $message }}</small>@enderror
-                                    </label>
+                                    <div class="quick-date-fields">
+                                        <label class="quick-field-label">
+                                            <span>Desde</span>
+                                            <input class="field" type="date" name="rows[{{ $index }}][tall_start_date]" value="{{ $row['tall_start_date'] ?? '' }}" aria-label="Fecha Desde de TAL">
+                                            @error("rows.$index.tall_start_date")<small class="field-error">{{ $message }}</small>@enderror
+                                        </label>
+                                        <label class="quick-field-label">
+                                            <span>Hasta</span>
+                                            <input class="field" type="date" name="rows[{{ $index }}][tall_end_date]" value="{{ $row['tall_end_date'] ?? '' }}" aria-label="Fecha Hasta de TAL">
+                                            @error("rows.$index.tall_end_date")<small class="field-error">{{ $message }}</small>@enderror
+                                        </label>
+                                    </div>
                                 </div>
                             </td>
                             <td class="quick-remove-cell">
@@ -136,26 +137,30 @@
                     </label>
                     <small class="quick-row-preview" data-row-preview aria-live="polite">Ingresa uno o ambos componentes.</small>
                 </td>
-                <td colspan="3" class="quick-modality-cell">
+                <td class="quick-modality-cell">
                     <div class="quick-modality-fields">
                         <label class="quick-field-label quick-code-field">
-                            <span>Código completo TEC</span>
+                            <span>Código institucional TEC</span>
                             <input class="field mono quick-modality-code" data-code-input data-modality="TEC" name="rows[__INDEX__][tec_code]" maxlength="200" placeholder="202620-PIAD-222-TEC-NRC_11518" aria-label="Código completo TEC">
                             <small class="quick-code-preview" data-code-preview aria-live="polite"></small>
                         </label>
-                        <label class="quick-field-label"><span>Desde</span><input class="field" type="date" name="rows[__INDEX__][tec_start_date]" aria-label="Fecha Desde de TEC"></label>
-                        <label class="quick-field-label"><span>Hasta</span><input class="field" type="date" name="rows[__INDEX__][tec_end_date]" aria-label="Fecha Hasta de TEC"></label>
+                        <div class="quick-date-fields">
+                            <label class="quick-field-label"><span>Desde</span><input class="field" type="date" name="rows[__INDEX__][tec_start_date]" aria-label="Fecha Desde de TEC"></label>
+                            <label class="quick-field-label"><span>Hasta</span><input class="field" type="date" name="rows[__INDEX__][tec_end_date]" aria-label="Fecha Hasta de TEC"></label>
+                        </div>
                     </div>
                 </td>
-                <td colspan="3" class="quick-modality-cell">
+                <td class="quick-modality-cell">
                     <div class="quick-modality-fields">
                         <label class="quick-field-label quick-code-field">
-                            <span>Código completo TAL</span>
+                            <span>Código institucional TAL</span>
                             <input class="field mono quick-modality-code" data-code-input data-modality="TALL" name="rows[__INDEX__][tall_code]" maxlength="200" placeholder="202620-PIAD-222-TAL-NRC_11520" aria-label="Código completo TAL">
                             <small class="quick-code-preview" data-code-preview aria-live="polite"></small>
                         </label>
-                        <label class="quick-field-label"><span>Desde</span><input class="field" type="date" name="rows[__INDEX__][tall_start_date]" aria-label="Fecha Desde de TAL"></label>
-                        <label class="quick-field-label"><span>Hasta</span><input class="field" type="date" name="rows[__INDEX__][tall_end_date]" aria-label="Fecha Hasta de TAL"></label>
+                        <div class="quick-date-fields">
+                            <label class="quick-field-label"><span>Desde</span><input class="field" type="date" name="rows[__INDEX__][tall_start_date]" aria-label="Fecha Desde de TAL"></label>
+                            <label class="quick-field-label"><span>Hasta</span><input class="field" type="date" name="rows[__INDEX__][tall_end_date]" aria-label="Fecha Hasta de TAL"></label>
+                        </div>
                     </div>
                 </td>
                 <td class="quick-remove-cell">
@@ -187,54 +192,56 @@
 .quick-code-help p{margin:3px 0 0}
 .quick-code-example{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
 .quick-code-example code{font-size:10px}
-.quick-course-table-wrap{overflow-x:auto;margin-top:14px;border:1px solid var(--line);border-radius:9px}
-.quick-course-table{width:100%;min-width:1450px;border-collapse:separate;border-spacing:0;font-size:12px}
-.quick-course-table th{padding:9px 8px;background:var(--surface-soft);color:var(--muted);text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.25px;border-bottom:1px solid var(--line);white-space:nowrap}
-.quick-course-table th.quick-modality-heading{text-align:center;color:var(--info);background:var(--info-bg)}
+.quick-course-table-wrap{overflow-x:auto;margin-top:14px;border:1px solid var(--line);border-radius:10px}
+.quick-course-table{width:100%;min-width:1040px;table-layout:fixed;border-collapse:separate;border-spacing:0;font-size:12px}
+.quick-course-table th{padding:12px 11px;background:var(--surface-soft);color:var(--muted);text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.3px;border-bottom:1px solid var(--line);white-space:nowrap}
+.quick-course-table th.quick-modality-heading{text-align:center;color:var(--info);background:var(--info-bg);font-size:11px}
 .quick-course-table th.quick-tec-heading{border-left:1px solid var(--line)}
 .quick-course-table th.quick-tall-heading{border-left:1px solid var(--line)}
-.quick-course-table td{padding:10px 7px;border-bottom:1px solid var(--line);vertical-align:top}
+.quick-course-table td{padding:13px 11px;border-bottom:1px solid var(--line);vertical-align:top}
 .quick-course-table tbody tr:last-child td{border-bottom:0}
 .quick-course-table .field{min-width:0;width:100%;font-size:11px}
 .quick-number-heading,.quick-row-number{width:38px;text-align:center}
 .quick-row-number{padding-top:20px!important;color:var(--muted);font-weight:750}
-.quick-course-heading{min-width:200px}
-.quick-course-name-cell{min-width:210px}
+.quick-course-heading{width:250px}
+.quick-course-name-cell{width:250px}
 .quick-field-label{display:grid;gap:5px;min-width:0}
-.quick-field-label>span{color:var(--muted);font-size:9px;font-weight:750}
-.quick-field-label .field{min-height:36px;padding:7px 8px}
-.quick-modality-cell{width:35%;border-left:1px solid var(--line)}
-.quick-modality-fields{display:grid;grid-template-columns:minmax(0,1.8fr) minmax(105px,1fr) minmax(105px,1fr);gap:7px;min-width:0}
+.quick-field-label>span{color:var(--muted);font-size:10px;font-weight:700}
+.quick-field-label .field{min-height:38px;padding:8px 10px}
+.quick-modality-cell{border-left:1px solid var(--line)}
+.quick-modality-fields{display:grid;grid-template-columns:minmax(0,1fr);gap:9px;min-width:0}
 .quick-code-field{min-width:0}
-.quick-code-field .field{min-width:205px}
-.quick-code-preview,.quick-row-preview{display:block;min-height:14px;margin-top:4px;color:var(--muted);font-size:9px;line-height:1.4}
-.quick-code-preview.is-warning,.quick-row-preview.is-warning{color:var(--warning)}
+.quick-code-field .field{min-width:0;font-size:11px}
+.quick-date-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.quick-date-fields .field{min-width:0}
+.quick-code-preview,.quick-row-preview{display:block;min-height:14px;margin-top:4px;color:var(--muted);font-size:10px;line-height:1.45}
+.quick-code-preview.is-warning,.quick-row-preview.is-warning,.quick-row-error{color:var(--danger)}
 .quick-row-preview.is-valid{color:var(--info)}
-.quick-remove-cell{width:42px;text-align:center}
+.quick-remove-cell{width:46px;text-align:center}
 .quick-remove-cell .btn{margin-top:1px}
+.quick-row-error{display:block;margin-top:8px;padding:7px 9px;border:1px solid color-mix(in srgb,var(--danger) 22%,var(--line));border-radius:7px;background:var(--danger-bg);font-size:10px;line-height:1.45}
 .quick-register-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px}
 .quick-register-actions .help{max-width:70ch}
 @media(max-width:1100px){
  .quick-course-table-wrap{overflow:visible;border:0}
- .quick-course-table{display:block;min-width:0}
+ .quick-course-table{display:block;min-width:0;table-layout:auto}
  .quick-course-table thead{display:none}
  .quick-course-table tbody{display:grid;gap:12px}
- .quick-course-table tr{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;padding:13px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+ .quick-course-table tr{display:grid;grid-template-columns:minmax(0,1fr);gap:11px;padding:14px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
  .quick-course-table td{display:block;width:auto!important;min-width:0;padding:0;border:0}
  .quick-course-table td.quick-row-number{display:none}
  .quick-course-table td.quick-course-name-cell{grid-column:1}
- .quick-course-table td.quick-modality-cell{grid-column:1;padding-top:10px;border-top:1px solid var(--line)}
- .quick-course-table td.quick-modality-cell:before{display:block;margin-bottom:8px;color:var(--info);font-size:10px;font-weight:800}
+ .quick-course-table td.quick-modality-cell{grid-column:1;padding-top:11px;border-top:1px solid var(--line)}
+ .quick-course-table td.quick-modality-cell:before{display:block;margin-bottom:9px;padding:6px 8px;border-radius:6px;background:var(--info-bg);color:var(--info);font-size:10px;font-weight:800}
  .quick-course-table td.quick-modality-cell:nth-of-type(3):before{content:"TEORÍA · TEC"}
  .quick-course-table td.quick-modality-cell:nth-of-type(4):before{content:"TALLER · TAL"}
- .quick-modality-fields{grid-template-columns:minmax(0,1.8fr) minmax(110px,1fr) minmax(110px,1fr)}
+ .quick-modality-fields{grid-template-columns:minmax(0,1fr);gap:9px}
+ .quick-code-field .field{min-width:0}
  .quick-course-table td.quick-remove-cell{display:flex;justify-content:flex-end}
 }
 @media(max-width:560px){
  .quick-register-card{padding:13px}
- .quick-modality-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
- .quick-code-field{grid-column:1/-1}
- .quick-code-field .field{min-width:0}
+ .quick-date-fields{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
  .quick-code-example{align-items:flex-start;flex-direction:column;gap:3px}
  .quick-register-actions{align-items:stretch;flex-direction:column}
  .quick-register-actions .btn{width:100%}
