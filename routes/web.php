@@ -33,6 +33,7 @@ Route::middleware(['auth', 'professor'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
     // Importación de distribución académica desde Excel.
     Route::get('/distribucion/importar', [CourseDistributionImportController::class, 'create'])->name('distribution.create');
+    Route::get('/distribucion/plantilla.xlsx', [CourseDistributionImportController::class, 'downloadTemplate'])->name('distribution.template');
     Route::post('/distribucion/importar/previsualizar', [CourseDistributionImportController::class, 'preview'])->name('distribution.preview');
     Route::post('/distribucion/importar/confirmar', [CourseDistributionImportController::class, 'confirm'])->name('distribution.confirm');
 
