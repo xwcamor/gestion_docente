@@ -176,7 +176,7 @@ La migración inicial crea las tablas de usuarios, profesores, ciclos, grupos, c
 - Gestión de notas y evaluaciones.
 - Calendario mensual consolidado por grupo, con clases y feriados; cada bloque conserva la modalidad TEC/TALL y el tipo de enseñanza de su curso.
 - Malla curricular y propuestas de contenido TEC/TALL.
-- Charlas de cinco minutos: una por cada fecha disponible del grupo (sin filas sin fecha), excluyendo feriados; el catálogo institucional de 96 temas vuelve al primero cuando se agota. El check marca la charla como realizada y los participantes se calculan desde el padrón compartido del grupo.
+- Charlas de cinco minutos: una por cada fecha disponible del grupo (sin filas sin fecha), excluyendo feriados; el catálogo institucional de 96 temas vuelve al primero cuando se agota. El check marca la charla como realizada; el número de participantes es editable por charla y se inicializa con la cantidad de alumnos del padrón.
 - Generación y versionado de documentos Excel.
 
 ## Solución de problemas
