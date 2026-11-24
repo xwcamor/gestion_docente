@@ -19,7 +19,7 @@ class QuickCourseEntryController extends Controller
         return view('assignments.quick', compact('group'));
     }
 
-    public function store(Request $request, TeachingGroup $group)
+    public function store(Request $request, TeachingGroup $group, StudentImportService $students)
     {
         $this->authorizeGroup($group);
 
@@ -104,7 +104,7 @@ class QuickCourseEntryController extends Controller
             }
         }
 
-        DB::transaction(function () use ($rows, $group) {
+        DB::transaction(function () use ($rows, $group, $students) {
             foreach ($rows as $row) {
                 $code = trim($row['course_code'] ?? '') ?: Str::upper(Str::slug($row['course_name'], '-'));
                 $course = Course::firstOrCreate(
@@ -138,6 +138,7 @@ class QuickCourseEntryController extends Controller
                         'period_label' => $group->cycle->academic_year.'-'.$group->cycle->cycle_code.'-'.$type,
                     ]);
                     $modality->save();
+                    $students->syncGroupRosterToModality($modality);
                 }
             }
         });
