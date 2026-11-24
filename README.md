@@ -164,6 +164,18 @@ En este caso usa `migrate`, no `migrate:fresh`: aplica únicamente las migracion
 
 La migración inicial crea las tablas de usuarios, profesores, ciclos, grupos, cursos, asignaciones, modalidades, horarios, feriados, sesiones, alumnos, matrículas, evaluaciones, notas, documentos, colas y malla curricular. Las modificaciones posteriores deben agregarse como nuevas migraciones; no se debe editar una migración ya aplicada en una instalación que se quiera conservar.
 
+## Flujo principal del docente
+
+El trabajo se organiza alrededor de la carga laboral recibida. El ciclo y sus grupos son el contenedor de la asignación; el trabajo operativo se completa en cada grupo y en cada curso/modalidad.
+
+1. **Recibir e importar la carga laboral:** identificar periodo, grupos, cursos, códigos, NRC y fechas del archivo maestro.
+2. **Revisar cursos y horarios:** comprobar las ofertas TEC/TALL y configurar sus días, horas, ambientes y rangos propios.
+3. **Cargar la malla curricular:** adjuntar el PDF de cada curso y obtener sus temas semanales desde el Cuadro Programa y la Hoja de Programación.
+4. **Preparar los Excel con IA:** organizar por separado Plan de sesión y Control de avance para teoría y taller/práctica.
+5. **Registrar las charlas de 5 minutos:** completar la charla correspondiente a cada fecha del grupo cuando ya exista su padrón de alumnos.
+
+**Límite actual de la importación:** el lector de carga laboral procesa la pestaña `Cursos` (curso, código, bloques TEC/TALL, NRC y fechas). Todavía no importa los días, horas y ambientes desde la hoja de horarios; estos se configuran en cada modalidad. No se deben dar por importados esos horarios hasta implementar y validar el lector de esa hoja.
+
 ## Funcionalidades principales
 
 - Acceso individual por profesor y gestión de sus datos académicos.
