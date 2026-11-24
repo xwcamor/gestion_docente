@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Cycle;
 use App\Models\CourseModality;
+use App\Models\ModalitySchedule;
 use App\Models\GeneratedDocument;
 use App\Models\ImportBatch;
 use App\Models\CycleFiveMinuteTalk;
@@ -182,7 +183,7 @@ class CycleController extends Controller
             1 => 'Lunes', 2 => 'Martes', 3 => 'Miércoles', 4 => 'Jueves',
             5 => 'Viernes', 6 => 'Sábado', 7 => 'Domingo',
         ];
-        $loadSchedules = \\App\\Models\\ModalitySchedule::query()
+        $loadSchedules = ModalitySchedule::query()
             ->with(['modality.assignment.course'])
             ->where('block_type', 'CLASS')
             ->whereHas('modality.assignment.group', fn ($query) => $query->where('cycle_id', $cycle->id))
