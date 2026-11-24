@@ -63,6 +63,86 @@
     </div>
 </section>
 
+<details class="card cycle-talk-panel" id="cycle-talks" @if($cycleTalks->isEmpty()) open @endif>
+    <summary class="cycle-talk-summary">
+        <span class="cycle-talk-icon"><x-icon name="message-square" /></span>
+        <span class="cycle-talk-title">
+            <strong>Charlas de 5 minutos</strong>
+            <small>Catálogo reutilizable y distribución automática por fecha del ciclo</small>
+        </span>
+        <span class="cycle-talk-count">{{ $talkAssignedCount }} asignadas · {{ $talkPendingCount }} pendientes</span>
+        <x-icon name="chevron-down" class="cycle-talk-chevron" />
+    </summary>
+    <div class="cycle-talk-body">
+        <div class="alert alert-info">
+            Los temas se guardan como catálogo reutilizable del profesor. Cada ciclo conserva su propia distribución. El sistema usa los días y rangos reales de cada curso/modalidad, evita repetir fechas y excluye feriados.
+        </div>
+
+        <form method="POST" action="{{ route('cycles.five-minute-talks.update', $cycle) }}" enctype="multipart/form-data" data-confirm="Se volverán a distribuir los temas en este ciclo. Las fechas y asignaciones anteriores de charlas de este ciclo serán reemplazadas. ¿Deseas continuar?">
+            @csrf
+            @method('PUT')
+            <div class="cycle-talk-form-grid">
+                <div>
+                    <label for="talk-topics">Temas del documento fijo</label>
+                    <textarea class="field" id="talk-topics" name="topics" rows="10" placeholder="Pega un tema por línea, respetando el orden del documento original.">{{ old('topics', $talkTopics->pluck('title')->implode("\n")) }}</textarea>
+                    <p class="help">Un tema por línea. Al guardar, esta lista se convierte en el catálogo reutilizable para tus siguientes ciclos.</p>
+                    <label for="talk-topics-file" class="mt-16">O importar el Excel con los temas</label>
+                    <input class="field" id="talk-topics-file" type="file" name="topics_file" accept=".xlsx,.xls,.csv">
+                    <p class="help">Se lee la columna llamada “Tema” o, si no existe, la primera columna.</p>
+                </div>
+                <div>
+                    <label>Días permitidos para programar charlas</label>
+                    <div class="cycle-talk-days">
+                        @foreach([1=>'Lunes',2=>'Martes',3=>'Miércoles',4=>'Jueves',5=>'Viernes',6=>'Sábado',7=>'Domingo'] as $day=>$label)
+                            <label class="cycle-talk-day">
+                                <input type="checkbox" name="days[]" value="{{ $day }}" @checked(in_array($day, $selectedTalkDays, true))>
+                                <span>{{ $label }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                    @if(!$availableTalkDays)
+                        <div class="alert alert-warning mt-16">Todavía no se detectan días con horario en este ciclo. Primero configura las fechas y los días de tus cursos.</div>
+                    @else
+                        <p class="help mt-16">Días detectados en tus horarios: {{ collect($availableTalkDays)->map(fn ($day) => [1=>'Lun',2=>'Mar',3=>'Mié',4=>'Jue',5=>'Vie',6=>'Sáb',7=>'Dom'][$day])->join(', ') }}.</p>
+                    @endif
+                    <button class="btn mt-16" type="submit"><x-icon name="calendar-check" /> Guardar y distribuir charlas</button>
+                </div>
+            </div>
+        </form>
+
+        <div class="cycle-talk-results">
+            <div class="cycle-talk-results-head">
+                <div><strong>Distribución de este ciclo</strong><small>{{ $cycleTalks->count() }} temas en el catálogo de este ciclo</small></div>
+                @if($cycleTalks->isNotEmpty())
+                    <form method="POST" action="{{ route('documents.cycle-talks', $cycle) }}">
+                        @csrf
+                        <button class="btn btn-secondary btn-sm" type="submit"><x-icon name="file-spreadsheet" /> Generar Excel de charlas</button>
+                    </form>
+                @endif
+            </div>
+            @if($cycleTalks->isNotEmpty())
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>N.º</th><th>Fecha asignada</th><th>Tema</th><th>Estado</th></tr></thead>
+                        <tbody>
+                            @foreach($cycleTalks as $talk)
+                                <tr>
+                                    <td>{{ $talk->position }}</td>
+                                    <td>{{ $talk->scheduled_date?->format('d/m/Y') ?? 'Pendiente' }}</td>
+                                    <td>{{ $talk->topic }}</td>
+                                    <td>@if($talk->scheduled_date)<span class="badge badge-green">Programada</span>@else<span class="badge badge-orange">Sin fecha disponible</span>@endif</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @else
+                <div class="empty"><strong>Aún no hay charlas distribuidas.</strong><span>Importa o pega los temas y selecciona los días para asignar una fecha a cada tema.</span></div>
+            @endif
+        </div>
+    </div>
+</details>
+
 <section class="card">
     <div class="card-head">
         <div><h2>Grupos</h2></div>
@@ -192,6 +272,34 @@
 .cycle-progress-track span{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#3a8cab,#47a88e)}
 .cycle-progress-grid small{display:block;margin-top:6px;color:#76868e;font-size:10px}
 @media(max-width:650px){.cycle-progress-grid{grid-template-columns:1fr}.cycle-progress-heading{align-items:flex-start;flex-direction:column}}
+</style>
+@endpush
+
+@push('styles')
+<style>
+.cycle-talk-panel{padding:0;overflow:hidden;margin-bottom:15px}
+.cycle-talk-summary{display:flex;align-items:center;gap:12px;padding:15px 18px;cursor:pointer;list-style:none}
+.cycle-talk-summary::-webkit-details-marker{display:none}
+.cycle-talk-icon{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border-radius:10px;background:#edf6f8;color:#32788c}
+.cycle-talk-title{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px}
+.cycle-talk-title strong{font-size:14px;color:#294554}
+.cycle-talk-title small{font-size:11px;color:#7b8990}
+.cycle-talk-count{font-size:10px;font-weight:750;color:#45768a;white-space:nowrap}
+.cycle-talk-chevron{color:#78909a;transition:transform .2s ease}
+.cycle-talk-panel[open] .cycle-talk-chevron{transform:rotate(180deg)}
+.cycle-talk-body{padding:0 18px 18px;border-top:1px solid #edf1f3}
+.cycle-talk-form-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(260px,.75fr);gap:22px;padding:16px 0}
+.cycle-talk-form-grid textarea{font-family:inherit;line-height:1.5}
+.cycle-talk-days{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:9px}
+.cycle-talk-day{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid #e1eaee;border-radius:8px;background:#fbfdfe;font-size:12px}
+.cycle-talk-day input{accent-color:#327f91}
+.cycle-talk-results{border-top:1px solid #e9eff2;padding-top:14px}
+.cycle-talk-results-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.cycle-talk-results-head>div{display:flex;flex-direction:column;gap:3px}
+.cycle-talk-results-head strong{font-size:12px}
+.cycle-talk-results-head small{font-size:10px;color:#7b8990}
+@media(max-width:750px){.cycle-talk-form-grid{grid-template-columns:1fr}.cycle-talk-count{display:none}}
+@media(max-width:520px){.cycle-talk-summary{padding:13px}.cycle-talk-results-head{align-items:flex-start;flex-direction:column}.cycle-talk-results-head form,.cycle-talk-results-head .btn{width:100%}}
 </style>
 @endpush
 
