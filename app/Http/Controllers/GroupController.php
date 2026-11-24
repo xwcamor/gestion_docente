@@ -6,6 +6,9 @@ use App\Models\Cycle;
 use App\Models\TeachingGroup;
 use App\Models\Student;
 use App\Models\CourseModality;
+use App\Models\GeneratedDocument;
+use App\Models\ImportBatch;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -189,6 +192,41 @@ class GroupController extends Controller
             'students',
             'lastRosterImport'
         ));
+    }
+
+    public function destroy(TeachingGroup $group)
+    {
+        $this->authorizeGroup($group);
+        $cycle = $group->cycle;
+
+        $modalityIds = CourseModality::query()
+            ->whereHas('assignment', fn ($query) => $query->where('teaching_group_id', $group->id))
+            ->pluck('id')
+            ->all();
+
+        $generatedPaths = GeneratedDocument::query()
+            ->where(function ($query) use ($group, $modalityIds) {
+                $query->where('teaching_group_id', $group->id);
+                if ($modalityIds) {
+                    $query->orWhereIn('course_modality_id', $modalityIds);
+                }
+            })
+            ->pluck('stored_path');
+
+        $importQuery = ImportBatch::query()->where('teaching_group_id', $group->id);
+        if ($modalityIds) {
+            $importQuery->orWhereIn('course_modality_id', $modalityIds);
+        }
+        $importPaths = $importQuery->pluck('stored_path');
+
+        DB::transaction(fn () => $group->delete());
+
+        Storage::disk('local')->delete(
+            $generatedPaths->merge($importPaths)->filter()->unique()->values()->all()
+        );
+
+        return redirect()->route('cycles.show', $cycle)
+            ->with('success', 'Grupo eliminado. Los cursos del catálogo y los alumnos que se usan en otros grupos se conservaron.');
     }
 
     public function updateStudent(Request $request, TeachingGroup $group, Student $student)
