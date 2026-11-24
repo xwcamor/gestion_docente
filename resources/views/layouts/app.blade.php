@@ -984,7 +984,7 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
 
         @media(max-width:700px){
             .btn{min-height:44px}
-            .btn.btn-sm{min-height:40px}
+            .btn.btn-sm{min-height:44px}
             .weekday{min-height:44px;display:inline-flex;align-items:center;justify-content:center}
             .page-head{align-items:flex-start!important;flex-direction:column!important}
             .page-head .actions{width:100%;justify-content:flex-start}
