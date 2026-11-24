@@ -6,125 +6,146 @@ use App\Models\CourseModality;
 use App\Models\Cycle;
 use App\Models\FiveMinuteTalkTopic;
 use App\Models\Holiday;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
-use PhpOffice\PhpSpreadsheet\IOFactory;
+use RuntimeException;
 
 class FiveMinuteTalkService
 {
-    /**
-     * Updates the professor's reusable topic catalogue and distributes a
-     * snapshot of those topics over the real assigned teaching dates of a cycle.
-     */
-    public function updateAndDistribute(
-        Cycle $cycle,
-        array $days,
-        ?string $topicsText = null,
-        ?UploadedFile $file = null
-    ): array {
-        $days = collect($days)
-            ->map(fn ($day) => (int) $day)
-            ->filter(fn ($day) => $day >= 1 && $day <= 7)
-            ->unique()
-            ->sort()
-            ->values()
+    public function ensureScheduled(Cycle $cycle): void
+    {
+        $catalogue = $this->catalogue();
+        $this->ensureProfessorCatalogue((int) $cycle->professor_id, $catalogue);
+
+        $topics = FiveMinuteTalkTopic::query()
+            ->where('professor_id', $cycle->professor_id)
+            ->orderBy('position')
+            ->pluck('title')
             ->all();
 
-        if (!$days) {
-            throw ValidationException::withMessages([
-                'days' => 'Selecciona al menos un día para programar las charlas.',
-            ]);
-        }
+        $existing = $cycle->fiveMinuteTalks()->orderBy('position')->get();
 
-        $incomingTopics = $file
-            ? $this->topicsFromSpreadsheet($file)
-            : $this->topicsFromText($topicsText ?? '');
-
-        DB::transaction(function () use ($cycle, $days, $incomingTopics) {
-            if ($incomingTopics) {
-                FiveMinuteTalkTopic::where('professor_id', $cycle->professor_id)->delete();
-
-                foreach ($incomingTopics as $position => $title) {
-                    FiveMinuteTalkTopic::create([
-                        'professor_id' => $cycle->professor_id,
-                        'title' => $title,
-                        'position' => $position + 1,
-                    ]);
-                }
-            }
-
-            $topics = FiveMinuteTalkTopic::query()
-                ->where('professor_id', $cycle->professor_id)
-                ->orderBy('position')
-                ->orderBy('id')
-                ->pluck('title')
-                ->all();
-
-            if (!$topics) {
-                throw ValidationException::withMessages([
-                    'topics' => 'Pega los temas del documento fijo o adjunta el Excel que contiene la lista.',
-                ]);
-            }
-
-            $cycle->update(['five_minute_talk_days' => $days]);
-
-            $dates = $this->assignedDates($cycle, $days);
-            $cycle->fiveMinuteTalks()->delete();
-
+        if ($existing->isEmpty()) {
+            $dates = $this->assignedDates($cycle);
             $rows = [];
-            $timestamp = now();
+            $now = now();
+
             foreach ($topics as $index => $topic) {
                 $rows[] = [
                     'cycle_id' => $cycle->id,
                     'topic' => $topic,
                     'scheduled_date' => $dates[$index] ?? null,
+                    'status' => 'pending',
+                    'participant_count' => null,
+                    'observations' => null,
                     'position' => $index + 1,
-                    'created_at' => $timestamp,
-                    'updated_at' => $timestamp,
+                    'created_at' => $now,
+                    'updated_at' => $now,
                 ];
             }
 
-            foreach (array_chunk($rows, 500) as $chunk) {
+            foreach (array_chunk($rows, 400) as $chunk) {
                 DB::table('cycle_five_minute_talks')->insert($chunk);
             }
-        });
-
-        $assigned = $cycle->fiveMinuteTalks()->whereNotNull('scheduled_date')->count();
-        $pending = $cycle->fiveMinuteTalks()->whereNull('scheduled_date')->count();
-
-        return [
-            'topics' => $assigned + $pending,
-            'assigned' => $assigned,
-            'pending' => $pending,
-            'available_dates' => count($this->assignedDates($cycle->fresh(), $days)),
-        ];
-    }
-
-    /**
-     * Weekdays with at least one real course schedule inside its own teaching dates.
-     */
-    public function availableDays(Cycle $cycle): array
-    {
-        $dates = $this->assignedDates($cycle, [1, 2, 3, 4, 5, 6, 7]);
-        $days = [];
-
-        foreach ($dates as $date) {
-            $day = Carbon::parse($date)->dayOfWeekIso;
-            $days[$day] = true;
+            return;
         }
 
-        $available = array_keys($days);
-        sort($available);
+        $completedDates = $existing
+            ->where('status', 'done')
+            ->pluck('scheduled_date')
+            ->filter()
+            ->map(fn ($date) => Carbon::parse($date)->toDateString())
+            ->all();
 
-        return $available;
+        $availableDates = array_values(array_diff($this->assignedDates($cycle), $completedDates));
+        $pending = $existing->where('status', '!=', 'done')->values();
+
+        DB::transaction(function () use ($pending, $availableDates) {
+            foreach ($pending as $talk) {
+                $talk->update(['scheduled_date' => null]);
+            }
+            foreach ($pending as $index => $talk) {
+                $talk->update(['scheduled_date' => $availableDates[$index] ?? null]);
+            }
+        });
     }
 
-    private function assignedDates(Cycle $cycle, array $selectedDays): array
+    public function availableDays(Cycle $cycle): array
+    {
+        $days = [];
+        foreach ($this->assignedDates($cycle) as $date) {
+            $days[Carbon::parse($date)->dayOfWeekIso] = true;
+        }
+        $result = array_keys($days);
+        sort($result);
+        return $result;
+    }
+
+    private function ensureProfessorCatalogue(int $professorId, array $catalogue): void
+    {
+        $existing = FiveMinuteTalkTopic::query()
+            ->where('professor_id', $professorId)
+            ->orderBy('position')
+            ->pluck('title')
+            ->all();
+
+        if ($existing === $catalogue) {
+            return;
+        }
+
+        DB::transaction(function () use ($professorId, $catalogue) {
+            FiveMinuteTalkTopic::where('professor_id', $professorId)->delete();
+            $now = now();
+            $rows = [];
+
+            foreach ($catalogue as $index => $title) {
+                $rows[] = [
+                    'professor_id' => $professorId,
+                    'title' => $title,
+                    'position' => $index + 1,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }
+
+            foreach (array_chunk($rows, 400) as $chunk) {
+                DB::table('five_minute_talk_topics')->insert($chunk);
+            }
+        });
+    }
+
+    private function catalogue(): array
+    {
+        $path = base_path('system_files/charla_5_minutos_catalogo.json');
+        if (!is_file($path)) {
+            throw new RuntimeException('No se encuentra el catálogo institucional de charlas de 5 minutos.');
+        }
+
+        $data = json_decode((string) file_get_contents($path), true);
+        if (!is_array($data) || empty($data['areas']) || !is_array($data['areas'])) {
+            throw new RuntimeException('El catálogo institucional de charlas tiene un formato inválido.');
+        }
+
+        $topics = [];
+        foreach ($data['areas'] as $area) {
+            foreach (($area['topics'] ?? []) as $title) {
+                $title = trim((string) $title);
+                if ($title !== '' && mb_strlen($title) <= 255) {
+                    $topics[] = $title;
+                }
+            }
+        }
+
+        if (!$topics) {
+            throw new RuntimeException('El catálogo institucional no contiene temas disponibles.');
+        }
+        return $topics;
+    }
+
+    private function assignedDates(Cycle $cycle): array
     {
         $modalities = CourseModality::query()
-            ->with('schedules')
+            ->with(['schedules' => fn ($query) => $query->where('block_type', 'CLASS')])
             ->whereHas('assignment.group', fn ($query) => $query->where('cycle_id', $cycle->id))
             ->whereNotNull('start_date')
             ->whereNotNull('end_date')
@@ -132,26 +153,19 @@ class FiveMinuteTalkService
 
         $dates = [];
         foreach ($modalities as $modality) {
-            $start = $this->cycleBoundedDate($modality->start_date, $cycle->start_date, true);
-            $end = $this->cycleBoundedDate($modality->end_date, $cycle->end_date, false);
-
+            $start = $this->boundedDate($modality->start_date, $cycle->start_date, true);
+            $end = $this->boundedDate($modality->end_date, $cycle->end_date, false);
             if (!$start || !$end || $start->gt($end)) {
                 continue;
             }
 
-            $scheduledDays = $modality->schedules
-                ->pluck('day_of_week')
-                ->map(fn ($day) => (int) $day)
-                ->intersect($selectedDays)
-                ->unique()
-                ->all();
-
-            if (!$scheduledDays) {
+            $weekdays = $modality->schedules->pluck('day_of_week')->map(fn ($day) => (int) $day)->unique()->all();
+            if (!$weekdays) {
                 continue;
             }
 
             for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
-                if (in_array($date->dayOfWeekIso, $scheduledDays, true)) {
+                if (in_array($date->dayOfWeekIso, $weekdays, true)) {
                     $dates[$date->toDateString()] = true;
                 }
             }
@@ -159,26 +173,22 @@ class FiveMinuteTalkService
 
         $dateKeys = array_keys($dates);
         sort($dateKeys);
-
         if (!$dateKeys) {
             return [];
         }
 
-        $holidayDates = Holiday::query()
+        $holidays = Holiday::query()
             ->where('blocks_classes', true)
             ->whereIn('holiday_date', $dateKeys)
-            ->where(function ($query) use ($cycle) {
-                $query->whereNull('professor_id')
-                    ->orWhere('professor_id', $cycle->professor_id);
-            })
+            ->where(fn ($query) => $query->whereNull('professor_id')->orWhere('professor_id', $cycle->professor_id))
             ->pluck('holiday_date')
             ->map(fn ($date) => Carbon::parse($date)->toDateString())
             ->all();
 
-        return array_values(array_diff($dateKeys, $holidayDates));
+        return array_values(array_diff($dateKeys, $holidays));
     }
 
-    private function cycleBoundedDate($courseDate, $cycleDate, bool $isStart): ?Carbon
+    private function boundedDate($courseDate, $cycleDate, bool $isStart): ?Carbon
     {
         if (!$courseDate || !$cycleDate) {
             return null;
@@ -187,121 +197,8 @@ class FiveMinuteTalkService
         $course = Carbon::parse($courseDate)->startOfDay();
         $cycle = Carbon::parse($cycleDate)->startOfDay();
 
-        if ($isStart) {
-            return $course->greaterThan($cycle) ? $course : $cycle;
-        }
-
-        return $course->lessThan($cycle) ? $course : $cycle;
-    }
-
-    private function topicsFromText(string $text): array
-    {
-        $lines = preg_split('/\r\n|\r|\n/u', $text) ?: [];
-
-        return $this->cleanTopics($lines);
-    }
-
-    private function topicsFromSpreadsheet(UploadedFile $file): array
-    {
-        try {
-            $spreadsheet = IOFactory::load($file->getRealPath());
-            $rows = $spreadsheet->getActiveSheet()->toArray('', true, true, false);
-        } catch (\Throwable $exception) {
-            throw ValidationException::withMessages([
-                'topics_file' => 'No se pudo leer el Excel de temas. Guarda el archivo como .xlsx, .xls o .csv e inténtalo nuevamente.',
-            ]);
-        }
-
-        if (!$rows) {
-            throw ValidationException::withMessages([
-                'topics_file' => 'El archivo seleccionado no contiene temas.',
-            ]);
-        }
-
-        $topicColumn = null;
-        $header = array_map(
-            fn ($value) => mb_strtolower(trim((string) $value)),
-            array_values($rows[0] ?? [])
-        );
-
-        foreach ($header as $index => $value) {
-            if (
-                in_array($value, [
-                    'tema', 'temas', 'charla', 'título', 'titulo', 'topic',
-                    'nombre del tema', 'tema de charla', 'tema de la charla',
-                    'título de la charla', 'titulo de la charla',
-                ], true)
-            ) {
-                $topicColumn = $index;
-                break;
-            }
-        }
-
-        // A common fixed template starts with an item number and the topic in column B.
-        if ($topicColumn === null && count($header) > 1) {
-            $firstHeader = trim($header[0] ?? '');
-            if (preg_match('/^(#|n[.º°]?|nro|número|numero)$/u', $firstHeader) || is_numeric($firstHeader)) {
-                $topicColumn = 1;
-            }
-        }
-
-        $values = [];
-        foreach ($rows as $rowIndex => $row) {
-            $cells = array_values($row);
-            if ($rowIndex === 0 && $topicColumn !== null) {
-                continue;
-            }
-
-            $value = $topicColumn !== null
-                ? ($cells[$topicColumn] ?? '')
-                : ($cells[0] ?? '');
-
-            $value = trim((string) $value);
-            if ($value !== '') {
-                $values[] = $value;
-            }
-        }
-
-        $topics = $this->cleanTopics($values);
-        if (!$topics) {
-            throw ValidationException::withMessages([
-                'topics_file' => 'No se encontraron temas en la primera columna del Excel ni en una columna llamada Tema.',
-            ]);
-        }
-
-        return $topics;
-    }
-
-    private function cleanTopics(array $values): array
-    {
-        $topics = [];
-        $seen = [];
-
-        foreach ($values as $value) {
-            $title = trim(preg_replace('/\s+/u', ' ', (string) $value) ?? '');
-            if ($title === '') {
-                continue;
-            }
-
-            if (mb_strtolower($title) === 'tema' || mb_strtolower($title) === 'temas') {
-                continue;
-            }
-
-            if (mb_strlen($title) > 255) {
-                throw ValidationException::withMessages([
-                    'topics' => 'Cada tema debe tener como máximo 255 caracteres. Revisa: '.mb_substr($title, 0, 60),
-                ]);
-            }
-
-            $key = mb_strtolower($title);
-            if (isset($seen[$key])) {
-                continue;
-            }
-
-            $seen[$key] = true;
-            $topics[] = $title;
-        }
-
-        return $topics;
+        return $isStart
+            ? ($course->greaterThan($cycle) ? $course : $cycle)
+            : ($course->lessThan($cycle) ? $course : $cycle);
     }
 }
