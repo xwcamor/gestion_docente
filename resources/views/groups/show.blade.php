@@ -121,12 +121,12 @@
             <div class="form-row-3">
                 <div>
                     <label for="workload_start_time">Hora inicial de disponibilidad</label>
-                    <input class="field" id="workload_start_time" type="time" name="workload_start_time" value="{{ old('workload_start_time', $group->workload_start_time ? substr($group->workload_start_time, 0, 5) : '') }}">
+                    <input class="field" id="workload_start_time" type="time" step="900" name="workload_start_time" value="{{ old('workload_start_time', $group->workload_start_time ? substr($group->workload_start_time, 0, 5) : '') }}">
                     @error('workload_start_time')<small class="field-error">{{ $message }}</small>@enderror
                 </div>
                 <div>
                     <label for="workload_end_time">Hora final de disponibilidad</label>
-                    <input class="field" id="workload_end_time" type="time" name="workload_end_time" value="{{ old('workload_end_time', $group->workload_end_time ? substr($group->workload_end_time, 0, 5) : '') }}">
+                    <input class="field" id="workload_end_time" type="time" step="900" name="workload_end_time" value="{{ old('workload_end_time', $group->workload_end_time ? substr($group->workload_end_time, 0, 5) : '') }}">
                     @error('workload_end_time')<small class="field-error">{{ $message }}</small>@enderror
                 </div>
                 <div class="workload-date-summary">
