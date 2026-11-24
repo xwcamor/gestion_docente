@@ -374,7 +374,7 @@
     </form>
 </dialog>
 
-<details class="card group-panel" id="group-courses" data-group-panel @if(request()->filled('edit_course')) open @endif>
+<details class="card group-panel" id="group-courses" data-group-panel @if(request()->filled('edit_course') || old('course_id')) open @endif>
     <summary class="group-panel-summary">
         <span class="group-panel-icon"><x-icon name="book-open" /></span>
         <span class="group-panel-title">
