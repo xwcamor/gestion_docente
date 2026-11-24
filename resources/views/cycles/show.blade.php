@@ -22,8 +22,10 @@
         </div>
     </div>
     <div class="actions cycle-detail-actions">
-        <button class="btn btn-secondary" type="button" data-modal-open="cycle-edit-dialog"><x-icon name="file-text" /> Editar ciclo</button>
-        <button class="btn" type="button" data-modal-open="group-create-dialog"><x-icon name="plus" /> Agregar grupo</button>
+        <button class="btn btn-secondary" type="button" data-modal-open="cycle-edit-dialog"><x-icon name="edit-3" /> Editar ciclo</button>
+        @if($groupCount > 0)
+            <button class="btn" type="button" data-modal-open="group-create-dialog"><x-icon name="plus" /> Agregar grupo</button>
+        @endif
     </div>
 </div>
 
@@ -65,6 +67,20 @@
                     $schedulePercent = $hasModalities
                         ? (int) round(($group->configured_modalities_count / $group->modalities_count) * 100)
                         : 0;
+                    $dayNames = [1 => 'Lun', 2 => 'Mar', 3 => 'Mié', 4 => 'Jue', 5 => 'Vie', 6 => 'Sáb', 7 => 'Dom'];
+                    $groupDays = collect($group->workload_days ?? [])
+                        ->map(fn ($day) => $dayNames[(int) $day] ?? null)
+                        ->filter()
+                        ->implode(', ');
+                    $hasGroupSchedule = $groupDays !== ''
+                        && filled($group->workload_start_time)
+                        && filled($group->workload_end_time);
+                    $groupScheduleLabel = $hasGroupSchedule
+                        ? $groupDays.' · '.substr((string) $group->workload_start_time, 0, 5).'–'.substr((string) $group->workload_end_time, 0, 5)
+                        : 'Horario pendiente';
+                    $groupWorkloadPeriod = $group->workload_start_date && $group->workload_end_date
+                        ? $group->workload_start_date->format('d/m/Y').' – '.$group->workload_end_date->format('d/m/Y')
+                        : null;
                 @endphp
 
                 <details class="cycle-group">
@@ -72,7 +88,13 @@
                         <span class="cycle-group-icon"><x-icon name="users" size="17" /></span>
                         <span class="cycle-group-title">
                             <strong>{{ $group->name }}</strong>
-                            <small>{{ $group->assignments_count }} {{ $group->assignments_count === 1 ? 'curso' : 'cursos' }}</small>
+                            <small class="cycle-group-meta">
+                                {{ $group->assignments_count }} {{ $group->assignments_count === 1 ? 'curso' : 'cursos' }}
+                                <span class="cycle-group-schedule {{ $hasGroupSchedule ? 'is-configured' : 'is-pending' }}">
+                                    <x-icon name="clock" size="11" /> {{ $groupScheduleLabel }}
+                                    @if($groupWorkloadPeriod)<span class="cycle-group-schedule-period">· {{ $groupWorkloadPeriod }}</span>@endif
+                                </span>
+                            </small>
                         </span>
                         <span class="cycle-group-state is-{{ $groupState }}">{{ $groupStateLabel }}</span>
                         <x-icon name="chevron-right" class="cycle-group-chevron" size="17" />
@@ -106,15 +128,6 @@
                         </div>
 
                         <div class="cycle-group-actions">
-                            <button class="btn btn-ghost btn-sm"
-                                    type="button"
-                                    data-edit-group
-                                    data-group-id="{{ $group->id }}"
-                                    data-update-url="{{ route('groups.update', $group) }}"
-                                    data-name="{{ $group->name }}"
-                                    data-assigned-at="{{ $group->assigned_at?->format('Y-m-d') }}">
-                                <x-icon name="file-text" /> Editar
-                            </button>
                             <a class="btn btn-secondary btn-sm" href="{{ route('groups.show', $group) }}">
                                 Abrir grupo <x-icon name="arrow-right" />
                             </a>
@@ -181,50 +194,48 @@
     </form>
 </dialog>
 
-<dialog class="ui-dialog sheet-dialog" id="group-create-dialog" aria-labelledby="group-create-title" @if(request()->boolean('nuevo_grupo') || ($errors->any() && !request('dialog'))) data-auto-open @endif>
+<dialog class="ui-dialog sheet-dialog" id="group-create-dialog" aria-labelledby="group-create-title"
+        data-mandatory="{{ $groupCount === 0 ? 'true' : 'false' }}"
+        @if($groupCount === 0 || request()->boolean('nuevo_grupo') || ($errors->any() && !request('dialog'))) data-auto-open @endif>
     <div class="dialog-head">
-        <div><h2 id="group-create-title">Agregar grupo</h2><p>{{ $cycle->academic_year }} · Ciclo {{ $cycle->cycle_code }}</p></div>
-        <button class="dialog-close" type="button" data-modal-close aria-label="Cerrar"><x-icon name="x" /></button>
+        <div>
+            <h2 id="group-create-title">{{ $groupCount === 0 ? 'Crear primer grupo' : 'Agregar grupos' }}</h2>
+            <p>{{ $cycle->academic_year }} · Ciclo {{ $cycle->cycle_code }}</p>
+        </div>
+        @if($groupCount > 0)
+            <button class="dialog-close" type="button" data-modal-close aria-label="Cerrar"><x-icon name="x" /></button>
+        @endif
     </div>
     <form method="POST" action="{{ route('groups.store', $cycle) }}" data-loading-form="1">
         @csrf
         <div class="dialog-body">
             @if($errors->any() && !request('dialog'))
-                <div class="dialog-error" role="alert"><strong>Revisa estos datos:</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
+                <div class="dialog-error" role="alert">
+                    <strong>Revisa los nombres de los grupos:</strong>
+                    <ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+                </div>
+            @endif
+            @if($groupCount === 0)
+                <div class="modal-context">
+                    <x-icon name="info" size="16" />
+                    <span>Este ciclo necesita al menos un grupo. Registra el primero para continuar; luego podrás agregar cursos y configurar su carga horaria.</span>
+                </div>
+            @else
+                <p class="card-description">Escribe el nombre de cada grupo. La carga horaria se configura después, dentro de cada grupo.</p>
             @endif
             <div class="group-count-control">
                 <label for="group-count">¿Cuántos grupos vas a crear?</label>
                 <input class="field" id="group-count" type="number" min="1" max="30" value="{{ max(1, count(old('groups', [])) ?: 1) }}">
-                <p class="help">Indica la cantidad y escribe el nombre de cada grupo. Puedes crear hasta 30 de una sola vez.</p>
+                <p class="help">Puedes crear hasta 30 grupos de una sola vez.</p>
             </div>
-            @if($errors->has('groups') || $errors->has('groups.*.name'))
-                <div class="dialog-error" role="alert">@foreach($errors->all() as $error)<div>{{ $error }}</div>@endforeach</div>
-            @endif
             <div class="group-fields" id="group-fields"></div>
         </div>
-        <div class="dialog-footer"><button class="btn btn-secondary" type="button" data-modal-close>Cancelar</button><button class="btn" type="submit"><x-icon name="check" /> Guardar grupo</button></div>
-    </form>
-</dialog>
-
-<dialog class="ui-dialog sheet-dialog" id="group-edit-dialog" aria-labelledby="group-edit-title">
-    <div class="dialog-head">
-        <div><h2 id="group-edit-title">Editar grupo</h2><p>Actualiza el nombre o la fecha de asignación.</p></div>
-        <button class="dialog-close" type="button" data-modal-close aria-label="Cerrar"><x-icon name="x" /></button>
-    </div>
-    <form method="POST" action="#" data-loading-form="1" id="group-edit-form">
-        @csrf
-        @method('PATCH')
-        <div class="dialog-body">
-            @if($errors->any() && request('dialog') === 'edit-group')
-                <div class="dialog-error" role="alert"><strong>Revisa estos datos:</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
+        <div class="dialog-footer">
+            @if($groupCount > 0)
+                <button class="btn btn-secondary" type="button" data-modal-close>Cancelar</button>
             @endif
-            <label for="edit_group_name">Nombre del grupo</label>
-            <input type="hidden" name="page" value="{{ request('page', 1) }}">
-            <input class="field" id="edit_group_name" name="name" required maxlength="100">
-            <label for="edit_group_assigned">Fecha de asignación <span class="muted">(opcional)</span></label>
-            <input class="field" id="edit_group_assigned" type="date" name="assigned_at">
+            <button class="btn" type="submit"><x-icon name="check" /> {{ $groupCount === 0 ? 'Crear primer grupo' : 'Guardar grupos' }}</button>
         </div>
-        <div class="dialog-footer"><button class="btn btn-secondary" type="button" data-modal-close>Cancelar</button><button class="btn" type="submit"><x-icon name="check" /> Guardar cambios</button></div>
     </form>
 </dialog>
 
@@ -244,7 +255,13 @@
 .cycle-group-icon{display:grid;place-items:center;width:38px;height:38px;flex:0 0 38px;border:1px solid var(--line);border-radius:9px;background:var(--surface-soft);color:var(--accent)}
 .cycle-group-title{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px}
 .cycle-group-title strong{color:var(--ink);font-size:13px;font-weight:700}
-.cycle-group-title small{color:var(--muted);font-size:10px}
+.cycle-group-title small{display:grid;gap:5px;color:var(--muted);font-size:10px}
+.cycle-group-meta{line-height:1.5}
+.cycle-group-schedule{display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap}
+.cycle-group-schedule.is-configured{color:var(--info)}
+.cycle-group-schedule.is-pending{color:var(--warning)}
+.cycle-group-schedule-period{color:var(--muted)}
+
 .cycle-group-state{flex:none;padding:5px 9px;border:1px solid var(--line);border-radius:20px;font-size:10px;font-weight:700}
 .cycle-group-state.is-pending{background:var(--surface-soft);color:var(--muted)}
 .cycle-group-state.is-partial{border-color:#eadfc9;background:var(--warning-bg);color:var(--warning)}
@@ -265,16 +282,6 @@
 .cycle-groups-empty .btn{margin-top:7px}
 .group-create-item{padding:12px;border:1px solid var(--line);border-radius:9px;background:var(--surface)}
 .group-create-item+.group-create-item{margin-top:10px}
-.group-workload-inline{margin-top:10px;border:1px solid var(--line);border-radius:8px;background:var(--surface-soft)}
-.group-workload-inline>summary{padding:9px 11px;color:var(--ink-soft);font-size:11px;font-weight:750;cursor:pointer}
-.group-workload-inline[open]>summary{border-bottom:1px solid var(--line)}
-.group-workload-inline>.help{margin:9px 11px 0}
-.group-workload-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:10px 11px}
-.group-workload-fields label,.group-workload-days>strong{display:block;margin-bottom:5px;color:var(--ink-soft);font-size:10px;font-weight:700}
-.group-workload-fields .field{min-width:0}
-.group-workload-days{padding:0 11px 11px}
-.group-workload-day-options{display:flex;flex-wrap:wrap;gap:6px}
-.group-workload-day-options .weekday{padding:5px 8px}
 .group-count-control{display:grid;grid-template-columns:minmax(0,1fr) 110px;align-items:center;gap:10px}
 .group-count-control label{margin:0}
 .group-count-control .help{grid-column:1/-1;margin:0}
@@ -295,11 +302,10 @@
     .cycle-group-actions{justify-content:stretch}
     .cycle-group-actions>*{flex:1}
     .cycle-group-actions .btn{width:100%}
-    .group-workload-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
     .cycle-group-state{font-size:9px;padding:5px 7px}
 }
 @media(max-width:420px){
-    .group-workload-fields,.group-fields{grid-template-columns:1fr}
+    .group-fields{grid-template-columns:1fr}
 }
 @media(prefers-reduced-motion:reduce){
     .cycle-group-chevron,.cycle-group-progress-track span{transition:none}
@@ -314,63 +320,11 @@ html[data-theme="dark"] .cycle-group-state.is-complete{border-color:#365845}
 (() => {
     const countInput = document.getElementById('group-count');
     const groupFields = document.getElementById('group-fields');
+
     if (countInput && groupFields) {
         const oldGroups = @json(array_values(old('groups', [])));
-        const cycleStart = @json($cycle->start_date?->format('Y-m-d'));
-        const cycleEnd = @json($cycle->end_date?->format('Y-m-d'));
+        const errorMessages = @json($errors->getMessages());
         const values = oldGroups.map(group => group || {});
-        const weekdays = [
-            [1, 'Lun'], [2, 'Mar'], [3, 'Mié'], [4, 'Jue'],
-            [5, 'Vie'], [6, 'Sáb'], [7, 'Dom']
-        ];
-
-        const makeField = (labelText, type, name, value, options = {}) => {
-            const wrapper = document.createElement('div');
-            wrapper.className = options.className || '';
-
-            const label = document.createElement('label');
-            label.textContent = labelText;
-            const id = name.replace(/[^a-zA-Z0-9]+/g, '-') + '-field';
-            label.htmlFor = id;
-
-            let field;
-            if (type === 'select') {
-                field = document.createElement('select');
-                field.className = 'field';
-                (options.choices || []).forEach(choice => {
-                    const option = document.createElement('option');
-                    option.value = choice.value;
-                    option.textContent = choice.label;
-                    field.appendChild(option);
-                });
-                field.value = value ?? '';
-            } else {
-                field = document.createElement('input');
-                field.className = 'field';
-                field.type = type;
-                field.value = value ?? '';
-                if (type === 'number') {
-                    field.min = '0';
-                    field.max = '9999';
-                    field.step = '.25';
-                }
-            }
-            field.id = id;
-            field.name = name;
-            if (type === 'time') field.step = '900';
-            const match = name.match(/^groups\[(\d+)\]\[([^\]]+)\]/);
-            if (match) {
-                const groupIndex = Number(match[1]);
-                const fieldName = match[2];
-                const syncValue = () => {
-                    values[groupIndex] = {...(values[groupIndex] || {}), [fieldName]: field.value};
-                };
-                field.addEventListener('input', syncValue);
-                field.addEventListener('change', syncValue);
-            }
-            wrapper.append(label, field);
-            return wrapper;
-        };
 
         const render = () => {
             const count = Math.max(1, Math.min(30, Number.parseInt(countInput.value, 10) || 1));
@@ -378,84 +332,36 @@ html[data-theme="dark"] .cycle-group-state.is-complete{border-color:#365845}
             groupFields.replaceChildren();
 
             for (let index = 0; index < count; index++) {
-                const data = values[index] || {};
-                const prefix = 'groups[' + index + ']';
                 const wrapper = document.createElement('section');
                 wrapper.className = 'group-create-item';
 
-                const nameField = makeField(
-                    'Nombre del grupo ' + (index + 1),
-                    'text',
-                    prefix + '[name]',
-                    data.name || ''
-                );
-                const nameInput = nameField.querySelector('input');
-                nameInput.maxLength = 100;
-                nameInput.required = true;
-                nameInput.placeholder = 'Ej. IA 202';
-                nameInput.addEventListener('input', () => { values[index] = {...(values[index] || {}), name: nameInput.value}; });
+                const label = document.createElement('label');
+                label.htmlFor = 'new-group-name-' + index;
+                label.textContent = 'Nombre del grupo ' + (index + 1);
 
-                const details = document.createElement('details');
-                details.className = 'group-workload-inline';
-                const summary = document.createElement('summary');
-                summary.textContent = 'Configurar carga horaria (opcional)';
-                details.appendChild(summary);
-
-                const help = document.createElement('p');
-                help.className = 'help';
-                help.textContent = 'Registra la asignación del supervisor. Las horas realmente dictadas se calcularán desde los horarios de cada curso.';
-                details.appendChild(help);
-
-                const grid = document.createElement('div');
-                grid.className = 'group-workload-fields';
-                const configFields = [
-                    makeField('Tipo de carga', 'select', prefix + '[workload_type]', data.workload_type || '', {
-                        className: 'workload-type-field',
-                        choices: [
-                            {value: '', label: 'Seleccionar tipo'},
-                            {value: 'PARTIAL', label: 'Parcial'},
-                            {value: 'FULL', label: 'Completa'}
-                        ]
-                    }),
-                    makeField('Fecha de inicio', 'date', prefix + '[workload_start_date]', data.workload_start_date || cycleStart),
-                    makeField('Fecha de término', 'date', prefix + '[workload_end_date]', data.workload_end_date || cycleEnd),
-                    makeField('Hora inicial', 'time', prefix + '[workload_start_time]', data.workload_start_time || ''),
-                    makeField('Hora final', 'time', prefix + '[workload_end_time]', data.workload_end_time || ''),
-                    makeField('Horas asignadas · Teoría', 'number', prefix + '[supervisor_theory_hours]', data.supervisor_theory_hours ?? ''),
-                    makeField('Horas asignadas · Taller', 'number', prefix + '[supervisor_lab_hours]', data.supervisor_lab_hours ?? '')
-                ];
-                configFields.forEach(field => grid.appendChild(field));
-                details.appendChild(grid);
-
-                const daysBlock = document.createElement('div');
-                daysBlock.className = 'group-workload-days';
-                const daysTitle = document.createElement('strong');
-                daysTitle.textContent = 'Días asignados';
-                daysBlock.appendChild(daysTitle);
-                const daysOptions = document.createElement('div');
-                daysOptions.className = 'group-workload-day-options';
-                const selectedDays = new Set((data.workload_days || []).map(String));
-                weekdays.forEach(([day, labelText]) => {
-                    const label = document.createElement('label');
-                    label.className = 'weekday';
-                    const checkbox = document.createElement('input');
-                    checkbox.type = 'checkbox';
-                    checkbox.name = prefix + '[workload_days][]';
-                    checkbox.value = String(day);
-                    checkbox.checked = selectedDays.has(String(day));
-                    checkbox.addEventListener('change', () => {
-                        values[index] = {
-                            ...(values[index] || {}),
-                            workload_days: [...daysOptions.querySelectorAll('input:checked')].map(input => input.value)
-                        };
-                    });
-                    label.append(checkbox, document.createTextNode(' ' + labelText));
-                    daysOptions.appendChild(label);
+                const input = document.createElement('input');
+                input.className = 'field';
+                input.type = 'text';
+                input.id = label.htmlFor;
+                input.name = 'groups[' + index + '][name]';
+                input.maxLength = 100;
+                input.required = true;
+                input.placeholder = 'Ej. IA 202';
+                input.value = values[index]?.name || '';
+                input.addEventListener('input', () => {
+                    values[index] = {...(values[index] || {}), name: input.value};
                 });
-                daysBlock.appendChild(daysOptions);
-                details.appendChild(daysBlock);
 
-                wrapper.append(nameField, details);
+                wrapper.append(label, input);
+
+                const messages = errorMessages['groups.' + index + '.name'] || [];
+                messages.forEach(message => {
+                    const error = document.createElement('small');
+                    error.className = 'field-error';
+                    error.textContent = message;
+                    wrapper.appendChild(error);
+                });
+
                 groupFields.appendChild(wrapper);
             }
         };
@@ -464,40 +370,11 @@ html[data-theme="dark"] .cycle-group-state.is-complete{border-color:#365845}
         countInput.addEventListener('change', render);
         render();
     }
-})();
-</script>
-<script>
-(() => {
-    const dialog = document.getElementById('group-edit-dialog');
-    const form = document.getElementById('group-edit-form');
-    const name = document.getElementById('edit_group_name');
-    const assigned = document.getElementById('edit_group_assigned');
-    if (!dialog || !form || !name || !assigned) return;
 
-    const prepare = trigger => {
-        form.action = trigger.dataset.updateUrl;
-        name.value = trigger.dataset.name || '';
-        assigned.value = trigger.dataset.assignedAt || '';
-    };
-
-    document.addEventListener('click', event => {
-        const trigger = event.target.closest('[data-edit-group]');
-        if (!trigger) return;
-        prepare(trigger);
-        dialog.showModal();
-        name.focus();
-    });
-
-    @if(request('dialog') === 'edit-group')
-        const previousTrigger = document.querySelector('[data-edit-group][data-group-id="{{ (int) request('group_id') }}"]');
-        if (previousTrigger) {
-            prepare(previousTrigger);
-            name.value = @json(old('name', ''));
-            assigned.value = @json(old('assigned_at', ''));
-            dialog.showModal();
-            name.focus();
-        }
-    @endif
+    const requiredGroupDialog = document.getElementById('group-create-dialog');
+    if (requiredGroupDialog?.dataset.mandatory === 'true') {
+        requiredGroupDialog.addEventListener('cancel', event => event.preventDefault());
+    }
 })();
 </script>
 @endpush
