@@ -46,7 +46,7 @@ class CourseDistributionImportController extends Controller
         ];
 
         foreach ($headers as $index => $header) {
-            $column = \\PhpOffice\\PhpSpreadsheet\\Cell\\Coordinate::stringFromColumnIndex($index + 1);
+            $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($index + 1);
             $courses->setCellValue($column.'1', $header);
         }
 
@@ -84,7 +84,7 @@ class CourseDistributionImportController extends Controller
         $schedules->setTitle('Horarios');
         $scheduleHeaders = ['CODIGO', 'MODALIDAD', 'NRC', 'DIA', 'DESDE', 'HASTA', 'TIPO', 'AMBIENTE'];
         foreach ($scheduleHeaders as $index => $header) {
-            $column = \\PhpOffice\\PhpSpreadsheet\\Cell\\Coordinate::stringFromColumnIndex($index + 1);
+            $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($index + 1);
             $schedules->setCellValue($column.'1', $header);
         }
         $schedules->getStyle('A1:H1')->applyFromArray([
@@ -123,7 +123,7 @@ class CourseDistributionImportController extends Controller
 
         $guideHeaders = ['COLUMNA', 'OBLIGATORIO', 'QUÉ DEBES COLOCAR', 'EJEMPLO (NO IMPORTAR)'];
         foreach ($guideHeaders as $index => $header) {
-            $column = \\PhpOffice\\PhpSpreadsheet\\Cell\\Coordinate::stringFromColumnIndex($index + 1);
+            $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($index + 1);
             $guide->setCellValue($column.'4', $header);
         }
         $guide->getStyle('A4:D4')->applyFromArray([
@@ -137,14 +137,14 @@ class CourseDistributionImportController extends Controller
             ['CODIGO', 'Sí', 'Código institucional que incluya año, ciclo y PIAD. Este dato permite reconocer el periodo.', '202620-PIAD-224'],
             ['BLOQUE TEC', 'Si tiene teoría', 'Código o identificador del bloque de teoría. Si se completa, se crea la modalidad TEC.', 'TEC-01'],
             ['NRC TEC', 'Si tiene teoría', 'NRC asignado a la oferta de teoría. Escríbelo como texto para conservar ceros iniciales.', '0011523'],
-            ['BLOQUE TALLER', 'Si tiene taller', 'Completa este campo para indicar que el curso tiene modalidad de taller/práctica.', 'Sí'],
-            ['BLOQUE', 'Si tiene taller', 'Código del bloque TALL. Si está vacío, se utiliza el valor de BLOQUE TALLER.', 'TALL-01'],
+            ['BLOQUE TALLER', 'Si tiene taller', 'Código o identificador del bloque de taller/práctica. Al completarlo se activa la modalidad TALL.', 'TALL-01'],
+            ['BLOQUE', 'Opcional si ya llenaste BLOQUE TALLER', 'Código alternativo del bloque TALL. Si lo completas, se utiliza este valor en lugar de BLOQUE TALLER.', 'TALL-01'],
             ['NRC TALLER', 'Si tiene taller', 'NRC asignado a la oferta de taller/práctica. Se admite también el encabezado antiguo NRC TALLE.', '0011524'],
             ['FECHA', 'Sí', 'Rango común de inicio y fin para las modalidades activas del curso, en formato día/mes/año.', '01/08/2026 al 15/12/2026'],
         ];
         foreach ($instructions as $rowIndex => $row) {
             foreach ($row as $columnIndex => $value) {
-                $column = \\PhpOffice\\PhpSpreadsheet\\Cell\\Coordinate::stringFromColumnIndex($columnIndex + 1);
+                $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($columnIndex + 1);
                 $guide->setCellValue($column.(5 + $rowIndex), $value);
             }
         }
@@ -194,7 +194,7 @@ class CourseDistributionImportController extends Controller
 
         $scheduleGuideHeaders = ['COLUMNA', 'OBLIGATORIO', 'QUÉ DEBES COLOCAR', 'EJEMPLO'];
         foreach ($scheduleGuideHeaders as $index => $header) {
-            $column = \\PhpOffice\\PhpSpreadsheet\\Cell\\Coordinate::stringFromColumnIndex($index + 1);
+            $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($index + 1);
             $guide->setCellValue($column.'25', $header);
         }
         $guide->getStyle('A25:D25')->applyFromArray([
@@ -214,7 +214,7 @@ class CourseDistributionImportController extends Controller
         ];
         foreach ($scheduleInstructions as $rowIndex => $row) {
             foreach ($row as $columnIndex => $value) {
-                $column = \\PhpOffice\\PhpSpreadsheet\\Cell\\Coordinate::stringFromColumnIndex($columnIndex + 1);
+                $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($columnIndex + 1);
                 $guide->setCellValue($column.(26 + $rowIndex), $value);
             }
             $guide->getRowDimension(26 + $rowIndex)->setRowHeight(34);
@@ -370,7 +370,7 @@ class CourseDistributionImportController extends Controller
             try {
                 $calendar->rebuild(CourseModality::findOrFail($modalityId));
                 $calendarRebuilt++;
-            } catch (\\Throwable $exception) {
+            } catch (\Throwable $exception) {
                 report($exception);
                 $calendarWarnings[] = 'No se pudo calcular automáticamente el calendario de una modalidad. Revisa su horario y usa «Recalcular calendario».';
             }
