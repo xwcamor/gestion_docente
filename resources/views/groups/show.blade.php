@@ -352,6 +352,7 @@
         <x-icon name="chevron-right" class="group-panel-chevron" />
     </summary>
     <div class="group-panel-body">
+        @if($assignments->isNotEmpty())
         <div class="course-list" id="course-list">
                 @foreach($assignments as $assignment)
                     @php($modalityTotal = $assignment->modalities->count())
@@ -373,10 +374,14 @@
                             </div>
                         </div>
                         <div class="course-row-status" aria-label="Estado de configuración">
-                            <span class="course-status-chip {{ $courseScheduleReady ? 'is-ready' : 'is-pending' }}">
-                                <x-icon name="{{ $courseScheduleReady ? 'check-circle' : 'clock' }}" size="12" />
-                                Horarios {{ $modalityReady }}/{{ $modalityTotal }}
-                            </span>
+                            @if($modalityTotal > 0)
+                                <span class="course-status-chip {{ $courseScheduleReady ? 'is-ready' : 'is-pending' }}">
+                                    <x-icon name="{{ $courseScheduleReady ? 'check-circle' : 'clock' }}" size="12" />
+                                    Horarios {{ $modalityReady }}/{{ $modalityTotal }}
+                                </span>
+                            @else
+                                <span class="course-status-chip is-pending">Modalidades pendientes</span>
+                            @endif
                             <span class="course-status-chip {{ $assignment->curriculum ? 'is-ready' : 'is-pending' }}">
                                 <x-icon name="{{ $assignment->curriculum ? 'book-check' : 'book-open' }}" size="12" />
                                 {{ $assignment->curriculum ? 'Malla vinculada' : 'Malla pendiente' }}
