@@ -15,6 +15,31 @@
     <div class="card"><div class="stat-label">Curso de destino</div><strong>{{ $assignment->course->name }}</strong></div>
 </div>
 
+<section class="card curriculum-source-check" aria-labelledby="curriculum-source-check-title">
+    <div class="card-head">
+        <div>
+            <h2 id="curriculum-source-check-title">Tablas curriculares detectadas</h2>
+            <p class="card-description">El análisis cruza las dos tablas principales del documento.</p>
+        </div>
+    </div>
+    <div class="curriculum-source-grid">
+        @foreach(['cuadro_programa' => 'Cuadro Programa', 'hoja_programacion' => 'Hoja de Programación'] as $key => $label)
+            @php($section = $sections[$key] ?? [])
+            <div class="curriculum-source-item">
+                <strong>{{ $label }}</strong>
+                @if($section['detected'] ?? false)
+                    <span class="badge badge-green">Encabezado detectado</span>
+                    <small>Página(s): {{ implode(', ', $section['pages'] ?? []) }}</small>
+                @else
+                    <span class="badge badge-orange">No detectado automáticamente</span>
+                    <small>Localiza esta tabla visualmente en el PDF que adjuntarás a ChatGPT.</small>
+                @endif
+            </div>
+        @endforeach
+    </div>
+    <p class="help">La detección por texto no garantiza que una tabla esté completa. Adjunta siempre el PDF original para que ChatGPT también pueda leer tablas como imagen.</p>
+</section>
+
 <section class="card prompt-checklist" aria-labelledby="prompt-checklist-title">
     <div class="prompt-checklist-head">
         <div>
@@ -82,6 +107,11 @@
 
 @push('styles')
 <style>
+.curriculum-source-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.curriculum-source-item{display:grid;gap:6px;align-content:start;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.curriculum-source-item strong{font-size:12px;color:var(--ink)}
+.curriculum-source-item small{color:var(--muted);font-size:10px;line-height:1.45}
+@media(max-width:600px){.curriculum-source-grid{grid-template-columns:1fr}}
 .prompt-checklist{border:1px solid #d9e7ed;background:#f8fbfd}
 .prompt-checklist-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .prompt-checklist-head h2{margin:4px 0}
