@@ -65,6 +65,15 @@ class CurriculumController extends Controller
         return view('curricula.index', compact('assignment','curricula','activeCurriculum','suggestionStats','modalityStats','workflow','progress','totalHoursTheory','totalHoursPractice'));
     }
 
+    public function extractGet(CourseAssignment $assignment)
+    {
+        $this->owned($assignment);
+
+        return redirect()
+            ->route('curricula.show', $assignment)
+            ->with('success', 'Para analizar la malla, selecciona el PDF y pulsa «Analizar PDF y preparar prompt».');
+    }
+
     public function extract(Request $request, CourseAssignment $assignment, CurriculumImportService $service)
     {
         $this->owned($assignment);
