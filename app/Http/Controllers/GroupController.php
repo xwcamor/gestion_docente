@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Cycle;
 use App\Models\TeachingGroup;
+use App\Models\Student;
+use App\Models\CourseModality;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -129,21 +131,36 @@ class GroupController extends Controller
         $group->load('cycle');
 
         $assignments = $group->assignments()
-            ->with(['course', 'modalities.schedules'])
+            ->with(['course', 'curriculum', 'modalities.schedules'])
             ->withCount('modalities')
             ->orderBy('id')
             ->paginate(12)
             ->withQueryString();
 
         $courseCount = $group->assignments()->count();
-        $modalityCounts = $group->assignments()
-            ->join('course_modalities', 'course_modalities.course_assignment_id', '=', 'course_assignments.id')
-            ->selectRaw('course_modalities.modality, COUNT(*) as total')
-            ->groupBy('course_modalities.modality')
-            ->pluck('total', 'modality');
+        $coursesWithModalityCount = $group->assignments()->whereHas('modalities')->count();
+        $curriculumCount = $group->assignments()->whereNotNull('curriculum_id')->count();
 
-        $tecCount = (int) ($modalityCounts['TEC'] ?? 0);
-        $tallCount = (int) ($modalityCounts['TALL'] ?? 0);
+        $modalityQuery = CourseModality::query()
+            ->whereHas('assignment', fn ($query) => $query->where('teaching_group_id', $group->id));
+
+        $modalityCount = (clone $modalityQuery)->count();
+        $configuredModalityCount = (clone $modalityQuery)
+            ->whereNotNull('start_date')
+            ->whereNotNull('end_date')
+            ->whereHas('schedules', fn ($query) => $query->where('block_type', 'CLASS'))
+            ->count();
+
+        $courseModalityPercent = $courseCount > 0
+            ? (int) round(($coursesWithModalityCount / $courseCount) * 100)
+            : 0;
+        $curriculumPercent = $courseCount > 0
+            ? (int) round(($curriculumCount / $courseCount) * 100)
+            : 0;
+        $schedulePercent = $modalityCount > 0
+            ? (int) round(($configuredModalityCount / $modalityCount) * 100)
+            : 0;
+
         $declaredWeeklyHours = (float) $group->assignments()
             ->join('course_modalities', 'course_modalities.course_assignment_id', '=', 'course_assignments.id')
             ->sum('course_modalities.total_hours');
@@ -160,13 +177,88 @@ class GroupController extends Controller
             'group',
             'assignments',
             'courseCount',
-            'tecCount',
-            'tallCount',
+            'modalityCount',
+            'coursesWithModalityCount',
+            'curriculumCount',
+            'configuredModalityCount',
+            'courseModalityPercent',
+            'curriculumPercent',
+            'schedulePercent',
             'declaredWeeklyHours',
             'studentCount',
             'students',
             'lastRosterImport'
         ));
+    }
+
+    public function updateStudent(Request $request, TeachingGroup $group, Student $student)
+    {
+        $this->authorizeGroup($group);
+
+        abort_unless(
+            $group->students()->whereKey($student->getKey())->exists(),
+            404
+        );
+
+        $request->merge([
+            'institutional_id' => trim((string) $request->input('institutional_id')) ?: null,
+            'username' => trim((string) $request->input('username')) ?: null,
+            'surnames' => trim((string) $request->input('surnames')),
+            'given_names' => trim((string) $request->input('given_names')),
+        ]);
+
+        $validator = Validator::make($request->all(), [
+            'institutional_id' => [
+                'nullable',
+                'string',
+                'max:80',
+                Rule::unique('students', 'institutional_id')
+                    ->where(fn ($query) => $query->where('professor_id', $group->professor_id))
+                    ->ignore($student->id),
+            ],
+            'username' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::unique('students', 'username')
+                    ->where(fn ($query) => $query->where('professor_id', $group->professor_id))
+                    ->ignore($student->id),
+            ],
+            'surnames' => ['required', 'string', 'max:255'],
+            'given_names' => ['required', 'string', 'max:255'],
+            'editing_student_id' => ['required', 'integer', 'in:'.$student->id],
+            'students_page' => ['nullable', 'integer', 'min:1'],
+        ], [
+            'institutional_id.unique' => 'Ese ID de estudiante ya está registrado para otro alumno.',
+            'username.unique' => 'Ese usuario ya está registrado para otro alumno.',
+            'surnames.required' => 'Los apellidos son obligatorios.',
+            'given_names.required' => 'Los nombres son obligatorios.',
+        ]);
+
+        $validator->after(function ($validator) use ($request) {
+            if (blank($request->input('institutional_id')) && blank($request->input('username'))) {
+                $validator->errors()->add('institutional_id', 'Debes indicar el ID institucional o el usuario del alumno.');
+            }
+        });
+
+        $page = max(1, (int) $request->input('students_page', 1));
+        $returnUrl = route('groups.show', [
+            'group' => $group,
+            'students_page' => $page,
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()
+                ->to($returnUrl.'?edit_student='.$student->id.'#group-roster')
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $student->update($validator->validated());
+
+        return redirect()
+            ->to($returnUrl.'#group-roster')
+            ->with('success', 'Datos del alumno actualizados. El cambio se refleja en los cursos donde está matriculado.');
     }
 
     private function authorizeCycle(Cycle $cycle): void
