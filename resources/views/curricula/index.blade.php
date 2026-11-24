@@ -7,10 +7,7 @@
         <h1>Programación curricular</h1>
         <p class="subhead">Carga la malla oficial y revisa las propuestas antes de importarlas.</p>
     </div>
-    <div class="actions">
-        <a class="btn btn-secondary" href="{{ route('groups.show', ['group' => $assignment->group, 'edit_course' => $assignment->course_id]) }}#group-courses"><x-icon name="pencil" /> Editar nombre</a>
-        <a class="btn btn-secondary" href="{{ route('groups.show',$assignment->group) }}"><x-icon name="arrow-left" /> Volver al grupo</a>
-    </div>
+    <a class="btn btn-secondary" href="{{ route('groups.show',$assignment->group) }}"><x-icon name="arrow-left" /> Volver al grupo</a>
 </div>
 
 <section class="card" id="upload">
