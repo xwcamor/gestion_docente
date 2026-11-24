@@ -134,8 +134,9 @@ class StudentImportService
         $skipped = 0;
         $errors = [];
         $seen = [];
+        $groupStudentIds = [];
 
-        DB::transaction(function () use ($rows, $map, $group, &$created, &$updated, &$skipped, &$errors, &$seen) {
+        DB::transaction(function () use ($rows, $map, $group, &$created, &$updated, &$skipped, &$errors, &$seen, &$groupStudentIds) {
             foreach ($rows as $index => $row) {
                 $value = fn ($key) => isset($map[$key]) ? trim((string) ($row[$map[$key]] ?? '')) : '';
                 $id = $value('institutional_id');
@@ -188,7 +189,21 @@ class StudentImportService
                     $created++;
                 }
 
-                $group->students()->syncWithoutDetaching([$student->id]);
+                $groupStudentIds[] = $student->id;
+            }
+
+            $timestamp = now();
+            foreach (array_chunk(array_values(array_unique($groupStudentIds)), 500) as $studentChunk) {
+                $pivotRows = array_map(fn ($studentId) => [
+                    'teaching_group_id' => $group->id,
+                    'student_id' => $studentId,
+                    'created_at' => $timestamp,
+                    'updated_at' => $timestamp,
+                ], $studentChunk);
+
+                if ($pivotRows) {
+                    DB::table('teaching_group_students')->insertOrIgnore($pivotRows);
+                }
             }
 
             $modalityIds = $group->assignments()
@@ -213,8 +228,8 @@ class StudentImportService
                         ];
                     }
                 }
-                if ($enrollmentRows) {
-                    DB::table('enrollments')->insertOrIgnore($enrollmentRows);
+                foreach (array_chunk($enrollmentRows, 500) as $enrollmentChunk) {
+                    DB::table('enrollments')->insertOrIgnore($enrollmentChunk);
                 }
             }
         });
