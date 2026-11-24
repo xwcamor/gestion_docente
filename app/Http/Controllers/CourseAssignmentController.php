@@ -9,6 +9,7 @@ use App\Models\TeachingGroup;
 use App\Models\GeneratedDocument;
 use App\Models\ImportBatch;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 use App\Services\CalendarService;
 use App\Services\StudentImportService;
 use Illuminate\Http\Request;
