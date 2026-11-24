@@ -12,11 +12,22 @@ class TeachingGroup extends Model
 {
     use HasSlugRouteKey;
 
-    protected $fillable = ['cycle_id', 'professor_id', 'name', 'assigned_at', 'notes'];
+    protected $fillable = [
+        'cycle_id', 'professor_id', 'name', 'assigned_at', 'notes',
+        'workload_type', 'workload_start_date', 'workload_end_date', 'workload_days',
+        'workload_start_time', 'workload_end_time', 'supervisor_theory_hours', 'supervisor_lab_hours',
+    ];
 
     protected function casts(): array
     {
-        return ['assigned_at' => 'date'];
+        return [
+            'assigned_at' => 'date',
+            'workload_start_date' => 'date',
+            'workload_end_date' => 'date',
+            'workload_days' => 'array',
+            'supervisor_theory_hours' => 'decimal:2',
+            'supervisor_lab_hours' => 'decimal:2',
+        ];
     }
 
     protected function slugSource(): string
