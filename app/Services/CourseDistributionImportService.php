@@ -117,6 +117,19 @@ class CourseDistributionImportService
                 continue;
             }
             foreach ($modalities as $modality) {
+                $modalityDateText = $modality['type'] === 'TEC'
+                    ? ($tecDateText ?: $commonDateText)
+                    : ($tallDateText ?: $commonDateText);
+
+                if ($modalityDateText !== '' && (!$modality['start_date'] || !$modality['end_date'])) {
+                    $errors[] = "Fila {$rowNumber} ({$name}): la fecha de {$modality['type']} no tiene el formato DD/MM/AAAA al DD/MM/AAAA.";
+                } elseif (
+                    $modality['start_date']
+                    && $modality['end_date']
+                    && $modality['end_date'] < $modality['start_date']
+                ) {
+                    $errors[] = "Fila {$rowNumber} ({$name}): la fecha final de {$modality['type']} es anterior a la fecha inicial.";
+                }
                 if (!$modality['start_date'] || !$modality['end_date']) {
                     $warnings[] = "Fila {$rowNumber} ({$name}): modalidad {$modality['type']} sin rango de fechas completo; deberás completarlo.";
                 }
