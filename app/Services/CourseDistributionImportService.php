@@ -33,6 +33,16 @@ class CourseDistributionImportService
             }
         }
 
+        // Acepta el encabezado corregido y conserva compatibilidad con archivos anteriores.
+        if (!isset($headers['nrc talle'])) {
+            foreach (['nrc taller', 'nrc tall'] as $alias) {
+                if (isset($headers[$alias])) {
+                    $headers['nrc talle'] = $headers[$alias];
+                    break;
+                }
+            }
+        }
+
         $required = ['curso', 'codigo', 'bloque tec', 'nrc tec', 'bloque taller', 'bloque', 'nrc talle', 'fecha'];
         $missing = array_values(array_filter($required, fn ($header) => !isset($headers[$header])));
         if ($missing) {
