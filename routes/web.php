@@ -35,12 +35,13 @@ Route::middleware(['auth', 'professor'])->group(function () {
     Route::post('/ciclos', [CycleController::class, 'store'])->name('cycles.store');
     Route::patch('/ciclos/{cycle}', [CycleController::class, 'update'])->name('cycles.update');
     Route::delete('/ciclos/{cycle}', [CycleController::class, 'destroy'])->name('cycles.destroy');
-    Route::patch('/ciclos/{cycle}/charlas/{talk}', [CycleController::class, 'updateTalkExecution'])->name('cycles.talks.update');
     Route::get('/ciclos/{cycle}', [CycleController::class, 'show'])->name('cycles.show');
 
     Route::get('/ciclos/{cycle}/grupos/crear', [GroupController::class, 'create'])->name('groups.create');
     Route::post('/ciclos/{cycle}/grupos', [GroupController::class, 'store'])->name('groups.store');
     Route::patch('/grupos/{group}', [GroupController::class, 'update'])->name('groups.update');
+    Route::patch('/grupos/{group}/charlas/{talk}', [GroupController::class, 'updateTalkExecution'])->name('groups.talks.update');
+    Route::post('/grupos/{group}/charlas-5-minutos/excel', [DocumentController::class, 'groupFiveMinuteTalks'])->name('documents.group-talks');
     Route::delete('/grupos/{group}', [GroupController::class, 'destroy'])->name('groups.destroy');
     Route::patch('/grupos/{group}/alumnos/{student}', [GroupController::class, 'updateStudent'])->name('groups.students.update');
     Route::get('/grupos/{group}', [GroupController::class, 'show'])->name('groups.show');
@@ -74,7 +75,6 @@ Route::middleware(['auth', 'professor'])->group(function () {
     Route::post('/modalidades/{modality}/alumnos/confirmar', [StudentImportController::class, 'confirm'])->name('students.confirm');
     Route::post('/modalidades/{modality}/documentos/{type}', [DocumentController::class, 'generate'])->whereIn('type', ['plan', 'registro', 'evaluacion'])->name('documents.generate');
     Route::post('/ciclos/{cycle}/distribucion', [DocumentController::class, 'distribution'])->name('documents.distribution');
-    Route::post('/ciclos/{cycle}/charlas-5-minutos/excel', [DocumentController::class, 'fiveMinuteTalks'])->name('documents.cycle-talks');
     Route::get('/documentos/{document}/descargar', [DocumentController::class, 'download'])->name('documents.download');
 
     Route::get('/feriados', [HolidayController::class, 'index'])->name('holidays.index');
