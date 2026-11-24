@@ -252,6 +252,81 @@
         @endif
     </div>
 </details>
+
+<details class="card group-panel group-talk-panel" id="group-talks" data-group-panel @if(request()->boolean('talks')) open @endif>
+    <summary class="group-panel-summary">
+        <span class="group-panel-icon group-talk-icon"><x-icon name="clipboard-check" /></span>
+        <span class="group-panel-title">
+            <strong>Charlas de 5 minutos</strong>
+            <small>Programación exclusiva de {{ $group->name }} según sus propios días de clase</small>
+        </span>
+        <span class="group-panel-count">{{ $talkDoneCount }} realizadas · {{ $talkPendingCount }} pendientes</span>
+        <x-icon name="chevron-right" class="group-panel-chevron" />
+    </summary>
+    <div class="group-panel-body">
+        <div class="talks-intro">
+            <div>
+                <strong>Catálogo institucional</strong>
+                <p>Los temas se toman automáticamente del catálogo oficial. Cada grupo conserva sus propias fechas, estado, asistencia y observaciones. No se mezclan con otros grupos del mismo ciclo.</p>
+            </div>
+            @if($groupTalks->isNotEmpty())
+                <form method="POST" action="{{ route('documents.group-talks', $group) }}">
+                    @csrf
+                    <button class="btn btn-secondary btn-sm" type="submit"><x-icon name="file-text" /> Descargar Excel del grupo</button>
+                </form>
+            @endif
+        </div>
+
+        <div class="talks-summary">
+            <span><strong>{{ $groupTalks->count() }}</strong> temas del catálogo</span>
+            <span><strong>{{ $talkAssignedCount }}</strong> fechas asignadas</span>
+            <span><strong>{{ $talkDoneCount }}</strong> realizadas</span>
+            <span><strong>{{ $talkPendingCount }}</strong> pendientes</span>
+        </div>
+
+        @if($groupTalks->isNotEmpty())
+            <div class="table-wrap talks-table-wrap">
+                <table class="talks-table">
+                    <thead>
+                        <tr><th>Fecha</th><th>Tema institucional</th><th>Estado</th><th>Participantes</th><th>Observaciones</th><th>Acción</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach($groupTalks as $talk)
+                            <tr>
+                                <td>
+                                    @if($talk->scheduled_date)
+                                        <span class="talk-date">{{ $talk->scheduled_date->format('d/m/Y') }}</span>
+                                    @else
+                                        <span class="badge badge-orange">Sin fecha</span>
+                                    @endif
+                                </td>
+                                <td class="talk-topic">{{ $talk->topic }}</td>
+                                <td colspan="4">
+                                    <form method="POST" action="{{ route('groups.talks.update', [$group, $talk]) }}" class="talk-execution-form">
+                                        @csrf
+                                        @method('PATCH')
+                                        <select class="field" name="status" aria-label="Estado de la charla">
+                                            <option value="pending" @selected($talk->status !== 'done')>Pendiente</option>
+                                            <option value="done" @selected($talk->status === 'done')>Realizada</option>
+                                        </select>
+                                        <input class="field" type="number" name="participant_count" min="0" max="10000" value="{{ $talk->participant_count }}" placeholder="N.º participantes" aria-label="Número de participantes">
+                                        <input class="field" name="observations" value="{{ $talk->observations }}" maxlength="2000" placeholder="Observaciones del grupo" aria-label="Observaciones">
+                                        <button class="btn btn-secondary btn-sm" type="submit"><x-icon name="check" /> Guardar</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            @if($groupTalks->whereNull('scheduled_date')->isNotEmpty())
+                <div class="alert alert-warning mt-16">Hay temas sin fecha porque este grupo todavía no tiene suficientes días de clase configurados. Completa los horarios de sus cursos para distribuirlos automáticamente.</div>
+            @endif
+        @else
+            <div class="empty"><strong>Este grupo todavía no tiene temas de charla.</strong><span>El catálogo institucional se cargará automáticamente al abrir este grupo.</span></div>
+        @endif
+    </div>
+</details>
 @endsection
 
 @push('styles')
@@ -326,6 +401,34 @@
 .modality-link span{white-space:nowrap}
 .modality-link:hover{border-color:#8cb8c8;background:#f7fbfc}
 .field-error{display:block;margin-top:4px;font-size:10px;color:#b42318}
+ 
+.group-talk-panel{border-color:#d8e6eb}
+.group-talk-icon{background:#e9f4f0;color:#33785d}
+.group-talk-panel[open]>.group-panel-summary{background:#f7fbfa}
+.talks-intro{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:14px 0;padding:12px 14px;border:1px solid #dbe9e5;border-radius:8px;background:#f5faf8}
+.talks-intro strong{display:block;color:#315d4b;font-size:12px}
+.talks-intro p{max-width:650px;margin:4px 0 0;color:#71857a;font-size:10px;line-height:1.55}
+.talks-summary{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 13px}
+.talks-summary span{padding:6px 9px;border:1px solid #dfe9e5;border-radius:6px;background:#f8fbfa;color:#688077;font-size:10px}
+.talks-summary strong{color:#32664f;font-size:11px}
+.talks-table-wrap{border:1px solid #e3ece8;border-radius:8px}
+.talks-table{min-width:1050px}
+.talks-table th{background:#eff6f3;color:#557568}
+.talks-table td{vertical-align:middle}
+.talk-date{white-space:nowrap;color:#436957;font-weight:750;font-size:11px}
+.talk-topic{min-width:260px;color:#344f43;font-size:11px;font-weight:600}
+.talk-execution-form{display:grid;grid-template-columns:115px 130px minmax(170px,1fr) auto;align-items:center;gap:7px;min-width:540px}
+.talk-execution-form .field{min-height:33px;padding:6px 8px;font-size:10px}
+html[data-theme="dark"] .group-talk-panel[open]>.group-panel-summary{background:#172b27}
+html[data-theme="dark"] .talks-intro{background:#152a24;border-color:#355448}
+html[data-theme="dark"] .talks-intro strong{color:#b9e2cb}
+html[data-theme="dark"] .talks-intro p{color:#a7c1b2}
+html[data-theme="dark"] .talks-summary span{background:#172a24;border-color:#355448;color:#adc3b7}
+html[data-theme="dark"] .talks-summary strong{color:#b9e2cb}
+html[data-theme="dark"] .talks-table th{background:#1b3029;color:#b7d0c1}
+html[data-theme="dark"] .talk-topic{color:#d1e2d8}
+@media(max-width:760px){.talks-intro{align-items:stretch;flex-direction:column}.talks-intro form,.talks-intro .btn{width:100%}.talk-execution-form{grid-template-columns:repeat(2,minmax(0,1fr));min-width:0}.talk-execution-form input[name="observations"]{grid-column:1/-1}}
+
 @media(max-width:850px){.progress-grid{grid-template-columns:1fr;gap:13px}.roster-toolbar{flex-direction:column}.roster-upload{width:100%;max-width:none}.roster-upload .field{flex:1}.course-row-status{grid-template-columns:1fr}}
 @media(max-width:600px){.group-page-head{align-items:flex-start}.group-page-head .actions{flex-wrap:wrap}.group-progress{padding:14px}.group-panel-summary{padding:13px}.group-panel-count{font-size:10px}.roster-upload{align-items:stretch;flex-direction:column}.roster-upload .field{width:100%;min-width:0}.roster-list-head{align-items:stretch;flex-direction:column}.roster-search{max-width:none;width:100%}.course-toolbar{align-items:stretch;flex-direction:column}.course-toolbar .filter-input{max-width:none;width:100%}.course-row-main{align-items:flex-start}.course-row-status{gap:8px}.modality-link{width:100%;flex-wrap:wrap}.modality-link span:nth-of-type(2){white-space:normal}}
 </style>
@@ -340,6 +443,8 @@
     }
     const coursesPanel = document.getElementById('group-courses');
     if (coursesPanel && location.hash === '#group-courses') coursesPanel.open = true;
+    const talksPanel = document.getElementById('group-talks');
+    if (talksPanel && (location.hash === '#group-talks' || new URLSearchParams(location.search).get('talks') === '1')) talksPanel.open = true;
 
     document.querySelectorAll('[data-student-row]').forEach(row => {
         const inputs = [...row.querySelectorAll('.student-edit-input')];
