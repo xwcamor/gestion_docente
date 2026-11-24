@@ -234,3 +234,8 @@ En **Ciclos y cursos → Importar carga Excel**, sube uno de los formatos instit
 La importación crea o reutiliza el ciclo y el grupo indicado, registra cada curso y mantiene TEC/TALL como modalidades independientes con su NRC y periodo. Se puede volver a importar el mismo archivo al mismo grupo sin duplicar asignaciones ni modalidades.
 
 **Límite de la fuente:** la pestaña Cursos no contiene días, horas ni ambientes. Por eso el importador no inventa horarios ni crea sesiones. Después de confirmar, abre cada modalidad y completa su horario; el calendario podrá calcular las sesiones con los feriados configurados.
+
+
+## Registro simplificado de cursos
+
+El alta individual y la carga rápida usan tres datos: código institucional, nombre y componente (Teoría, Taller o Ambos). El intérprete obtiene periodo, programa, código base, modalidad y NRC desde segmentos como `202620-PIAD-224-TAL-NRC_11524`. Para ambos componentes, se pueden ingresar los códigos TEC y TAL del mismo curso separados por punto y coma; cada NRC se guarda en su propia modalidad. Las fechas y horarios se completan después en la configuración de cada modalidad.

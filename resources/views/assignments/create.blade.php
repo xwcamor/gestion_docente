@@ -1,247 +1,117 @@
 @extends('layouts.app')
 @section('title', 'Agregar curso')
 @section('content')
-<div class="breadcrumbs"><a href="{{ route('cycles.index') }}">Ciclos</a><span>›</span><a href="{{ route('cycles.show', $group->cycle) }}">{{ $group->cycle->academic_year }} · {{ $group->cycle->cycle_code }}</a><span>›</span><a href="{{ route('groups.show', $group) }}">{{ $group->name }}</a><span>›</span><span class="current">Nuevo curso</span></div>
-<div class="page-head"><div><p class="eyebrow">Registro de curso</p><h1>Agregar curso al grupo</h1><p class="subhead">Esta opción queda como alternativa para un curso aislado. Para cargar toda tu distribución, utiliza el Excel institucional.</p></div></div>
-<div class="alert alert-info"><strong>¿Tienes varios cursos en tu Excel?</strong> Evita llenar este formulario curso por curso. Importa la pestaña Cursos para registrar nombres, NRC y fechas en un solo proceso. </div>
-
-<form method="POST" action="{{ route('assignments.store', $group) }}" id="assignment-form">
+<div class="breadcrumbs">
+    <a href="{{ route('cycles.index') }}">Ciclos</a><x-icon name="chevron-right" size="12" />
+    <a href="{{ route('cycles.show', $group->cycle) }}">{{ $group->cycle->academic_year }} · {{ $group->cycle->cycle_code }}</a><x-icon name="chevron-right" size="12" />
+    <a href="{{ route('groups.show', $group) }}">{{ $group->name }}</a><x-icon name="chevron-right" size="12" />
+    <span class="current">Nuevo curso</span>
+</div>
+<div class="page-head">
+    <div><p class="eyebrow">Registro académico · {{ $group->name }}</p><h1>Agregar curso</h1><p class="subhead">Ingresa el código, el nombre y qué componentes se dictan. TEC, TAL y NRC se detectan automáticamente.</p></div>
+    <a class="btn btn-secondary" href="{{ route('groups.show', $group) }}"><x-icon name="arrow-left" /> Volver al grupo</a>
+</div>
+@if($errors->any())
+    <div class="alert alert-error" role="alert"><strong>No se pudo registrar el curso.</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
+@endif
+<form method="POST" action="{{ route('assignments.store', $group) }}" id="course-register-form" data-loading-form="1">
     @csrf
-    <section class="card wizard-section" id="assignment-step-1">
-        <div class="card-head"><div><h2>Datos generales</h2><p class="card-description">Estos datos identifican el curso dentro de tu grupo.</p></div><span class="badge badge-blue">Obligatorio</span></div>
-        <div class="form-row">
-            <div><label for="course_name">Nombre del curso</label><input class="field" id="course_name" name="course_name" value="{{ old('course_name') }}" required maxlength="255" placeholder="Ej. Sistemas Operativos y Comunicación de Datos"></div>
-            <div><label for="course_code">Código del curso (opcional)</label><input class="field" id="course_code" name="course_code" value="{{ old('course_code') }}" maxlength="80" placeholder="Ej. PIAD-224"><p class="help">Si no tienes código, el sistema generará uno usando el nombre.</p></div>
-        </div>
-        <div class="form-row-3">
-            <div><label for="career">Carrera (opcional)</label><input class="field" id="career" name="career" value="{{ old('career') }}" placeholder="Ej. Desarrollo de Software"></div>
-            <div><label for="module">Módulo / semestre (opcional)</label><input class="field" id="module" name="module" value="{{ old('module') }}" placeholder="Ej. IV"></div>
-            <div><label for="assigned_at">Fecha de asignación</label><input class="field" id="assigned_at" type="date" name="assigned_at" value="{{ old('assigned_at') }}"></div>
-        </div>
-        <label for="notes">Notas internas (opcional)</label><textarea class="field" id="notes" name="notes" rows="2" placeholder="Observaciones sobre la asignación…">{{ old('notes') }}</textarea>
-        <div class="form-actions"><a class="btn btn-secondary" href="{{ route('groups.show', $group) }}"><x-icon name="arrow-left" /> Volver al grupo</a><button class="btn" type="button" id="next-step"><x-icon name="arrow-right" /> Continuar: modalidades</button></div>
-    </section>
-
-    <section class="card wizard-section" id="assignment-step-2" hidden>
-        <div class="card-head"><div><h2>Modalidades y horario</h2><p class="card-description">Activa TEC, TALL o ambas. Cada modalidad tendrá su propio NRC, fechas, horario y alumnos.</p></div><span class="badge badge-blue">Selecciona al menos una</span></div>
-        @if(count($scheduleTemplates))
-            <div class="alert alert-info"><strong>Atajo disponible:</strong> puedes copiar días, horas, ambiente y fechas desde otro curso de este grupo. El NRC no se copia porque cada modalidad debe conservar el suyo.</div>
-        @else
-            <div class="alert alert-info">Cuando agregues otros cursos, podrás reutilizar sus horarios desde aquí. Por ahora puedes registrar el primer horario manualmente.</div>
-        @endif
-        <div class="grid grid-2">
-            @foreach(['TEC'=>'Conocimientos tecnológicos','TALL'=>'Práctica de taller'] as $kind=>$label)
-                @php($prefix = strtolower($kind))
-                <div class="choice-card" id="{{ $prefix }}-choice">
-                    <label class="choice-toggle"><input type="checkbox" name="has_{{ $prefix }}" value="1" id="has_{{ $prefix }}" {{ old('has_'.$prefix) ? 'checked' : ($kind === 'TEC' && !old('has_tec') && !old('has_tall') ? 'checked' : '') }}> <span>{{ $kind }} · {{ $label }}</span></label>
-                    <p class="help">Activa esta opción si tu asignación incluye esta modalidad.</p>
-                    <div class="modality-fields" id="{{ $prefix }}-fields" hidden>
-                        <div class="form-row">
-                            <div><label for="{{ $prefix }}_nrc">NRC {{ $kind }}</label><input class="field" id="{{ $prefix }}_nrc" name="{{ $prefix }}_nrc" value="{{ old($prefix.'_nrc') }}" placeholder="NRC propio de esta modalidad"></div>
-                            <div><label for="{{ $prefix }}_total_hours">Horas por semana</label><input class="field" id="{{ $prefix }}_total_hours" type="number" min="0" step=".5" name="{{ $prefix }}_total_hours" value="{{ old($prefix.'_total_hours') }}" placeholder="Ej. 6"></div>
-                        </div>
-                        <div class="form-row">
-                            <div><label for="{{ $prefix }}_start_date">Fecha de inicio</label><input class="field" id="{{ $prefix }}_start_date" type="date" name="{{ $prefix }}_start_date" value="{{ old($prefix.'_start_date') }}"></div>
-                            <div><label for="{{ $prefix }}_end_date">Fecha de fin</label><input class="field" id="{{ $prefix }}_end_date" type="date" name="{{ $prefix }}_end_date" value="{{ old($prefix.'_end_date') }}"></div>
-                        </div>
-                        <label for="{{ $prefix }}_template">Reutilizar horario de otro curso</label>
-                        <select class="field schedule-template" id="{{ $prefix }}_template" data-kind="{{ $kind }}">
-                            <option value="">No copiar · configurar manualmente</option>
-                            @foreach($scheduleTemplates as $template)
-                                @if($template['modality'] === $kind)
-                                    <option value="{{ $template['id'] }}">{{ $template['label'] }}</option>
-                                @endif
-                            @endforeach
-                        </select>
-                        <p class="help">Al elegir un horario guardado se completan automáticamente fechas, días, horas y ambiente. El NRC queda vacío para que ingreses el de este curso.</p>
-                        <div class="schedule-copy-note" id="{{ $prefix }}-copy-note" hidden></div>
-                        <div class="schedule-editor">
-                            <label>Días de clase</label>
-                            <div class="weekday-list">
-                                @foreach([1=>'Lun',2=>'Mar',3=>'Mié',4=>'Jue',5=>'Vie',6=>'Sáb',7=>'Dom'] as $day=>$dayLabel)
-                                    <label class="weekday"><input type="checkbox" name="{{ $prefix }}_days[]" value="{{ $day }}" data-weekday="{{ $prefix }}" @checked(in_array($day, old($prefix.'_days', [])))> {{ $dayLabel }}</label>
-                                @endforeach
-                            </div>
-                            <div class="form-row-3" style="margin-top:10px">
-                                <div><label for="{{ $prefix }}_start_time">Hora de inicio</label><input class="field" id="{{ $prefix }}_start_time" type="time" name="{{ $prefix }}_start_time" value="{{ old($prefix.'_start_time') }}"></div>
-                                <div><label for="{{ $prefix }}_end_time">Hora de fin</label><input class="field" id="{{ $prefix }}_end_time" type="time" name="{{ $prefix }}_end_time" value="{{ old($prefix.'_end_time') }}"></div>
-                                <div><label for="{{ $prefix }}_classroom">Aula / ambiente</label><input class="field" id="{{ $prefix }}_classroom" name="{{ $prefix }}_classroom" value="{{ old($prefix.'_classroom') }}" placeholder="Ej. Lab. 204"></div>
-                            </div>
-                            <p class="help">Este horario común se aplica a todos los días seleccionados. Al reutilizar un horario se copian exactamente sus bloques guardados.</p>
-                        </div>
-                        <div class="copied-schedules" id="{{ $prefix }}-copied-schedules"></div>
-                    </div>
+    <section class="card course-register-card">
+        <div class="course-register-fields">
+            <div>
+                <label for="course_code">1. Código completo del curso</label>
+                <input class="field mono" id="course_code" name="course_code" value="{{ old('course_code') }}" maxlength="200" required autocomplete="off" placeholder="202620-PIAD-224-TAL-NRC_11524">
+                <p class="help">Pega el código institucional. Para registrar ambos NRC en un solo ingreso, separa los códigos TEC y TAL con punto y coma.</p>
+                <div class="course-code-preview" id="course-code-preview" aria-live="polite">El código se interpretará aquí automáticamente.</div>
+                @error('course_code')<p class="field-error">{{ $message }}</p>@enderror
+            </div>
+            <div>
+                <label for="course_name">2. Nombre del curso</label>
+                <input class="field" id="course_name" name="course_name" value="{{ old('course_name') }}" required maxlength="255" placeholder="Ej. Sistemas Operativos y Comunicación de Datos">
+                @error('course_name')<p class="field-error">{{ $message }}</p>@enderror
+            </div>
+            <fieldset class="course-component-field">
+                <legend>3. ¿Qué componentes se dictan?</legend>
+                <div class="course-component-options">
+                    <label class="course-component-option"><input type="radio" name="component" value="TEC" @checked(old('component') === 'TEC')><span class="course-component-icon"><x-icon name="book-open" size="18" /></span><span><strong>Teoría</strong><small>TEC</small></span></label>
+                    <label class="course-component-option"><input type="radio" name="component" value="TALL" @checked(old('component') === 'TALL')><span class="course-component-icon"><x-icon name="wrench" size="18" /></span><span><strong>Taller</strong><small>TAL / TALL</small></span></label>
+                    <label class="course-component-option"><input type="radio" name="component" value="BOTH" @checked(old('component') === 'BOTH')><span class="course-component-icon"><x-icon name="layers" size="18" /></span><span><strong>Ambos</strong><small>TEC + TALL</small></span></label>
                 </div>
-            @endforeach
+                <p class="help">El código propone la selección; puedes corregirla manualmente.</p>
+                @error('component')<p class="field-error">{{ $message }}</p>@enderror
+            </fieldset>
         </div>
-        <div class="form-actions">
-            <button class="btn btn-secondary" type="button" id="back-step"><x-icon name="arrow-left" /> Volver a datos del curso</button>
-            <div class="actions"><a class="btn btn-ghost" href="{{ route('groups.show', $group) }}"><x-icon name="arrow-left" /> Cancelar</a><button class="btn" type="submit"><x-icon name="check" /> Guardar curso y modalidades</button></div>
-        </div>
+        <div class="course-register-note"><x-icon name="info" size="16" /><span>Se crea el curso y sus modalidades. Las fechas, días y horarios se configuran después dentro de cada modalidad. Si el código no incluye un NRC, podrás completarlo allí.</span></div>
+        <div class="form-actions"><a class="btn btn-secondary" href="{{ route('groups.show', $group) }}">Cancelar</a><button class="btn" type="submit"><x-icon name="check" /> Guardar curso</button></div>
     </section>
 </form>
 @endsection
 
 @push('styles')
 <style>
-.modality-fields{margin-top:15px;padding-top:13px;border-top:1px solid #edf0f2}
-.schedule-copy-note{margin-top:10px;padding:10px 11px;border-radius:8px;background:#effaf3;border:1px solid #cdebd7;color:#17663b;font-size:11px;line-height:1.5}
-.copied-schedules{display:none}
-.modality-fields[hidden],.wizard-section[hidden]{display:none!important}
-
-.modality-fields{border-top-color:#d9e7ed}
-.schedule-copy-note{background:#edf8f6;border-color:#bfe4dc;color:#26776b}
-.choice-card.selected{background:#f0f8fb;border-color:#89b9ca}
-
+.course-register-card{max-width:900px}.course-register-fields{display:grid;gap:20px}
+.course-code-preview{margin-top:8px;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:var(--surface-soft);color:var(--muted);font-size:11px;line-height:1.5}
+.course-code-preview.is-warning{border-color:var(--warning);color:var(--warning)}
+.course-component-field{margin:0;padding:0;border:0;min-width:0}
+.course-component-field legend{margin-bottom:9px;color:var(--ink);font-size:12px;font-weight:750}
+.course-component-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.course-component-option{position:relative;display:flex;align-items:center;gap:10px;padding:12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);cursor:pointer}
+.course-component-option input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+.course-component-option:has(input:checked){border-color:var(--accent);background:var(--surface-soft);box-shadow:inset 0 0 0 1px var(--accent)}
+.course-component-option:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:3px}
+.course-component-icon{display:grid;place-items:center;flex:0 0 36px;width:36px;height:36px;border-radius:8px;background:var(--surface-soft);color:var(--accent)}
+.course-component-option>span:last-child{display:grid;gap:3px}
+.course-component-option strong{color:var(--ink);font-size:12px}.course-component-option small{color:var(--muted);font-size:10px}
+.course-register-note{display:flex;align-items:flex-start;gap:9px;margin-top:20px;padding:11px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface-soft);color:var(--muted);font-size:11px;line-height:1.5}
+@media(max-width:620px){.course-component-options{grid-template-columns:1fr}.course-register-card .form-actions{align-items:stretch;flex-direction:column-reverse}.course-register-card .form-actions .btn{width:100%}}
 </style>
 @endpush
 
 @push('scripts')
 <script>
 (() => {
-    const form = document.getElementById('assignment-form');
-    if (!form) return;
-    const scheduleTemplates = @json($scheduleTemplates);
-    const stepOne = document.getElementById('assignment-step-1');
-    const stepTwo = document.getElementById('assignment-step-2');
+    const codeInput=document.getElementById('course_code');
+    const preview=document.getElementById('course-code-preview');
+    const radios=[...document.querySelectorAll('input[name="component"]')];
+    if(!codeInput||!preview||!radios.length)return;
+    let manualChoice=@json(old('component') !== null);
 
-    const showStep = number => {
-        stepOne.hidden = number !== 1;
-        stepTwo.hidden = number !== 2;
-        if (number === 1) document.getElementById('course_name').focus();
+    const parseCode=value=>{
+        const pattern=/(?:(20\d{4})-)?([A-Z][A-Z0-9]{1,9})-([A-Z0-9]{1,12})-(TEC|TALL|TAL)(?:[-_\s]*NRC[_\s-]*(\d{3,12}))?/gi;
+        const entries=[...value.matchAll(pattern)].map(m=>({
+            base:[m[1],m[2],m[3]].filter(Boolean).join('-'),
+            period:m[1]||'',
+            program:m[2],
+            course:m[3],
+            type:m[4].toUpperCase()==='TAL'?'TALL':m[4].toUpperCase(),
+            nrc:m[5]||null
+        }));
+        return {entries,bases:[...new Set(entries.map(x=>x.base))],types:[...new Set(entries.map(x=>x.type))]};
     };
-
-    const clearCopied = prefix => {
-        const hidden = document.getElementById(prefix + '-copied-schedules');
-        const note = document.getElementById(prefix + '-copy-note');
-        hidden.innerHTML = '';
-        note.hidden = true;
-    };
-
-    const addHidden = (container, name, value) => {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = name;
-        input.value = value ?? '';
-        container.appendChild(input);
-    };
-
-    const fillTemplate = (prefix, templateId) => {
-        clearCopied(prefix);
-        const template = scheduleTemplates.find(item => String(item.id) === String(templateId));
-        if (!template) return;
-
-        const set = (suffix, value) => {
-            const input = document.getElementById(prefix + '_' + suffix);
-            if (input && value !== null && value !== undefined) input.value = value;
-        };
-
-        set('start_date', template.start_date);
-        set('end_date', template.end_date);
-        set('total_hours', template.total_hours);
-
-        const days = new Set(template.schedules.map(item => String(item.day_of_week)));
-        document.querySelectorAll('input[data-weekday="' + prefix + '"]').forEach(input => {
-            input.checked = days.has(input.value);
-        });
-
-        if (template.schedules.length) {
-            set('start_time', template.schedules[0].start_time);
-            set('end_time', template.schedules[0].end_time);
-            set('classroom', template.schedules[0].classroom || '');
-
-            const hidden = document.getElementById(prefix + '-copied-schedules');
-            template.schedules.forEach((schedule, index) => {
-                const base = prefix + '_schedules[' + index + ']';
-                addHidden(hidden, base + '[day_of_week]', schedule.day_of_week);
-                addHidden(hidden, base + '[start_time]', schedule.start_time);
-                addHidden(hidden, base + '[end_time]', schedule.end_time);
-                addHidden(hidden, base + '[classroom]', schedule.classroom || '');
-                addHidden(hidden, base + '[block_type]', schedule.block_type || 'CLASS');
-            });
-
-            const daysText = [...days].map(day => ['','Lun','Mar','Mié','Jue','Vie','Sáb','Dom'][Number(day)]).join(', ');
-            const note = document.getElementById(prefix + '-copy-note');
-            note.textContent = 'Horario copiado desde "' + template.label + '". Se conservarán ' + template.schedules.length + ' bloques (' + daysText + '), con sus horas y ambientes. Al modificar los campos manuales, pasarás a un horario común.';
-            note.hidden = false;
-        }
-    };
-
-    ['tec','tall'].forEach(prefix => {
-        const checkbox = document.getElementById('has_' + prefix);
-        const panel = document.getElementById(prefix + '-fields');
-        const choice = document.getElementById(prefix + '-choice');
-        const sync = () => {
-            panel.hidden = !checkbox.checked;
-            choice.classList.toggle('selected', checkbox.checked);
-        };
-        checkbox.addEventListener('change', sync);
-        sync();
-
-        const selector = document.getElementById(prefix + '_template');
-        selector.addEventListener('change', () => fillTemplate(prefix, selector.value));
-
-        panel.querySelectorAll('.schedule-editor input').forEach(input => {
-            input.addEventListener('input', () => clearCopied(prefix));
-            input.addEventListener('change', () => clearCopied(prefix));
-        });
-    });
-
-    document.getElementById('next-step').addEventListener('click', () => {
-        const required = document.getElementById('course_name');
-        if (!required.reportValidity()) return;
-        showStep(2);
-    });
-    document.getElementById('back-step').addEventListener('click', () => showStep(1));
-
-    form.addEventListener('submit', event => {
-        const enabled = ['tec','tall'].filter(prefix => document.getElementById('has_' + prefix).checked);
-        if (!enabled.length) {
-            event.preventDefault();
-            showStep(2);
-            alert('Selecciona TEC, TALL o ambas modalidades para continuar.');
+    const update=()=>{
+        const parsed=parseCode(codeInput.value);
+        if(!parsed.entries.length){
+            preview.textContent=codeInput.value.trim()?'No se detectó TEC/TAL; selecciona el componente manualmente.':'El código se interpretará aquí automáticamente.';
+            preview.classList.remove('is-warning');
+            if(!manualChoice)radios.forEach(r=>r.checked=false);
             return;
         }
-
-        let scheduleError = false;
-        enabled.forEach(prefix => {
-            const days = [...document.querySelectorAll('input[data-weekday="' + prefix + '"]:checked')];
-            const start = document.getElementById(prefix + '_start_time').value;
-            const end = document.getElementById(prefix + '_end_time').value;
-            const hidden = document.getElementById(prefix + '-copied-schedules');
-
-            if (hidden.children.length) return;
-            if (days.length && (!start || !end || end <= start)) {
-                scheduleError = true;
-                document.getElementById(prefix + '_start_time').setCustomValidity('Completa una hora de inicio y una hora de fin posterior.');
-                document.getElementById(prefix + '_start_time').reportValidity();
-                document.getElementById(prefix + '_start_time').setCustomValidity('');
-                return;
-            }
-
-            if (days.length) {
-                hidden.innerHTML = '';
-                days.forEach((day, index) => {
-                    const base = prefix + '_schedules[' + index + ']';
-                    addHidden(hidden, base + '[day_of_week]', day.value);
-                    addHidden(hidden, base + '[start_time]', start);
-                    addHidden(hidden, base + '[end_time]', end);
-                    addHidden(hidden, base + '[classroom]', document.getElementById(prefix + '_classroom').value);
-                    addHidden(hidden, base + '[block_type]', 'CLASS');
-                });
-            }
-        });
-        if (scheduleError) {
-            event.preventDefault();
-            showStep(2);
+        const first=parsed.entries[0];
+        const parts=[];
+        if(first.period)parts.push('Periodo '+first.period);
+        parts.push('Programa '+first.program,'Curso '+first.course);
+        const detected=[...new Set(parsed.entries.map(x=>x.type+(x.nrc?' · NRC '+x.nrc:'')))];
+        preview.textContent=parts.join(' · ')+' · Detectado: '+detected.join(' / ');
+        preview.classList.toggle('is-warning',parsed.bases.length>1);
+        if(parsed.bases.length>1)preview.textContent+=' · Revisa que sean códigos del mismo curso.';
+        if(!manualChoice&&parsed.bases.length===1){
+            const suggested=parsed.types.length>1?'BOTH':parsed.types[0];
+            radios.forEach(r=>r.checked=r.value===suggested);
         }
-    });
-
-    @if($errors->any())
-        showStep({{ collect($errors->keys())->contains(fn($key) => str_starts_with($key, 'tec_') || str_starts_with($key, 'tall_') || $key === 'modalities') ? 2 : 1 }});
-    @else
-        showStep(1);
-    @endif
+    };
+    radios.forEach(r=>r.addEventListener('change',()=>manualChoice=true));
+    codeInput.addEventListener('input',update);
+    update();
 })();
 </script>
 @endpush
