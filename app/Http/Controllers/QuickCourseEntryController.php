@@ -32,6 +32,7 @@ class QuickCourseEntryController extends Controller
 
         $validator = Validator::make($request->all(), [
             'rows' => ['required', 'array', 'min:1', 'max:60'],
+            'rows.*' => ['array'],
             'rows.*.course_name' => ['nullable', 'string', 'max:255'],
             'rows.*.tec_code' => ['nullable', 'string', 'max:200'],
             'rows.*.tec_start_date' => ['nullable', 'date'],
@@ -46,6 +47,10 @@ class QuickCourseEntryController extends Controller
             $seenCourseCodes = [];
 
             foreach ((array) $request->input('rows', []) as $index => $row) {
+                if (!is_array($row)) {
+                    continue;
+                }
+
                 $courseName = trim((string) ($row['course_name'] ?? ''));
                 $codes = [
                     'TEC' => trim((string) ($row['tec_code'] ?? '')),
