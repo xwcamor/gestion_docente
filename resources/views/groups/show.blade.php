@@ -202,7 +202,7 @@
                 @foreach($assignments as $assignment)
                     @php($types = $assignment->modalities->pluck('modality')->all())
                     @php($modalityTotal = $assignment->modalities->count())
-                    @php($modalityReady = $assignment->modalities->filter(fn ($item) => $item->start_date && $item->end_date && $item->schedules->where('block_type', 'CLASS')->isNotEmpty())->count())
+                    @php($modalityReady = $assignment->modalities->filter(fn ($item) => $item->start_date && $item->end_date && $item->schedules->isNotEmpty())->count())
                     @php($courseProgress = $modalityTotal > 0 ? (int) round(($modalityReady / $modalityTotal) * 100) : 0)
                     <article class="course-row-card" data-search="{{ mb_strtolower($assignment->course->name.' '.$assignment->course->code) }}" data-modalities="{{ implode(',', $types) }}">
                         <div class="course-row-main">
