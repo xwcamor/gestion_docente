@@ -1,10 +1,10 @@
 <?php
 
-use Illuminate\\Database\\Migrations\\Migration;
-use Illuminate\\Database\\Schema\\Blueprint;
-use Illuminate\\Support\\Facades\\DB;
-use Illuminate\\Support\\Facades\\Schema;
-use Illuminate\\Support\\Str;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 
 return new class extends Migration
 {
@@ -47,11 +47,10 @@ return new class extends Migration
             });
 
         // Match the non-null slug column expected by HasSlugRouteKey.
-        DB::statement('ALTER TABLE `curricula` MODIFY `slug` VARCHAR(191) NOT NULL');
+        DB::statement('ALTER TABLE curricula MODIFY slug VARCHAR(191) NOT NULL');
 
         $indexes = DB::select(
-            'SHOW INDEX FROM `curricula` WHERE Key_name = ?',
-            ['curricula_slug_unique']
+            "SHOW INDEX FROM curricula WHERE Key_name = 'curricula_slug_unique'"
         );
 
         if ($indexes === []) {
