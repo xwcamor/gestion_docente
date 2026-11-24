@@ -35,7 +35,7 @@ class Cycle extends Model
 
     public function fiveMinuteTalks(): HasMany
     {
-        return $this->hasMany(CycleFiveMinuteTalk::class)->orderBy('position');
+        return $this->hasMany(CycleFiveMinuteTalk::class);
     }
 
     public function generatedDocuments(): HasMany
