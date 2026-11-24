@@ -456,7 +456,7 @@
         <div class="talks-intro">
             <div>
                 <strong>Catálogo institucional</strong>
-                <p>Se programa una charla por cada día disponible del grupo y se excluyen los feriados. Al terminar los 96 temas oficiales, el catálogo vuelve automáticamente al primero. Marca el check al realizarla; participantes se calcula desde el padrón del grupo.</p>
+                <p>Se programa una charla por cada día disponible del grupo y se excluyen los feriados. Al terminar los 96 temas oficiales, el catálogo vuelve automáticamente al primero. Marca el check al realizarla y ajusta los participantes de cada charla; el valor inicial corresponde al padrón del grupo.</p>
             </div>
             @if($groupTalks->isNotEmpty())
                 <form method="POST" action="{{ route('documents.group-talks', $group) }}">
@@ -527,12 +527,23 @@
                                             <span class="talk-status-mark" aria-hidden="true"></span>
                                             <span class="talk-status-label">{{ $talk->status === 'done' ? 'Realizada' : 'Pendiente' }}</span>
                                         </label>
-                                        <div class="talk-participants" title="Se calcula automáticamente con el padrón del grupo">
-                                            <strong>{{ number_format($talk->participant_count ?? $studentCount) }}</strong>
+                                        <div class="talk-participants">
+                                            <input
+                                                class="field talk-participant-input"
+                                                type="number"
+                                                name="participant_count"
+                                                min="0"
+                                                max="9999"
+                                                step="1"
+                                                required
+                                                value="{{ $talk->participant_count ?? $studentCount }}"
+                                                aria-label="Cantidad de participantes de la charla"
+                                                title="Puedes editar la cantidad de participantes de esta charla"
+                                            >
                                             <small>alumnos</small>
                                         </div>
                                         <input class="field" name="observations" value="{{ $talk->observations }}" maxlength="2000" placeholder="Observaciones del grupo" aria-label="Observaciones">
-                                        <button class="btn btn-secondary btn-sm" type="submit"><x-icon name="check" /> Guardar observación</button>
+                                        <button class="btn btn-secondary btn-sm" type="submit"><x-icon name="check" /> Guardar cambios</button>
                                     </form>
                                 </td>
                             </tr>
@@ -717,8 +728,9 @@ html[data-theme="dark"] .talks-period strong{color:#c5e8d2}
 .talks-table td{vertical-align:middle}
 .talk-date{display:grid;gap:2px;white-space:nowrap;color:#436957}.talk-date small{color:#75877e;font-size:9px;font-weight:650;text-transform:capitalize}.talk-date strong{font-size:11px;font-weight:800}
 .talk-topic{min-width:260px;color:#344f43;font-size:11px;font-weight:600}
-.talk-execution-form{display:grid;grid-template-columns:132px 80px minmax(170px,1fr) auto;align-items:center;gap:7px;min-width:540px}
+.talk-execution-form{display:grid;grid-template-columns:132px 120px minmax(170px,1fr) auto;align-items:center;gap:7px;min-width:580px}
 .talk-execution-form .field{min-height:33px;padding:6px 8px;font-size:10px}
+.talk-participant-input{width:64px;min-width:64px;text-align:center;font-variant-numeric:tabular-nums}
 .talk-status-toggle{position:relative;display:inline-flex;align-items:center;gap:8px;min-height:36px;color:#65766c;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap}
 .talk-status-toggle input{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .talk-status-mark{display:grid;place-items:center;width:19px;height:19px;flex:none;border:1.5px solid #aebdb3;border-radius:5px;background:#fff;color:#fff;transition:background .14s ease,border-color .14s ease}
@@ -743,7 +755,7 @@ html[data-theme="dark"] .talks-summary span{background:#172a24;border-color:#355
 html[data-theme="dark"] .talks-summary strong{color:#b9e2cb}
 html[data-theme="dark"] .talks-table th{background:#1b3029;color:#b7d0c1}
 html[data-theme="dark"] .talk-topic{color:#d1e2d8}
-@media(max-width:760px){.talks-intro{align-items:stretch;flex-direction:column}.talks-intro form,.talks-intro .btn{width:100%}.talk-execution-form{grid-template-columns:repeat(2,minmax(0,1fr));min-width:0}.talk-execution-form input[name="observations"]{grid-column:1/-1}.talk-execution-form>button{width:100%}}
+@media(max-width:760px){.talks-intro{align-items:stretch;flex-direction:column}.talks-intro form,.talks-intro .btn{width:100%}.talk-execution-form{grid-template-columns:repeat(2,minmax(0,1fr));min-width:0}.talk-execution-form input[name="observations"],.talk-execution-form>button{grid-column:1/-1}.talk-execution-form>button{width:100%}}
 
 @media(max-width:850px){.progress-grid{grid-template-columns:1fr;gap:13px}.roster-toolbar{flex-direction:column}.roster-upload{width:100%;max-width:none}.roster-upload .field{flex:1}.course-row-status{grid-template-columns:1fr}}
 @media(max-width:600px){.group-page-head{align-items:flex-start}.group-page-head .actions{flex-wrap:wrap}.group-progress{padding:14px}.group-panel-summary{padding:13px}.group-panel-count{font-size:10px}.roster-upload{align-items:stretch;flex-direction:column}.roster-upload .field{width:100%;min-width:0}.roster-list-head{align-items:stretch;flex-direction:column}.roster-search{max-width:none;width:100%}.course-toolbar{align-items:stretch;flex-direction:column}.course-toolbar .filter-input{max-width:none;width:100%}.course-row-main{align-items:flex-start}.course-row-status{gap:8px}.modality-link{width:100%;flex-wrap:wrap}.modality-link span:nth-of-type(2){white-space:normal}}
