@@ -352,44 +352,12 @@
         <x-icon name="chevron-right" class="group-panel-chevron" />
     </summary>
     <div class="group-panel-body">
-        <section class="course-progress-summary" aria-label="Avance de configuración de cursos">
-            <div class="course-progress-summary-head">
-                <strong>Avance de configuración</strong>
-                <span class="muted small">Se actualiza con tus cursos y horarios</span>
-            </div>
-            <div class="progress-grid">
-                <div class="progress-item">
-                    <div class="progress-label"><span>Cursos con modalidad</span><strong>{{ $coursesWithModalityCount }} / {{ $courseCount }}</strong></div>
-                    <div class="progress-track" role="progressbar" aria-label="Cursos con modalidad asignada" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $courseModalityPercent }}"><span style="width:{{ $courseModalityPercent }}%"></span></div>
-                </div>
-                <div class="progress-item">
-                    <div class="progress-label"><span>Horarios configurados</span><strong>{{ $configuredModalityCount }} / {{ $modalityCount }}</strong></div>
-                    <div class="progress-track" role="progressbar" aria-label="Modalidades con fechas y horario configurados" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $schedulePercent }}"><span style="width:{{ $schedulePercent }}%"></span></div>
-                </div>
-                <div class="progress-item">
-                    <div class="progress-label"><span>Mallas vinculadas</span><strong>{{ $curriculumCount }} / {{ $courseCount }}</strong></div>
-                    <div class="progress-track" role="progressbar" aria-label="Cursos con malla curricular vinculada" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $curriculumPercent }}"><span style="width:{{ $curriculumPercent }}%"></span></div>
-                </div>
-            </div>
-        </section>
-        @if($assignments->isNotEmpty())
-            <div class="filter-bar course-toolbar">
-                <input class="filter-input" id="course-search" type="search" placeholder="Buscar curso…" aria-label="Buscar cursos">
-                <select class="filter-input" id="modality-filter" aria-label="Filtrar por modalidad">
-                    <option value="">Todas las modalidades</option>
-                    <option value="TEC">Solo TEC</option>
-                    <option value="TALL">Solo TALL</option>
-                    <option value="BOTH">TEC y TALL</option>
-                </select>
-                <span class="help" id="course-count">{{ $assignments->count() }} en esta página</span>
-            </div>
-            <div class="course-list" id="course-list">
+        <div class="course-list" id="course-list">
                 @foreach($assignments as $assignment)
-                    @php($types = $assignment->modalities->pluck('modality')->all())
                     @php($modalityTotal = $assignment->modalities->count())
-                    @php($modalityReady = $assignment->modalities->filter(fn ($item) => $item->start_date && $item->end_date && $item->schedules->isNotEmpty())->count())
-                    @php($courseProgress = $modalityTotal > 0 ? (int) round(($modalityReady / $modalityTotal) * 100) : 0)
-                    <article class="course-row-card" data-search="{{ mb_strtolower($assignment->course->name.' '.$assignment->course->code) }}" data-modalities="{{ implode(',', $types) }}">
+                    @php($modalityReady = $assignment->modalities->filter(fn ($item) => $item->start_date && $item->end_date && $item->schedules->where('block_type', 'CLASS')->isNotEmpty())->count())
+                    @php($courseScheduleReady = $modalityTotal > 0 && $modalityReady === $modalityTotal)
+                    <article class="course-row-card">
                         <div class="course-row-main">
                             <div class="course-row-title">
                                 <strong>{{ $assignment->course->name }}</strong>
@@ -404,12 +372,15 @@
                                 </form>
                             </div>
                         </div>
-                        <div class="course-row-status">
-                            <div class="course-row-progress">
-                                <div class="progress-label"><span>Horario de modalidades</span><strong>{{ $modalityReady }}/{{ $modalityTotal }} · {{ $courseProgress }}%</strong></div>
-                                <div class="progress-track" role="progressbar" aria-label="Avance de horarios para {{ $assignment->course->name }}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $courseProgress }}"><span style="width:{{ $courseProgress }}%"></span></div>
-                            </div>
-                            <span class="badge {{ $assignment->curriculum ? 'badge-green' : 'badge-orange' }}">{{ $assignment->curriculum ? 'Malla vinculada' : 'Malla pendiente' }}</span>
+                        <div class="course-row-status" aria-label="Estado de configuración">
+                            <span class="course-status-chip {{ $courseScheduleReady ? 'is-ready' : 'is-pending' }}">
+                                <x-icon name="{{ $courseScheduleReady ? 'check-circle' : 'clock' }}" size="12" />
+                                Horarios {{ $modalityReady }}/{{ $modalityTotal }}
+                            </span>
+                            <span class="course-status-chip {{ $assignment->curriculum ? 'is-ready' : 'is-pending' }}">
+                                <x-icon name="{{ $assignment->curriculum ? 'book-check' : 'book-open' }}" size="12" />
+                                {{ $assignment->curriculum ? 'Malla vinculada' : 'Malla pendiente' }}
+                            </span>
                         </div>
                         <div class="course-row-modalities">
                             @forelse($assignment->modalities as $modality)
@@ -426,10 +397,6 @@
                     </article>
                 @endforeach
             </div>
-            <div class="empty" id="course-empty" hidden><strong>No hay cursos que coincidan.</strong><span>Prueba con otro nombre o modalidad.</span></div>
-            @if($assignments->hasPages())
-                <x-pagination :paginator="$assignments" />
-            @endif
         @else
             <div class="empty">
                 <span class="stat-icon" style="margin:0 auto 10px;width:42px;height:42px"><x-icon name="book-open" size="20" /></span>
@@ -686,19 +653,17 @@ html[data-theme="dark"] .group-workload-panel[open]>.group-panel-summary{backgro
 .roster-table tr[data-editing="true"]{background:#f5fafc}
 .roster-table tr[data-editing="true"] td{padding-top:8px;padding-bottom:8px}
 .roster-empty{padding:26px 12px}
-.course-toolbar{display:flex;align-items:center;gap:10px;margin:13px 0}
-.course-toolbar .filter-input{max-width:260px}
-.course-list{display:grid;gap:9px}
-.course-row-card{padding:13px 14px;border:1px solid #e5edf1;border-radius:9px;background:#fff}
-.course-row-main{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.course-list{display:grid;gap:9px;margin-top:12px}
+.course-row-card{padding:14px 15px;border:1px solid var(--line);border-radius:9px;background:var(--surface)}
+.course-row-main{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .course-row-title{display:flex;flex-direction:column;gap:4px;min-width:0}
-.course-row-title strong{font-size:13px;color:#2f4c5b}
-.course-row-title small{font-size:10px;color:#7e8d94}
-.course-row-actions{flex:0 0 auto;display:flex;align-items:center;gap:5px}
-.course-row-status{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:15px;margin:11px 0}
-.course-row-progress{max-width:420px;min-width:0}
-.course-row-progress .progress-label{font-size:10px;margin-bottom:5px}
-.course-row-progress .progress-track{height:6px}
+.course-row-title strong{font-size:13px;color:var(--ink)}
+.course-row-title small{font-size:10px;color:var(--muted)}
+.course-row-actions{flex:0 0 auto;display:flex;align-items:center;gap:6px}
+.course-row-status{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:9px 0}
+.course-status-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;font-size:10px;font-weight:650}
+.course-status-chip.is-ready{border-color:color-mix(in srgb,var(--success) 24%,var(--line));background:var(--success-bg);color:var(--success)}
+.course-status-chip.is-pending{border-color:color-mix(in srgb,var(--warning) 24%,var(--line));background:var(--warning-bg);color:var(--warning)}
 .course-row-modalities{display:flex;flex-wrap:wrap;gap:7px}
 .modality-link{display:flex;align-items:center;gap:7px;max-width:100%;padding:7px 9px;border:1px solid #dfebf0;border-radius:7px;text-decoration:none;color:#456473;font-size:10px}
 .modality-link strong{font-size:10px}
@@ -823,35 +788,7 @@ html[data-theme="dark"] .talk-topic{color:var(--ink)}
         if (studentEmpty) studentEmpty.hidden = visible > 0;
     });
 
-    const search = document.getElementById('course-search');
-    const filter = document.getElementById('modality-filter');
-    if (!search || !filter) return;
-    const cards = [...document.querySelectorAll('.course-row-card')];
-    const empty = document.getElementById('course-empty');
-    const count = document.getElementById('course-count');
 
-    const apply = () => {
-        const term = search.value.trim().toLocaleLowerCase();
-        const selected = filter.value;
-        let visible = 0;
-        cards.forEach(card => {
-            const textMatch = card.dataset.search.includes(term);
-            const types = card.dataset.modalities.split(',').filter(Boolean);
-            const typeMatch = !selected || (
-                selected === 'BOTH'
-                    ? types.includes('TEC') && types.includes('TALL')
-                    : types.includes(selected)
-            );
-            const show = textMatch && typeMatch;
-            card.hidden = !show;
-            if (show) visible++;
-        });
-        if (empty) empty.hidden = visible !== 0;
-        if (count) count.textContent = visible + (visible === 1 ? ' visible' : ' visibles en esta página');
-    };
-
-    search.addEventListener('input', apply);
-    filter.addEventListener('change', apply);
 })();
 </script>
 @endpush
