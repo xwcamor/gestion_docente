@@ -310,7 +310,13 @@ class GroupController extends Controller
         $rosterStatus = $studentCount > 0 ? 'complete' : 'pending';
         $coursesStatus = $courseCount === 0
             ? 'pending'
-            : ($modalityCount > 0 && $configuredModalityCount === $modalityCount ? 'complete' : 'partial');
+            : (
+                $coursesWithModalityCount === $courseCount
+                && $modalityCount > 0
+                && $configuredModalityCount === $modalityCount
+                    ? 'complete'
+                    : 'partial'
+            );
         $talkStatus = $groupTalks->isEmpty()
             ? 'pending'
             : ($talkPendingCount === 0 ? 'complete' : ($talkDoneCount > 0 ? 'partial' : 'pending'));
