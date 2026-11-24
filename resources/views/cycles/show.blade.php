@@ -25,7 +25,7 @@
     </div>
 </div>
 
-<div class="grid grid-3" style="margin-bottom:17px">
+<div class="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:17px">
     <div class="stat-card">
         <div class="stat-top"><span class="stat-label">Grupos</span><span class="stat-icon"><x-icon name="users" /></span></div>
         <div class="stat">{{ $groupCount }}</div>
@@ -37,6 +37,10 @@
     <div class="stat-card">
         <div class="stat-top"><span class="stat-label">Modalidades</span><span class="stat-icon"><x-icon name="layers" /></span></div>
         <div class="stat">{{ $modalityCount }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-top"><span class="stat-label">Horas declaradas / semana</span><span class="stat-icon"><x-icon name="clock" /></span></div>
+        <div class="stat">{{ number_format($declaredWeeklyHours, 1) }} h</div>
     </div>
 </div>
 
