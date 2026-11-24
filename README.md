@@ -258,7 +258,7 @@ https://github.com/xwcamor/gestion_docente
 
 ## Importar cursos desde Excel institucional
 
-En **Cargas laborales → Importar carga laboral**, descarga la plantilla y completa las hojas **Cursos** y **Horarios**. En Cursos utiliza CURSO, CODIGO, BLOQUE TEC, NRC TEC, BLOQUE TALLER, BLOQUE, NRC TALLER y FECHA. En Horarios utiliza CODIGO, MODALIDAD, NRC, DIA, DESDE, HASTA, TIPO y AMBIENTE.
+En **Cargas laborales → Importar carga laboral**, descarga la plantilla y completa las hojas **Cursos** y **Horarios**. En Cursos utiliza CURSO, CODIGO, BLOQUE TEC, NRC TEC, BLOQUE TALLER, BLOQUE, NRC TALLER, FECHA TEC y FECHA TALLER. Cada modalidad conserva su propio rango de fechas. Los archivos anteriores con una sola columna FECHA siguen siendo compatibles. En Horarios utiliza CODIGO, MODALIDAD, NRC, DIA, DESDE, HASTA, TIPO y AMBIENTE.
 
 La importación crea o reutiliza el ciclo y el grupo indicado, registra cada curso, conserva TEC/TALL como modalidades independientes y asocia cada bloque horario mediante CODIGO + MODALIDAD. Se puede volver a importar el mismo archivo al mismo grupo sin duplicar asignaciones ni modalidades; los horarios manuales que ya existían se conservan.
 
