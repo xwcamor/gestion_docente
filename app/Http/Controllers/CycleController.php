@@ -3,6 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cycle;
+use App\Models\CourseModality;
+use App\Models\GeneratedDocument;
+use App\Models\ImportBatch;
+use App\Models\FiveMinuteTalkTopic;
+use App\Services\FiveMinuteTalkService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -121,7 +126,7 @@ class CycleController extends Controller
         return redirect()->route('cycles.show', $cycle)->with('success', 'Datos del ciclo actualizados.');
     }
 
-    public function show(Cycle $cycle)
+    public function show(Cycle $cycle, FiveMinuteTalkService $talkService)
     {
         $this->authorizeCycle($cycle);
 
@@ -174,6 +179,20 @@ class CycleController extends Controller
             ->where('teaching_groups.cycle_id', $cycle->id)
             ->sum('course_modalities.total_hours');
 
+        $talkTopics = FiveMinuteTalkTopic::query()
+            ->where('professor_id', $cycle->professor_id)
+            ->orderBy('position')
+            ->get();
+        $cycleTalks = $cycle->fiveMinuteTalks()
+            ->orderByRaw('scheduled_date IS NULL')
+            ->orderBy('scheduled_date')
+            ->orderBy('position')
+            ->get();
+        $availableTalkDays = $talkService->availableDays($cycle);
+        $selectedTalkDays = $cycle->five_minute_talk_days ?: $availableTalkDays;
+        $talkAssignedCount = $cycleTalks->filter(fn ($talk) => $talk->scheduled_date !== null)->count();
+        $talkPendingCount = $cycleTalks->count() - $talkAssignedCount;
+
         return view('cycles.show', compact(
             'cycle',
             'groups',
@@ -184,8 +203,91 @@ class CycleController extends Controller
             'curriculumAssignedCount',
             'configuredModalityCount',
             'curriculumPercent',
-            'schedulePercent'
+            'schedulePercent',
+            'talkTopics',
+            'cycleTalks',
+            'availableTalkDays',
+            'selectedTalkDays',
+            'talkAssignedCount',
+            'talkPendingCount'
         ));
+    }
+
+    public function updateFiveMinuteTalks(Request $request, Cycle $cycle, FiveMinuteTalkService $service)
+    {
+        $this->authorizeCycle($cycle);
+
+        $data = $request->validate([
+            'days' => ['required', 'array', 'min:1'],
+            'days.*' => ['required', 'integer', 'min:1', 'max:7'],
+            'topics' => ['nullable', 'string', 'max:50000'],
+            'topics_file' => ['nullable', 'file', 'mimes:xlsx,xls,csv', 'max:10240'],
+        ], [
+            'days.required' => 'Selecciona los días de la semana en los que se pueden programar charlas.',
+            'topics_file.mimes' => 'Adjunta un archivo Excel .xlsx, .xls o .csv.',
+            'topics_file.max' => 'El archivo de temas no puede superar los 10 MB.',
+        ]);
+
+        $result = $service->updateAndDistribute(
+            $cycle,
+            $data['days'],
+            $data['topics'] ?? null,
+            $request->file('topics_file')
+        );
+
+        $message = "{$result['topics']} temas guardados: {$result['assigned']} asignados a fechas y {$result['pending']} pendientes.";
+        if ($result['available_dates'] === 0) {
+            $message .= ' No se encontraron días lectivos coincidentes; revisa los horarios y los días seleccionados.';
+        }
+
+        return redirect()->route('cycles.show', $cycle)
+            ->with('success', $message);
+    }
+
+    public function destroy(Cycle $cycle)
+    {
+        $this->authorizeCycle($cycle);
+
+        $groupIds = $cycle->groups()->pluck('id')->all();
+        $modalityIds = CourseModality::query()
+            ->whereHas('assignment', fn ($query) => $query->whereIn('teaching_group_id', $groupIds))
+            ->pluck('id')
+            ->all();
+
+        $generatedQuery = GeneratedDocument::query()->where('cycle_id', $cycle->id);
+        if ($groupIds || $modalityIds) {
+            $generatedQuery->orWhere(function ($query) use ($groupIds, $modalityIds) {
+                if ($groupIds) {
+                    $query->whereIn('teaching_group_id', $groupIds);
+                }
+                if ($modalityIds) {
+                    $groupIds ? $query->orWhereIn('course_modality_id', $modalityIds) : $query->whereIn('course_modality_id', $modalityIds);
+                }
+            });
+        }
+        $generatedPaths = $generatedQuery->pluck('stored_path');
+
+        $importQuery = ImportBatch::query();
+        $hasImportScope = false;
+        if ($groupIds) {
+            $importQuery->whereIn('teaching_group_id', $groupIds);
+            $hasImportScope = true;
+        }
+        if ($modalityIds) {
+            $hasImportScope
+                ? $importQuery->orWhereIn('course_modality_id', $modalityIds)
+                : $importQuery->whereIn('course_modality_id', $modalityIds);
+        }
+        $importPaths = $hasImportScope ? $importQuery->pluck('stored_path') : collect();
+
+        DB::transaction(fn () => $cycle->delete());
+
+        Storage::disk('local')->delete(
+            $generatedPaths->merge($importPaths)->filter()->unique()->values()->all()
+        );
+
+        return redirect()->route('cycles.index')
+            ->with('success', 'Ciclo y sus grupos fueron eliminados. Los registros del catálogo de cursos se conservaron para reutilizarlos en otros ciclos.');
     }
 
     private function authorizeCycle(Cycle $cycle): void
