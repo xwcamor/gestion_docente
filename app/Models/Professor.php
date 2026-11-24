@@ -9,5 +9,6 @@ class Professor extends Model {
  public function cycles(): HasMany { return $this->hasMany(Cycle::class); }
  public function groups(): HasMany { return $this->hasMany(TeachingGroup::class); }
  public function courses(): HasMany { return $this->hasMany(Course::class); }
+ public function fiveMinuteTalkTopics(): HasMany { return $this->hasMany(FiveMinuteTalkTopic::class)->orderBy('position'); }
  public function holidays(): HasMany { return $this->hasMany(Holiday::class); }
 }
