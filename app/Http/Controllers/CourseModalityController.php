@@ -23,14 +23,18 @@ class CourseModalityController extends Controller
 
         $hasNrc = filled($modality->nrc);
         $hasCourseDates = $modality->start_date !== null && $modality->end_date !== null;
+        $hasAnySchedule = $modality->schedules->isNotEmpty();
         $hasClassSchedule = $modality->schedules->contains(
             fn ($schedule) => $schedule->block_type === 'CLASS'
         );
-        $hasGeneratedCalendar = $scheduledSessionCount > 0;
+        // Los bloques asincrónicos no necesitan generar sesiones de clase.
+        $hasGeneratedCalendar = $hasClassSchedule
+            ? $scheduledSessionCount > 0
+            : $hasAnySchedule;
         $configurationSteps = collect([
             $hasNrc,
             $hasCourseDates,
-            $hasClassSchedule,
+            $hasAnySchedule,
             $hasGeneratedCalendar,
         ])->filter()->count();
         $configurationPercent = (int) round(($configurationSteps / 4) * 100);
@@ -84,6 +88,8 @@ class CourseModalityController extends Controller
             'documentCount',
             'configurationSteps',
             'configurationPercent',
+            'hasClassSchedule',
+            'hasAnySchedule',
             'sessionsWithContentCount',
             'sessionContentPercent',
             'sessions',
