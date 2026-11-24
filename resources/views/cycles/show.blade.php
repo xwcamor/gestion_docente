@@ -373,7 +373,7 @@
                 if (type === 'number') {
                     field.min = '0';
                     field.max = '9999';
-                    field.step = '.5';
+                    field.step = '.25';
                 }
             }
             field.id = id;
