@@ -25,13 +25,19 @@
     <div class="detail-progress-row">
         <div class="detail-progress-label"><span>Configuración del curso</span><strong>{{ $configurationPercent }}%</strong></div>
         <div class="detail-progress-track" role="progressbar" aria-label="Avance de configuración del curso" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $configurationPercent }}"><span style="width:{{ $configurationPercent }}%"></span></div>
-        <small>NRC · fechas de dictado · horario · calendario generado</small>
+        <small>NRC · fechas de dictado · horario · calendario de clases cuando aplica</small>
     </div>
-    <div class="detail-progress-row">
-        <div class="detail-progress-label"><span>Sesiones con contenido preparado</span><strong>{{ $sessionsWithContentCount }} / {{ $scheduledSessionCount }} · {{ $sessionContentPercent }}%</strong></div>
-        <div class="detail-progress-track" role="progressbar" aria-label="Sesiones programadas con contenido" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $sessionContentPercent }}"><span style="width:{{ $sessionContentPercent }}%"></span></div>
-        <small>Una sesión cuenta cuando tiene tema, objetivo, actividades o evidencias.</small>
-    </div>
+    @if($hasClassSchedule)
+        <div class="detail-progress-row">
+            <div class="detail-progress-label"><span>Sesiones con contenido preparado</span><strong>{{ $sessionsWithContentCount }} / {{ $scheduledSessionCount }} · {{ $sessionContentPercent }}%</strong></div>
+            <div class="detail-progress-track" role="progressbar" aria-label="Sesiones programadas con contenido" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $sessionContentPercent }}"><span style="width:{{ $sessionContentPercent }}%"></span></div>
+            <small>Una sesión cuenta cuando tiene tema, objetivo, actividades o evidencias.</small>
+        </div>
+    @else
+        <div class="detail-progress-row">
+            <small>Esta modalidad no tiene bloques sincrónicos. El avance del calendario de sesiones no aplica; se considera su bloque asincrónico configurado.</small>
+        </div>
+    @endif
 </section>
 
 <section class="card" id="calendar">
