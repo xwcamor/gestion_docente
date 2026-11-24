@@ -93,7 +93,8 @@ class CurriculumController extends Controller
         Storage::disk('local')->put($textPath, $extracted['text']);
         $promptGeneratedAt = now();
         $promptVersion = $service->promptVersion();
-        $prompt = $service->buildPrompt($extracted['text'], $assignment, $promptGeneratedAt->toIso8601String());
+        $sections = $extracted['sections'] ?? [];
+        $prompt = $service->buildPrompt($extracted['text'], $assignment, $promptGeneratedAt->toIso8601String(), $sections);
         $promptSha256 = hash('sha256', $prompt);
         session()->put('curriculum_pdf_'.$token, [
             'assignment_id' => $assignment->id,
@@ -104,6 +105,7 @@ class CurriculumController extends Controller
             'prompt_generated_at' => $promptGeneratedAt->toIso8601String(),
             'prompt_version' => $promptVersion,
             'prompt_sha256' => $promptSha256,
+            'sections' => $sections,
         ]);
         return redirect()
             ->route('curricula.prompt', ['assignment' => $assignment, 'token' => $token])
@@ -131,14 +133,16 @@ class CurriculumController extends Controller
         $text = Storage::disk('local')->get($textPath);
         $promptGeneratedAt = Carbon::parse($draft['prompt_generated_at'] ?? now());
         $promptVersion = $draft['prompt_version'] ?? $service->promptVersion();
-        $prompt = $service->buildPrompt($text, $assignment, $promptGeneratedAt->toIso8601String());
+        $sections = $draft['sections'] ?? [];
+        $prompt = $service->buildPrompt($text, $assignment, $promptGeneratedAt->toIso8601String(), $sections);
 
         return view('curricula.prompt', compact(
             'assignment',
             'prompt',
             'token',
             'promptGeneratedAt',
-            'promptVersion'
+            'promptVersion',
+            'sections'
         ));
     }
 
@@ -201,6 +205,7 @@ class CurriculumController extends Controller
             'prompt_version' => $draft['prompt_info']['prompt_version'] ?? ($source['prompt_version'] ?? null),
             'prompt_generated_at' => $draft['prompt_info']['prompt_generated_at'] ?? ($source['prompt_generated_at'] ?? null),
             'prompt_sha256' => $draft['prompt_info']['prompt_sha256'] ?? ($source['prompt_sha256'] ?? null),
+            'sections' => $source['sections'] ?? [],
         ];
         $curriculum = $service->importPayload($assignment, $payload, $sourceInfo, auth()->id());
         $this->rebuildCourseCalendars($assignment, $calendar);
