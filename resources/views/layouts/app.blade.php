@@ -46,6 +46,7 @@
         @keyframes page-enter{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
         .btn.is-loading{pointer-events:none;opacity:.78}
         .btn.is-loading:after{content:"";width:12px;height:12px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:btn-spin .65s linear infinite}
+        .form-submitting button[type="submit"],.form-submitting button:not([type]),.form-submitting input[type="submit"]{pointer-events:none;opacity:.72;cursor:wait}
         @keyframes btn-spin{to{transform:rotate(360deg)}}
         .cycle-workflow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
         .workflow-step{display:flex;align-items:flex-start;gap:10px;min-width:0;padding:13px;border:1px solid #e7ebe5;border-radius:8px;background:#fff}
@@ -805,11 +806,18 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
     </main>
 </div>
 
-@if(session('success') || session('error') || session('info'))
+@php
+    // Consumir los mensajes flash al renderizar evita reutilizarlos en otra respuesta.
+    $flashSuccess = session()->pull('success');
+    $flashError = session()->pull('error');
+    $flashInfo = session()->pull('info');
+@endphp
+
+@if($flashSuccess !== null || $flashError !== null || $flashInfo !== null)
     @php
-        $noticeType = session('error') ? 'error' : (session('info') ? 'info' : 'success');
+        $noticeType = $flashError !== null ? 'error' : ($flashInfo !== null ? 'info' : 'success');
         $noticeTitle = $noticeType === 'error' ? 'No se pudo completar' : ($noticeType === 'info' ? 'Información' : '¡Listo! Se guardó correctamente');
-        $noticeMessage = session('error') ?? session('info') ?? session('success');
+        $noticeMessage = $flashError ?? $flashInfo ?? $flashSuccess;
     @endphp
     <div class="app-notice-wrap" aria-live="polite" aria-atomic="true">
         <section class="app-notice app-notice-{{ $noticeType }}" id="app-notice" role="{{ $noticeType === 'error' ? 'alert' : 'status' }}">
@@ -962,17 +970,46 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
         }
     });
 
+    // Protección centralizada para todos los formularios que modifican datos.
+    // Cubre envíos rápidos por Enter, doble clic y acciones que requieren confirmación.
     document.addEventListener('submit', event => {
         const form = event.target;
-        if (!(form instanceof HTMLFormElement) || !form.dataset.confirm) return;
-        if (form.dataset.confirmed === '1') {
-            delete form.dataset.confirmed;
+        if (!(form instanceof HTMLFormElement)) return;
+
+        const method = (form.getAttribute('method') || 'get').toLowerCase();
+        const isMutation = !['get', 'dialog'].includes(method);
+        if (!isMutation && form.dataset.loadingForm !== '1') return;
+
+        // Primero se confirma la acción; el bloqueo se aplica al confirmar.
+        if (form.dataset.confirm && form.dataset.confirmed !== '1') {
+            event.preventDefault();
+            if (pendingForm === form) return;
+
+            pendingForm = form;
+            if (confirmMessage) confirmMessage.textContent = form.dataset.confirm;
+            confirmDialog?.showModal();
             return;
         }
-        event.preventDefault();
-        pendingForm = form;
-        confirmMessage.textContent = form.dataset.confirm;
-        confirmDialog?.showModal();
+
+        if (form.dataset.confirmed === '1') {
+            delete form.dataset.confirmed;
+        }
+
+        // El primer submit bloquea los siguientes para este formulario.
+        if (form.dataset.submitting === '1') {
+            event.preventDefault();
+            return;
+        }
+
+        form.dataset.submitting = '1';
+        form.classList.add('form-submitting');
+        form.setAttribute('aria-busy', 'true');
+
+        const submitter = event.submitter;
+        if (submitter instanceof HTMLElement) {
+            submitter.classList.add('is-loading');
+            submitter.setAttribute('aria-busy', 'true');
+        }
     });
 
     confirmSubmit?.addEventListener('click', () => {
@@ -985,27 +1022,32 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
     });
 
     confirmDialog?.addEventListener('close', () => { pendingForm = null; });
+
+    // Chrome puede restaurar páginas completas desde BFCache al usar Atrás/Adelante.
+    // Al restaurarlas se descarta el toast antiguo y se liberan formularios pendientes.
+    window.addEventListener('pageshow', event => {
+        if (!event.persisted) return;
+
+        document.getElementById('app-notice')?.remove();
+
+        document.querySelectorAll('form[data-submitting="1"]').forEach(form => {
+            delete form.dataset.submitting;
+            form.classList.remove('form-submitting');
+            form.removeAttribute('aria-busy');
+
+            form.querySelectorAll('.is-loading[aria-busy="true"]').forEach(button => {
+                button.classList.remove('is-loading');
+                button.removeAttribute('aria-busy');
+            });
+        });
+    });
+
     document.querySelectorAll('dialog').forEach(dialog => {
         // Escape no cierra el modal: debe usarse el botón Cerrar o Cancelar.
         dialog.addEventListener('cancel', event => event.preventDefault());
         dialog.addEventListener('close', () => {
             if (lastModalTrigger?.isConnected) lastModalTrigger.focus();
         });
-    });
-
-    document.addEventListener('submit', event => {
-        const form = event.target;
-        if (!(form instanceof HTMLFormElement) || form.dataset.loadingForm !== '1') return;
-        if (form.dataset.submitting === '1') {
-            event.preventDefault();
-            return;
-        }
-        form.dataset.submitting = '1';
-        const submit = form.querySelector('button[type="submit"]:not([disabled])');
-        if (submit) {
-            submit.classList.add('is-loading');
-            submit.setAttribute('aria-busy', 'true');
-        }
     });
 
     document.querySelectorAll('dialog[data-auto-open]').forEach(dialog => {
