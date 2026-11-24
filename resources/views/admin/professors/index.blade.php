@@ -42,8 +42,26 @@
             <x-icon name="search" size="15" />
             <input name="q" type="search" value="{{ request('q') }}" placeholder="Buscar nombre, correo, escuela o carrera…" aria-label="Buscar cuentas">
         </label>
-        <button class="btn btn-secondary btn-sm" type="submit"><x-icon name="search" /> Buscar</button>
-        @if(request()->filled('q'))
+        <select class="field" name="status" aria-label="Estado">
+            <option value="">Todos los estados</option>
+            <option value="active" @selected(request('status') === 'active')>Activos</option>
+            <option value="inactive" @selected(request('status') === 'inactive')>Inactivos</option>
+        </select>
+        <select class="field" name="sort" aria-label="Ordenar por">
+            <option value="name" @selected(request('sort','name') === 'name')>Nombre</option>
+            <option value="email" @selected(request('sort') === 'email')>Correo</option>
+            <option value="created_at" @selected(request('sort') === 'created_at')>Fecha de alta</option>
+            <option value="is_active" @selected(request('sort') === 'is_active')>Estado</option>
+        </select>
+        <select class="field" name="direction" aria-label="Dirección">
+            <option value="asc" @selected(request('direction','asc') === 'asc')>Ascendente</option>
+            <option value="desc" @selected(request('direction') === 'desc')>Descendente</option>
+        </select>
+        <select class="field" name="per_page" aria-label="Registros por página">
+            @foreach([10,25,50,100] as $limit)<option value="{{ $limit }}" @selected((int) request('per_page',15) === $limit)>{{ $limit }} por página</option>@endforeach
+        </select>
+        <button class="btn btn-secondary btn-sm" type="submit"><x-icon name="filter" /> Aplicar</button>
+        @if(request()->hasAny(['q','status','sort','direction','per_page']))
             <a class="btn btn-ghost btn-sm" href="{{ route('admin.professors.index') }}"><x-icon name="x" /> Limpiar</a>
         @endif
     </form>
@@ -59,6 +77,7 @@
                     <span class="badge {{ $user->role === 'admin' ? 'badge-blue' : 'badge-green' }}">
                         {{ $user->role === 'admin' ? 'Administrador' : 'Docente' }}
                     </span>
+                    <span class="status-pill {{ $user->is_active ? 'status-active' : 'status-inactive' }}">{{ $user->is_active ? 'Activo' : 'Inactivo' }}</span>
                 </div>
                 <div class="account-identity">
                     <h3>{{ $user->name }}</h3>
@@ -81,6 +100,16 @@
                             data-career="{{ $profile->career }}">
                             <x-icon name="file-text" size="13" /> Editar perfil
                         </button>
+                        <form method="POST" action="{{ route('admin.professors.status', $user) }}" data-confirm="{{ $user->is_active ? 'El docente perderá acceso al sistema, pero conservará sus datos académicos. ¿Desactivar esta cuenta?' : 'Se restablecerá el acceso de esta cuenta. ¿Activarla?' }}">
+                            @csrf
+                            @method('PATCH')
+                            <button class="btn btn-sm {{ $user->is_active ? 'btn-secondary' : 'btn-success' }}" type="submit">{{ $user->is_active ? 'Desactivar' : 'Activar' }}</button>
+                        </form>
+                        <form method="POST" action="{{ route('admin.professors.destroy', $user) }}" data-confirm="Solo se eliminará si la cuenta no tiene historial académico asociado. Si tiene ciclos, cursos o registros, se conservará y deberás desactivarla. ¿Continuar?">
+                            @csrf
+                            @method('DELETE')
+                            <button class="btn btn-danger btn-sm" type="submit">Eliminar</button>
+                        </form>
                     </div>
                 @endif
             </article>
