@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CourseModality;
 use App\Models\Cycle;
+use App\Models\TeachingGroup;
 use App\Models\GeneratedDocument;
 use App\Services\ExcelDocumentService;
 use Illuminate\Support\Facades\Storage;
@@ -31,13 +32,12 @@ class DocumentController extends Controller
         return Storage::disk('local')->download($document->stored_path, $document->filename);
     }
 
-    public function fiveMinuteTalks(Cycle $cycle, ExcelDocumentService $service)
+    public function groupFiveMinuteTalks(TeachingGroup $group, ExcelDocumentService $service)
     {
-        abort_unless($cycle->professor_id === auth()->user()->professor->id, 404);
+        abort_unless($group->professor_id === auth()->user()->professor->id, 404);
+        abort_unless($group->fiveMinuteTalks()->exists(), 404, 'Primero abre el grupo para distribuir sus charlas institucionales.');
 
-        abort_unless($cycle->fiveMinuteTalks()->exists(), 404, 'Primero configura y distribuye las charlas de este ciclo.');
-
-        $document = $service->generateFiveMinuteTalks($cycle, auth()->id());
+        $document = $service->generateFiveMinuteTalks($group, auth()->id());
 
         return Storage::disk('local')->download($document->stored_path, $document->filename);
     }
