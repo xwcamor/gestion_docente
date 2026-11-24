@@ -86,7 +86,9 @@ class InstitutionalExcelService
             }
         }
 
-        $curriculum = $modality->assignment->curriculum;
+        $assignment = $modality->assignment;
+        $curriculum = $assignment->curriculum
+            ?: $assignment->course->curricula->firstWhere('is_active', true);
         $weeks = $curriculum
             ? $curriculum->weeks()->with(['task.operations', 'contentItems'])->orderBy('week_number')->get()
             : collect();
@@ -98,9 +100,11 @@ class InstitutionalExcelService
             $task = $week->task;
             $output[] = [
                 'week' => $week->week_number,
-                'text' => $task
-                    ? trim(($task->task_code ? $task->task_code.': ' : '').$task->title)
-                    : ($week->is_evaluation ? 'EVALUACIÓN' : ''),
+                'text' => filled($week->source_topic)
+                    ? trim($week->source_topic)
+                    : ($task
+                        ? trim(($task->task_code ? $task->task_code.': ' : '').$task->title)
+                        : ($week->is_evaluation ? 'EVALUACIÓN' : '')),
                 'date' => $this->datesForWeek($sessions, (int) $week->week_number),
                 'kind' => 'heading',
             ];
