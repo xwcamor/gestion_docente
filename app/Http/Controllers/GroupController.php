@@ -354,15 +354,17 @@ class GroupController extends Controller
             ->withQueryString();
         $lastRosterImport = $group->importBatches()->latest()->first();
 
+        // The execution table only contains talks with a date. Unscheduled
+        // catalogue entries remain reusable in storage but are not shown.
         $groupTalks = $group->fiveMinuteTalks()
-            ->orderByRaw('scheduled_date IS NULL')
+            ->whereNotNull('scheduled_date')
             ->orderBy('scheduled_date')
             ->orderBy('position')
             ->get();
-        $talkAssignedCount = $groupTalks->whereNotNull('scheduled_date')->count();
+        $talkAssignedCount = $groupTalks->count();
         $talkDoneCount = $groupTalks->where('status', 'done')->count();
-        $talkPendingCount = $groupTalks->count() - $talkDoneCount;
-        $talkUnscheduledCount = $groupTalks->whereNull('scheduled_date')->count();
+        $talkPendingCount = $talkAssignedCount - $talkDoneCount;
+        $talkUnscheduledCount = 0;
 
         $rosterStatus = $studentCount > 0 ? 'complete' : 'pending';
         $coursesStatus = $courseCount === 0
@@ -520,17 +522,12 @@ class GroupController extends Controller
 
         $validator = Validator::make($request->all(), [
             'status' => ['required', 'in:pending,done'],
-            'participant_count' => ['nullable', 'integer', 'min:0', 'max:10000'],
             'observations' => ['nullable', 'string', 'max:2000'],
         ]);
 
         $validator->after(function ($validator) use ($request, $talk) {
-            if ($request->input('status') === 'done' && $request->input('participant_count') === null) {
-                $validator->errors()->add('participant_count', 'Indica cuántos participantes asistieron a la charla.');
-            }
-
             if ($request->input('status') === 'done' && !$talk->scheduled_date) {
-                $validator->errors()->add('status', 'No puedes marcarla como realizada hasta que el grupo tenga una fecha de clase asignada.');
+                $validator->errors()->add('status', 'No puedes marcar como realizada una charla sin fecha programada.');
             }
         });
 
@@ -545,7 +542,8 @@ class GroupController extends Controller
         $before = $talk->only(['status', 'participant_count', 'observations']);
         $talk->update([
             'status' => $data['status'],
-            'participant_count' => $data['participant_count'] ?? null,
+            // Attendance is automatic: it always reflects the current group roster.
+            'participant_count' => $group->students()->count(),
             'observations' => $data['observations'] ?? null,
         ]);
 
