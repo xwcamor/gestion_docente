@@ -18,6 +18,23 @@ return new class extends Migration
             $table->index('student_id', 'group_students_student_idx');
         });
 
+        // Conserva los alumnos que ya estaban matriculados por curso:
+        // cada alumno pasa a formar parte del grupo de su asignación.
+        DB::statement("
+            INSERT IGNORE INTO teaching_group_students
+                (teaching_group_id, student_id, created_at, updated_at)
+            SELECT DISTINCT
+                course_assignments.teaching_group_id,
+                enrollments.student_id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+            FROM enrollments
+            INNER JOIN course_modalities
+                ON course_modalities.id = enrollments.course_modality_id
+            INNER JOIN course_assignments
+                ON course_assignments.id = course_modalities.course_assignment_id
+        ");
+
         // Una importación de padrón pertenece al grupo. La matrícula y las notas
         // continúan siendo específicas de cada modalidad/curso.
         DB::statement('ALTER TABLE import_batches DROP FOREIGN KEY import_batches_modality_fk');
