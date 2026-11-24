@@ -157,8 +157,7 @@ class CycleController extends Controller
             ->whereExists(function ($query) {
                 $query->selectRaw('1')
                     ->from('modality_schedules')
-                    ->whereColumn('modality_schedules.course_modality_id', 'course_modalities.id')
-                    ->where('modality_schedules.block_type', 'CLASS');
+                    ->whereColumn('modality_schedules.course_modality_id', 'course_modalities.id');
             })
             ->count();
 
