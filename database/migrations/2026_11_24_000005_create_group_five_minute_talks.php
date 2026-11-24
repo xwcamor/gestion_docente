@@ -52,7 +52,7 @@ return new class extends Migration
                         'status' => 'pending',
                         'participant_count' => null,
                         'observations' => null,
-                        'position' => $topic->position ?: ($index + 1),
+                        'position' => (int) $topic->position,
                         'created_at' => $now,
                         'updated_at' => $now,
                     ];
