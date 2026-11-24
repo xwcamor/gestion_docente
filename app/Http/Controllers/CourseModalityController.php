@@ -99,6 +99,7 @@ class CourseModalityController extends Controller
             'scheduledSessionCount',
             'documentCount',
             'calendarStatus',
+            'hasCourseDates',
             'studentsStatus',
             'documentsStatus',
             'sessionsStatus',
