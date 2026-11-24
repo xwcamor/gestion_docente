@@ -18,23 +18,57 @@
         <h1>{{ $group->name }}</h1>
         <div class="cycle-item-meta">
             <span><x-icon name="calendar-range" size="12" /> Carga: {{ $group->cycle->start_date?->format('d/m/Y') }} – {{ $group->cycle->end_date?->format('d/m/Y') }}</span>
-            <span>·</span>
-            <span><x-icon name="clock" size="12" /> Asignado: {{ $group->assigned_at?->format('d/m/Y') ?? 'Sin fecha' }}</span>
+            @if($workloadDaysLabels->isNotEmpty() && filled($group->workload_start_time) && filled($group->workload_end_time))
+                <span>·</span>
+                <span><x-icon name="clock" size="12" /> {{ $workloadDaysLabels->map(fn ($day) => mb_substr($day, 0, 3))->join(', ') }} · {{ substr((string) $group->workload_start_time, 0, 5) }}–{{ substr((string) $group->workload_end_time, 0, 5) }}</span>
+            @endif
         </div>
     </div>
     <div class="actions">
         <a class="btn btn-secondary" href="{{ route('cycles.show', $group->cycle) }}"><x-icon name="arrow-left" /> Grupos</a>
         <a class="btn btn-secondary" href="{{ route('groups.calendar', $group) }}"><x-icon name="calendar-days" /> Calendario</a>
+        <button class="btn btn-secondary" type="button" data-modal-open="group-edit-dialog"><x-icon name="edit-3" /> Editar grupo</button>
         <a class="btn" href="{{ route('assignments.quick', $group) }}"><x-icon name="plus" /> Agregar cursos</a>
     </div>
 </div>
 
-@if($errors->any())
+@if(session('success'))
+    <div class="alert alert-success" role="status">{{ session('success') }}</div>
+@endif
+@if(session('error'))
+    <div class="alert alert-error" role="alert">{{ session('error') }}</div>
+@endif
+@if($errors->any() && request('dialog') !== 'edit-group')
     <div class="alert alert-error" role="alert">
         <strong>No se pudieron guardar los cambios.</strong>
         <ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
     </div>
 @endif
+
+<dialog class="ui-dialog sheet-dialog" id="group-edit-dialog" aria-labelledby="group-edit-title" @if(request('dialog') === 'edit-group') data-auto-open @endif>
+    <div class="dialog-head">
+        <div><h2 id="group-edit-title">Editar grupo</h2><p>Actualiza el nombre de este grupo dentro del ciclo.</p></div>
+        <button class="dialog-close" type="button" data-modal-close aria-label="Cerrar"><x-icon name="x" /></button>
+    </div>
+    <form method="POST" action="{{ route('groups.update', $group) }}" data-loading-form="1">
+        @csrf
+        @method('PATCH')
+        <div class="dialog-body">
+            @if($errors->any() && request('dialog') === 'edit-group')
+                <div class="dialog-error" role="alert">
+                    <strong>No se pudo actualizar el grupo.</strong>
+                    @error('name')<p>{{ $message }}</p>@enderror
+                </div>
+            @endif
+            <label for="edit_group_name">Nombre del grupo</label>
+            <input class="field" id="edit_group_name" name="name" value="{{ old('name', $group->name) }}" required maxlength="100" autofocus>
+        </div>
+        <div class="dialog-footer">
+            <button class="btn btn-secondary" type="button" data-modal-close>Cancelar</button>
+            <button class="btn" type="submit"><x-icon name="check" /> Guardar nombre</button>
+        </div>
+    </form>
+</dialog>
 
 <details class="card group-panel group-workload-panel" id="group-workload" data-group-panel @if($workloadStatus !== 'complete' || request()->boolean('workload') || $errors->has('workload_type') || $errors->has('workload_start_date') || $errors->has('workload_end_date') || $errors->has('workload_days') || $errors->has('workload_start_time') || $errors->has('workload_end_time') || $errors->has('supervisor_theory_hours') || $errors->has('supervisor_lab_hours')) open @endif>
     <summary class="group-panel-summary">
