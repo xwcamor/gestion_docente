@@ -35,7 +35,7 @@
     </div>
 @endif
 
-<details class="card group-panel group-workload-panel" id="group-workload" data-group-panel @if($workloadStatus !== 'complete' || request()->boolean('workload')) open @endif>
+<details class="card group-panel group-workload-panel" id="group-workload" data-group-panel @if($workloadStatus !== 'complete' || request()->boolean('workload') || $errors->has('workload_type') || $errors->has('workload_start_date') || $errors->has('workload_end_date') || $errors->has('workload_days') || $errors->has('workload_start_time') || $errors->has('workload_end_time') || $errors->has('supervisor_theory_hours') || $errors->has('supervisor_lab_hours')) open @endif>
     <summary class="group-panel-summary">
         <span class="group-panel-icon group-workload-icon"><x-icon name="clock" /></span>
         <span class="group-panel-title">
@@ -594,6 +594,9 @@ html[data-theme="dark"] .talk-topic{color:#d1e2d8}
 @push('scripts')
 <script>
 (() => {
+    const workloadPanel = document.getElementById('group-workload');
+    if (workloadPanel && location.hash === '#group-workload') workloadPanel.open = true;
+
     const panel = document.getElementById('group-roster');
     if (panel && (location.hash === '#group-roster' || document.querySelector('[data-student-row][data-editing="true"]'))) {
         panel.open = true;
