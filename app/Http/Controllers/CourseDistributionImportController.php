@@ -255,9 +255,9 @@ class CourseDistributionImportController extends Controller
         ]);
 
         $data = $importer->parse($request->file('file'));
-        if (!$data['start_date'] || !$data['end_date']) {
+        if (empty($data['has_complete_period'])) {
             throw ValidationException::withMessages([
-                'file' => 'El Excel no contiene ninguna fecha completa en la columna FECHA. Completa al menos un rango en la pestaña Cursos y vuelve a subirlo.',
+                'file' => 'El Excel debe contener al menos un rango completo en FECHA TEC o FECHA TALLER. También se acepta FECHA única en archivos anteriores.',
             ]);
         }
 
