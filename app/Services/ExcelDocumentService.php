@@ -5,12 +5,11 @@ namespace App\Services;
 use App\Models\CourseModality;
 use App\Models\Cycle;
 use App\Models\GeneratedDocument;
-use App\Models\Grade;
-use App\Models\Evaluation;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
@@ -305,7 +304,16 @@ class ExcelDocumentService
         $lastRow = 4;
         foreach ($rows as $row) {
             $lastRow++;
-            $sheet->fromArray($row, null, 'A'.$lastRow);
+            foreach (array_values($row) as $columnIndex => $value) {
+                $cell = $this->columnName($columnIndex + 1).$lastRow;
+
+                // Treat user/imported text as text, never as an Excel formula.
+                if (is_string($value)) {
+                    $sheet->setCellValueExplicit($cell, $value, DataType::TYPE_STRING);
+                } else {
+                    $sheet->setCellValue($cell, $value);
+                }
+            }
         }
 
         $sheet->getRowDimension(1)->setRowHeight(28);
@@ -339,9 +347,7 @@ class ExcelDocumentService
                     'bottom' => ['borderStyle' => Border::BORDER_HAIR, 'color' => ['rgb' => 'DCE6EB']],
                 ],
             ]);
-            $sheet->getStyle('A5:'.$lastColumn.$lastRow)
-                ->getNumberFormat()
-                ->setFormatCode('@');
+
         }
 
         $sheet->setAutoFilter('A4:'.$lastColumn.max(4, $lastRow));
