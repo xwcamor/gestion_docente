@@ -172,7 +172,7 @@ La migración inicial crea las tablas de usuarios, profesores, ciclos, grupos, c
 - NRC, fechas, horarios, alumnos, sesiones y evaluaciones por modalidad.
 - Importación de listados de alumnos exportados desde el campus.
 - Gestión de notas y evaluaciones.
-- Calendario académico con exclusión de feriados registrados.
+- Calendario mensual consolidado por grupo, con clases y feriados; cada bloque conserva la modalidad TEC/TALL y el tipo de enseñanza de su curso.
 - Malla curricular y propuestas de contenido TEC/TALL.
 - Generación y versionado de documentos Excel.
 

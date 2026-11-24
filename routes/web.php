@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CycleController;
 use App\Http\Controllers\GroupController;
+use App\Http\Controllers\GroupCalendarController;
 use App\Http\Controllers\CourseAssignmentController;
 use App\Http\Controllers\QuickCourseEntryController;
 use App\Http\Controllers\CourseModalityController;
@@ -51,6 +52,8 @@ Route::middleware(['auth', 'professor'])->group(function () {
     Route::post('/grupos/{group}/charlas-5-minutos/excel', [DocumentController::class, 'groupFiveMinuteTalks'])->name('documents.group-talks');
     Route::delete('/grupos/{group}', [GroupController::class, 'destroy'])->name('groups.destroy');
     Route::patch('/grupos/{group}/alumnos/{student}', [GroupController::class, 'updateStudent'])->name('groups.students.update');
+    Route::get('/grupos/{group}/calendario', [GroupCalendarController::class, 'index'])->name('groups.calendar');
+    Route::post('/grupos/{group}/calendario/recalcular', [GroupCalendarController::class, 'rebuild'])->name('groups.calendar.rebuild');
     Route::get('/grupos/{group}', [GroupController::class, 'show'])->name('groups.show');
 
     Route::get('/grupos/{group}/cursos/crear', [CourseAssignmentController::class, 'create'])->name('assignments.create');
