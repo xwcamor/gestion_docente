@@ -20,6 +20,7 @@ class CourseRegistrationService
         string $sourceCode,
         string $component,
         StudentImportService $students,
+        array $modalityDates = [],
     ): array {
         $courseName = trim($courseName);
         $parsed = $this->parser->parse($sourceCode);
@@ -76,7 +77,7 @@ class CourseRegistrationService
             ]);
         }
 
-        return DB::transaction(function () use ($group, $courseName, $parsed, $requestedTypes, $course, $students) {
+        return DB::transaction(function () use ($group, $courseName, $parsed, $requestedTypes, $course, $students, $modalityDates) {
             $courseRecord = $course ?: Course::firstOrCreate(
                 [
                     'professor_id' => $group->professor_id,
@@ -119,8 +120,8 @@ class CourseRegistrationService
                 $modality = $assignment->modalities()->create([
                     'modality' => $type,
                     'nrc' => $parsed['nrc_by_modality'][$type] ?? null,
-                    'start_date' => null,
-                    'end_date' => null,
+                    'start_date' => $modalityDates[$type]['start_date'] ?? null,
+                    'end_date' => $modalityDates[$type]['end_date'] ?? null,
                     'curriculum_start_week' => 1,
                     'active' => true,
                     'semester' => null,
