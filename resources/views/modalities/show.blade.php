@@ -47,11 +47,9 @@
         <x-icon name="chevron-right" class="modality-section-chevron" />
     </summary>
     <div class="modality-section-body">
-        <p class="modality-cycle-period">Ciclo {{ $assignment->group->cycle->academic_year }}-{{ $assignment->group->cycle->cycle_code }}: {{ $assignment->group->cycle->start_date?->format('d/m/Y') }} al {{ $assignment->group->cycle->end_date?->format('d/m/Y') }}. Las sesiones de esta modalidad usan únicamente sus propias fechas y bloques.</p>
-
-    <div class="modality-weekly-overview">
-        <strong>{{ number_format($weeklyHoursCalculated, 2) }} h/semana configuradas</strong>
-        @if($hasAnySchedule)
+    @if($hasAnySchedule)
+        <div class="modality-weekly-overview">
+            <strong>{{ number_format($weeklyHoursCalculated, 2) }} h/semana</strong>
             <div class="modality-day-chips">
                 @foreach($scheduleWeekdays as $day => $dayLabel)
                     @if($schedulesByDay->has($day))
@@ -64,10 +62,8 @@
                     @endif
                 @endforeach
             </div>
-        @else
-            <span class="modality-no-blocks">Todavía no hay bloques de clase en esta modalidad.</span>
-        @endif
-    </div>
+        </div>
+    @endif
 
     <details class="panel schedule-config-panel" @if($errors->any()) open @endif>
         <summary>Configurar fechas y bloques de clase</summary>
