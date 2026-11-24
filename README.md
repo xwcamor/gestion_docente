@@ -207,6 +207,18 @@ La migración inicial también crea `cache`, `cache_locks`, `sessions`, `jobs`, 
 php artisan migrate
 ```
 
+## Estándar de diseño UI/UX
+
+El sistema sigue un estándar visual y funcional común para sus módulos. No se agregan tarjetas, indicadores ni animaciones por decoración: cada elemento debe facilitar una tarea o una decisión.
+
+Antes de diseñar o modificar pantallas, consulta:
+
+- **[AGENTS.md](AGENTS.md):** instrucciones que debe seguir el agente de programación.
+- **[DESIGN.md](DESIGN.md):** colores, tipografía, jerarquía, tarjetas, botones, tablas y patrones visuales de Gestión Docente.
+- **[Guía UI/UX para futuros sistemas](docs/GUIA_UI_UX_FUTUROS_SISTEMAS.md):** cuándo utilizar Anti UI Slop, Think UI, Taste Skill, Emil Design Engineering, Vercel Guidelines, Anthropic Frontend Design, Hallmark, Make Interfaces Feel Better, UI/UX Pro Max y Stageshow. Incluye checklist e instalación selectiva.
+
+Al reutilizar la guía en otro proyecto, copia `AGENTS.md`, `DESIGN.md` y la guía UI/UX. Actualiza los tokens de `DESIGN.md` según la marca y tecnología del nuevo sistema; no copies automáticamente los colores de Gestión Docente.
+
 ## Repositorio
 
 https://github.com/xwcamor/gestion_docente
