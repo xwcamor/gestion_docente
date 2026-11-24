@@ -244,12 +244,11 @@ class GroupController extends Controller
         $page = max(1, (int) $request->input('students_page', 1));
         if ($validator->fails()) {
             return redirect()
-                ->route('groups.show', [
+                ->to(route('groups.show', [
                     'group' => $group,
                     'students_page' => $page,
                     'edit_student' => $student->id,
-                ])
-                ->withFragment('group-roster')
+                ]).'#group-roster')
                 ->withErrors($validator)
                 ->withInput();
         }
