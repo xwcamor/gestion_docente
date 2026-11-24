@@ -11,7 +11,7 @@ class Cycle extends Model
 {
     use HasSlugRouteKey;
 
-    protected $fillable = ['professor_id', 'academic_year', 'cycle_code', 'start_date', 'end_date', 'status'];
+    protected $fillable = ['professor_id', 'academic_year', 'cycle_code', 'career', 'semester', 'start_date', 'end_date', 'status'];
 
     protected function casts(): array
     {
