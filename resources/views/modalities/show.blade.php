@@ -35,7 +35,7 @@
         $scheduleRows = [['days' => [], 'start_time' => '', 'end_time' => '', 'classroom' => '', 'instruction_type' => 'THEORY']];
     }
 @endphp
-<details class="card modality-section" id="calendar" @if(!$hasCourseDates || !$hasAnySchedule || $scheduledSessionCount === 0 || $errors->any()) open @endif>
+<details class="card modality-section" id="calendar" @if($errors->any()) open @endif>
     <summary class="modality-section-summary">
         <span class="modality-section-icon"><x-icon name="calendar-days" /></span>
         <span class="modality-section-title">
@@ -220,7 +220,7 @@
 </div>
 </details>
 
-<details class="card modality-section" id="sessions" @if($scheduledSessionCount === 0) open @endif>
+<details class="card modality-section" id="sessions">
     <summary class="modality-section-summary">
         <span class="modality-section-icon"><x-icon name="clipboard-check" /></span>
         <span class="modality-section-title">
