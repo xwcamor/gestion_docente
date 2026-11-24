@@ -1317,7 +1317,12 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
         form.classList.add('form-submitting');
         form.setAttribute('aria-busy', 'true');
 
-        const submitter = event.submitter;
+        // requestSubmit() puede llegar sin submitter (por ejemplo, tras confirmar
+        // un modal). En ese caso activa el indicador en el primer botón del formulario.
+        const submitter = event.submitter instanceof HTMLElement
+            ? event.submitter
+            : form.querySelector('button[type="submit"],button:not([type]),input[type="submit"]');
+
         if (submitter instanceof HTMLElement) {
             submitter.classList.add('is-loading');
             submitter.setAttribute('aria-busy', 'true');

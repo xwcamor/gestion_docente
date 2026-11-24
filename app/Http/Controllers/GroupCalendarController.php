@@ -9,6 +9,7 @@ use App\Models\TeachingGroup;
 use App\Services\CalendarService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class GroupCalendarController extends Controller
 {
@@ -23,69 +24,129 @@ class GroupCalendarController extends Controller
 
         $month = $filters['month'] ?? now()->format('Y-m');
         $modalityFilter = $filters['modality'] ?? null;
-        $monthStart = Carbon::parse($month.'-01')->startOfMonth();
+        $monthStart = Carbon::createFromFormat('!Y-m-d', $month.'-01')->startOfMonth();
         $monthEnd = $monthStart->copy()->endOfMonth();
 
+        // Reutiliza los índices existentes de asignaciones y modalidades.
+        $assignmentIds = DB::table('course_assignments')
+            ->select('id')
+            ->where('teaching_group_id', $group->id);
+
         $modalities = CourseModality::query()
-            ->with(['assignment.course', 'schedules'])
-            ->withCount(['sessions as scheduled_sessions_count' => fn ($query) => $query->where('status', 'scheduled')])
-            ->whereHas('assignment', fn ($query) => $query->where('teaching_group_id', $group->id))
+            ->select([
+                'id',
+                'course_assignment_id',
+                'modality',
+                'nrc',
+                'start_date',
+                'end_date',
+            ])
+            ->with([
+                'assignment:id,course_id',
+                'assignment.course:id,code,name',
+                'schedules:id,course_modality_id,block_type,day_of_week,start_time,end_time,classroom,instruction_type',
+            ])
+            ->withExists([
+                'sessions as has_generated_sessions' => fn ($query) => $query->where('status', 'scheduled'),
+            ])
+            ->whereIn('course_assignment_id', $assignmentIds)
             ->when($modalityFilter, fn ($query) => $query->where('modality', $modalityFilter))
             ->orderBy('modality')
             ->orderBy('id')
             ->get();
 
-        $sessions = ClassSession::query()
-            ->with(['modality.assignment.course', 'schedule'])
-            ->where('status', 'scheduled')
-            ->whereBetween('session_date', [$monthStart->toDateString(), $monthEnd->toDateString()])
-            ->whereHas('modality', function ($query) use ($group, $modalityFilter) {
-                $query->whereHas('assignment', fn ($assignment) => $assignment->where('teaching_group_id', $group->id));
+        $modalityIds = $modalities->modelKeys();
 
-                if ($modalityFilter) {
-                    $query->where('modality', $modalityFilter);
-                }
-            })
-            ->get()
-            ->sortBy(fn ($session) => $session->session_date->toDateString().'|'.substr((string) ($session->schedule?->start_time ?? '99:99'), 0, 5))
-            ->values();
+        // La lista de IDs permite aprovechar sessions_modality_date_status_idx
+        // sin subconsultas anidadas por cada sesión.
+        $sessions = empty($modalityIds)
+            ? collect()
+            : ClassSession::query()
+                ->select([
+                    'class_sessions.id',
+                    'class_sessions.course_modality_id',
+                    'class_sessions.modality_schedule_id',
+                    'class_sessions.session_date',
+                ])
+                ->leftJoin(
+                    'modality_schedules as calendar_schedule',
+                    'calendar_schedule.id',
+                    '=',
+                    'class_sessions.modality_schedule_id'
+                )
+                ->where('class_sessions.status', 'scheduled')
+                ->whereBetween('class_sessions.session_date', [
+                    $monthStart->toDateString(),
+                    $monthEnd->toDateString(),
+                ])
+                ->whereIn('class_sessions.course_modality_id', $modalityIds)
+                ->with([
+                    'modality:id,course_assignment_id,modality',
+                    'modality.assignment:id,course_id',
+                    'modality.assignment.course:id,code,name',
+                    'schedule:id,start_time,end_time,classroom,instruction_type',
+                ])
+                ->orderBy('class_sessions.session_date')
+                ->orderBy('calendar_schedule.start_time')
+                ->orderBy('class_sessions.id')
+                ->get();
 
         $holidays = Holiday::query()
+            ->select(['id', 'holiday_date', 'name'])
             ->where('blocks_classes', true)
-            ->whereBetween('holiday_date', [$monthStart->toDateString(), $monthEnd->toDateString()])
-            ->where(fn ($query) => $query->whereNull('professor_id')->orWhere('professor_id', $group->professor_id))
+            ->whereBetween('holiday_date', [
+                $monthStart->toDateString(),
+                $monthEnd->toDateString(),
+            ])
+            ->where(fn ($query) => $query
+                ->whereNull('professor_id')
+                ->orWhere('professor_id', $group->professor_id))
             ->orderBy('holiday_date')
             ->get();
 
-        $sessionsByDate = $sessions->groupBy(fn ($session) => $session->session_date->toDateString());
-        $holidaysByDate = $holidays->groupBy(fn ($holiday) => $holiday->holiday_date->toDateString());
+        $sessionsByDate = $sessions->groupBy(
+            fn ($session) => $session->session_date->toDateString()
+        );
+        $holidaysByDate = $holidays->groupBy(
+            fn ($holiday) => $holiday->holiday_date->toDateString()
+        );
 
+        // Las sesiones ya llegan ordenadas por hora. Se detiene la búsqueda
+        // cuando el siguiente bloque empieza después del fin del bloque actual.
         $conflicts = [];
         $conflictingSessionIds = [];
 
         foreach ($sessionsByDate as $date => $daySessions) {
             $withSchedules = $daySessions->filter(fn ($session) => $session->schedule)->values();
+            $count = $withSchedules->count();
 
-            for ($leftIndex = 0; $leftIndex < $withSchedules->count(); $leftIndex++) {
+            for ($leftIndex = 0; $leftIndex < $count; $leftIndex++) {
                 $left = $withSchedules[$leftIndex];
                 $leftStart = substr((string) $left->schedule->start_time, 0, 5);
                 $leftEnd = substr((string) $left->schedule->end_time, 0, 5);
 
-                for ($rightIndex = $leftIndex + 1; $rightIndex < $withSchedules->count(); $rightIndex++) {
+                for ($rightIndex = $leftIndex + 1; $rightIndex < $count; $rightIndex++) {
                     $right = $withSchedules[$rightIndex];
                     $rightStart = substr((string) $right->schedule->start_time, 0, 5);
+
+                    if ($rightStart >= $leftEnd) {
+                        break;
+                    }
+
                     $rightEnd = substr((string) $right->schedule->end_time, 0, 5);
 
-                    if ($leftStart < $rightEnd && $rightStart < $leftEnd) {
-                        $conflicts[] = ['date' => $date, 'left' => $left, 'right' => $right];
-                        $conflictingSessionIds[] = (int) $left->id;
-                        $conflictingSessionIds[] = (int) $right->id;
+                    if ($leftStart < $rightEnd) {
+                        $conflicts[] = [
+                            'date' => $date,
+                            'left' => $left,
+                            'right' => $right,
+                        ];
+                        $conflictingSessionIds[(int) $left->id] = true;
+                        $conflictingSessionIds[(int) $right->id] = true;
                     }
                 }
             }
         }
-
-        $conflictingSessionIds = array_values(array_unique($conflictingSessionIds));
 
         $calendarStart = $monthStart->copy()->startOfWeek(Carbon::MONDAY);
         $calendarEnd = $monthEnd->copy()->endOfWeek(Carbon::SUNDAY);
@@ -106,13 +167,12 @@ class GroupCalendarController extends Controller
         $previousMonth = $monthStart->copy()->subMonthNoOverflow()->format('Y-m');
         $nextMonth = $monthStart->copy()->addMonthNoOverflow()->format('Y-m');
 
-        $group->load('cycle');
+        $group->loadMissing('cycle');
 
         return view('groups.calendar', compact(
             'group',
             'month',
             'monthLabel',
-            'monthStart',
             'previousMonth',
             'nextMonth',
             'modalityFilter',

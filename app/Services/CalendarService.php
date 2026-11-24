@@ -65,9 +65,20 @@ class CalendarService
         $weeklyDifference = $modality->total_hours !== null ? round((float) $modality->total_hours - $weeklyHours, 2) : null;
         $activeKeys = [];
         DB::transaction(function () use ($modality, $scheduled, $holidayRows, $curriculum, &$activeKeys) {
+            // Evita un SELECT por cada sesión: se leen una vez y se reutilizan.
+            // Se conserva Eloquent::save() para que AuditObserver siga registrando los cambios.
+            $existingSessions = ClassSession::query()
+                ->where('course_modality_id', $modality->id)
+                ->lockForUpdate()
+                ->get()
+                ->keyBy(fn ($session) =>
+                    ($session->modality_schedule_id ?? 0).'|'.$session->session_date->toDateString()
+                );
+
             foreach ($scheduled as $row) {
-                $activeKeys[] = $row['schedule']->id.'|'.$row['date'];
-                $session = ClassSession::firstOrNew([
+                $key = $row['schedule']->id.'|'.$row['date'];
+                $activeKeys[$key] = true;
+                $session = $existingSessions->get($key) ?? new ClassSession([
                     'course_modality_id' => $modality->id,
                     'modality_schedule_id' => $row['schedule']->id,
                     'session_date' => $row['date'],
@@ -136,16 +147,24 @@ class CalendarService
                 $session->save();
             }
             foreach ($holidayRows as $row) {
-                $activeKeys[] = $row['schedule']->id.'|'.$row['date'];
-                ClassSession::updateOrCreate(
-                    ['course_modality_id' => $modality->id, 'modality_schedule_id' => $row['schedule']->id, 'session_date' => $row['date']],
-                    ['session_number' => 0, 'duration_minutes' => $row['duration'], 'status' => 'holiday', 'system_note' => $row['holiday']->name]
-                );
+                $key = $row['schedule']->id.'|'.$row['date'];
+                $activeKeys[$key] = true;
+                $session = $existingSessions->get($key) ?? new ClassSession([
+                    'course_modality_id' => $modality->id,
+                    'modality_schedule_id' => $row['schedule']->id,
+                    'session_date' => $row['date'],
+                ]);
+                $session->fill([
+                    'session_number' => 0,
+                    'duration_minutes' => $row['duration'],
+                    'status' => 'holiday',
+                    'system_note' => $row['holiday']->name,
+                ]);
+                $session->save();
             }
-            $existing = ClassSession::where('course_modality_id', $modality->id)->get();
-            foreach ($existing as $session) {
+            foreach ($existingSessions as $session) {
                 $key = ($session->modality_schedule_id ?? 0).'|'.$session->session_date->toDateString();
-                if (!in_array($key, $activeKeys, true) && $session->status !== 'cancelled') {
+                if (!isset($activeKeys[$key]) && $session->status !== 'cancelled') {
                     $session->update(['status' => 'cancelled', 'system_note' => 'Fuera del calendario recalculado; contenido conservado.']);
                 }
             }

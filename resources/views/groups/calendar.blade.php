@@ -38,7 +38,7 @@
 @endif
 
 <section class="card gc-toolbar-card" aria-label="Filtros del calendario">
-    <form class="gc-filter-form" method="GET" action="{{ route('groups.calendar', $group) }}">
+    <form class="gc-filter-form" method="GET" action="{{ route('groups.calendar', $group) }}" data-loading-form="1">
         <div class="gc-filter-field">
             <label for="calendar-month">Mes</label>
             <input class="field" id="calendar-month" type="month" name="month" value="{{ $month }}">
@@ -54,9 +54,17 @@
         <button class="btn" type="submit"><x-icon name="filter" /> Aplicar</button>
     </form>
     <div class="gc-month-navigation">
-        <a class="btn btn-secondary btn-sm" href="{{ route('groups.calendar', ['group' => $group, 'month' => $previousMonth, 'modality' => $modalityFilter]) }}" aria-label="Mes anterior"><x-icon name="arrow-left" /> Anterior</a>
+        <form method="GET" action="{{ route('groups.calendar', $group) }}" data-loading-form="1">
+            <input type="hidden" name="month" value="{{ $previousMonth }}">
+            @if($modalityFilter)<input type="hidden" name="modality" value="{{ $modalityFilter }}">@endif
+            <button class="btn btn-secondary btn-sm" type="submit" aria-label="Mes anterior"><x-icon name="arrow-left" /> Anterior</button>
+        </form>
         <h2>{{ $monthLabel }}</h2>
-        <a class="btn btn-secondary btn-sm" href="{{ route('groups.calendar', ['group' => $group, 'month' => $nextMonth, 'modality' => $modalityFilter]) }}" aria-label="Mes siguiente">Siguiente <x-icon name="chevron-right" /></a>
+        <form method="GET" action="{{ route('groups.calendar', $group) }}" data-loading-form="1">
+            <input type="hidden" name="month" value="{{ $nextMonth }}">
+            @if($modalityFilter)<input type="hidden" name="modality" value="{{ $modalityFilter }}">@endif
+            <button class="btn btn-secondary btn-sm" type="submit" aria-label="Mes siguiente">Siguiente <x-icon name="chevron-right" /></button>
+        </form>
     </div>
 </section>
 
@@ -115,7 +123,7 @@
                         @php($sessionModality = $session->modality)
                         @php($sessionCourse = $sessionModality?->assignment?->course)
                         @php($sessionSchedule = $session->schedule)
-                        @php($isConflict = in_array((int) $session->id, $conflictingSessionIds, true))
+                        @php($isConflict = isset($conflictingSessionIds[(int) $session->id]))
                         <a class="gc-event gc-{{ strtolower($sessionModality?->modality ?? 'tec') }} {{ $isConflict ? 'is-conflict' : '' }}" href="{{ route('modalities.show', $sessionModality) }}" title="{{ $sessionCourse?->name }}">
                             <span class="gc-event-heading">
                                 <strong>{{ $sessionModality?->modality }}</strong>
@@ -148,7 +156,7 @@
             @foreach($modalities as $modality)
                 @php($hasClassSchedule = $modality->schedules->contains(fn ($schedule) => $schedule->block_type === 'CLASS'))
                 @php($isConfigured = $modality->start_date && $modality->end_date && $hasClassSchedule)
-                @php($hasGeneratedSessions = (int) $modality->scheduled_sessions_count > 0)
+                @php($hasGeneratedSessions = (bool) $modality->has_generated_sessions)
                 <div class="gc-modality-row">
                     <div class="gc-modality-course">
                         <strong>{{ $modality->assignment->course->name }}</strong>
@@ -175,7 +183,7 @@
 .gc-filter-field label{margin-top:0}
 .gc-filter-field .field{min-height:36px}
 .gc-month-navigation{display:flex;align-items:center;justify-content:flex-end;gap:10px;white-space:nowrap}
-.gc-month-navigation h2{min-width:145px;margin:0;text-align:center;text-transform:capitalize}
+.gc-month-navigation form{margin:0}.gc-month-navigation h2{min-width:145px;margin:0;text-align:center;text-transform:capitalize}
 .gc-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 13px}
 .gc-summary>div{display:flex;align-items:center;gap:10px;min-width:0;padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
 .gc-summary strong{color:var(--ink);font-size:20px;font-variant-numeric:tabular-nums}
