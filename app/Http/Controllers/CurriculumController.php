@@ -122,9 +122,6 @@ class CurriculumController extends Controller
             'assignment',
             'prompt',
             'token',
-            'promptGeneratedAt',
-            'promptVersion',
-            'sections',
             'textExtractionWarning'
         ));
     }
