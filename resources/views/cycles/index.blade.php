@@ -169,7 +169,7 @@
             <p class="help mt-16"><x-icon name="calendar-range" size="12" /> La fecha de fin debe ser igual o posterior al inicio.</p>
         </div>
         <div class="dialog-footer">
-            <button class="btn btn-secondary" type="button" data-modal-close>Cancelar</button>
+            <button class="btn btn-secondary" type="button" data-modal-close><x-icon name="x" /> Cancelar</button>
             <button class="btn" type="submit"><x-icon name="check" /> Guardar ciclo</button>
         </div>
     </form>
