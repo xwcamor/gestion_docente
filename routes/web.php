@@ -35,7 +35,7 @@ Route::middleware(['auth', 'professor'])->group(function () {
     Route::post('/ciclos', [CycleController::class, 'store'])->name('cycles.store');
     Route::patch('/ciclos/{cycle}', [CycleController::class, 'update'])->name('cycles.update');
     Route::delete('/ciclos/{cycle}', [CycleController::class, 'destroy'])->name('cycles.destroy');
-    Route::put('/ciclos/{cycle}/charlas-5-minutos', [CycleController::class, 'updateFiveMinuteTalks'])->name('cycles.five-minute-talks.update');
+    Route::patch('/ciclos/{cycle}/charlas/{talk}', [CycleController::class, 'updateTalkExecution'])->name('cycles.talks.update');
     Route::get('/ciclos/{cycle}', [CycleController::class, 'show'])->name('cycles.show');
 
     Route::get('/ciclos/{cycle}/grupos/crear', [GroupController::class, 'create'])->name('groups.create');
