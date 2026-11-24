@@ -338,8 +338,9 @@ class InstitutionalExcelService
 
         $taskTitle = $task
             ? trim(($task->task_code ? $task->task_code.': ' : '').$task->title)
-            : ($session?->topic ?: 'Sesión de aprendizaje');
-        $this->setText($sheet, 'A8', ($isTall ? 'TAREA / PROYECTO: ' : 'TEMA: ').$taskTitle);
+            : ($week?->source_topic ?: ($session?->topic ?: 'Sesión de aprendizaje'));
+        $officialWeeklyTopic = $week?->source_topic ?: ($session?->topic ?: $taskTitle);
+        $this->setText($sheet, 'A8', $isTall ? 'TAREA / PROYECTO: '.$taskTitle : 'TEMA: '.$officialWeeklyTopic);
         $this->setText($sheet, 'A9', 'OBJETIVOS: '.($session?->objective ?: ($curriculum?->general_objective ?? '')));
 
         $sheet->mergeCells('A11:B11'); $sheet->mergeCells('C11:J11'); $sheet->mergeCells('K11:N11');
@@ -371,7 +372,7 @@ class InstitutionalExcelService
 
         $sheet->mergeCells('A12:B14'); $sheet->mergeCells('C12:J14'); $sheet->mergeCells('K12:N20');
         $sheet->setCellValue('A12', 20);
-        $sheet->setCellValue('C12', $motivation."\n".($session?->topic ?? $taskTitle)."\n".implode("\n", array_slice($topics, 0, 6)));
+        $sheet->setCellValue('C12', $motivation."\n".($session?->topic ?: ($week?->source_topic ?: $taskTitle))."\n".implode("\n", array_slice($topics, 0, 6)));
         $sheet->setCellValue('K12', "1) MATERIALES\nSegún las actividades y contenidos de la semana.\n\n2) HERRAMIENTAS\nSegún la modalidad y el entorno de aprendizaje.\n\n3) MÁQUINAS Y EQUIPOS\nRecursos disponibles en el aula o taller.\n\n4) INSTRUMENTOS\nLista de cotejo, evidencias y retroalimentación.");
 
         $teacherMinutes = $isTall ? 60 : 90;
