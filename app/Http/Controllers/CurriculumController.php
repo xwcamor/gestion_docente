@@ -9,6 +9,7 @@ use App\Services\CurriculumImportService;
 use App\Services\CalendarService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 
 class CurriculumController extends Controller
@@ -95,7 +96,41 @@ class CurriculumController extends Controller
             'prompt_version' => $promptVersion,
             'prompt_sha256' => $promptSha256,
         ]);
-        return view('curricula.prompt', compact('assignment','prompt','token','extracted','promptGeneratedAt','promptVersion'));
+        return redirect()
+            ->route('curricula.prompt', ['assignment' => $assignment, 'token' => $token])
+            ->with('success', 'PDF leído correctamente. Tu prompt está listo para usar en ChatGPT.');
+    }
+
+    public function showPrompt(CourseAssignment $assignment, string $token, CurriculumImportService $service)
+    {
+        $this->owned($assignment);
+
+        $draft = session()->get('curriculum_pdf_'.$token);
+        abort_unless(
+            $draft && (int) ($draft['assignment_id'] ?? 0) === $assignment->id,
+            419,
+            'La sesión de análisis expiró. Vuelve a cargar el PDF para generar un nuevo prompt.'
+        );
+
+        $textPath = $draft['text_path'] ?? null;
+        abort_unless(
+            $textPath && Storage::disk('local')->exists($textPath),
+            419,
+            'El texto extraído ya no está disponible. Vuelve a cargar el PDF.'
+        );
+
+        $text = Storage::disk('local')->get($textPath);
+        $promptGeneratedAt = Carbon::parse($draft['prompt_generated_at'] ?? now());
+        $promptVersion = $draft['prompt_version'] ?? $service->promptVersion();
+        $prompt = $service->buildPrompt($text, $assignment, $promptGeneratedAt->toIso8601String());
+
+        return view('curricula.prompt', compact(
+            'assignment',
+            'prompt',
+            'token',
+            'promptGeneratedAt',
+            'promptVersion'
+        ));
     }
 
     public function preview(Request $request, CourseAssignment $assignment, CurriculumImportService $service)
