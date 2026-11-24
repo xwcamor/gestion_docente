@@ -202,9 +202,9 @@ Comprueba que MySQL esté iniciado en Laragon y que exista la base vacía `gesti
 
 La estructura usa nombres explícitos y cortos para los índices que podrían superar el límite de 64 caracteres de MySQL, incluido `cci_week_category_approved_idx` para el contenido de la malla curricular.
 
-### Error SQLSTATE[42S22]: columna `slug` desconocida en `curricula`
+### Error SQLSTATE[42S22]: columna `slug` desconocida
 
-La migración correctiva `2026_11_24_000008_repair_curricula_slug_column.php` comprueba si falta `curricula.slug`, la crea, completa los valores de las mallas existentes y asegura su índice único. No elimina ni vuelve a importar las mallas.
+Las migraciones correctivas `2026_11_24_000008_repair_curricula_slug_column.php` y `2026_11_24_000009_repair_missing_slug_columns.php` reparan columnas slug faltantes. La segunda revisa todas las tablas cuyos modelos usan `HasSlugRouteKey`, completa los valores que falten y asegura sus índices únicos. Conserva los registros académicos existentes.
 
 Actualiza el repositorio y ejecuta:
 
