@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', 'Modalidad '.$modality->modality)
 @section('content')
-@php($assignment = $modality->assignment)
+@php $assignment = $modality->assignment; @endphp
 <div class="breadcrumbs"><a href="{{ route('cycles.index') }}">Ciclos</a><span>›</span><a href="{{ route('cycles.show', $assignment->group->cycle) }}">{{ $assignment->group->cycle->academic_year }} · {{ $assignment->group->cycle->cycle_code }}</a><span>›</span><a href="{{ route('groups.show', $assignment->group) }}">{{ $assignment->group->name }}</a><span>›</span><span class="current">{{ $modality->modality }}</span></div>
 <div class="page-head">
     <div><p class="eyebrow">Modalidad {{ $modality->label }}</p><h1>{{ $assignment->course->name }}</h1><p class="subhead">{{ $modality->modality }} · NRC {{ $modality->nrc ?: 'Pendiente' }} · Bloque {{ $modality->block_code ?: 'Pendiente' }} @if($modality->block_reference) · Ref. {{ $modality->block_reference }} @endif · {{ $assignment->group->name }} · {{ $assignment->group->cycle->academic_year }}</p></div>
