@@ -58,6 +58,8 @@ class CycleController extends Controller
         $professorId = auth()->user()->professor->id;
         $request->merge([
             'cycle_code' => trim((string) $request->input('cycle_code')),
+            'career' => trim((string) $request->input('career')),
+            'semester' => trim((string) $request->input('semester')),
             'group_name' => trim((string) $request->input('group_name')),
         ]);
 
@@ -74,12 +76,16 @@ class CycleController extends Controller
                             ->where('academic_year', $request->input('academic_year'))
                     ),
                 ],
+                'career' => ['required', 'string', 'max:255'],
+                'semester' => ['required', 'string', 'max:60'],
                 'start_date' => ['required', 'date'],
                 'end_date' => ['required', 'date', 'after_or_equal:start_date'],
                 'group_name' => ['required', 'string', 'max:100'],
             ],
             [
                 'cycle_code.unique' => 'Ya existe un ciclo con ese año y código.',
+                'career.required' => 'Indica el nombre de la carrera.',
+                'semester.required' => 'Indica el semestre académico.',
                 'end_date.after_or_equal' => 'La fecha de fin debe ser igual o posterior al inicio.',
                 'group_name.required' => 'Registra el nombre del primer grupo del ciclo.',
             ]
@@ -107,7 +113,11 @@ class CycleController extends Controller
     {
         $this->authorizeCycle($cycle);
         $professorId = auth()->user()->professor->id;
-        $request->merge(['cycle_code' => trim((string) $request->input('cycle_code'))]);
+        $request->merge([
+            'cycle_code' => trim((string) $request->input('cycle_code')),
+            'career' => trim((string) $request->input('career')),
+            'semester' => trim((string) $request->input('semester')),
+        ]);
 
         $validator = Validator::make(
             $request->all(),
@@ -123,11 +133,15 @@ class CycleController extends Controller
                             ->where('professor_id', $professorId)
                             ->where('academic_year', $request->input('academic_year'))),
                 ],
+                'career' => ['required', 'string', 'max:255'],
+                'semester' => ['required', 'string', 'max:60'],
                 'start_date' => ['required', 'date'],
                 'end_date' => ['required', 'date', 'after_or_equal:start_date'],
             ],
             [
                 'cycle_code.unique' => 'Ya existe otro ciclo con ese año y código.',
+                'career.required' => 'Indica el nombre de la carrera.',
+                'semester.required' => 'Indica el semestre académico.',
                 'end_date.after_or_equal' => 'La fecha de fin debe ser igual o posterior al inicio.',
             ]
         );
