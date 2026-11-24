@@ -94,6 +94,7 @@ class CurriculumController extends Controller
         $promptGeneratedAt = now();
         $promptVersion = $service->promptVersion();
         $sections = $extracted['sections'] ?? [];
+        $textExtractionWarning = (bool) ($extracted['text_extraction_warning'] ?? false);
         $prompt = $service->buildPrompt($extracted['text'], $assignment, $promptGeneratedAt->toIso8601String(), $sections);
         $promptSha256 = hash('sha256', $prompt);
         session()->put('curriculum_pdf_'.$token, [
@@ -106,6 +107,7 @@ class CurriculumController extends Controller
             'prompt_version' => $promptVersion,
             'prompt_sha256' => $promptSha256,
             'sections' => $sections,
+            'text_extraction_warning' => $textExtractionWarning,
         ]);
         return redirect()
             ->route('curricula.prompt', ['assignment' => $assignment, 'token' => $token])
@@ -134,6 +136,7 @@ class CurriculumController extends Controller
         $promptGeneratedAt = Carbon::parse($draft['prompt_generated_at'] ?? now());
         $promptVersion = $draft['prompt_version'] ?? $service->promptVersion();
         $sections = $draft['sections'] ?? [];
+        $textExtractionWarning = (bool) ($draft['text_extraction_warning'] ?? false);
         $prompt = $service->buildPrompt($text, $assignment, $promptGeneratedAt->toIso8601String(), $sections);
 
         return view('curricula.prompt', compact(
@@ -142,7 +145,8 @@ class CurriculumController extends Controller
             'token',
             'promptGeneratedAt',
             'promptVersion',
-            'sections'
+            'sections',
+            'textExtractionWarning'
         ));
     }
 
