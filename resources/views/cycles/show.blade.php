@@ -259,6 +259,22 @@
 </dialog>
 @push('styles')
 <style>
+.group-create-item{padding:12px;border:1px solid #e5e9e5;border-radius:9px;background:#fff}
+.group-create-item+.group-create-item{margin-top:10px}
+.group-workload-inline{margin-top:10px;border:1px solid #e2e9e6;border-radius:8px;background:#f8fbf9}
+.group-workload-inline>summary{padding:9px 11px;color:#426052;font-size:11px;font-weight:750;cursor:pointer}
+.group-workload-inline[open]>summary{border-bottom:1px solid #e2e9e6}
+.group-workload-inline>.help{margin:9px 11px 0}
+.group-workload-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:10px 11px}
+.group-workload-fields label,.group-workload-days>strong{display:block;margin-bottom:5px;color:#52625a;font-size:10px;font-weight:700}
+.group-workload-fields .field{min-width:0}
+.group-workload-days{padding:0 11px 11px}
+.group-workload-day-options{display:flex;flex-wrap:wrap;gap:6px}
+.group-workload-day-options .weekday{padding:5px 8px}
+@media(max-width:650px){.group-workload-fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:420px){.group-workload-fields{grid-template-columns:1fr}}
+</style>
+<style>
 .cycle-progress{margin-bottom:15px}
 .cycle-progress-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:15px}
 .cycle-progress-heading h2{margin:2px 0 0;font-size:17px}
@@ -321,32 +337,130 @@
     const groupFields = document.getElementById('group-fields');
     if (countInput && groupFields) {
         const oldGroups = @json(array_values(old('groups', [])));
-        const values = oldGroups.map(group => group?.name || '');
+        const cycleStart = @json($cycle->start_date?->format('Y-m-d'));
+        const cycleEnd = @json($cycle->end_date?->format('Y-m-d'));
+        const values = oldGroups.map(group => group || {});
+        const weekdays = [
+            [1, 'Lun'], [2, 'Mar'], [3, 'Mié'], [4, 'Jue'],
+            [5, 'Vie'], [6, 'Sáb'], [7, 'Dom']
+        ];
+
+        const makeField = (labelText, type, name, value, options = {}) => {
+            const wrapper = document.createElement('div');
+            wrapper.className = options.className || '';
+
+            const label = document.createElement('label');
+            label.textContent = labelText;
+            const id = name.replace(/[^a-zA-Z0-9]+/g, '-') + '-field';
+            label.htmlFor = id;
+
+            let field;
+            if (type === 'select') {
+                field = document.createElement('select');
+                field.className = 'field';
+                (options.choices || []).forEach(choice => {
+                    const option = document.createElement('option');
+                    option.value = choice.value;
+                    option.textContent = choice.label;
+                    field.appendChild(option);
+                });
+                field.value = value ?? '';
+            } else {
+                field = document.createElement('input');
+                field.className = 'field';
+                field.type = type;
+                field.value = value ?? '';
+                if (type === 'number') {
+                    field.min = '0';
+                    field.max = '9999';
+                    field.step = '.5';
+                }
+            }
+            field.id = id;
+            field.name = name;
+            wrapper.append(label, field);
+            return wrapper;
+        };
+
         const render = () => {
             const count = Math.max(1, Math.min(30, Number.parseInt(countInput.value, 10) || 1));
             countInput.value = count;
             groupFields.replaceChildren();
 
             for (let index = 0; index < count; index++) {
-                const wrapper = document.createElement('div');
-                wrapper.className = 'group-name-field';
+                const data = values[index] || {};
+                const prefix = 'groups[' + index + ']';
+                const wrapper = document.createElement('section');
+                wrapper.className = 'group-create-item';
 
-                const label = document.createElement('label');
-                label.htmlFor = 'group-name-' + index;
-                label.textContent = 'Grupo ' + (index + 1);
+                const nameField = makeField(
+                    'Nombre del grupo ' + (index + 1),
+                    'text',
+                    prefix + '[name]',
+                    data.name || ''
+                );
+                const nameInput = nameField.querySelector('input');
+                nameInput.maxLength = 100;
+                nameInput.required = true;
+                nameInput.placeholder = 'Ej. IA 202';
+                nameInput.addEventListener('input', () => { values[index] = {...(values[index] || {}), name: nameInput.value}; });
 
-                const input = document.createElement('input');
-                input.className = 'field';
-                input.id = 'group-name-' + index;
-                input.name = 'groups[' + index + '][name]';
-                input.maxLength = 100;
-                input.required = true;
-                input.placeholder = 'Ej. IA 20' + (index + 1);
-                input.value = values[index] || '';
-                input.addEventListener('input', () => { values[index] = input.value; });
+                const details = document.createElement('details');
+                details.className = 'group-workload-inline';
+                const summary = document.createElement('summary');
+                summary.textContent = 'Configurar carga horaria (opcional)';
+                details.appendChild(summary);
 
-                wrapper.append(label, input);
-                groupFields.append(wrapper);
+                const help = document.createElement('p');
+                help.className = 'help';
+                help.textContent = 'Registra la asignación del supervisor. Las horas realmente dictadas se calcularán desde los horarios de cada curso.';
+                details.appendChild(help);
+
+                const grid = document.createElement('div');
+                grid.className = 'group-workload-fields';
+                const configFields = [
+                    makeField('Tipo de carga', 'select', prefix + '[workload_type]', data.workload_type || '', {
+                        className: 'workload-type-field',
+                        choices: [
+                            {value: '', label: 'Seleccionar tipo'},
+                            {value: 'PARTIAL', label: 'Parcial'},
+                            {value: 'FULL', label: 'Completa'}
+                        ]
+                    }),
+                    makeField('Fecha de inicio', 'date', prefix + '[workload_start_date]', data.workload_start_date || cycleStart),
+                    makeField('Fecha de término', 'date', prefix + '[workload_end_date]', data.workload_end_date || cycleEnd),
+                    makeField('Hora inicial', 'time', prefix + '[workload_start_time]', data.workload_start_time || ''),
+                    makeField('Hora final', 'time', prefix + '[workload_end_time]', data.workload_end_time || ''),
+                    makeField('Horas asignadas · Teoría', 'number', prefix + '[supervisor_theory_hours]', data.supervisor_theory_hours ?? ''),
+                    makeField('Horas asignadas · Taller', 'number', prefix + '[supervisor_lab_hours]', data.supervisor_lab_hours ?? '')
+                ];
+                configFields.forEach(field => grid.appendChild(field));
+                details.appendChild(grid);
+
+                const daysBlock = document.createElement('div');
+                daysBlock.className = 'group-workload-days';
+                const daysTitle = document.createElement('strong');
+                daysTitle.textContent = 'Días asignados';
+                daysBlock.appendChild(daysTitle);
+                const daysOptions = document.createElement('div');
+                daysOptions.className = 'group-workload-day-options';
+                const selectedDays = new Set((data.workload_days || []).map(String));
+                weekdays.forEach(([day, labelText]) => {
+                    const label = document.createElement('label');
+                    label.className = 'weekday';
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.name = prefix + '[workload_days][]';
+                    checkbox.value = String(day);
+                    checkbox.checked = selectedDays.has(String(day));
+                    label.append(checkbox, document.createTextNode(' ' + labelText));
+                    daysOptions.appendChild(label);
+                });
+                daysBlock.appendChild(daysOptions);
+                details.appendChild(daysBlock);
+
+                wrapper.append(nameField, details);
+                groupFields.appendChild(wrapper);
             }
         };
 
