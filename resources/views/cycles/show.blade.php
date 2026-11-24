@@ -10,205 +10,143 @@
 </div>
 <a class="cycle-back" href="{{ route('cycles.index') }}"><x-icon name="arrow-left" size="15" /> Volver a todos los ciclos</a>
 
-<div class="page-head">
+<div class="page-head cycle-detail-head">
     <div>
         <p class="eyebrow"><x-icon name="calendar-days" size="12" /> Ciclo académico</p>
         <h1>{{ $cycle->academic_year }} · Ciclo {{ $cycle->cycle_code }}</h1>
         <div class="cycle-item-meta">
-            <span><x-icon name="calendar-range" size="12" /> Rango de carga: {{ $cycle->start_date?->format('d/m/Y') }} – {{ $cycle->end_date?->format('d/m/Y') }}</span>
+            <span><x-icon name="calendar-range" size="12" /> {{ $cycle->start_date?->format('d/m/Y') }} – {{ $cycle->end_date?->format('d/m/Y') }}</span>
             <span class="badge badge-green">{{ $cycle->status === 'active' ? 'Activo' : 'Registrado' }}</span>
-            <button class="inline-edit" type="button" data-modal-open="cycle-edit-dialog"><x-icon name="file-text" size="13" /> Editar ciclo</button>
         </div>
     </div>
-    <div class="actions">
-        <form method="POST" action="{{ route('documents.distribution', $cycle) }}">
-            @csrf
-            <button class="btn btn-secondary" type="submit"><x-icon name="file-text" /> Exportar carga laboral</button>
-        </form>
+    <div class="actions cycle-detail-actions">
+        <button class="btn btn-secondary" type="button" data-modal-open="cycle-edit-dialog"><x-icon name="file-text" /> Editar ciclo</button>
         <button class="btn" type="button" data-modal-open="group-create-dialog"><x-icon name="plus" /> Agregar grupo</button>
-        <form method="POST" action="{{ route('cycles.destroy', $cycle) }}" data-confirm="Se eliminará este ciclo y toda su planificación asociada. Los cursos del catálogo general y los alumnos reutilizados en otros grupos se conservarán. Esta acción no se puede deshacer.">
-            @csrf
-            @method('DELETE')
-            <button class="btn btn-danger" type="submit"><x-icon name="x" /> Eliminar ciclo</button>
-        </form>
     </div>
 </div>
 
-
-<div class="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:17px">
-    <div class="stat-card">
-        <div class="stat-top"><span class="stat-label">Grupos</span><span class="stat-icon"><x-icon name="users" /></span></div>
-        <div class="stat">{{ $groupCount }}</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-top"><span class="stat-label">Cursos</span><span class="stat-icon"><x-icon name="book-open" /></span></div>
-        <div class="stat">{{ $courseCount }}</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-top"><span class="stat-label">Modalidades</span><span class="stat-icon"><x-icon name="layers" /></span></div>
-        <div class="stat">{{ $modalityCount }}</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-top"><span class="stat-label">Horas presenciales / semana</span><span class="stat-icon"><x-icon name="clock" /></span></div>
-        <div class="stat">{{ number_format($declaredWeeklyHours, 1) }} h</div>
-    </div>
-</div>
-
-@if($loadGridRows)
-<section class="card cycle-weekly-load" id="weekly-load">
-    <div class="card-head">
-        <div>
-            <h2>Distribución semanal de carga horaria</h2>
-            <p class="card-description">Vista consolidada del ciclo en intervalos de 15 minutos. Solo incluye bloques presenciales de teoría y laboratorio.</p>
-        </div>
-        <span class="weekly-hours-total">{{ number_format($declaredWeeklyHours, 2) }} h/semana</span>
-    </div>
-    @if($loadConflictCount > 0)
-        <div class="alert alert-error load-conflict-alert"><x-icon name="alert-triangle" /> Hay bloques que coinciden en el mismo día y horario. Revisa las modalidades marcadas en rojo.</div>
-    @endif
-    <div class="table-wrap weekly-timetable-wrap">
-        <table class="weekly-timetable">
-            <thead>
-                <tr>
-                    <th>Inicio</th>
-                    <th>Fin</th>
-                    @foreach($loadWeekdays as $dayLabel)
-                        <th>{{ $dayLabel }}</th>
-                    @endforeach
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($loadGridRows as $gridRow)
-                    <tr>
-                        <th>{{ $gridRow['start'] }}</th>
-                        <th>{{ $gridRow['end'] }}</th>
-                        @foreach($loadWeekdays as $day => $dayLabel)
-                            @php $cell = $gridRow['cells'][$day]; @endphp
-                            <td class="{{ !$cell['active'] ? 'is-empty' : ($cell['conflict'] ? 'is-conflict' : (($cell['type'] ?? 'THEORY') === 'LAB' ? 'is-lab' : 'is-theory')) }}">
-                                @if($cell['show'])
-                                    @foreach($cell['blocks'] as $block)
-                                        <div class="weekly-timetable-block">
-                                            <strong>{{ $block['course'] }}</strong>
-                                            <small>{{ $block['instruction_type'] === 'LAB' ? 'LAB' : 'TEORÍA' }} · {{ $block['room'] }}</small>
-                                        </div>
-                                    @endforeach
-                                @elseif($cell['conflict'])
-                                    <span class="conflict-label">HORARIO CRUZADO</span>
-                                @endif
-                            </td>
-                        @endforeach
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-    <div class="weekly-load-legend">
-        <span><i class="legend-theory"></i> Teoría</span>
-        <span><i class="legend-lab"></i> Laboratorio</span>
-        <span><i class="legend-conflict"></i> Cruce de horarios</span>
-    </div>
-</section>
-@elseif($modalityCount === 0)
-<section class="card">
-    <div class="empty"><strong>Aún no hay horarios para mostrar.</strong><span>Agrega cursos y registra sus bloques de clase para construir la carga semanal.</span></div>
-</section>
+@if(session('success'))
+    <div class="alert alert-success" role="status">{{ session('success') }}</div>
+@endif
+@if(session('error'))
+    <div class="alert alert-error" role="alert">{{ session('error') }}</div>
 @endif
 
-<section class="card cycle-progress">
-    <div class="cycle-progress-heading">
-        <div><p class="eyebrow">Seguimiento del periodo</p><h2>Avance de configuración</h2></div>
-        <span class="muted small">Según cursos y modalidades registrados</span>
-    </div>
-    <div class="cycle-progress-grid">
-        <div>
-            <div class="cycle-progress-label"><span>Mallas curriculares vinculadas</span><strong>{{ $curriculumAssignedCount }} / {{ $courseCount }}</strong></div>
-            <div class="cycle-progress-track" role="progressbar" aria-label="Cursos con malla vinculada" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $curriculumPercent }}"><span style="width:{{ $curriculumPercent }}%"></span></div>
-            <small>{{ $curriculumPercent }}% de cursos</small>
-        </div>
-        <div>
-            <div class="cycle-progress-label"><span>Horarios configurados</span><strong>{{ $configuredModalityCount }} / {{ $modalityCount }}</strong></div>
-            <div class="cycle-progress-track" role="progressbar" aria-label="Modalidades con horario configurado" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $schedulePercent }}"><span style="width:{{ $schedulePercent }}%"></span></div>
-            <small>{{ $schedulePercent }}% de modalidades con fechas y horario de clase</small>
-        </div>
-    </div>
-</section>
-
-
-
-<section class="card">
-    <div class="card-head">
-        <div><h2>Grupos</h2></div>
+<section class="card cycle-groups-card">
+    <div class="card-head cycle-groups-heading">
+        <h2>Grupos</h2>
         <span class="badge badge-blue">{{ $groupCount }} {{ $groupCount === 1 ? 'grupo' : 'grupos' }}</span>
     </div>
-    @forelse($groups as $group)
-        @php
-            $groupWorkloadHasDetails = filled($group->workload_type)
-                || !empty($group->workload_days)
-                || filled($group->workload_start_time)
-                || filled($group->workload_end_time)
-                || $group->supervisor_theory_hours !== null
-                || $group->supervisor_lab_hours !== null;
-            $groupWorkloadComplete = in_array($group->workload_type, ['PARTIAL', 'FULL'], true)
-                && $group->workload_start_date !== null
-                && $group->workload_end_date !== null
-                && !empty($group->workload_days)
-                && filled($group->workload_start_time)
-                && filled($group->workload_end_time)
-                && $group->supervisor_theory_hours !== null
-                && $group->supervisor_lab_hours !== null;
-            $groupWorkloadStatus = $groupWorkloadComplete ? 'complete' : ($groupWorkloadHasDetails ? 'partial' : 'pending');
-        @endphp
-        <article class="cycle-item">
-            <div class="cycle-item-main">
-                <span class="cycle-item-icon"><x-icon name="users" size="18" /></span>
-                <div>
-                    <h3 class="cycle-item-title">{{ $group->name }}</h3>
-                    <div class="cycle-item-meta">
-                        <span><x-icon name="clock" size="12" /> {{ $group->assigned_at?->format('d/m/Y') ?? 'Sin fecha de asignación' }}</span>
-                        <span>·</span>
-                        <span><x-icon name="book-open" size="12" /> {{ $group->assignments_count }} {{ $group->assignments_count === 1 ? 'curso' : 'cursos' }}</span>
-                        <span>·</span>
-                        <span><x-icon name="users" size="12" /> {{ $group->students_count }} alumnos</span>
+
+    @if($groups->isNotEmpty())
+        <div class="cycle-group-list">
+            @foreach($groups as $group)
+                @php
+                    $hasCourses = $group->assignments_count > 0;
+                    $allCoursesHaveModalities = $hasCourses
+                        && $group->assignments_with_modalities_count >= $group->assignments_count;
+                    $hasModalities = $group->modalities_count > 0;
+                    $allSchedulesConfigured = $hasModalities
+                        && $group->configured_modalities_count >= $group->modalities_count;
+                    $groupReady = $allCoursesHaveModalities && $allSchedulesConfigured;
+
+                    $groupState = !$hasCourses
+                        ? 'pending'
+                        : ($groupReady ? 'complete' : 'partial');
+                    $groupStateLabel = !$hasCourses
+                        ? 'Sin cursos'
+                        : ($groupReady ? 'Configurado' : 'En progreso');
+
+                    $coursePercent = $hasCourses
+                        ? (int) round(($group->assignments_with_modalities_count / $group->assignments_count) * 100)
+                        : 0;
+                    $schedulePercent = $hasModalities
+                        ? (int) round(($group->configured_modalities_count / $group->modalities_count) * 100)
+                        : 0;
+                @endphp
+
+                <details class="cycle-group">
+                    <summary class="cycle-group-summary">
+                        <span class="cycle-group-icon"><x-icon name="users" size="17" /></span>
+                        <span class="cycle-group-title">
+                            <strong>{{ $group->name }}</strong>
+                            <small>{{ $group->assignments_count }} {{ $group->assignments_count === 1 ? 'curso' : 'cursos' }}</small>
+                        </span>
+                        <span class="cycle-group-state is-{{ $groupState }}">{{ $groupStateLabel }}</span>
+                        <x-icon name="chevron-down" class="cycle-group-chevron" size="17" />
+                    </summary>
+
+                    <div class="cycle-group-body">
+                        <div class="cycle-group-progress">
+                            <div class="cycle-group-progress-item">
+                                <div class="cycle-group-progress-label">
+                                    <span>Cursos con modalidad</span>
+                                    <strong>{{ $group->assignments_with_modalities_count }} / {{ $group->assignments_count }}</strong>
+                                </div>
+                                <div class="cycle-group-progress-track" role="progressbar"
+                                     aria-label="Cursos con modalidad en {{ $group->name }}"
+                                     aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $coursePercent }}">
+                                    <span style="width:{{ $coursePercent }}%"></span>
+                                </div>
+                            </div>
+
+                            <div class="cycle-group-progress-item">
+                                <div class="cycle-group-progress-label">
+                                    <span>Horarios configurados</span>
+                                    <strong>{{ $group->configured_modalities_count }} / {{ $group->modalities_count }}</strong>
+                                </div>
+                                <div class="cycle-group-progress-track" role="progressbar"
+                                     aria-label="Horarios configurados en {{ $group->name }}"
+                                     aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $schedulePercent }}">
+                                    <span style="width:{{ $schedulePercent }}%"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="cycle-group-actions">
+                            <button class="btn btn-ghost btn-sm"
+                                    type="button"
+                                    data-edit-group
+                                    data-group-id="{{ $group->id }}"
+                                    data-update-url="{{ route('groups.update', $group) }}"
+                                    data-name="{{ $group->name }}"
+                                    data-assigned-at="{{ $group->assigned_at?->format('Y-m-d') }}">
+                                <x-icon name="file-text" /> Editar
+                            </button>
+                            <a class="btn btn-secondary btn-sm" href="{{ route('groups.show', $group) }}">
+                                Abrir grupo <x-icon name="arrow-right" />
+                            </a>
+
+                            @if($groupCount > 1)
+                                <form method="POST" action="{{ route('groups.destroy', $group) }}"
+                                      data-confirm="Se eliminará este grupo, sus cursos dentro del grupo, modalidades, matrículas y sesiones. Los alumnos y cursos del catálogo que se utilicen en otros grupos se conservarán. Esta acción no se puede deshacer.">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn btn-danger btn-sm" type="submit"><x-icon name="x" /> Eliminar grupo</button>
+                                </form>
+                            @else
+                                <button class="btn btn-danger btn-sm" type="button" disabled
+                                        title="Cada ciclo debe conservar al menos un grupo"
+                                        aria-label="No se puede eliminar el único grupo del ciclo">
+                                    <x-icon name="x" /> Eliminar grupo
+                                </button>
+                            @endif
+                        </div>
                     </div>
-                    <div class="cycle-group-workload">
-                        <x-section-status :status="$groupWorkloadStatus" />
-                        @if($groupWorkloadHasDetails)
-                            <span>{{ $group->workload_type === 'FULL' ? 'Completa' : 'Parcial' }}</span>
-                            <span>Supervisor: {{ number_format((float) $group->supervisor_theory_hours, 2) }} h teoría · {{ number_format((float) $group->supervisor_lab_hours, 2) }} h taller</span>
-                        @else
-                            <span>Falta registrar la carga asignada</span>
-                        @endif
-                    </div>
-                </div>
-            </div>
-            <div class="cycle-item-actions">
-                <button
-                    class="btn btn-ghost btn-sm"
-                    type="button"
-                    data-edit-group
-                    data-group-id="{{ $group->id }}"
-                    data-update-url="{{ route('groups.update', $group) }}"
-                    data-name="{{ $group->name }}"
-                    data-assigned-at="{{ $group->assigned_at?->format('Y-m-d') }}"
-                ><x-icon name="file-text" /> Editar</button>
-                <a class="btn btn-secondary btn-sm" href="{{ route('groups.show', $group) }}">Abrir grupo <x-icon name="arrow-right" /></a>
-                <form method="POST" action="{{ route('groups.destroy', $group) }}" data-confirm="Se eliminará este grupo, sus cursos dentro del grupo, modalidades, matrículas y sesiones. Los alumnos y cursos del catálogo que se utilicen en otros grupos se conservarán. Esta acción no se puede deshacer.">
-                    @csrf
-                    @method('DELETE')
-                    <button class="btn btn-danger btn-sm" type="submit"><x-icon name="x" /> Eliminar grupo</button>
-                </form>
-            </div>
-        </article>
-    @empty
-        <div class="empty">
-            <span class="stat-icon" style="margin:0 auto 10px;width:42px;height:42px"><x-icon name="users" size="20" /></span>
-            <strong>Este ciclo todavía no tiene grupos.</strong>
-            <span>Agrega el primer grupo para registrar después sus cursos.</span>
-            <div class="mt-16"><button class="btn" type="button" data-modal-open="group-create-dialog"><x-icon name="plus" /> Crear grupo</button></div>
+                </details>
+            @endforeach
         </div>
-    @endforelse
-    @if($groups->hasPages())
-        <x-pagination :paginator="$groups" />
+
+        @if($groups->hasPages())
+            <x-pagination :paginator="$groups" />
+        @endif
+    @else
+        <div class="empty cycle-groups-empty">
+            <span class="stat-icon"><x-icon name="users" size="20" /></span>
+            <strong>Este ciclo necesita un grupo.</strong>
+            <span>Agrega el primer grupo para continuar con la carga académica.</span>
+            <button class="btn" type="button" data-modal-open="group-create-dialog"><x-icon name="plus" /> Crear primer grupo</button>
+        </div>
     @endif
 </section>
 
@@ -283,81 +221,85 @@
         <div class="dialog-footer"><button class="btn btn-secondary" type="button" data-modal-close>Cancelar</button><button class="btn" type="submit"><x-icon name="check" /> Guardar cambios</button></div>
     </form>
 </dialog>
+
 @push('styles')
 <style>
-.group-create-item{padding:12px;border:1px solid #e5e9e5;border-radius:9px;background:#fff}
+.cycle-detail-head{align-items:flex-end}
+.cycle-detail-actions{justify-content:flex-end}
+.cycle-groups-card{padding:17px}
+.cycle-groups-heading{margin-bottom:4px}
+.cycle-groups-heading h2{margin:0}
+.cycle-group-list{display:grid}
+.cycle-group{border-bottom:1px solid var(--line)}
+.cycle-group:last-child{border-bottom:0}
+.cycle-group-summary{display:flex;align-items:center;gap:12px;min-height:72px;padding:12px 3px;list-style:none;cursor:pointer}
+.cycle-group-summary::-webkit-details-marker{display:none}
+.cycle-group-summary:focus-visible{outline-offset:2px;border-radius:7px}
+.cycle-group-icon{display:grid;place-items:center;width:38px;height:38px;flex:0 0 38px;border:1px solid var(--line);border-radius:9px;background:var(--surface-soft);color:var(--accent)}
+.cycle-group-title{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px}
+.cycle-group-title strong{color:var(--ink);font-size:13px;font-weight:700}
+.cycle-group-title small{color:var(--muted);font-size:10px}
+.cycle-group-state{flex:none;padding:5px 9px;border:1px solid var(--line);border-radius:20px;font-size:10px;font-weight:700}
+.cycle-group-state.is-pending{background:var(--surface-soft);color:var(--muted)}
+.cycle-group-state.is-partial{border-color:#eadfc9;background:var(--warning-bg);color:var(--warning)}
+.cycle-group-state.is-complete{border-color:#d5e5d8;background:var(--success-bg);color:var(--success)}
+.cycle-group-chevron{flex:none;color:var(--muted);transition:transform .16s ease}
+.cycle-group[open] .cycle-group-chevron{transform:rotate(180deg)}
+.cycle-group-body{padding:3px 0 15px 50px}
+.cycle-group-progress{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.cycle-group-progress-item{min-width:0}
+.cycle-group-progress-label{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px;color:var(--muted);font-size:10px}
+.cycle-group-progress-label strong{color:var(--ink);font-size:10px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.cycle-group-progress-track{height:7px;overflow:hidden;border-radius:99px;background:var(--line)}
+.cycle-group-progress-track span{display:block;height:100%;border-radius:99px;background:var(--accent);transition:width .18s ease}
+.cycle-group-actions{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap;margin-top:15px}
+.cycle-group-actions form{margin:0}
+.cycle-groups-empty{padding:32px 14px}
+.cycle-groups-empty .stat-icon{display:grid;place-items:center;width:44px;height:44px;margin:0 auto 10px;border-radius:10px;background:var(--accent-soft);color:var(--accent)}
+.cycle-groups-empty .btn{margin-top:7px}
+.group-create-item{padding:12px;border:1px solid var(--line);border-radius:9px;background:var(--surface)}
 .group-create-item+.group-create-item{margin-top:10px}
-.group-workload-inline{margin-top:10px;border:1px solid #e2e9e6;border-radius:8px;background:#f8fbf9}
-.group-workload-inline>summary{padding:9px 11px;color:#426052;font-size:11px;font-weight:750;cursor:pointer}
-.group-workload-inline[open]>summary{border-bottom:1px solid #e2e9e6}
+.group-workload-inline{margin-top:10px;border:1px solid var(--line);border-radius:8px;background:var(--surface-soft)}
+.group-workload-inline>summary{padding:9px 11px;color:var(--ink-soft);font-size:11px;font-weight:750;cursor:pointer}
+.group-workload-inline[open]>summary{border-bottom:1px solid var(--line)}
 .group-workload-inline>.help{margin:9px 11px 0}
 .group-workload-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:10px 11px}
-.group-workload-fields label,.group-workload-days>strong{display:block;margin-bottom:5px;color:#52625a;font-size:10px;font-weight:700}
+.group-workload-fields label,.group-workload-days>strong{display:block;margin-bottom:5px;color:var(--ink-soft);font-size:10px;font-weight:700}
 .group-workload-fields .field{min-width:0}
 .group-workload-days{padding:0 11px 11px}
 .group-workload-day-options{display:flex;flex-wrap:wrap;gap:6px}
 .group-workload-day-options .weekday{padding:5px 8px}
-@media(max-width:650px){.group-workload-fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:420px){.group-workload-fields{grid-template-columns:1fr}}
-</style>
-<style>
-.cycle-progress{margin-bottom:15px}
-.cycle-progress-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:15px}
-.cycle-progress-heading h2{margin:2px 0 0;font-size:17px}
-.cycle-progress-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
-.cycle-progress-label{display:flex;justify-content:space-between;gap:8px;margin-bottom:7px;font-size:12px;color:#4d626e}
-.cycle-progress-label strong{color:#274d61;white-space:nowrap}
-.cycle-progress-track{height:8px;overflow:hidden;border-radius:99px;background:#e8eef1}
-.cycle-progress-track span{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#3a8cab,#47a88e)}
-.cycle-progress-grid small{display:block;margin-top:6px;color:#76868e;font-size:10px}
-@media(max-width:650px){.cycle-progress-grid{grid-template-columns:1fr}.cycle-progress-heading{align-items:flex-start;flex-direction:column}}
-
-.cycle-weekly-load{padding:16px}
-.weekly-hours-total{display:inline-flex;align-items:center;padding:7px 10px;border:1px solid #c6dce5;border-radius:7px;background:#f4fafc;color:#23657d;font-size:12px;font-weight:750;white-space:nowrap}
-.weekly-timetable-wrap{max-height:620px;overflow:auto;border:1px solid #dfe6e1;border-radius:7px}
-.weekly-timetable{min-width:900px;table-layout:fixed;border-collapse:separate;border-spacing:0;font-size:10px}
-.weekly-timetable th,.weekly-timetable td{padding:0;border-right:1px solid #e1e7e2;border-bottom:1px solid #e1e7e2;text-align:center}
-.weekly-timetable thead th{position:sticky;top:0;z-index:2;height:32px;background:#e8eef0;color:#405d68;font-size:10px}
-.weekly-timetable tbody th{width:58px;height:26px;background:#f7f9f7;color:#66756c;font-size:9px;font-weight:600}
-.weekly-timetable td{height:26px;background:#fff}
-.weekly-timetable td.is-theory{background:#edf5fa;color:#285e77}
-.weekly-timetable td.is-lab{background:#edf6ef;color:#326747}
-.weekly-timetable td.is-conflict{background:#fff0ef;color:#a53832}
-.weekly-timetable td.is-empty{background:#fff}
-.weekly-timetable-block{display:grid;gap:1px;padding:3px;line-height:1.2;overflow-wrap:anywhere}
-.weekly-timetable-block strong{font-size:9px;font-weight:800}
-.weekly-timetable-block small{font-size:8px;font-weight:650}
-.conflict-label{font-size:8px;font-weight:800}
-.load-conflict-alert{margin-bottom:12px}
-.weekly-load-legend{display:flex;gap:15px;flex-wrap:wrap;margin-top:10px;color:#748179;font-size:9px}
-.weekly-load-legend span{display:inline-flex;align-items:center;gap:5px}
-.weekly-load-legend i{width:9px;height:9px;border-radius:2px;display:inline-block}
-.legend-theory{background:#cfe2eb}.legend-lab{background:#cfe4d5}.legend-conflict{background:#f0c1bd}
-@media(max-width:760px){.cycle-weekly-load{padding:11px}.weekly-timetable-wrap{max-height:500px}}
-</style>
-@endpush
-
-@push('styles')
-<style>
-</style>
-@endpush
-
-@endsection
-
-@push('styles')
-<style>
-.cycle-group-workload{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin-top:8px;color:#687970;font-size:10px;line-height:1.4}
-.cycle-group-workload>span:not(.section-status){padding:4px 7px;border:1px solid #e5ebe6;border-radius:6px;background:#f8faf8}
-html[data-theme="dark"] .cycle-group-workload{color:#b5c7bc}
-html[data-theme="dark"] .cycle-group-workload>span:not(.section-status){background:#17251f;border-color:#34483c}
-@media(max-width:650px){.cycle-group-workload{align-items:flex-start;flex-direction:column}}
 .group-count-control{display:grid;grid-template-columns:minmax(0,1fr) 110px;align-items:center;gap:10px}
 .group-count-control label{margin:0}
 .group-count-control .help{grid-column:1/-1;margin:0}
 .group-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px}
-.group-name-field{padding:11px;border:1px solid #dce7ed;border-radius:10px;background:#f9fcfd}
-.group-name-field label{display:block;margin-bottom:6px;font-size:11px;font-weight:700;color:#477085}
-@media(max-width:560px){.group-fields{grid-template-columns:1fr}}
+.group-name-field{padding:11px;border:1px solid var(--line);border-radius:10px;background:var(--surface-soft)}
+.group-name-field label{display:block;margin-bottom:6px;font-size:11px;font-weight:700;color:var(--ink-soft)}
+@media(max-width:760px){
+    .cycle-detail-head{align-items:flex-start;flex-direction:column}
+    .cycle-detail-actions{width:100%;justify-content:stretch}
+    .cycle-detail-actions>*{flex:1}
+    .cycle-detail-actions .btn{width:100%}
+    .cycle-group-progress{grid-template-columns:1fr;gap:12px}
+}
+@media(max-width:650px){
+    .cycle-group-summary{gap:9px}
+    .cycle-group-icon{width:34px;height:34px;flex-basis:34px}
+    .cycle-group-body{padding-left:0}
+    .cycle-group-actions{justify-content:stretch}
+    .cycle-group-actions>*{flex:1}
+    .cycle-group-actions .btn{width:100%}
+    .group-workload-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .cycle-group-state{font-size:9px;padding:5px 7px}
+}
+@media(max-width:420px){
+    .group-workload-fields,.group-fields{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){
+    .cycle-group-chevron,.cycle-group-progress-track span{transition:none}
+}
+html[data-theme="dark"] .cycle-group-state.is-partial{border-color:#5f5239}
+html[data-theme="dark"] .cycle-group-state.is-complete{border-color:#365845}
 </style>
 @endpush
 
@@ -553,3 +495,4 @@ html[data-theme="dark"] .cycle-group-workload>span:not(.section-status){backgrou
 })();
 </script>
 @endpush
+@endsection

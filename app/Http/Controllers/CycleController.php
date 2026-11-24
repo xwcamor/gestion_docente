@@ -56,7 +56,10 @@ class CycleController extends Controller
     public function store(Request $request)
     {
         $professorId = auth()->user()->professor->id;
-        $request->merge(['cycle_code' => trim((string) $request->input('cycle_code'))]);
+        $request->merge([
+            'cycle_code' => trim((string) $request->input('cycle_code')),
+            'group_name' => trim((string) $request->input('group_name')),
+        ]);
 
         $data = $request->validate(
             [
@@ -73,18 +76,31 @@ class CycleController extends Controller
                 ],
                 'start_date' => ['required', 'date'],
                 'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+                'group_name' => ['required', 'string', 'max:100'],
             ],
             [
                 'cycle_code.unique' => 'Ya existe un ciclo con ese año y código.',
                 'end_date.after_or_equal' => 'La fecha de fin debe ser igual o posterior al inicio.',
+                'group_name.required' => 'Registra el nombre del primer grupo del ciclo.',
             ]
         );
 
-        $data['professor_id'] = $professorId;
-        $cycle = Cycle::create($data);
+        $groupName = $data['group_name'];
+        unset($data['group_name']);
+
+        $cycle = DB::transaction(function () use ($data, $professorId, $groupName) {
+            $cycle = Cycle::create([...$data, 'professor_id' => $professorId]);
+
+            $cycle->groups()->create([
+                'professor_id' => $professorId,
+                'name' => $groupName,
+            ]);
+
+            return $cycle;
+        });
 
         return redirect()->route('cycles.show', $cycle)
-            ->with('success', 'Ciclo creado correctamente. Ahora puedes agregar sus grupos.');
+            ->with('success', 'Ciclo y primer grupo creados correctamente.');
     }
 
     public function update(Request $request, Cycle $cycle)
@@ -133,123 +149,58 @@ class CycleController extends Controller
         $this->authorizeCycle($cycle);
 
         $groups = $cycle->groups()
-            ->withCount(['assignments', 'students'])
+            ->withCount([
+                'assignments',
+                'assignments as assignments_with_modalities_count' => fn ($query) => $query->whereHas('modalities'),
+            ])
             ->orderBy('name')
-            ->paginate(12)
+            ->paginate(30)
             ->withQueryString();
 
-        $groupCount = $cycle->groups()->count();
-        $courseCount = DB::table('course_assignments')
-            ->join('teaching_groups', 'teaching_groups.id', '=', 'course_assignments.teaching_group_id')
-            ->where('teaching_groups.cycle_id', $cycle->id)
-            ->count();
-        $curriculumAssignedCount = DB::table('course_assignments')
-            ->join('teaching_groups', 'teaching_groups.id', '=', 'course_assignments.teaching_group_id')
-            ->where('teaching_groups.cycle_id', $cycle->id)
-            ->whereNotNull('course_assignments.curriculum_id')
-            ->count();
+        $groupIds = $groups->getCollection()->modelKeys();
+        $groupCount = $groups->total();
+        $progressByGroup = collect();
 
-        $modalityCount = DB::table('course_modalities')
-            ->join('course_assignments', 'course_assignments.id', '=', 'course_modalities.course_assignment_id')
-            ->join('teaching_groups', 'teaching_groups.id', '=', 'course_assignments.teaching_group_id')
-            ->where('teaching_groups.cycle_id', $cycle->id)
-            ->count();
+        if ($groupIds) {
+            // Una fila por modalidad evita contarla varias veces cuando tiene varios bloques.
+            $classScheduleModalities = DB::table('modality_schedules')
+                ->select('course_modality_id')
+                ->where('block_type', 'CLASS')
+                ->groupBy('course_modality_id');
 
-        $configuredModalityCount = DB::table('course_modalities')
-            ->join('course_assignments', 'course_assignments.id', '=', 'course_modalities.course_assignment_id')
-            ->join('teaching_groups', 'teaching_groups.id', '=', 'course_assignments.teaching_group_id')
-            ->where('teaching_groups.cycle_id', $cycle->id)
-            ->whereNotNull('course_modalities.start_date')
-            ->whereNotNull('course_modalities.end_date')
-            ->whereExists(function ($query) {
-                $query->selectRaw('1')
-                    ->from('modality_schedules')
-                    ->whereColumn('modality_schedules.course_modality_id', 'course_modalities.id')
-                    ->where('modality_schedules.block_type', 'CLASS');
-            })
-            ->count();
-
-        $curriculumPercent = $courseCount > 0
-            ? (int) round(($curriculumAssignedCount / $courseCount) * 100)
-            : 0;
-        $schedulePercent = $modalityCount > 0
-            ? (int) round(($configuredModalityCount / $modalityCount) * 100)
-            : 0;
-
-        $loadWeekdays = [
-            1 => 'Lunes', 2 => 'Martes', 3 => 'Miércoles', 4 => 'Jueves',
-            5 => 'Viernes', 6 => 'Sábado', 7 => 'Domingo',
-        ];
-        $loadSchedules = ModalitySchedule::query()
-            ->with(['modality.assignment.course'])
-            ->where('block_type', 'CLASS')
-            ->whereHas('modality.assignment.group', fn ($query) => $query->where('cycle_id', $cycle->id))
-            ->get();
-
-        $timeToMinutes = fn ($time) => ((int) substr((string) $time, 0, 2) * 60) + (int) substr((string) $time, 3, 2);
-        $loadBlocks = $loadSchedules->map(function ($schedule) use ($timeToMinutes) {
-            $course = $schedule->modality->assignment->course;
-            return [
-                'day' => (int) $schedule->day_of_week,
-                'start' => $timeToMinutes($schedule->start_time),
-                'end' => $timeToMinutes($schedule->end_time),
-                'course' => $course->code ?: $course->name,
-                'room' => $schedule->classroom ?: 'Ambiente pendiente',
-                'instruction_type' => $schedule->instruction_type ?? 'THEORY',
-            ];
-        })->values();
-
-        $declaredWeeklyHours = round($loadBlocks->sum(fn ($block) => max(0, $block['end'] - $block['start'])) / 60, 2);
-        $loadGridRows = [];
-        $loadConflictCount = 0;
-        if ($loadBlocks->isNotEmpty()) {
-            $gridStart = intdiv((int) $loadBlocks->min('start'), 15) * 15;
-            $gridEnd = (int) (ceil($loadBlocks->max('end') / 15) * 15);
-
-            for ($minute = $gridStart; $minute < $gridEnd; $minute += 15) {
-                $cells = [];
-                foreach ($loadWeekdays as $day => $dayName) {
-                    $active = $loadBlocks->filter(fn ($block) =>
-                        $block['day'] === $day && $block['start'] < ($minute + 15) && $block['end'] > $minute
-                    )->values();
-                    $starts = $active->filter(fn ($block) => $block['start'] >= $minute && $block['start'] < ($minute + 15))->values();
-                    $conflict = $active->count() > 1;
-                    if ($conflict) {
-                        $loadConflictCount++;
-                    }
-                    $cells[$day] = [
-                        'active' => $active->isNotEmpty(),
-                        'conflict' => $conflict,
-                        'show' => $starts->isNotEmpty(),
-                        'blocks' => $starts->all(),
-                        'type' => $active->first()['instruction_type'] ?? 'THEORY',
-                    ];
-                }
-
-                $loadGridRows[] = [
-                    'start' => sprintf('%02d:%02d', intdiv($minute, 60), $minute % 60),
-                    'end' => sprintf('%02d:%02d', intdiv($minute + 15, 60), ($minute + 15) % 60),
-                    'cells' => $cells,
-                ];
-            }
+            $progressByGroup = DB::table('course_assignments as assignments')
+                ->join('course_modalities as modalities', 'modalities.course_assignment_id', '=', 'assignments.id')
+                ->leftJoinSub(
+                    $classScheduleModalities,
+                    'class_schedules',
+                    fn ($join) => $join->on('class_schedules.course_modality_id', '=', 'modalities.id')
+                )
+                ->whereIn('assignments.teaching_group_id', $groupIds)
+                ->groupBy('assignments.teaching_group_id')
+                ->selectRaw('
+                    assignments.teaching_group_id,
+                    COUNT(modalities.id) AS modalities_count,
+                    SUM(
+                        CASE
+                            WHEN modalities.start_date IS NOT NULL
+                                AND modalities.end_date IS NOT NULL
+                                AND class_schedules.course_modality_id IS NOT NULL
+                            THEN 1 ELSE 0
+                        END
+                    ) AS configured_modalities_count
+                ')
+                ->get()
+                ->keyBy('teaching_group_id');
         }
 
+        $groups->getCollection()->each(function ($group) use ($progressByGroup) {
+            $progress = $progressByGroup->get($group->id);
 
-        return view('cycles.show', compact(
-            'cycle',
-            'groups',
-            'groupCount',
-            'courseCount',
-            'modalityCount',
-            'declaredWeeklyHours',
-            'loadWeekdays',
-            'loadGridRows',
-            'loadConflictCount',
-            'curriculumAssignedCount',
-            'configuredModalityCount',
-            'curriculumPercent',
-            'schedulePercent'
-        ));
+            $group->setAttribute('modalities_count', (int) ($progress->modalities_count ?? 0));
+            $group->setAttribute('configured_modalities_count', (int) ($progress->configured_modalities_count ?? 0));
+        });
+
+        return view('cycles.show', compact('cycle', 'groups', 'groupCount'));
     }
 
     public function destroy(Cycle $cycle)

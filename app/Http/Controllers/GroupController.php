@@ -166,6 +166,8 @@ class GroupController extends Controller
         }
 
         DB::transaction(function () use ($groups, $cycle) {
+            Cycle::query()->whereKey($cycle->id)->lockForUpdate()->firstOrFail();
+
             foreach ($groups as $groupData) {
                 $cycle->groups()->create([
                     'professor_id' => $cycle->professor_id,
@@ -583,7 +585,23 @@ class GroupController extends Controller
         }
         $importPaths = $importQuery->pluck('stored_path');
 
-        DB::transaction(fn () => $group->delete());
+        // Serializa las eliminaciones del mismo ciclo para proteger al último grupo.
+        $deleted = DB::transaction(function () use ($cycle, $group) {
+            Cycle::query()->whereKey($cycle->id)->lockForUpdate()->firstOrFail();
+
+            if ($cycle->groups()->count() <= 1) {
+                return false;
+            }
+
+            $group->delete();
+
+            return true;
+        });
+
+        if (!$deleted) {
+            return redirect()->route('cycles.show', $cycle)
+                ->with('error', 'Cada ciclo debe conservar al menos un grupo. Agrega otro grupo antes de eliminar este.');
+        }
 
         Storage::disk('local')->delete(
             $generatedPaths->merge($importPaths)->filter()->unique()->values()->all()

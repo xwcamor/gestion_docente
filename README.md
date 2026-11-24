@@ -168,6 +168,7 @@ La migración inicial crea las tablas de usuarios, profesores, ciclos, grupos, c
 
 - Acceso individual por profesor y gestión de sus datos académicos.
 - Años, ciclos y múltiples grupos por ciclo.
+- Cada ciclo se crea con un primer grupo obligatorio y no permite eliminar su último grupo.
 - Cursos por grupo y modalidades TEC/TALL independientes.
 - NRC, fechas, horarios, alumnos, sesiones y evaluaciones por modalidad.
 - Importación de listados de alumnos exportados desde el campus.

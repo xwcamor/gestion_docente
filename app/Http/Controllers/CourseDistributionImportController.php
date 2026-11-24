@@ -57,6 +57,10 @@ class CourseDistributionImportController extends Controller
             if ($cycle->start_date->gt($data['start_date'])) $cycle->update(['start_date' => $data['start_date']]);
             if ($cycle->end_date->lt($data['end_date'])) $cycle->update(['end_date' => $data['end_date']]);
 
+            // Mantiene sincronizada la creación de grupos con la regla de no dejar
+            // un ciclo sin grupos durante una eliminación concurrente.
+            Cycle::query()->whereKey($cycle->id)->lockForUpdate()->firstOrFail();
+
             $group = TeachingGroup::firstOrCreate(
                 ['cycle_id' => $cycle->id, 'professor_id' => $professor->id, 'name' => $validated['group_name']],
                 ['assigned_at' => now()->toDateString(), 'notes' => 'Creado mediante importación de la pestaña Cursos.']

@@ -117,7 +117,7 @@
             @endif
             <div class="modal-context">
                 <x-icon name="info" size="16" />
-                <span>Un ciclo representa un periodo académico completo. Cuando lo guardes, entrarás al ciclo para agregar los grupos que te asignaron.</span>
+                <span>Todo ciclo debe tener al menos un grupo. Registra aquí el primero; después podrás agregar más.</span>
             </div>
             <div class="form-row">
                 <div>
@@ -144,6 +144,11 @@
                     <input class="field" id="end_date" type="date" name="end_date" value="{{ old('end_date') }}" min="{{ old('start_date') }}" required data-cycle-end>
                     @error('end_date')<p class="field-error">{{ $message }}</p>@enderror
                 </div>
+            </div>
+            <div>
+                <label for="group_name">Nombre del primer grupo <span class="muted">*</span></label>
+                <input class="field" id="group_name" name="group_name" value="{{ old('group_name') }}" maxlength="100" required placeholder="Ej. IA 202">
+                @error('group_name')<p class="field-error">{{ $message }}</p>@enderror
             </div>
             <p class="help mt-16"><x-icon name="calendar-range" size="12" /> La fecha de fin debe ser igual o posterior al inicio.</p>
         </div>
