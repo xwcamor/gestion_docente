@@ -43,9 +43,7 @@ class CycleController extends Controller
             ->distinct()
             ->orderByDesc('academic_year')
             ->pluck('academic_year');
-        $groupCount = $professor->groups()->count();
-
-        return view('cycles.index', compact('cycles', 'years', 'groupCount'));
+        return view('cycles.index', compact('cycles', 'years'));
     }
 
     public function create()
