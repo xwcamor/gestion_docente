@@ -708,53 +708,48 @@ html[data-theme="dark"] .group-workload-panel[open]>.group-panel-summary{backgro
 .modality-link:hover{border-color:#8cb8c8;background:#f7fbfc}
 .field-error{display:block;margin-top:4px;font-size:10px;color:#b42318}
  
-.group-talk-panel{border-color:#d8e6eb}
-.group-talk-icon{background:#e9f4f0;color:#33785d}
-.group-talk-panel[open]>.group-panel-summary{background:#f7fbfa}
-.talks-intro{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:14px 0;padding:12px 14px;border:1px solid #dbe9e5;border-radius:8px;background:#f5faf8}
-.talks-intro strong{display:block;color:#315d4b;font-size:12px}
-.talks-intro p{max-width:650px;margin:4px 0 0;color:#71857a;font-size:10px;line-height:1.55}
+.group-talk-panel{border-color:color-mix(in srgb,var(--info) 24%,var(--line))}
+.group-talk-icon{background:var(--info-bg);color:var(--info)}
+.group-talk-panel[open]>.group-panel-summary{background:var(--info-bg)}
+.talks-intro{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:14px 0;padding:12px 14px;border:1px solid color-mix(in srgb,var(--info) 22%,var(--line));border-radius:8px;background:var(--info-bg)}
+.talks-intro strong{display:block;color:var(--info);font-size:12px}
+.talks-intro p{max-width:650px;margin:4px 0 0;color:var(--muted);font-size:10px;line-height:1.55}
 .talks-summary{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 13px}
-.talks-period{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 11px;padding:9px 11px;border:1px solid #dce9e6;border-radius:8px;background:#f5faf8;color:#567166;font-size:10px}
-.talks-period strong{color:#315e4a;font-size:11px}
-.talks-period>span{color:#75877e}
-html[data-theme="dark"] .talks-period{background:#172b25;border-color:#355448;color:#b7d0c1}
-html[data-theme="dark"] .talks-period strong{color:#c5e8d2}
-.talks-summary span{padding:6px 9px;border:1px solid #dfe9e5;border-radius:6px;background:#f8fbfa;color:#688077;font-size:10px}
-.talks-summary strong{color:#32664f;font-size:11px}
-.talks-table-wrap{border:1px solid #e3ece8;border-radius:8px}
+.talks-period{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 11px;padding:9px 11px;border:1px solid color-mix(in srgb,var(--info) 22%,var(--line));border-radius:8px;background:var(--info-bg);color:var(--muted);font-size:10px}
+.talks-period strong{color:var(--info);font-size:11px}
+.talks-period>span{color:var(--muted)}
+.talks-summary span{padding:6px 9px;border:1px solid color-mix(in srgb,var(--info) 20%,var(--line));border-radius:6px;background:var(--info-bg);color:var(--muted);font-size:10px}
+.talks-summary strong{color:var(--info);font-size:11px}
+.talks-table-wrap{border:1px solid var(--line);border-radius:8px}
 .talks-table{min-width:1050px}
-.talks-table th{background:#eff6f3;color:#557568}
+.talks-table th{background:var(--info-bg);color:var(--info)}
 .talks-table td{vertical-align:middle}
-.talk-date{display:grid;gap:2px;white-space:nowrap;color:#436957}.talk-date small{color:#75877e;font-size:9px;font-weight:650;text-transform:capitalize}.talk-date strong{font-size:11px;font-weight:800}
-.talk-topic{min-width:260px;color:#344f43;font-size:11px;font-weight:600}
+.talk-date{display:grid;gap:2px;white-space:nowrap;color:var(--info)}.talk-date small{color:var(--muted);font-size:9px;font-weight:650;text-transform:capitalize}.talk-date strong{font-size:11px;font-weight:800}
+.talk-topic{min-width:260px;color:var(--ink);font-size:11px;font-weight:600}
 .talk-execution-form{display:grid;grid-template-columns:132px 120px minmax(170px,1fr) auto;align-items:center;gap:7px;min-width:580px}
 .talk-execution-form .field{min-height:33px;padding:6px 8px;font-size:10px}
 .talk-participant-input{width:64px;min-width:64px;text-align:center;font-variant-numeric:tabular-nums}
-.talk-status-toggle{position:relative;display:inline-flex;align-items:center;gap:8px;min-height:36px;color:#65766c;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap}
+.talk-status-toggle{position:relative;display:inline-flex;align-items:center;gap:8px;min-height:36px;color:var(--muted);font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap}
 .talk-status-toggle input{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-.talk-status-mark{display:grid;place-items:center;width:19px;height:19px;flex:none;border:1.5px solid #aebdb3;border-radius:5px;background:#fff;color:#fff;transition:background .14s ease,border-color .14s ease}
+.talk-status-mark{display:grid;place-items:center;width:19px;height:19px;flex:none;border:1.5px solid var(--line-strong);border-radius:5px;background:var(--surface);color:#fff;transition:background .14s ease,border-color .14s ease}
 .talk-status-mark::after{content:"✓";font-size:13px;font-weight:900;line-height:1;opacity:0;transform:scale(.7);transition:opacity .14s ease,transform .14s ease}
-.talk-status-toggle input:checked+.talk-status-mark{border-color:var(--accent);background:var(--accent)}
+.talk-status-toggle input:checked+.talk-status-mark{border-color:var(--success);background:var(--success)}
 .talk-status-toggle input:checked+.talk-status-mark::after{opacity:1;transform:scale(1)}
-.talk-status-toggle input:focus-visible+.talk-status-mark{outline:3px solid color-mix(in srgb,var(--accent) 28%,transparent);outline-offset:2px}
-.talk-status-toggle:has(input:checked){color:#2d7550}
-.talk-participants{display:flex;align-items:baseline;justify-content:center;gap:4px;min-height:34px;padding:7px 8px;border:1px solid #e1e9e3;border-radius:7px;background:#f7faf8;color:#395e49;font-variant-numeric:tabular-nums;white-space:nowrap}
+.talk-status-toggle input:focus-visible+.talk-status-mark{outline:3px solid color-mix(in srgb,var(--success) 28%,transparent);outline-offset:2px}
+.talk-status-toggle:has(input:checked){color:var(--success)}
+.talk-participants{display:flex;align-items:baseline;justify-content:center;gap:4px;min-height:34px;padding:7px 8px;border:1px solid color-mix(in srgb,var(--info) 22%,var(--line));border-radius:7px;background:var(--info-bg);color:var(--info);font-variant-numeric:tabular-nums;white-space:nowrap}
 .talk-participants strong{font-size:12px;font-weight:800}
-.talk-participants small{color:#77887e;font-size:9px}
-html[data-theme="dark"] .talk-status-toggle{color:#bdcfc3}
-html[data-theme="dark"] .talk-status-mark{border-color:#587263;background:#172820}
-html[data-theme="dark"] .talk-status-toggle input:checked+.talk-status-mark{border-color:var(--accent);background:var(--accent)}
-html[data-theme="dark"] .talk-participants{border-color:#355144;background:#172820;color:#c4e6d0}
-html[data-theme="dark"] .talk-participants small{color:#9eb7aa}
-html[data-theme="dark"] .group-talk-panel[open]>.group-panel-summary{background:#172b27}
-html[data-theme="dark"] .talks-intro{background:#152a24;border-color:#355448}
-html[data-theme="dark"] .talks-intro strong{color:#b9e2cb}
-html[data-theme="dark"] .talks-intro p{color:#a7c1b2}
-html[data-theme="dark"] .talks-summary span{background:#172a24;border-color:#355448;color:#adc3b7}
-html[data-theme="dark"] .talks-summary strong{color:#b9e2cb}
-html[data-theme="dark"] .talks-table th{background:#1b3029;color:#b7d0c1}
-html[data-theme="dark"] .talk-topic{color:#d1e2d8}
+.talk-participants small{color:var(--muted);font-size:9px}
+html[data-theme="dark"] .talks-intro strong,
+html[data-theme="dark"] .talks-period strong,
+html[data-theme="dark"] .talks-summary strong,
+html[data-theme="dark"] .talks-table th,
+html[data-theme="dark"] .talk-date,
+html[data-theme="dark"] .talk-participants{color:#b6d9ee}
+html[data-theme="dark"] .talk-participants{border-color:#355a70}
+html[data-theme="dark"] .talk-status-mark{background:var(--surface);border-color:var(--line-strong)}
+html[data-theme="dark"] .talk-status-toggle input:checked+.talk-status-mark{border-color:var(--success);background:var(--success)}
+html[data-theme="dark"] .talk-topic{color:var(--ink)}
 @media(max-width:760px){.talks-intro{align-items:stretch;flex-direction:column}.talks-intro form,.talks-intro .btn{width:100%}.talk-execution-form{grid-template-columns:repeat(2,minmax(0,1fr));min-width:0}.talk-execution-form input[name="observations"],.talk-execution-form>button{grid-column:1/-1}.talk-execution-form>button{width:100%}}
 
 @media(max-width:850px){.progress-grid{grid-template-columns:1fr;gap:13px}.roster-toolbar{flex-direction:column}.roster-upload{width:100%;max-width:none}.roster-upload .field{flex:1}.course-row-status{grid-template-columns:1fr}}
