@@ -44,6 +44,25 @@
     </div>
 </div>
 
+<section class="card cycle-progress">
+    <div class="cycle-progress-heading">
+        <div><p class="eyebrow">Seguimiento del periodo</p><h2>Avance de configuración</h2></div>
+        <span class="muted small">Según cursos y modalidades registrados</span>
+    </div>
+    <div class="cycle-progress-grid">
+        <div>
+            <div class="cycle-progress-label"><span>Mallas curriculares vinculadas</span><strong>{{ $curriculumAssignedCount }} / {{ $courseCount }}</strong></div>
+            <div class="cycle-progress-track" role="progressbar" aria-label="Cursos con malla vinculada" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $curriculumPercent }}"><span style="width:{{ $curriculumPercent }}%"></span></div>
+            <small>{{ $curriculumPercent }}% de cursos</small>
+        </div>
+        <div>
+            <div class="cycle-progress-label"><span>Horarios configurados</span><strong>{{ $configuredModalityCount }} / {{ $modalityCount }}</strong></div>
+            <div class="cycle-progress-track" role="progressbar" aria-label="Modalidades con horario configurado" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $schedulePercent }}"><span style="width:{{ $schedulePercent }}%"></span></div>
+            <small>{{ $schedulePercent }}% de modalidades con fechas y horario de clase</small>
+        </div>
+    </div>
+</section>
+
 <section class="card">
     <div class="card-head">
         <div><h2>Grupos</h2></div>
@@ -59,6 +78,8 @@
                         <span><x-icon name="clock" size="12" /> {{ $group->assigned_at?->format('d/m/Y') ?? 'Sin fecha de asignación' }}</span>
                         <span>·</span>
                         <span><x-icon name="book-open" size="12" /> {{ $group->assignments_count }} {{ $group->assignments_count === 1 ? 'curso' : 'cursos' }}</span>
+                        <span>·</span>
+                        <span><x-icon name="users" size="12" /> {{ $group->students_count }} alumnos</span>
                     </div>
                 </div>
             </div>
@@ -159,6 +180,21 @@
         <div class="dialog-footer"><button class="btn btn-secondary" type="button" data-modal-close>Cancelar</button><button class="btn" type="submit"><x-icon name="check" /> Guardar cambios</button></div>
     </form>
 </dialog>
+@push('styles')
+<style>
+.cycle-progress{margin-bottom:15px}
+.cycle-progress-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:15px}
+.cycle-progress-heading h2{margin:2px 0 0;font-size:17px}
+.cycle-progress-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.cycle-progress-label{display:flex;justify-content:space-between;gap:8px;margin-bottom:7px;font-size:12px;color:#4d626e}
+.cycle-progress-label strong{color:#274d61;white-space:nowrap}
+.cycle-progress-track{height:8px;overflow:hidden;border-radius:99px;background:#e8eef1}
+.cycle-progress-track span{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#3a8cab,#47a88e)}
+.cycle-progress-grid small{display:block;margin-top:6px;color:#76868e;font-size:10px}
+@media(max-width:650px){.cycle-progress-grid{grid-template-columns:1fr}.cycle-progress-heading{align-items:flex-start;flex-direction:column}}
+</style>
+@endpush
+
 @endsection
 
 @push('styles')
