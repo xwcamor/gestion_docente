@@ -11,6 +11,7 @@ use App\Http\Controllers\CourseModalityController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\StudentImportController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\CourseDistributionImportController;
 use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\AdminProfessorController;
 use App\Http\Controllers\EvaluationController;
@@ -29,6 +30,11 @@ Route::middleware(['auth', 'professor'])->group(function () {
 
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
+    // Importación de distribución académica desde Excel.
+    Route::get('/distribucion/importar', [CourseDistributionImportController::class, 'create'])->name('distribution.create');
+    Route::post('/distribucion/importar/previsualizar', [CourseDistributionImportController::class, 'preview'])->name('distribution.preview');
+    Route::post('/distribucion/importar/confirmar', [CourseDistributionImportController::class, 'confirm'])->name('distribution.confirm');
+
 
     Route::get('/ciclos', [CycleController::class, 'index'])->name('cycles.index');
     Route::get('/ciclos/crear', [CycleController::class, 'create'])->name('cycles.create');
