@@ -13,7 +13,7 @@
     <div>
         <p class="eyebrow">Ciclo {{ $cycle->academic_year }} · {{ $cycle->cycle_code }}</p>
         <h1>Crear grupo</h1>
-        <p class="subhead">Registra una sección o grupo para organizar los cursos de este ciclo.</p>
+        <p class="subhead">Registra el nombre del grupo. Su horario se configura después, desde el detalle del grupo.</p>
     </div>
 </div>
 
@@ -26,11 +26,7 @@
                 <input class="field" id="name" name="name" value="{{ old('name') }}" required maxlength="100" autofocus placeholder="Ej. Grupo 01">
                 @error('name')<p class="help field-error">{{ $message }}</p>@enderror
             </div>
-            <div>
-                <label for="assigned_at">Fecha de asignación</label>
-                <input class="field" id="assigned_at" type="date" name="assigned_at" value="{{ old('assigned_at') }}">
-                @error('assigned_at')<p class="help field-error">{{ $message }}</p>@enderror
-            </div>
+
         </div>
 
         <div class="form-actions">
