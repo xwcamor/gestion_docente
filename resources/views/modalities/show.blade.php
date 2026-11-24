@@ -44,49 +44,146 @@
     @endif
 </section>
 
+@php
+    $scheduleWeekdays = [1 => 'Lunes', 2 => 'Martes', 3 => 'Miércoles', 4 => 'Jueves', 5 => 'Viernes', 6 => 'Sábado', 7 => 'Domingo'];
+    $scheduleRows = old('schedules');
+    if (!is_array($scheduleRows)) {
+        $scheduleRows = $modality->schedules->where('block_type', 'CLASS')
+            ->sortBy(fn ($schedule) => sprintf('%d|%s', $schedule->day_of_week, $schedule->start_time))
+            ->map(fn ($schedule) => [
+                'day_of_week' => $schedule->day_of_week,
+                'start_time' => substr($schedule->start_time, 0, 5),
+                'end_time' => substr($schedule->end_time, 0, 5),
+                'classroom' => $schedule->classroom,
+                'instruction_type' => $schedule->instruction_type ?? 'THEORY',
+            ])->values()->all();
+    }
+    if (!$scheduleRows) {
+        $scheduleRows = [['day_of_week' => '', 'start_time' => '', 'end_time' => '', 'classroom' => '', 'instruction_type' => 'THEORY']];
+    }
+@endphp
 <section class="card" id="calendar">
-    <div class="card-head"><div><h2>Calendario y horario</h2><p class="card-description">Configura el periodo y los días de clase. Las sesiones se calculan automáticamente.</p></div><span class="badge {{ $modality->modality === 'TEC' ? 'badge-blue' : 'badge-green' }}">{{ $modality->label }}</span></div>
-    <details class="panel">
-        <summary>Ver o modificar configuración del calendario</summary>
+    <div class="card-head">
+        <div>
+            <h2>Horario y calendario</h2>
+            <p class="card-description">Periodo {{ $assignment->group->cycle->academic_year }}-{{ $assignment->group->cycle->cycle_code }} · {{ $assignment->group->cycle->start_date?->format('d/m/Y') }} al {{ $assignment->group->cycle->end_date?->format('d/m/Y') }}</p>
+        </div>
+        <span class="badge {{ $modality->modality === 'TEC' ? 'badge-blue' : 'badge-green' }}">{{ $modality->label }}</span>
+    </div>
+
+    <div class="weekly-load-summary">
+        <div class="weekly-load-head">
+            <div><strong>Resumen de carga semanal</strong><p>Solo teoría y laboratorio. Las horas se calculan desde los bloques ingresados.</p></div>
+            <span class="weekly-hours-total">{{ number_format($weeklyHoursCalculated, 2) }} h/semana</span>
+        </div>
+        <div class="weekly-load-grid">
+            @foreach($scheduleWeekdays as $day => $dayLabel)
+                <div class="weekly-load-day">
+                    <strong>{{ $dayLabel }}</strong>
+                    @forelse($schedulesByDay->get($day, collect()) as $schedule)
+                        <div class="weekly-load-block {{ ($schedule->instruction_type ?? 'THEORY') === 'LAB' ? 'is-lab' : 'is-theory' }}">
+                            <span>{{ substr($schedule->start_time, 0, 5) }}–{{ substr($schedule->end_time, 0, 5) }}</span>
+                            <b>{{ ($schedule->instruction_type ?? 'THEORY') === 'LAB' ? 'LAB' : 'Teoría' }}</b>
+                            <small>{{ $schedule->classroom ?: 'Ambiente pendiente' }}</small>
+                        </div>
+                    @empty
+                        <span class="weekly-load-empty">Sin bloque</span>
+                    @endforelse
+                </div>
+            @endforeach
+        </div>
+    </div>
+
+    <details class="panel schedule-config-panel">
+        <summary>Configurar fechas y bloques de clase</summary>
         <div class="panel-body">
-            <form method="POST" action="{{ route('modalities.update', $modality) }}">
-                @csrf @method('PUT')
-                <p class="help">Estas son las fechas reales de dictado de este curso/modalidad. Pueden terminar antes del fin del rango general del ciclo; el calendario solo generará sesiones dentro de estas fechas.</p>
-            <div class="form-row-3">
-                    <div><label for="nrc">NRC de esta modalidad</label><input class="field" id="nrc" name="nrc" value="{{ old('nrc', $modality->nrc) }}"></div>
+            <form id="modality-schedule-form" method="POST" action="{{ route('modalities.update', $modality) }}">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="schedules_present" value="1">
+                <div class="form-row-3">
+                    <div><label for="nrc">NRC</label><input class="field" id="nrc" name="nrc" value="{{ old('nrc', $modality->nrc) }}" maxlength="30"></div>
                     <div><label for="start_date">Fecha de inicio</label><input class="field" id="start_date" type="date" name="start_date" value="{{ old('start_date', $modality->start_date?->format('Y-m-d')) }}"></div>
                     <div><label for="end_date">Fecha de fin</label><input class="field" id="end_date" type="date" name="end_date" value="{{ old('end_date', $modality->end_date?->format('Y-m-d')) }}"></div>
                 </div>
-                <div class="form-row">
-                    <div><label for="total_hours">Horas semanales declaradas</label><input class="field" style="max-width:240px" id="total_hours" type="number" step=".5" min="0" name="total_hours" value="{{ old('total_hours', $modality->total_hours) }}"></div>
-                    <div><label>Aula / ambiente</label><input class="field" name="classroom" value="{{ old('classroom', $modality->schedules->first()?->classroom) }}" placeholder="Ej. Laboratorio 204"></div>
+
+                <div class="schedule-editor-heading">
+                    <div><h3>Bloques semanales</h3><p class="help">Agrega una fila por cada bloque. Cada día puede tener varias horas, ambientes y tipos diferentes.</p></div>
+                    <span class="schedule-hours-chip">Total calculado: <strong id="weekly-hours-live">{{ number_format($weeklyHoursCalculated, 2) }} h</strong></span>
                 </div>
-                <label>Días de clase</label>
-                <div class="weekday-list">
-                    @foreach([1=>'Lun',2=>'Mar',3=>'Mié',4=>'Jue',5=>'Vie',6=>'Sáb',7=>'Dom'] as $day=>$label)
-                        <label class="weekday"><input type="checkbox" name="days[]" value="{{ $day }}" {{ $modality->schedules->contains('day_of_week', $day) ? 'checked' : '' }}> {{ $label }}</label>
+                <div id="schedule-editor" class="schedule-editor">
+                    @foreach($scheduleRows as $index => $scheduleRow)
+                        <div class="schedule-row" data-schedule-row>
+                            <div>
+                                <label for="schedule-day-{{ $index }}">Día</label>
+                                <select class="field" id="schedule-day-{{ $index }}" name="schedules[{{ $index }}][day_of_week]" data-schedule-input data-schedule-day>
+                                    <option value="">Seleccionar</option>
+                                    @foreach($scheduleWeekdays as $day => $dayLabel)
+                                        <option value="{{ $day }}" @selected((string)($scheduleRow['day_of_week'] ?? '') === (string)$day)>{{ $dayLabel }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label for="schedule-type-{{ $index }}">Tipo</label>
+                                <select class="field" id="schedule-type-{{ $index }}" name="schedules[{{ $index }}][instruction_type]" data-schedule-input>
+                                    <option value="THEORY" @selected(($scheduleRow['instruction_type'] ?? 'THEORY') === 'THEORY')>Teoría</option>
+                                    <option value="LAB" @selected(($scheduleRow['instruction_type'] ?? 'THEORY') === 'LAB')>Laboratorio</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="schedule-start-{{ $index }}">Desde</label>
+                                <input class="field" id="schedule-start-{{ $index }}" type="time" name="schedules[{{ $index }}][start_time]" value="{{ $scheduleRow['start_time'] ?? '' }}" data-schedule-input data-schedule-start>
+                            </div>
+                            <div>
+                                <label for="schedule-end-{{ $index }}">Hasta</label>
+                                <input class="field" id="schedule-end-{{ $index }}" type="time" name="schedules[{{ $index }}][end_time]" value="{{ $scheduleRow['end_time'] ?? '' }}" data-schedule-input data-schedule-end>
+                            </div>
+                            <div>
+                                <label for="schedule-room-{{ $index }}">Aula / ambiente</label>
+                                <input class="field" id="schedule-room-{{ $index }}" name="schedules[{{ $index }}][classroom]" value="{{ $scheduleRow['classroom'] ?? '' }}" maxlength="100" placeholder="Ej. LAB 103" data-schedule-input>
+                            </div>
+                            <div class="schedule-remove-cell">
+                                <label aria-hidden="true">&nbsp;</label>
+                                <button class="btn btn-danger btn-sm" type="button" data-remove-schedule title="Quitar bloque"><x-icon name="x" /> Quitar</button>
+                            </div>
+                        </div>
                     @endforeach
                 </div>
-                <div class="form-row" style="margin-top:12px">
-                    <div><label for="start_time">Hora de inicio (común)</label><input class="field" id="start_time" type="time" name="start_time" value="{{ old('start_time', $modality->schedules->first()?->start_time ? substr($modality->schedules->first()->start_time, 0, 5) : '') }}"></div>
-                    <div><label for="end_time">Hora de fin</label><input class="field" id="end_time" type="time" name="end_time" value="{{ old('end_time', $modality->schedules->first()?->end_time ? substr($modality->schedules->first()->end_time, 0, 5) : '') }}"></div>
+                <div class="actions schedule-editor-actions">
+                    <button class="btn btn-secondary btn-sm" id="add-schedule" type="button"><x-icon name="plus" /> Agregar bloque</button>
                 </div>
-                <p class="help">Esta pantalla utiliza un horario común para los días seleccionados. Al guardar, el sistema recalcula las sesiones de esta modalidad.</p>
-<div class="calendar-preview" id="calendar-preview" aria-live="polite">
-<div class="calendar-preview-head"><div><strong>Vista previa automática</strong><p class="help">Solo cuenta tus días de clase y excluye feriados.</p></div><span class="badge badge-blue" id="preview-count">Pendiente</span></div>
-<div class="calendar-preview-stats"><div><small>Primera clase</small><strong id="preview-first">—</strong></div><div><small>Última clase efectiva</small><strong id="preview-last">—</strong></div><div><small>Feriados excluidos</small><strong id="preview-holidays">0</strong></div></div>
-<p class="help" id="preview-note">Selecciona las fechas y los días para calcular.</p>
-<button class="btn btn-secondary btn-sm" type="button" id="adjust-end-date" disabled><x-icon name="calendar-check" /> Usar última clase como fecha final</button>
-<details class="preview-details"><summary>Ver fechas calculadas</summary><div id="preview-dates" class="preview-date-list"></div></details>
-</div>
-                <div class="form-actions"><span class="help">Los documentos anteriores se marcarán para regeneración si cambian los datos.</span><button class="btn" type="submit"><x-icon name="check" /> Guardar y recalcular calendario</button></div>
+
+                <div class="calendar-preview" id="calendar-preview" aria-live="polite">
+                    <div class="calendar-preview-head">
+                        <div><strong>Resumen de fechas calculadas</strong><p class="help">Aquí solo se muestran fechas, horas calculadas y feriados excluidos; no se repite el nombre del curso.</p></div>
+                        <span class="badge badge-blue" id="preview-count">Pendiente</span>
+                    </div>
+                    <div class="calendar-preview-stats">
+                        <div><small>Primera clase</small><strong id="preview-first">—</strong></div>
+                        <div><small>Última clase efectiva</small><strong id="preview-last">—</strong></div>
+                        <div><small>Horas por semana</small><strong id="preview-weekly-hours">{{ number_format($weeklyHoursCalculated, 2) }} h</strong></div>
+                        <div><small>Feriados excluidos</small><strong id="preview-holidays">0</strong></div>
+                    </div>
+                    <p class="help" id="preview-note">Indica las fechas y registra los bloques para calcular.</p>
+                    <div id="preview-holidays-list" class="preview-holidays-list"></div>
+                    <button class="btn btn-secondary btn-sm" type="button" id="adjust-end-date" disabled><x-icon name="calendar-check" /> Usar última clase como fecha final</button>
+                    <details class="preview-details"><summary>Ver fechas programadas</summary><div id="preview-dates" class="preview-date-list"></div></details>
+                </div>
+                <div class="form-actions">
+                    <span class="help">Las horas se calculan automáticamente. Los feriados bloqueantes se marcarán en rojo y no generarán clase.</span>
+                    <button class="btn" type="submit"><x-icon name="check" /> Guardar y recalcular</button>
+                </div>
             </form>
         </div>
     </details>
-    @if($modality->start_date && $modality->end_date && $modality->schedules->isEmpty())
-        <div class="alert alert-warning mt-16">Ya hay fechas registradas, pero falta al menos un día y horario de clase para calcular las sesiones.</div>
+
+    @if($modality->start_date && $modality->end_date && !$hasClassSchedule)
+        <div class="alert alert-warning mt-16">Ya hay fechas registradas, pero falta agregar bloques de teoría o laboratorio.</div>
     @endif
-    <form method="POST" action="{{ route('modalities.rebuild', $modality) }}" class="mt-16" data-confirm="Se volverán a calcular las sesiones de esta modalidad con la configuración y los feriados actuales. ¿Deseas continuar?">@csrf<button class="btn btn-secondary btn-sm" type="submit"><x-icon name="layers" /> Recalcular calendario ahora</button></form>
+    <form method="POST" action="{{ route('modalities.rebuild', $modality) }}" class="mt-16" data-confirm="Se volverán a calcular las sesiones con los bloques de teoría/laboratorio y los feriados actuales. ¿Deseas continuar?">
+        @csrf
+        <button class="btn btn-secondary btn-sm" type="submit"><x-icon name="layers" /> Recalcular calendario</button>
+    </form>
 </section>
 
 <section class="card" id="students">
@@ -186,6 +283,52 @@
 .detail-progress-track span{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#3a8cab,#47a88e)}
 .detail-progress-row small{display:block;margin-top:6px;color:#76868e;font-size:10px}
 @media(max-width:600px){.detail-progress-card{padding:14px}.detail-progress-label{align-items:flex-start;flex-direction:column;gap:3px}}
+
+/* Carga semanal: bloques independientes por día */
+.weekly-load-summary{margin:0 0 15px;padding:14px;border:1px solid #d7e6ec;border-radius:9px;background:linear-gradient(135deg,#f2f8fa,#fbfdfd)}
+.weekly-load-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:12px}
+.weekly-load-head strong{display:block;color:#274b5b;font-size:13px}
+.weekly-load-head p{margin:4px 0 0;color:#66808b;font-size:10px;line-height:1.45}
+.weekly-hours-total,.schedule-hours-chip{display:inline-flex;align-items:center;gap:5px;padding:7px 10px;border:1px solid #c6dce5;border-radius:7px;background:#fff;color:#23657d;font-size:12px;font-weight:750;white-space:nowrap}
+.weekly-load-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px}
+.weekly-load-day{min-width:0;min-height:78px;padding:8px;border:1px solid #deeaee;border-radius:7px;background:#fff}
+.weekly-load-day>strong{display:block;margin-bottom:7px;color:#486b7a;font-size:10px}
+.weekly-load-block{display:grid;gap:2px;margin:0 0 5px;padding:7px;border-radius:6px;font-size:9px;line-height:1.35}
+.weekly-load-block:last-child{margin-bottom:0}
+.weekly-load-block span{font-weight:750}
+.weekly-load-block b{font-size:9px}
+.weekly-load-block small{color:inherit;opacity:.83;overflow-wrap:anywhere}
+.weekly-load-block.is-theory{border:1px solid #cfe2eb;background:#edf6fa;color:#2e667d}
+.weekly-load-block.is-lab{border:1px solid #cfe4d5;background:#eff7f1;color:#326b49}
+.weekly-load-empty{color:#a0aaa4;font-size:9px}
+.schedule-config-panel{margin-top:10px}
+.schedule-editor-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px 0 9px}
+.schedule-editor-heading h3{margin:0 0 3px}
+.schedule-editor-heading .help{margin:0}
+.schedule-editor{display:grid;gap:8px}
+.schedule-row{display:grid;grid-template-columns:1fr 1.05fr .85fr .85fr 1.25fr auto;align-items:end;gap:9px;padding:10px;border:1px solid #e0e8e5;border-radius:8px;background:#fbfcfb}
+.schedule-row label{margin-top:0;font-size:10px}
+.schedule-row .field{min-height:37px;font-size:11px}
+.schedule-remove-cell .btn{min-height:37px}
+.schedule-editor-actions{margin:9px 0 0}
+.calendar-preview{margin-top:18px;padding:16px;border:1px solid #cfe1e9;border-radius:9px;background:linear-gradient(135deg,#eff7fa,#f8fbfc)}
+.calendar-preview-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.calendar-preview-head strong{color:#274b5b;font-size:13px}
+.calendar-preview-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:13px 0}
+.calendar-preview-stats>div{padding:11px;background:#fff;border:1px solid #d9e7ed;border-radius:7px}
+.calendar-preview-stats small{display:block;color:#668392;font-size:10px;margin-bottom:5px}
+.calendar-preview-stats strong{font-size:14px;color:#28677d}
+.preview-details{margin-top:12px;border-top:1px solid #d8e6ec;padding-top:10px}
+.preview-details summary{cursor:pointer;font-size:11px;font-weight:700;color:#35657a}
+.preview-date-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px;margin-top:10px}
+.preview-date{font-size:10px;padding:7px 8px;border-radius:6px;background:#fff;border:1px solid #dce8ed;color:#456b7c}
+.preview-holidays-list{display:grid;gap:6px;margin:10px 0}
+.preview-holiday-warning{padding:9px 11px;border:1px solid #efc4c0;border-left:3px solid #c84840;border-radius:6px;background:#fff1f0;color:#963b35;font-size:10px;line-height:1.45}
+.preview-holiday-warning strong{font-weight:800}
+.preview-no-holidays{padding:8px 10px;border:1px solid #cfe4d5;border-radius:6px;background:#eff8f1;color:#38694a;font-size:10px}
+@media(max-width:1050px){.weekly-load-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.schedule-row{grid-template-columns:repeat(3,minmax(0,1fr))}.schedule-remove-cell{grid-column:3}}
+@media(max-width:650px){.weekly-load-head,.schedule-editor-heading{align-items:stretch;flex-direction:column}.weekly-load-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.schedule-row{grid-template-columns:repeat(2,minmax(0,1fr))}.schedule-remove-cell{grid-column:2}.calendar-preview-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:390px){.weekly-load-grid{grid-template-columns:1fr}.schedule-row{grid-template-columns:1fr}.schedule-remove-cell{grid-column:1}.calendar-preview-stats{grid-template-columns:1fr}}
 </style>
 @endpush
 
@@ -220,52 +363,153 @@
 @push('scripts')
 <script>
 (() => {
-    const form = document.querySelector('#calendar .panel-body form');
+    const form = document.getElementById('modality-schedule-form');
     if (!form) return;
-    const holidays = new Set(@json($holidayDates));
+    const editor = document.getElementById('schedule-editor');
+    const addButton = document.getElementById('add-schedule');
+    const holidays = new Map(@json($blockedHolidays).map(item => [item.date, item.name]));
     const startInput = form.querySelector('[name="start_date"]');
     const endInput = form.querySelector('[name="end_date"]');
-    const dayInputs = [...form.querySelectorAll('[name="days[]"]')];
     const first = document.getElementById('preview-first');
     const last = document.getElementById('preview-last');
     const count = document.getElementById('preview-count');
     const holidayCount = document.getElementById('preview-holidays');
+    const weeklyLive = document.getElementById('weekly-hours-live');
+    const weeklyPreview = document.getElementById('preview-weekly-hours');
     const note = document.getElementById('preview-note');
     const list = document.getElementById('preview-dates');
+    const holidayList = document.getElementById('preview-holidays-list');
     const adjust = document.getElementById('adjust-end-date');
     let lastTeachingDate = null;
+    let nextIndex = Math.max(-1, ...[...editor.querySelectorAll('[name^="schedules["]')].map(input => {
+        const match = input.name.match(/^schedules\[(\d+)\]/);
+        return match ? Number(match[1]) : -1;
+    })) + 1;
+
     const fmt = date => new Intl.DateTimeFormat('es-PE',{day:'2-digit',month:'2-digit',year:'numeric'}).format(date);
     const parse = value => value ? new Date(value+'T12:00:00') : null;
-    const calculate = () => {
-        list.innerHTML = ''; lastTeachingDate = null;
-        const from = parse(startInput.value), to = parse(endInput.value);
-        const days = new Set(dayInputs.filter(input=>input.checked).map(input=>Number(input.value)));
-        if (!from || !to || from > to || !days.size) {
-            first.textContent='—';last.textContent='—';count.textContent='Pendiente';holidayCount.textContent='0';
-            note.textContent='Indica un rango válido y selecciona al menos un día de clase.';adjust.disabled=true;return;
+    const dateKey = date => [date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-');
+    const formatHours = minutes => (minutes/60).toLocaleString('es-PE',{minimumFractionDigits:0,maximumFractionDigits:2})+' h';
+
+    const blocks = () => [...editor.querySelectorAll('[data-schedule-row]')].map(row => {
+        const day = Number(row.querySelector('[data-schedule-day]')?.value || 0);
+        const start = row.querySelector('[data-schedule-start]')?.value || '';
+        const end = row.querySelector('[data-schedule-end]')?.value || '';
+        if (!day || !start || !end || end <= start) return null;
+        const [sh,sm] = start.split(':').map(Number);
+        const [eh,em] = end.split(':').map(Number);
+        return {day,start,end,minutes:(eh*60+em)-(sh*60+sm)};
+    }).filter(Boolean);
+
+    const rowTemplate = index => `
+        <div class="schedule-row" data-schedule-row>
+            <div><label for="schedule-day-${index}">Día</label><select class="field" id="schedule-day-${index}" name="schedules[${index}][day_of_week]" data-schedule-input data-schedule-day>
+                <option value="">Seleccionar</option><option value="1">Lunes</option><option value="2">Martes</option><option value="3">Miércoles</option><option value="4">Jueves</option><option value="5">Viernes</option><option value="6">Sábado</option><option value="7">Domingo</option>
+            </select></div>
+            <div><label for="schedule-type-${index}">Tipo</label><select class="field" id="schedule-type-${index}" name="schedules[${index}][instruction_type]" data-schedule-input><option value="THEORY">Teoría</option><option value="LAB">Laboratorio</option></select></div>
+            <div><label for="schedule-start-${index}">Desde</label><input class="field" id="schedule-start-${index}" type="time" name="schedules[${index}][start_time]" data-schedule-input data-schedule-start></div>
+            <div><label for="schedule-end-${index}">Hasta</label><input class="field" id="schedule-end-${index}" type="time" name="schedules[${index}][end_time]" data-schedule-input data-schedule-end></div>
+            <div><label for="schedule-room-${index}">Aula / ambiente</label><input class="field" id="schedule-room-${index}" name="schedules[${index}][classroom]" maxlength="100" placeholder="Ej. LAB 103" data-schedule-input></div>
+            <div class="schedule-remove-cell"><label aria-hidden="true">&nbsp;</label><button class="btn btn-danger btn-sm" type="button" data-remove-schedule>× Quitar</button></div>
+        </div>`;
+
+    addButton?.addEventListener('click', () => {
+        editor.insertAdjacentHTML('beforeend', rowTemplate(nextIndex++));
+        calculate();
+    });
+    editor.addEventListener('click', event => {
+        const remove = event.target.closest('[data-remove-schedule]');
+        if (!remove) return;
+        remove.closest('[data-schedule-row]')?.remove();
+        calculate();
+    });
+    form.addEventListener('input', event => {
+        if (event.target.matches('[data-schedule-input], [name="start_date"], [name="end_date"]')) calculate();
+    });
+    form.addEventListener('change', event => {
+        if (event.target.matches('[data-schedule-input], [name="start_date"], [name="end_date"]')) calculate();
+    });
+
+    function calculate() {
+        list.innerHTML = '';
+        holidayList.innerHTML = '';
+        lastTeachingDate = null;
+        const from = parse(startInput.value);
+        const to = parse(endInput.value);
+        const currentBlocks = blocks();
+        const weeklyMinutes = currentBlocks.reduce((sum, block) => sum + block.minutes, 0);
+        weeklyLive.textContent = formatHours(weeklyMinutes);
+        weeklyPreview.textContent = formatHours(weeklyMinutes);
+
+        if (!from || !to || from > to || !currentBlocks.length) {
+            first.textContent = '—'; last.textContent = '—'; count.textContent = 'Pendiente'; holidayCount.textContent = '0';
+            note.textContent = 'Indica un rango válido y agrega bloques completos con día y horas.';
+            adjust.disabled = true;
+            return;
         }
-        let sessions=0,blocked=0,firstTeachingDate=null;
-        const cursor=new Date(from);
-        while(cursor<=to){
-            const isoDay = cursor.getDay() === 0 ? 7 : cursor.getDay();
-            if(days.has(isoDay)){
-                const key=[cursor.getFullYear(),String(cursor.getMonth()+1).padStart(2,'0'),String(cursor.getDate()).padStart(2,'0')].join('-');
-                const item=document.createElement('div');item.className='preview-date';
-                if(holidays.has(key)){blocked++;item.classList.add('holiday');item.textContent=fmt(cursor)+' · Feriado';}
-                else{sessions++;if(!firstTeachingDate)firstTeachingDate=new Date(cursor);lastTeachingDate=new Date(cursor);item.textContent=fmt(cursor)+' · Clase';}
-                list.appendChild(item);
+
+        const scheduledDates = new Map();
+        const excluded = new Map();
+        let sessions = 0;
+        const cursor = new Date(from);
+        while (cursor <= to) {
+            const key = dateKey(cursor);
+            const day = cursor.getDay() === 0 ? 7 : cursor.getDay();
+            const dayBlocks = currentBlocks.filter(block => block.day === day);
+            if (dayBlocks.length) {
+                if (holidays.has(key)) excluded.set(key,{date:new Date(cursor),name:holidays.get(key),blocks:dayBlocks.length});
+                else { scheduledDates.set(key,{date:new Date(cursor),blocks:dayBlocks.length}); sessions += dayBlocks.length; }
             }
             cursor.setDate(cursor.getDate()+1);
         }
-        first.textContent=firstTeachingDate?fmt(firstTeachingDate):'—';last.textContent=lastTeachingDate?fmt(lastTeachingDate):'—';
-        count.textContent=sessions+' clases';holidayCount.textContent=String(blocked);
-        const endKey=[to.getFullYear(),String(to.getMonth()+1).padStart(2,'0'),String(to.getDate()).padStart(2,'0')].join('-');
-        const endIsClassDay=days.has(to.getDay())&&!holidays.has(endKey);
-        note.textContent=sessions+' sesiones dentro del rango; '+blocked+' feriados excluidos.'+(!endIsClassDay&&lastTeachingDate?' La fecha final no es lectiva: la última clase efectiva será '+fmt(lastTeachingDate)+'.':'');
-        adjust.disabled=!lastTeachingDate||lastTeachingDate.getTime()===to.getTime();
-    };
-    [startInput,endInput,...dayInputs].forEach(input=>input.addEventListener('change',calculate));
-    adjust.addEventListener('click',()=>{if(lastTeachingDate){endInput.value=[lastTeachingDate.getFullYear(),String(lastTeachingDate.getMonth()+1).padStart(2,'0'),String(lastTeachingDate.getDate()).padStart(2,'0')].join('-');calculate();}});
+
+        const dates = [...scheduledDates.values()];
+        const excludedDates = [...excluded.values()];
+        const firstDate = dates[0]?.date || null;
+        const lastDate = dates[dates.length-1]?.date || null;
+        first.textContent = firstDate ? fmt(firstDate) : '—';
+        last.textContent = lastDate ? fmt(lastDate) : '—';
+        count.textContent = sessions+' bloques programados';
+        holidayCount.textContent = String(excludedDates.length);
+        lastTeachingDate = lastDate;
+
+        dates.forEach(item => {
+            const element = document.createElement('div');
+            element.className = 'preview-date';
+            element.textContent = fmt(item.date)+' · '+item.blocks+' bloque(s)';
+            list.appendChild(element);
+        });
+        if (excludedDates.length) {
+            excludedDates.forEach(item => {
+                const warning = document.createElement('div');
+                warning.className = 'preview-holiday-warning';
+                const strong = document.createElement('strong');
+                strong.textContent = fmt(item.date)+' · '+item.name;
+                const detail = document.createElement('span');
+                detail.textContent = ' — No se programará clase ('+item.blocks+' bloque(s) excluidos).';
+                warning.append(strong,detail);
+                holidayList.appendChild(warning);
+            });
+        } else {
+            const ok = document.createElement('div');
+            ok.className = 'preview-no-holidays';
+            ok.textContent = 'No hay feriados bloqueantes dentro de las fechas y días seleccionados.';
+            holidayList.appendChild(ok);
+        }
+
+        const endKey = dateKey(to);
+        const endDay = to.getDay() === 0 ? 7 : to.getDay();
+        const endIsClassDay = currentBlocks.some(block => block.day === endDay) && !holidays.has(endKey);
+        note.textContent = sessions+' bloques dentro del rango; '+excludedDates.length+' fecha(s) feriada(s) excluida(s).'
+            +(!endIsClassDay && lastTeachingDate ? ' La fecha final no es lectiva: la última clase efectiva será '+fmt(lastTeachingDate)+'.' : '');
+        adjust.disabled = !lastTeachingDate || lastTeachingDate.getTime() === to.getTime();
+    }
+
+    adjust.addEventListener('click', () => {
+        if (!lastTeachingDate) return;
+        endInput.value = [lastTeachingDate.getFullYear(),String(lastTeachingDate.getMonth()+1).padStart(2,'0'),String(lastTeachingDate.getDate()).padStart(2,'0')].join('-');
+        calculate();
+    });
     calculate();
 })();
 

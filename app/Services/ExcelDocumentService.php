@@ -80,7 +80,11 @@ class ExcelDocumentService
     {
         $cycle->loadMissing('groups');
         $modalities = CourseModality::query()
-            ->with(['assignment.course', 'assignment.group', 'schedules'])
+            ->with([
+                'assignment.course',
+                'assignment.group',
+                'schedules' => fn ($query) => $query->where('block_type', 'CLASS'),
+            ])
             ->whereHas('assignment.group', fn ($query) => $query->where('cycle_id', $cycle->id))
             ->get();
 
@@ -101,7 +105,7 @@ class ExcelDocumentService
                     $modality->assignment->course->code,
                     $modality->modality,
                     $modality->nrc,
-                    $schedule->block_type === 'ASYNC' ? 'Asincrónica' : 'Clase',
+                    ($schedule->instruction_type ?? 'THEORY') === 'LAB' ? 'Laboratorio' : 'Teoría',
                     $schedule->classroom,
                     $modality->start_date?->format('d/m/Y'),
                     $modality->end_date?->format('d/m/Y'),
@@ -128,7 +132,7 @@ class ExcelDocumentService
         $spreadsheet = $this->makeWorkbook(
             'Distribución de carga laboral',
             $cycle->academic_year.' · Ciclo '.$cycle->cycle_code.' · Rango general '.$cycle->start_date?->format('d/m/Y').' al '.$cycle->end_date?->format('d/m/Y'),
-            ['Día', 'Desde', 'Hasta', 'Grupo', 'Curso', 'Código', 'Modalidad', 'NRC', 'Tipo de bloque', 'Aula / ambiente', 'Inicio del curso', 'Fin del curso', 'Horas semanales declaradas'],
+            ['Día', 'Desde', 'Hasta', 'Grupo', 'Curso', 'Código', 'Modalidad', 'NRC', 'Tipo de enseñanza', 'Aula / ambiente', 'Inicio del curso', 'Fin del curso', 'Horas semanales calculadas'],
             $rows
         );
 

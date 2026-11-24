@@ -23,10 +23,15 @@ class CourseModalityController extends Controller
 
         $hasNrc = filled($modality->nrc);
         $hasCourseDates = $modality->start_date !== null && $modality->end_date !== null;
-        $hasAnySchedule = $modality->schedules->isNotEmpty();
-        $hasClassSchedule = $modality->schedules->contains(
-            fn ($schedule) => $schedule->block_type === 'CLASS'
-        );
+        $classSchedules = $modality->schedules
+            ->where('block_type', 'CLASS')
+            ->sortBy(fn ($schedule) => sprintf('%d|%s', $schedule->day_of_week, $schedule->start_time))
+            ->values();
+        $hasAnySchedule = $classSchedules->isNotEmpty();
+        $hasClassSchedule = $hasAnySchedule;
+        $schedulesByDay = $classSchedules->groupBy('day_of_week');
+        $weeklyMinutes = $classSchedules->sum(fn ($schedule) => $schedule->duration_minutes);
+        $weeklyHoursCalculated = round($weeklyMinutes / 60, 2);
         // Los bloques asincrónicos no necesitan generar sesiones de clase.
         $hasGeneratedCalendar = $hasClassSchedule
             ? $scheduledSessionCount > 0
@@ -68,20 +73,35 @@ class CourseModalityController extends Controller
             ->paginate(10, ['*'], 'documents_page')
             ->withQueryString();
 
-        $holidayDates = Holiday::query()
+        $blockedHolidaysQuery = Holiday::query()
             ->where('blocks_classes', true)
             ->where(function ($query) use ($modality) {
                 $query->whereNull('professor_id')
                     ->orWhere('professor_id', $modality->assignment->group->professor_id);
-            })
-            ->pluck('holiday_date')
-            ->map(fn ($date) => Carbon::parse($date)->toDateString())
+            });
+        if ($modality->start_date && $modality->end_date) {
+            $blockedHolidaysQuery->whereBetween('holiday_date', [
+                $modality->start_date->toDateString(),
+                $modality->end_date->toDateString(),
+            ]);
+        }
+        $blockedHolidays = $blockedHolidaysQuery
+            ->orderBy('holiday_date')
+            ->get(['holiday_date', 'name'])
+            ->map(fn ($holiday) => [
+                'date' => Carbon::parse($holiday->holiday_date)->toDateString(),
+                'name' => $holiday->name,
+            ])
             ->values();
+        $holidayDates = $blockedHolidays->pluck('date')->all();
 
         return view('modalities.show', compact(
             'modality',
             'import',
             'holidayDates',
+            'blockedHolidays',
+            'schedulesByDay',
+            'weeklyHoursCalculated',
             'enrollmentsCount',
             'sessionCount',
             'scheduledSessionCount',
@@ -105,62 +125,101 @@ class CourseModalityController extends Controller
             'nrc' => 'nullable|string|max:30',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
-            'total_hours' => 'nullable|numeric|min:0',
-            'days' => 'nullable|array',
-            'days.*' => 'integer|min:1|max:7',
-            'start_time' => 'nullable|date_format:H:i',
-            'end_time' => 'nullable|date_format:H:i',
-            'classroom' => 'nullable|string|max:100',
+            'schedules_present' => 'nullable|in:1',
             'schedules' => 'nullable|array',
             'schedules.*.day_of_week' => 'nullable|integer|min:1|max:7',
             'schedules.*.start_time' => 'nullable|date_format:H:i',
             'schedules.*.end_time' => 'nullable|date_format:H:i',
             'schedules.*.classroom' => 'nullable|string|max:100',
-            'schedules.*.block_type' => 'nullable|in:CLASS,ASYNC',
+            'schedules.*.instruction_type' => 'nullable|in:THEORY,LAB',
+            // Compatibilidad temporal con el formulario anterior.
+            'days' => 'nullable|array',
+            'days.*' => 'integer|min:1|max:7',
+            'start_time' => 'nullable|date_format:H:i',
+            'end_time' => 'nullable|date_format:H:i',
+            'classroom' => 'nullable|string|max:100',
         ]);
 
-        $modality->update([
-            'nrc' => $data['nrc'] ?? null,
-            'start_date' => $data['start_date'] ?? null,
-            'end_date' => $data['end_date'] ?? null,
-            'total_hours' => $data['total_hours'] ?? null,
-            'curriculum_start_week' => 1,
-        ]);
+        $normalizedSchedules = [];
+        if ($request->has('schedules_present')) {
+            foreach (($data['schedules'] ?? []) as $index => $schedule) {
+                $hasValues = collect($schedule)->contains(fn ($value) => filled($value));
+                if (! $hasValues) {
+                    continue;
+                }
 
-        $modality->schedules()->delete();
+                if (empty($schedule['day_of_week']) || empty($schedule['start_time']) || empty($schedule['end_time'])) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        "schedules.{$index}.day_of_week" => 'Completa el día, la hora de inicio y la hora de fin de cada bloque.',
+                    ]);
+                }
 
-        foreach (($data['schedules'] ?? []) as $schedule) {
-            if (empty($schedule['day_of_week']) || empty($schedule['start_time']) || empty($schedule['end_time']) || $schedule['end_time'] <= $schedule['start_time']) {
-                continue;
+                if ($schedule['end_time'] <= $schedule['start_time']) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        "schedules.{$index}.end_time" => 'La hora de fin debe ser posterior a la hora de inicio.',
+                    ]);
+                }
+
+                $normalizedSchedules[] = [
+                    'day_of_week' => (int) $schedule['day_of_week'],
+                    'start_time' => $schedule['start_time'],
+                    'end_time' => $schedule['end_time'],
+                    'classroom' => $schedule['classroom'] ?? null,
+                    'instruction_type' => $schedule['instruction_type'] ?? 'THEORY',
+                ];
             }
-
-            $modality->schedules()->create([
-                'day_of_week' => $schedule['day_of_week'],
-                'start_time' => $schedule['start_time'],
-                'end_time' => $schedule['end_time'],
-                'classroom' => $schedule['classroom'] ?? null,
-                'block_type' => $schedule['block_type'] ?? 'CLASS',
-            ]);
-        }
-
-        if (empty($data['schedules']) && !empty($data['days']) && isset($data['start_time'], $data['end_time']) && $data['end_time'] > $data['start_time']) {
+        } elseif (! empty($data['days']) && isset($data['start_time'], $data['end_time']) && $data['end_time'] > $data['start_time']) {
             foreach (array_unique($data['days']) as $day) {
-                $modality->schedules()->create([
-                    'day_of_week' => $day,
+                $normalizedSchedules[] = [
+                    'day_of_week' => (int) $day,
                     'start_time' => $data['start_time'],
                     'end_time' => $data['end_time'],
                     'classroom' => $data['classroom'] ?? null,
-                    'block_type' => 'CLASS',
-                ]);
+                    'instruction_type' => 'THEORY',
+                ];
             }
         }
 
-        $calendarMessage = 'Los datos quedaron guardados.';
-        if ($modality->start_date && $modality->end_date && $modality->schedules()->where('block_type', 'CLASS')->exists()) {
+        $dayNames = [1 => 'lunes', 2 => 'martes', 3 => 'miércoles', 4 => 'jueves', 5 => 'viernes', 6 => 'sábado', 7 => 'domingo'];
+        foreach (collect($normalizedSchedules)->groupBy('day_of_week') as $day => $blocks) {
+            $ordered = $blocks->sortBy('start_time')->values();
+            for ($index = 1; $index < $ordered->count(); $index++) {
+                if ($ordered[$index]['start_time'] < $ordered[$index - 1]['end_time']) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'schedules' => 'Hay bloques que se cruzan el mismo día. Revisa el horario del '.$dayNames[$day].'.',
+                    ]);
+                }
+            }
+        }
+
+        $weeklyMinutes = collect($normalizedSchedules)->sum(
+            fn ($schedule) => max(0, (strtotime($schedule['end_time']) - strtotime($schedule['start_time'])) / 60)
+        );
+        $weeklyHours = round($weeklyMinutes / 60, 2);
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($modality, $data, $normalizedSchedules, $weeklyHours) {
+            $modality->update([
+                'nrc' => $data['nrc'] ?? null,
+                'start_date' => $data['start_date'] ?? null,
+                'end_date' => $data['end_date'] ?? null,
+                'total_hours' => $weeklyHours,
+                'curriculum_start_week' => 1,
+            ]);
+
+            // Los registros nuevos son siempre clases presenciales: teoría o laboratorio.
+            // Los antiguos bloques ASYNC desaparecen al guardar esta configuración.
+            $modality->schedules()->delete();
+            foreach ($normalizedSchedules as $schedule) {
+                $modality->schedules()->create($schedule + ['block_type' => 'CLASS']);
+            }
+        });
+
+        $calendarMessage = 'Datos guardados. Carga semanal calculada: '.number_format($weeklyHours, 2).' horas.';
+        if ($modality->start_date && $modality->end_date && $normalizedSchedules) {
             $result = $calendar->rebuild($modality);
-            $calendarMessage .= " Calendario recalculado automáticamente: {$result['scheduled']} sesiones de clase y {$result['holidays']} fechas bloqueadas por feriado. Los Excel anteriores quedaron marcados para regeneración.";
+            $calendarMessage .= " Calendario recalculado: {$result['scheduled']} bloques de clase; {$result['holidays']} fechas feriadas excluidas. Los Excel anteriores quedaron marcados para regeneración.";
         } else {
-            $calendarMessage .= ' Completa el rango de fechas y al menos un horario de clase para generar las sesiones.';
+            $calendarMessage .= ' Completa el rango de fechas y agrega al menos un bloque para generar las sesiones.';
         }
 
         return redirect()->route('modalities.show', $modality)->with('success', $calendarMessage);

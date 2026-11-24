@@ -58,7 +58,7 @@ class CalendarService
             $usedMinutes += $candidate['duration'];
         }
         $weeklyMinutes = 0;
-        foreach ($modality->schedules as $weeklySchedule) {
+        foreach ($schedules as $weeklySchedule) {
             $weeklyMinutes += max(0, (int) ((strtotime($weeklySchedule->end_time) - strtotime($weeklySchedule->start_time)) / 60));
         }
         $weeklyHours = round($weeklyMinutes / 60, 2);
@@ -156,14 +156,23 @@ class CalendarService
                 $document->update(['metadata' => $meta]);
             }
         });
+        $excludedDates = collect($holidayRows)
+            ->groupBy('date')
+            ->map(fn ($rows, $date) => [
+                'date' => $date,
+                'name' => $rows->first()['holiday']->name,
+            ])
+            ->values()
+            ->all();
+
         return [
-            'scheduled' => count($scheduled), 'holidays' => count($holidayRows),
+            'scheduled' => count($scheduled), 'holidays' => count($excludedDates),
             'class_hours_in_range' => round($usedMinutes / 60, 2),
             'weekly_hours_from_schedule' => $weeklyHours,
             'declared_weekly_hours' => $modality->total_hours !== null ? (float) $modality->total_hours : null,
             'weekly_hours_difference' => $weeklyDifference,
             'curriculum_weeks_mapped' => $curriculum ? $curriculum->weeks->count() : 0,
-            'excluded_dates' => array_values(array_map(fn ($r) => ['date' => $r['date'], 'name' => $r['holiday']->name], $holidayRows)),
+            'excluded_dates' => $excludedDates,
         ];
     }
 }
