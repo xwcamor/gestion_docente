@@ -45,17 +45,27 @@
     $scheduleRows = old('schedules');
     if (!is_array($scheduleRows)) {
         $scheduleRows = $modality->schedules->where('block_type', 'CLASS')
-            ->sortBy(fn ($schedule) => sprintf('%d|%s', $schedule->day_of_week, $schedule->start_time))
-            ->map(fn ($schedule) => [
-                'day_of_week' => $schedule->day_of_week,
-                'start_time' => substr($schedule->start_time, 0, 5),
-                'end_time' => substr($schedule->end_time, 0, 5),
-                'classroom' => $schedule->classroom,
-                'instruction_type' => $schedule->instruction_type ?? 'THEORY',
+            ->groupBy(fn ($schedule) => implode('|', [
+                $schedule->start_time,
+                $schedule->end_time,
+                $schedule->classroom ?? '',
+                $schedule->instruction_type ?? 'THEORY',
+            ]))
+            ->map(fn ($blocks) => [
+                'days' => $blocks->pluck('day_of_week')->map(fn ($day) => (int) $day)->unique()->sort()->values()->all(),
+                'start_time' => substr($blocks->first()->start_time, 0, 5),
+                'end_time' => substr($blocks->first()->end_time, 0, 5),
+                'classroom' => $blocks->first()->classroom,
+                'instruction_type' => $blocks->first()->instruction_type ?? 'THEORY',
             ])->values()->all();
+    } else {
+        $scheduleRows = array_map(function ($row) {
+            $row['days'] = $row['days'] ?? (!empty($row['day_of_week']) ? [(int) $row['day_of_week']] : []);
+            return $row;
+        }, $scheduleRows);
     }
     if (!$scheduleRows) {
-        $scheduleRows = [['day_of_week' => '', 'start_time' => '', 'end_time' => '', 'classroom' => '', 'instruction_type' => 'THEORY']];
+        $scheduleRows = [['days' => [], 'start_time' => '', 'end_time' => '', 'classroom' => '', 'instruction_type' => 'THEORY']];
     }
 @endphp
 <section class="card" id="calendar">
@@ -110,14 +120,13 @@
                 <div id="schedule-editor" class="schedule-editor">
                     @foreach($scheduleRows as $index => $scheduleRow)
                         <div class="schedule-row" data-schedule-row>
-                            <div>
-                                <label for="schedule-day-{{ $index }}">Día</label>
-                                <select class="field" id="schedule-day-{{ $index }}" name="schedules[{{ $index }}][day_of_week]" data-schedule-input data-schedule-day>
-                                    <option value="">Seleccionar</option>
+                            <div class="schedule-days-field">
+                                <label>Días</label>
+                                <div class="schedule-days-options">
                                     @foreach($scheduleWeekdays as $day => $dayLabel)
-                                        <option value="{{ $day }}" @selected((string)($scheduleRow['day_of_week'] ?? '') === (string)$day)>{{ $dayLabel }}</option>
+                                        <label class="weekday"><input type="checkbox" name="schedules[{{ $index }}][days][]" value="{{ $day }}" data-schedule-input data-schedule-day @checked(in_array($day, array_map('intval', $scheduleRow['days'] ?? []), true))> {{ mb_substr($dayLabel, 0, 3) }}</label>
                                     @endforeach
-                                </select>
+                                </div>
                             </div>
                             <div>
                                 <label for="schedule-type-{{ $index }}">Tipo</label>
@@ -128,11 +137,11 @@
                             </div>
                             <div>
                                 <label for="schedule-start-{{ $index }}">Desde</label>
-                                <input class="field" id="schedule-start-{{ $index }}" type="time" name="schedules[{{ $index }}][start_time]" value="{{ $scheduleRow['start_time'] ?? '' }}" data-schedule-input data-schedule-start>
+                                <input class="field" id="schedule-start-{{ $index }}" type="time" step="900" name="schedules[{{ $index }}][start_time]" value="{{ $scheduleRow['start_time'] ?? '' }}" data-schedule-input data-schedule-start>
                             </div>
                             <div>
                                 <label for="schedule-end-{{ $index }}">Hasta</label>
-                                <input class="field" id="schedule-end-{{ $index }}" type="time" name="schedules[{{ $index }}][end_time]" value="{{ $scheduleRow['end_time'] ?? '' }}" data-schedule-input data-schedule-end>
+                                <input class="field" id="schedule-end-{{ $index }}" type="time" step="900" name="schedules[{{ $index }}][end_time]" value="{{ $scheduleRow['end_time'] ?? '' }}" data-schedule-input data-schedule-end>
                             </div>
                             <div>
                                 <label for="schedule-room-{{ $index }}">Aula / ambiente</label>
@@ -302,7 +311,10 @@
 .schedule-editor-heading h3{margin:0 0 3px}
 .schedule-editor-heading .help{margin:0}
 .schedule-editor{display:grid;gap:8px}
-.schedule-row{display:grid;grid-template-columns:1fr 1.05fr .85fr .85fr 1.25fr auto;align-items:end;gap:9px;padding:10px;border:1px solid #e0e8e5;border-radius:8px;background:#fbfcfb}
+.schedule-row{display:grid;grid-template-columns:minmax(240px,1.5fr .8fr .8fr 1.1fr auto);align-items:end;gap:9px;padding:10px;border:1px solid #e0e8e5;border-radius:8px;background:#fbfcfb}
+.schedule-days-options{display:flex;align-items:center;flex-wrap:wrap;gap:4px}
+.schedule-days-options .weekday{margin:0;padding:5px 6px;font-size:9px}
+.schedule-days-options .weekday input{width:13px;height:13px}
 .schedule-row label{margin-top:0;font-size:10px}
 .schedule-row .field{min-height:37px;font-size:11px}
 .schedule-remove-cell .btn{min-height:37px}
@@ -322,9 +334,9 @@
 .preview-holiday-warning{padding:9px 11px;border:1px solid #efc4c0;border-left:3px solid #c84840;border-radius:6px;background:#fff1f0;color:#963b35;font-size:10px;line-height:1.45}
 .preview-holiday-warning strong{font-weight:800}
 .preview-no-holidays{padding:8px 10px;border:1px solid #cfe4d5;border-radius:6px;background:#eff8f1;color:#38694a;font-size:10px}
-@media(max-width:1050px){.weekly-load-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.schedule-row{grid-template-columns:repeat(3,minmax(0,1fr))}.schedule-remove-cell{grid-column:3}}
-@media(max-width:650px){.weekly-load-head,.schedule-editor-heading{align-items:stretch;flex-direction:column}.weekly-load-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.schedule-row{grid-template-columns:repeat(2,minmax(0,1fr))}.schedule-remove-cell{grid-column:2}.calendar-preview-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:390px){.weekly-load-grid{grid-template-columns:1fr}.schedule-row{grid-template-columns:1fr}.schedule-remove-cell{grid-column:1}.calendar-preview-stats{grid-template-columns:1fr}}
+@media(max-width:1050px){.weekly-load-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.schedule-row{grid-template-columns:repeat(3,minmax(0,1fr))}.schedule-days-field{grid-column:1/-1}.schedule-remove-cell{grid-column:3}}
+@media(max-width:650px){.weekly-load-head,.schedule-editor-heading{align-items:stretch;flex-direction:column}.weekly-load-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.schedule-row{grid-template-columns:repeat(2,minmax(0,1fr))}.schedule-days-field{grid-column:1/-1}.schedule-remove-cell{grid-column:2}.calendar-preview-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:390px){.weekly-load-grid{grid-template-columns:1fr}.schedule-row{grid-template-columns:1fr}.schedule-days-field{grid-column:1}.schedule-remove-cell{grid-column:1}.calendar-preview-stats{grid-template-columns:1fr}}
 </style>
 @endpush
 
@@ -387,24 +399,31 @@
     const dateKey = date => [date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-');
     const formatHours = minutes => (minutes/60).toLocaleString('es-PE',{minimumFractionDigits:0,maximumFractionDigits:2})+' h';
 
-    const blocks = () => [...editor.querySelectorAll('[data-schedule-row]')].map(row => {
-        const day = Number(row.querySelector('[data-schedule-day]')?.value || 0);
+    const blocks = () => [...editor.querySelectorAll('[data-schedule-row]')].flatMap(row => {
+        const days = [...row.querySelectorAll('[data-schedule-day]:checked')].map(input => Number(input.value));
         const start = row.querySelector('[data-schedule-start]')?.value || '';
         const end = row.querySelector('[data-schedule-end]')?.value || '';
-        if (!day || !start || !end || end <= start) return null;
+        if (!days.length || !start || !end || end <= start) return [];
         const [sh,sm] = start.split(':').map(Number);
         const [eh,em] = end.split(':').map(Number);
-        return {day,start,end,minutes:(eh*60+em)-(sh*60+sm)};
-    }).filter(Boolean);
+        const minutes = (eh*60+em)-(sh*60+sm);
+        return days.map(day => ({day,start,end,minutes}));
+    });
 
     const rowTemplate = index => `
         <div class="schedule-row" data-schedule-row>
-            <div><label for="schedule-day-${index}">Día</label><select class="field" id="schedule-day-${index}" name="schedules[${index}][day_of_week]" data-schedule-input data-schedule-day>
-                <option value="">Seleccionar</option><option value="1">Lunes</option><option value="2">Martes</option><option value="3">Miércoles</option><option value="4">Jueves</option><option value="5">Viernes</option><option value="6">Sábado</option><option value="7">Domingo</option>
-            </select></div>
+            <div class="schedule-days-field"><label>Días</label><div class="schedule-days-options">
+                <label class="weekday"><input type="checkbox" name="schedules[${index}][days][]" value="1" data-schedule-input data-schedule-day> Lun</label>
+                <label class="weekday"><input type="checkbox" name="schedules[${index}][days][]" value="2" data-schedule-input data-schedule-day> Mar</label>
+                <label class="weekday"><input type="checkbox" name="schedules[${index}][days][]" value="3" data-schedule-input data-schedule-day> Mié</label>
+                <label class="weekday"><input type="checkbox" name="schedules[${index}][days][]" value="4" data-schedule-input data-schedule-day> Jue</label>
+                <label class="weekday"><input type="checkbox" name="schedules[${index}][days][]" value="5" data-schedule-input data-schedule-day> Vie</label>
+                <label class="weekday"><input type="checkbox" name="schedules[${index}][days][]" value="6" data-schedule-input data-schedule-day> Sáb</label>
+                <label class="weekday"><input type="checkbox" name="schedules[${index}][days][]" value="7" data-schedule-input data-schedule-day> Dom</label>
+            </div></div>
             <div><label for="schedule-type-${index}">Tipo</label><select class="field" id="schedule-type-${index}" name="schedules[${index}][instruction_type]" data-schedule-input><option value="THEORY">Teoría</option><option value="LAB">Laboratorio</option></select></div>
-            <div><label for="schedule-start-${index}">Desde</label><input class="field" id="schedule-start-${index}" type="time" name="schedules[${index}][start_time]" data-schedule-input data-schedule-start></div>
-            <div><label for="schedule-end-${index}">Hasta</label><input class="field" id="schedule-end-${index}" type="time" name="schedules[${index}][end_time]" data-schedule-input data-schedule-end></div>
+            <div><label for="schedule-start-${index}">Desde</label><input class="field" id="schedule-start-${index}" type="time" step="900" name="schedules[${index}][start_time]" data-schedule-input data-schedule-start></div>
+            <div><label for="schedule-end-${index}">Hasta</label><input class="field" id="schedule-end-${index}" type="time" step="900" name="schedules[${index}][end_time]" data-schedule-input data-schedule-end></div>
             <div><label for="schedule-room-${index}">Aula / ambiente</label><input class="field" id="schedule-room-${index}" name="schedules[${index}][classroom]" maxlength="100" placeholder="Ej. LAB 103" data-schedule-input></div>
             <div class="schedule-remove-cell"><label aria-hidden="true">&nbsp;</label><button class="btn btn-danger btn-sm" type="button" data-remove-schedule>× Quitar</button></div>
         </div>`;

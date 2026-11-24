@@ -127,6 +127,8 @@ class CourseModalityController extends Controller
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'schedules_present' => 'nullable|in:1',
             'schedules' => 'nullable|array',
+            'schedules.*.days' => 'nullable|array',
+            'schedules.*.days.*' => 'integer|min:1|max:7',
             'schedules.*.day_of_week' => 'nullable|integer|min:1|max:7',
             'schedules.*.start_time' => 'nullable|date_format:H:i',
             'schedules.*.end_time' => 'nullable|date_format:H:i',
@@ -152,9 +154,14 @@ class CourseModalityController extends Controller
                     continue;
                 }
 
-                if (empty($schedule['day_of_week']) || empty($schedule['start_time']) || empty($schedule['end_time'])) {
+                $selectedDays = array_values(array_unique(array_map('intval', $schedule['days'] ?? [])));
+                if (!$selectedDays && !empty($schedule['day_of_week'])) {
+                    $selectedDays = [(int) $schedule['day_of_week']];
+                }
+
+                if (!$selectedDays || empty($schedule['start_time']) || empty($schedule['end_time'])) {
                     throw \Illuminate\Validation\ValidationException::withMessages([
-                        "schedules.{$index}.day_of_week" => 'Completa el día, la hora de inicio y la hora de fin de cada bloque.',
+                        "schedules.{$index}.days" => 'Selecciona al menos un día e indica la hora de inicio y fin del bloque.',
                     ]);
                 }
 
@@ -164,13 +171,23 @@ class CourseModalityController extends Controller
                     ]);
                 }
 
-                $normalizedSchedules[] = [
-                    'day_of_week' => (int) $schedule['day_of_week'],
-                    'start_time' => $schedule['start_time'],
-                    'end_time' => $schedule['end_time'],
-                    'classroom' => $schedule['classroom'] ?? null,
-                    'instruction_type' => $schedule['instruction_type'] ?? 'THEORY',
-                ];
+                $startMinute = (int) substr($schedule['start_time'], 3, 2);
+                $endMinute = (int) substr($schedule['end_time'], 3, 2);
+                if ($startMinute % 15 !== 0 || $endMinute % 15 !== 0) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        "schedules.{$index}.start_time" => 'Usa intervalos de 15 minutos (por ejemplo, 09:00, 09:15 o 09:30).',
+                    ]);
+                }
+
+                foreach ($selectedDays as $day) {
+                    $normalizedSchedules[] = [
+                        'day_of_week' => $day,
+                        'start_time' => $schedule['start_time'],
+                        'end_time' => $schedule['end_time'],
+                        'classroom' => $schedule['classroom'] ?? null,
+                        'instruction_type' => $schedule['instruction_type'] ?? 'THEORY',
+                    ];
+                }
             }
         } elseif (! empty($data['days']) && isset($data['start_time'], $data['end_time']) && $data['end_time'] > $data['start_time']) {
             foreach (array_unique($data['days']) as $day) {
