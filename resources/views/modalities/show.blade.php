@@ -195,7 +195,8 @@
         </div>
         @if(!$hasCurriculumTopics)
             <div class="alert alert-info document-curriculum-requirement" id="document-curriculum-requirement">
-                Importa primero la malla curricular con sus temas semanales para habilitar el <strong>Plan de sesión</strong> y el <strong>Control de avance</strong>. El Formato de evaluación sigue disponible.
+                Importa la malla curricular con sus temas semanales para habilitar el <strong>Plan de sesión</strong> y el <strong>Control de avance</strong>. El Formato de evaluación sigue disponible.
+                <a href="{{ route('curricula.show', $modality->assignment) }}"><x-icon name="book-open" size="12" /> Abrir programación curricular</a>
             </div>
         @endif
     <div class="document-generator-list">
