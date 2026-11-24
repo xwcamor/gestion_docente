@@ -243,7 +243,7 @@ class InstitutionalExcelService
         $cataloguePath = base_path('system_files/charla_5_minutos_catalogo.json');
         $catalogue = json_decode((string) file_get_contents($cataloguePath), true);
         $group->loadMissing(['cycle', 'professor']);
-        $talks = $group->fiveMinuteTalks()->orderBy('scheduled_date')->orderBy('position')->get();
+        $talks = $group->fiveMinuteTalks()->whereNotNull('scheduled_date')->orderBy('scheduled_date')->orderBy('position')->get();
 
         $programs = $group->assignments()
             ->with('course')
