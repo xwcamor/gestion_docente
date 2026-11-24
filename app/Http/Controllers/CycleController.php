@@ -136,11 +136,38 @@ class CycleController extends Controller
             ->join('teaching_groups', 'teaching_groups.id', '=', 'course_assignments.teaching_group_id')
             ->where('teaching_groups.cycle_id', $cycle->id)
             ->count();
+        $curriculumAssignedCount = DB::table('course_assignments')
+            ->join('teaching_groups', 'teaching_groups.id', '=', 'course_assignments.teaching_group_id')
+            ->where('teaching_groups.cycle_id', $cycle->id)
+            ->whereNotNull('course_assignments.curriculum_id')
+            ->count();
+
         $modalityCount = DB::table('course_modalities')
             ->join('course_assignments', 'course_assignments.id', '=', 'course_modalities.course_assignment_id')
             ->join('teaching_groups', 'teaching_groups.id', '=', 'course_assignments.teaching_group_id')
             ->where('teaching_groups.cycle_id', $cycle->id)
             ->count();
+
+        $configuredModalityCount = DB::table('course_modalities')
+            ->join('course_assignments', 'course_assignments.id', '=', 'course_modalities.course_assignment_id')
+            ->join('teaching_groups', 'teaching_groups.id', '=', 'course_assignments.teaching_group_id')
+            ->where('teaching_groups.cycle_id', $cycle->id)
+            ->whereNotNull('course_modalities.start_date')
+            ->whereNotNull('course_modalities.end_date')
+            ->whereExists(function ($query) {
+                $query->selectRaw('1')
+                    ->from('modality_schedules')
+                    ->whereColumn('modality_schedules.course_modality_id', 'course_modalities.id')
+                    ->where('modality_schedules.block_type', 'CLASS');
+            })
+            ->count();
+
+        $curriculumPercent = $courseCount > 0
+            ? (int) round(($curriculumAssignedCount / $courseCount) * 100)
+            : 0;
+        $schedulePercent = $modalityCount > 0
+            ? (int) round(($configuredModalityCount / $modalityCount) * 100)
+            : 0;
 
         $declaredWeeklyHours = (float) DB::table('course_modalities')
             ->join('course_assignments', 'course_assignments.id', '=', 'course_modalities.course_assignment_id')
@@ -148,7 +175,18 @@ class CycleController extends Controller
             ->where('teaching_groups.cycle_id', $cycle->id)
             ->sum('course_modalities.total_hours');
 
-        return view('cycles.show', compact('cycle', 'groups', 'groupCount', 'courseCount', 'modalityCount', 'declaredWeeklyHours'));
+        return view('cycles.show', compact(
+            'cycle',
+            'groups',
+            'groupCount',
+            'courseCount',
+            'modalityCount',
+            'declaredWeeklyHours',
+            'curriculumAssignedCount',
+            'configuredModalityCount',
+            'curriculumPercent',
+            'schedulePercent'
+        ));
     }
 
     private function authorizeCycle(Cycle $cycle): void
