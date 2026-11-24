@@ -43,6 +43,60 @@
     </div>
 </div>
 
+<section class="card" id="group-roster">
+    <div class="card-head">
+        <div>
+            <h2>Padrón de alumnos del grupo</h2>
+            <p class="card-description">Carga la lista una sola vez. Los cursos del grupo usarán este mismo padrón; las notas y evaluaciones seguirán siendo propias de cada curso.</p>
+        </div>
+        <span class="badge badge-blue">{{ $studentCount }} alumnos</span>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" action="{{ route('groups.students.preview', $group) }}">
+        @csrf
+        <label for="group-roster-file">Archivo de alumnos (.xls, .xlsx, .csv o .txt)</label>
+        <div class="form-row">
+            <input class="field" id="group-roster-file" type="file" name="roster" accept=".xls,.xlsx,.csv,.txt" required>
+            <button class="btn" type="submit"><x-icon name="file-text" /> Revisar padrón</button>
+        </div>
+    </form>
+
+    @if($lastRosterImport)
+        <p class="help mt-16">
+            Última carga: {{ $lastRosterImport->original_filename }}
+            · {{ $lastRosterImport->created_count }} nuevos
+            · {{ $lastRosterImport->updated_count }} actualizados
+            · {{ $lastRosterImport->skipped_count }} omitidos
+        </p>
+    @endif
+
+    @if($students->isNotEmpty())
+        <div class="table-wrap mt-16">
+            <table>
+                <thead><tr><th>ID estudiante</th><th>Apellidos</th><th>Nombres</th><th>Usuario</th></tr></thead>
+                <tbody>
+                @foreach($students as $student)
+                    <tr>
+                        <td class="mono">{{ $student->institutional_id ?: '—' }}</td>
+                        <td>{{ $student->surnames }}</td>
+                        <td>{{ $student->given_names }}</td>
+                        <td>{{ $student->username ?: '—' }}</td>
+                    </tr>
+                @endforeach
+                </tbody>
+            </table>
+        </div>
+        @if($students->hasPages())
+            <x-pagination :paginator="$students" />
+        @endif
+    @else
+        <div class="empty">
+            <strong>Este grupo todavía no tiene alumnos.</strong>
+            <span>Selecciona el archivo oficial del campus y revisa la vista previa antes de importarlo.</span>
+        </div>
+    @endif
+</section>
+
 <section class="card">
     <div class="card-head">
         <div><h2>Cursos del grupo</h2></div>
