@@ -32,25 +32,88 @@ class CurriculumImportService
                 'curriculum_pdf' => 'No se pudo extraer suficiente texto del PDF. Puede ser escaneado o tener tablas como imagen. Adjunta el PDF original a la IA junto con el prompt y revisa su salida antes de importarla.',
             ]);
         }
-        return ['pages' => $pages, 'text' => $fullText];
+return [
+            'pages' => $pages,
+            'text' => $fullText,
+            'sections' => $this->detectKeySections($pages),
+        ];
+
+    /**
+     * Detect the two institutional tables by their headings without discarding
+     * any page. The complete PDF text remains available even when detection fails.
+     */
+    private function detectKeySections(array $pages): array
+    {
+        $definitions = [
+            'cuadro_programa' => [
+                'label' => 'Cuadro Programa',
+                'pattern' => '/\bCUADRO\s+(?:DE\s+)?PROGRAMA(?:CI[OÓ]N)?\b/iu',
+            ],
+            'hoja_programacion' => [
+                'label' => 'Hoja de Programación',
+                'pattern' => '/\bHOJA\s+(?:DE\s+)?PROGRAMACI[ÓO]N\b|\bPROGRAMACI[ÓO]N\s+SEMANAL\b/iu',
+            ],
+        ];
+
+        $sections = [];
+        foreach ($definitions as $key => $definition) {
+            $matchedPages = array_values(array_filter(
+                $pages,
+                fn (array $page) => preg_match($definition['pattern'], (string) ($page['text'] ?? '')) === 1
+            ));
+
+            $sections[$key] = [
+                'label' => $definition['label'],
+                'detected' => $matchedPages !== [],
+                'pages' => array_values(array_map(fn (array $page) => (int) $page['page'], $matchedPages)),
+                'text' => implode("\n\n", array_map(
+                    fn (array $page) => 'PÁGINA '.$page['page']."\n".$page['text'],
+                    $matchedPages
+                )),
+            ];
+        }
+
+        return $sections;
+    }
     }
 
-    public const PROMPT_VERSION = 'GD-MALLA-2.0';
+public const PROMPT_VERSION = 'GD-MALLA-3.0';
 
     public function promptVersion(): string
     {
         return self::PROMPT_VERSION;
     }
 
-    public function buildPrompt(string $sourceText, CourseAssignment $assignment, ?string $generatedAt = null): string
+public function buildPrompt(
+        string $sourceText,
+        CourseAssignment $assignment,
+        ?string $generatedAt = null,
+        array $sections = []
+    ): string
     {
+$assignment->loadMissing(['course', 'group.cycle']);
         $course = $assignment->course;
+        $cycle = $assignment->group?->cycle;
+        $career = $cycle?->career ?: ($course->career ?: 'No registrada');
+        $semester = $cycle?->semester ?: 'No registrado';
         $generatedAt = $generatedAt ?: now()->toIso8601String();
+        $sectionSource = '';
+        foreach ([
+            'cuadro_programa' => 'CUADRO PROGRAMA',
+            'hoja_programacion' => 'HOJA DE PROGRAMACIÓN',
+        ] as $key => $label) {
+            $section = $sections[$key] ?? [];
+            $pages = $section['pages'] ?? [];
+            $sectionSource .= "\n\n========== {$label} =========="."\n";
+            $sectionSource .= !empty($section['detected'])
+                ? 'Encabezado detectado en página(s): '.implode(', ', $pages)."\n".($section['text'] ?? '')
+                : 'El extractor de texto no reconoció este encabezado. Localiza la tabla manualmente en el PDF adjunto; no concluyas que no existe.\n';
+        }
         $schema = <<<'JSON'
 {
-  "schema_version": 2,
+"schema_version": 3,
   "processing": {
-    "prompt_version": "GD-MALLA-2.0",
+"prompt_version": "GD-MALLA-3.0",
     "prompt_generated_at": "2026-11-23T10:00:00-05:00"
   },
   "metadata": {
@@ -77,6 +140,7 @@ class CurriculumImportService
     {
       "week_number": 1,
       "source_week_number": 13,
+      "programming_topic": "Tema exacto de la Hoja de Programación para esta semana",
       "hours": {"T": 5, "P": 10, "V": 7},
       "task_code": "HT-01",
       "task_title": "",
@@ -111,16 +175,21 @@ JSON;
             ."ROL: Actúa como especialista en planificación curricular técnico-profesional, diseño de sesiones TEC/TALL y estructuración de datos académicos.\n\n"
             ."TAREA: analiza completamente el PDF de malla curricular que adjunto a este chat y el texto extraído que incluyo abajo. Revisa todas sus páginas, tablas, imágenes, matrices, leyendas, encabezados y continuaciones. Devuelve UN ÚNICO objeto JSON válido, sin Markdown, sin bloque de código y sin texto fuera del JSON. El sistema lo importará en una aplicación PHP/MySQL y lo utilizará para planificar y generar Excel.\n\n"
             ."CURSO DESTINO EN EL SISTEMA: {$course->name}. Código interno: ".($course->code ?: 'no indicado').". Este dato es contexto de asignación, no reemplaza ni corrige lo que diga la fuente oficial.\n\n"
+            ."CONTEXTO DEL CICLO REGISTRADO: carrera = {$career}; semestre = {$semester}. Usa estos datos para metadata.career y metadata.semester solo si la fuente PDF no indica otros valores. Si hay discrepancia, conserva el dato de la malla y explica la diferencia en notes.\n\n"
             ."IMPORTANTE: UNA MISMA MALLA CURRICULAR SIRVE PARA LAS DOS MODALIDADES. Extrae una sola vez la información oficial común (HT, HO, conocimientos y horas) y prepara dos propuestas pedagógicas separadas por cada bloque: TEC (conocimientos tecnológicos/aula) y TALL (práctica de taller/laboratorio). No generes dos mallas independientes ni dupliques el contenido oficial. Las propuestas TEC/TALL son complementos didácticos de IA y deben mantenerse separadas y claramente identificadas.\n\n"
-            ."REGLAS DE FIDELIDAD A LA MALLA:\n"
-            ."1. El PDF es la fuente oficial. Conserva nombres, códigos, terminología, organización y detalle. No completes vacíos con conocimiento externo.\n"
-            ."2. Extrae tareas HT, operaciones HO y su relación exacta HT→HO desde la matriz visual. Respeta la leyenda NEW/REPEATED; si no se distingue, usa UNSPECIFIED y explica la duda en notes.\n"
-            ."3. Separa los contenidos oficiales en technological_knowledge, complementary_knowledge y virtual_activities. No confundas formación virtual con una clase presencial.\n"
+            ."REGLAS DE EXTRACCIÓN DE LAS DOS TABLAS INSTITUCIONALES:\n"
+            ."A. CUADRO PROGRAMA: es la fuente para códigos y títulos HT, operaciones HO, relación HT→HO, conocimientos y horas T/P/V. Conserva códigos y asocia cada HO a su HT correcto. Respeta NEW/REPEATED; si no se distingue, usa UNSPECIFIED y explica la duda.\n"
+            ."B. HOJA DE PROGRAMACIÓN: es la fuente para la distribución semanal y los temas de cada semana. Extrae el tema/título semanal exactamente como aparece y colócalo en programming_topic. No lo reemplaces por el título HT, por una propuesta de IA ni por un tema inventado.\n"
+            ."C. Cruza ambas tablas por semana, código y título. El Cuadro Programa aporta la estructura HT/HO; la Hoja de Programación aporta el tema semanal que debe aparecer en los Excel. Si difieren, conserva ambos datos y explícalo en notes.\n"
+            ."1. El PDF adjunto es la fuente oficial. Revisa visualmente ambas tablas en el documento original aunque el texto extraído no las detecte. Conserva nombres, códigos, terminología, organización y detalle. No completes vacíos con conocimiento externo.\n"
+            ."2. Extrae tareas HT y operaciones HO desde el Cuadro Programa y su relación exacta HT→HO.\n"
+            ."3. Separa los contenidos oficiales en technological_knowledge, complementary_knowledge y virtual_activities. Los contenidos de cada semana deben corresponder a la Hoja de Programación; no confundas formación virtual con una clase presencial.\n"
             ."4. Conserva las horas T (tecnología), P (práctica) y V (formación virtual) por bloque. Si no están visibles, devuelve null. Nunca inventes ni deduzcas horas.\n"
             ."5. NUMERACIÓN DE SEMANAS: no uses el número impreso de la malla como número de semana del curso en el sistema. El sistema calculará las semanas reales con las fechas de inicio/fin y los días de clase. En week_number asigna una secuencia interna 1, 2, 3... según el orden en que aparecen los bloques de aprendizaje; en source_week_number conserva el número original impreso en la malla, o null si no aparece. Para el ejemplo de fuente 13,14,15,16,17, devuelve week_number 1,2,3,4,5 y source_week_number 13,14,15,16,17. No uses fechas de calendario.\n"
             ."6. Si la semana/bloque solo señala EVALUACIÓN, marca is_evaluation=true, conserva horas null cuando no estén impresas y no inventes criterios institucionales.\n"
             ."7. Si un contenido continúa en otra página, intégralo sin perder detalle y coloca todas las páginas en source_pages. Si algo es ilegible o ambiguo, no lo corrijas por intuición; explica el problema en notes.\n"
-            ."8. No inventes fechas de inicio/fin, NRC, horarios, alumnos, notas, ponderaciones ni reglas institucionales.\n\n"
+            ."8. programming_topic debe conservar el tema oficial exacto de la Hoja de Programación para cada semana. Si no se puede identificar, déjalo vacío y explica el motivo en notes.\n"
+            ."9. No inventes fechas de inicio/fin, NRC, horarios, alumnos, notas, ponderaciones ni reglas institucionales.\n\n"
             ."PLANIFICACIÓN DIDÁCTICA PARA CADA MODALIDAD (PROPUESTA DE IA, NO CONTENIDO OFICIAL):\n"
             ."- tec_plan: orienta la sesión TEC a explicar, analizar, comparar, interpretar, modelar, resolver ejercicios guiados y verificar conocimientos. Incluye topic, objective y listas concretas de activities, exercises, materials y evidence.\n"
             ."- tall_plan: orienta la sesión TALL a ejecutar operaciones HO, practicar procedimientos, configurar/probar en laboratorio, resolver casos y evidenciar el producto. Incluye topic, objective y listas concretas de activities, exercises, materials y evidence.\n"
@@ -129,18 +198,19 @@ JSON;
             ."REGLA SOBRE LOS MATERIALES EXCEL: una vez importada la malla, el sistema genera archivos separados por curso, grupo y modalidad. TEC usa sus documentos de conocimientos tecnológicos/teoría; TALL usa sus documentos de práctica/taller. No mezcles estudiantes, NRC ni evaluaciones entre modalidades.\n\n"
             ."ESQUEMA JSON OBLIGATORIO (mantén todos los nombres de clave):\n{$schema}\n\n"
             ."VALORES PERMITIDOS operation_matrix[].operations[].type: NEW, REPEATED, UNSPECIFIED.\n\n"
+            ."MAPA DE DETECCIÓN DE LAS DOS TABLAS PRIORITARIAS:\n{$sectionSource}\n"
             ."TEXTO EXTRAÍDO DEL PDF, SEPARADO POR PÁGINA:\n================ INICIO DE FUENTE ================\n"
             .$sourceText
             ."\n================ FIN DE FUENTE ================\n\n"
             ."METADATOS QUE DEBES REPETIR EXACTAMENTE EN processing: prompt_version = ".self::PROMPT_VERSION."; prompt_generated_at = {$generatedAt}. No cambies estos valores.\n\n"
-            ."VERIFICACIÓN FINAL: JSON parseable; schema_version=2; weeks en secuencia 1..N sin duplicados; source_week_number conserva la numeración impresa o null; horas numéricas o null; tareas HT relacionadas con las HO correctas; listas de contenido válidas; tec_plan y tall_plan presentes en cada bloque; sin comentarios ni comas finales. Devuelve solo JSON.";
+            ."VERIFICACIÓN FINAL: JSON parseable; schema_version=3; weeks en secuencia 1..N sin duplicados; source_week_number conserva la numeración impresa o null; programming_topic contiene el tema exacto de la Hoja de Programación o queda vacío con explicación; horas numéricas o null; tareas HT relacionadas con las HO correctas; contenidos semanales fieles a la fuente; tec_plan y tall_plan presentes en cada bloque; sin comentarios ni comas finales. Devuelve solo JSON.
     }
 
     public function validatePayload(array $payload): array
     {
         $schemaVersion = (int) ($payload['schema_version'] ?? 0);
-        if (!in_array($schemaVersion, [1, 2], true)) {
-            throw ValidationException::withMessages(['json_content' => 'La versión del esquema JSON no es compatible (se admite schema_version 1 o 2).']);
+if (!in_array($schemaVersion, [1, 2, 3], true)) {
+La versión del esquema JSON no es compatible (se admite schema_version 1, 2 o 3).
         }
 
         $metadata = $payload['metadata'] ?? null;
@@ -156,7 +226,7 @@ JSON;
             }
         }
 
-        if ($schemaVersion === 2) {
+if ($schemaVersion >= 2) {
             $processing = $payload['processing'] ?? [];
             if (!is_array($processing)) {
                 throw ValidationException::withMessages(['json_content' => 'processing debe ser un objeto con la versión y fecha del prompt.']);
@@ -225,6 +295,10 @@ JSON;
             $seenWeeks[$number] = true;
             $week['week_number'] = $number;
             $week['source_week_number'] = $sourceWeekNumber;
+            if (isset($week['programming_topic']) && !is_string($week['programming_topic'])) {
+                throw ValidationException::withMessages(['json_content' => 'programming_topic de la semana '.$number.' debe ser texto.']);
+            }
+            $week['programming_topic'] = trim((string) ($week['programming_topic'] ?? ''));
 
             $hours = $week['hours'] ?? [];
             if (!is_array($hours)) $hours = [];
@@ -309,10 +383,10 @@ JSON;
                 'module_code' => $meta['module_code'] ?? null,
                 'module_name' => $meta['module_name'] ?? null,
                 'course_name' => $meta['course_name'] ?? $course->name,
-                'career' => $meta['career'] ?? $course->career,
+'career' => $meta['career'] ?? ($assignment->group->cycle->career ?? $course->career),
                 'professional_school' => $meta['professional_school'] ?? null,
                 'occupational_module' => $meta['occupational_module'] ?? null,
-                'semester' => $meta['semester'] ?? null,
+'semester' => $meta['semester'] ?? ($assignment->group->cycle->semester ?? null),
                 'general_objective' => $meta['general_objective'] ?? null,
                 'source_filename' => $source['filename'] ?? 'Importación JSON de malla curricular',
                 'source_path' => $source['path'] ?? null,
@@ -323,6 +397,11 @@ JSON;
                     'prompt_version' => $source['prompt_version'] ?? ($payload['processing']['prompt_version'] ?? null),
                     'prompt_generated_at' => $source['prompt_generated_at'] ?? ($payload['processing']['prompt_generated_at'] ?? null),
                     'prompt_sha256' => $source['prompt_sha256'] ?? null,
+                    'pdf_sections' => collect($source['sections'] ?? [])->map(fn ($section) => [
+                        'label' => $section['label'] ?? null,
+                        'detected' => (bool) ($section['detected'] ?? false),
+                        'pages' => array_values($section['pages'] ?? []),
+                    ])->all(),
                     'json_imported_at' => now()->toIso8601String(),
                     'imported_at' => now()->toIso8601String(),
                 ],
@@ -355,7 +434,8 @@ JSON;
                 $week = $curriculum->weeks()->create([
                     'curriculum_task_id' => $task?->id,
                     'week_number' => $weekData['week_number'],
-                    'source_week_number' => $weekData['source_week_number'] ?? null,
+'source_week_number' => $weekData['source_week_number'] ?? null,
+                    'source_topic' => $weekData['programming_topic'] ?: null,
                     'hours_theory' => $weekData['hours']['T'],
                     'hours_practice' => $weekData['hours']['P'],
                     'hours_virtual' => $weekData['hours']['V'],
