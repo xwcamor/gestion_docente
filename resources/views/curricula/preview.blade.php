@@ -1,7 +1,12 @@
 @extends('layouts.app')
 @section('title','Previsualizar malla')
 @section('content')
-<div class="page-head"><div><h1>Previsualización de malla curricular</h1><p class="subhead">Revisa los datos extraídos y las propuestas antes de incorporarlas al curso.</p></div><a class="btn btn-secondary" href="{{ route('curricula.show',$assignment) }}"><x-icon name="arrow-left" /> Cancelar</a></div>
+<div class="page-head"><div><h1>Revisar programación curricular</h1><p class="subhead">Verifica la información de ChatGPT antes de importarla al curso.</p></div><a class="btn btn-secondary" href="{{ route('curricula.show',$assignment) }}"><x-icon name="arrow-left" /> Cancelar</a></div>
+<ol class="curriculum-stepper" aria-label="Pasos de importación">
+    <li class="is-complete"><span class="step-number"><x-icon name="check" size="13" /></span><span><strong>PDF</strong><small>Subido</small></span></li>
+    <li class="is-complete"><span class="step-number"><x-icon name="check" size="13" /></span><span><strong>ChatGPT</strong><small>JSON recibido</small></span></li>
+    <li class="is-active" aria-current="step"><span class="step-number">3</span><span><strong>Importar</strong><small>Revisar datos</small></span></li>
+</ol>
 <div class="grid grid-3">
 <div class="card"><div class="stat-label">Versión del prompt</div><strong>{{ $promptInfo['prompt_version'] ?? 'No indicada' }}</strong></div>
 <div class="card"><div class="stat-label">Generado el</div><strong>{{ $promptInfo['prompt_generated_at'] ?? 'No indicado' }}</strong></div>
@@ -39,6 +44,17 @@
 </section>
 @push('styles')
 <style>
+.curriculum-stepper{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 16px;padding:0;list-style:none}
+.curriculum-stepper li{display:flex;align-items:center;gap:9px;min-width:0;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface)}
+.curriculum-stepper .step-number{display:grid;place-items:center;flex:0 0 27px;width:27px;height:27px;border-radius:50%;background:var(--surface-soft);color:var(--muted);font-size:11px;font-weight:750}
+.curriculum-stepper li>span:last-child{display:grid;gap:2px;min-width:0}
+.curriculum-stepper strong{font-size:11px;color:var(--ink)}
+.curriculum-stepper small{font-size:10px;color:var(--muted)}
+.curriculum-stepper li.is-complete{border-color:var(--success);background:var(--success-bg)}
+.curriculum-stepper li.is-complete .step-number{background:var(--success);color:#fff}
+.curriculum-stepper li.is-active{border-color:var(--accent);background:var(--surface)}
+.curriculum-stepper li.is-active .step-number{background:var(--accent);color:#fff}
+@media(max-width:600px){.curriculum-stepper li{align-items:flex-start;padding:8px}.curriculum-stepper small{display:none}}
 .curriculum-week-topic{margin:7px 0;padding:8px 10px;border-left:3px solid var(--info);border-radius:5px;background:var(--info-bg);color:var(--ink);font-size:11px;line-height:1.5}
 .curriculum-week-topic strong{color:var(--info)}
 </style>
