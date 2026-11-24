@@ -339,7 +339,6 @@
 .modality-section-chevron{color:var(--muted);transition:transform .16s ease;flex:none}
 .modality-section[open] .modality-section-chevron{transform:rotate(90deg)}
 .modality-section-body{padding:0 16px 16px;border-top:1px solid var(--line)}
-.modality-section-body>.modality-cycle-period{margin:11px 0;color:var(--muted);font-size:10px}
 .modality-section-toolbar{display:flex;justify-content:flex-end;margin:0 0 12px}
 .document-generator-list{display:grid;gap:7px}
 .document-generator-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
@@ -354,7 +353,6 @@
 .modality-day-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface);font-size:10px}
 .modality-day-chip b{color:var(--ink-soft)}
 .modality-day-chip small{color:var(--muted)}
-.modality-no-blocks{color:var(--muted);font-size:10px}
 .modality-section .talks-summary,.modality-section .calendar-preview{margin-top:12px}
 @media(max-width:700px){.modality-section-summary{gap:8px;padding:11px}.modality-section-count{display:none}.modality-section-body{padding:0 11px 12px}.modality-day-chip{align-items:flex-start;flex-direction:column;gap:3px}}
 html[data-theme="dark"] .modality-section-icon{background:#24343b}
