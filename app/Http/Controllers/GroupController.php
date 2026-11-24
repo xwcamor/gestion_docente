@@ -231,8 +231,7 @@ class GroupController extends Controller
             ->with(['course', 'curriculum', 'modalities.schedules'])
             ->withCount('modalities')
             ->orderBy('id')
-            ->paginate(12)
-            ->withQueryString();
+            ->get();
 
         $courseCount = $group->assignments()->count();
         $coursesWithModalityCount = $group->assignments()->whereHas('modalities')->count();
@@ -247,16 +246,6 @@ class GroupController extends Controller
             ->whereNotNull('end_date')
             ->whereHas('schedules', fn ($query) => $query->where('block_type', 'CLASS'))
             ->count();
-
-        $courseModalityPercent = $courseCount > 0
-            ? (int) round(($coursesWithModalityCount / $courseCount) * 100)
-            : 0;
-        $curriculumPercent = $courseCount > 0
-            ? (int) round(($curriculumCount / $courseCount) * 100)
-            : 0;
-        $schedulePercent = $modalityCount > 0
-            ? (int) round(($configuredModalityCount / $modalityCount) * 100)
-            : 0;
 
         $declaredWeeklyHours = (float) $group->assignments()
             ->join('course_modalities', 'course_modalities.course_assignment_id', '=', 'course_assignments.id')
@@ -387,9 +376,6 @@ class GroupController extends Controller
             'coursesWithModalityCount',
             'curriculumCount',
             'configuredModalityCount',
-            'courseModalityPercent',
-            'curriculumPercent',
-            'schedulePercent',
             'declaredWeeklyHours',
             'actualTheoryHours',
             'actualLabHours',
