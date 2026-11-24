@@ -45,7 +45,7 @@ class CourseAssignmentController extends Controller
         return view('assignments.create', compact('group', 'scheduleTemplates'));
     }
 
-    public function store(Request $request, TeachingGroup $group, CalendarService $calendar)
+    public function store(Request $request, TeachingGroup $group, CalendarService $calendar, StudentImportService $students)
     {
         $this->authorizeGroup($group);
 
@@ -179,6 +179,8 @@ class CourseAssignmentController extends Controller
                 'semester' => $data['module'] ?? null,
                 'period_label' => $group->cycle->academic_year . '-' . $group->cycle->cycle_code . '-' . $kind,
             ]);
+            $students->syncGroupRosterToModality($modality);
+
             foreach (($data[$prefix . '_schedules'] ?? []) as $schedule) {
                 if (empty($schedule['day_of_week']) || empty($schedule['start_time']) || empty($schedule['end_time']) || $schedule['end_time'] <= $schedule['start_time']) {
                     continue;
