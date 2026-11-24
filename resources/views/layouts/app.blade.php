@@ -614,6 +614,13 @@ html[data-theme="dark"] .holiday-row,html[data-theme="dark"] .calendar-grid{bord
 html[data-theme="dark"] .holiday-date{background:#1a2b35;border-color:#3b515e}
 html[data-theme="dark"] .holiday-date strong{color:#d7e6ed}
 
+
+.top-theme-toggle{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:34px;padding:7px 10px;border:1px solid var(--line-strong);border-radius:7px;background:var(--surface);color:var(--ink-soft);font-size:10px;font-weight:650;cursor:pointer}
+.top-theme-toggle:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+html[data-theme="dark"] .top-theme-toggle{border-color:#3a4e5a;background:#1b2a34;color:#d6e1e7}
+html[data-theme="dark"] .top-theme-toggle:hover{border-color:var(--accent);background:#263945;color:#fff}
+@media(max-width:720px){.top-theme-toggle{width:32px;min-width:32px;height:32px;padding:6px}.top-theme-toggle span{display:none}}
+
 </style>
     @stack('styles')
 </head>
@@ -666,6 +673,7 @@ html[data-theme="dark"] .holiday-date strong{color:#d7e6ed}
         <span>{{ $appBranding['name'] ?? 'Gestión Docente' }}<small>{{ $appBranding['subtitle'] ?? 'Organización académica' }}</small></span>
     </a>
     <div class="top-actions">
+        <button class="top-theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema" title="Cambiar tema"><x-icon name="moon" size="16" /><span>Modo oscuro</span></button>
         <a class="top-user" href="{{ route('profile.edit') }}">{{ auth()->user()->name ?? '' }} · Mi perfil</a>
         <button class="top-help" type="button" data-modal-open="workflow-help-dialog"><x-icon name="circle-help" size="15" /> Ayuda</button>
         <form method="POST" action="{{ route('logout') }}">@csrf<button class="logout" type="submit"><x-icon name="log-out" size="15" />Cerrar sesión</button></form>
@@ -720,7 +728,7 @@ html[data-theme="dark"] .holiday-date strong{color:#d7e6ed}
                         <output id="sidebar-width-value" for="sidebar-width">250 px</output>
                     </div>
                 </div>
-                <button class="sidebar-preference-button" type="button" id="theme-toggle" aria-pressed="false">
+                <button class="sidebar-preference-button" type="button" id="theme-toggle" data-theme-toggle aria-pressed="false">
                     <x-icon name="moon" size="16" /><span id="theme-toggle-label">Modo oscuro</span>
                     <small id="theme-toggle-state">Desactivado</small>
                 </button>
@@ -784,9 +792,7 @@ html[data-theme="dark"] .holiday-date strong{color:#d7e6ed}
     const collapseButton = document.getElementById('sidebar-collapse');
     const widthInput = document.getElementById('sidebar-width');
     const widthOutput = document.getElementById('sidebar-width-value');
-    const themeButton = document.getElementById('theme-toggle');
-    const themeLabel = document.getElementById('theme-toggle-label');
-    const themeState = document.getElementById('theme-toggle-state');
+    const themeButtons = [...document.querySelectorAll('[data-theme-toggle]')];
 
     const storage = {
         get(key, fallback) { try { return localStorage.getItem(key) ?? fallback; } catch (_) { return fallback; } },
@@ -818,15 +824,21 @@ html[data-theme="dark"] .holiday-date strong{color:#d7e6ed}
 
     const setTheme = dark => {
         root.dataset.theme = dark ? 'dark' : 'light';
-        themeButton?.setAttribute('aria-pressed', dark ? 'true' : 'false');
-        if (themeLabel) themeLabel.textContent = dark ? 'Modo claro' : 'Modo oscuro';
-        if (themeState) themeState.textContent = dark ? 'Activado' : 'Desactivado';
-        const icon = themeButton?.querySelector('.icon use');
-        if (icon) icon.setAttribute('href', dark ? '#icon-sun' : '#icon-moon');
+        themeButtons.forEach(button => {
+            button.setAttribute('aria-pressed', dark ? 'true' : 'false');
+            const icon = button.querySelector('.icon use');
+            if (icon) icon.setAttribute('href', dark ? '#icon-sun' : '#icon-moon');
+            const label = button.querySelector('#theme-toggle-label');
+            const state = button.querySelector('#theme-toggle-state');
+            const topLabel = button.querySelector('span:not(#theme-toggle-label):not(#theme-toggle-state)');
+            if (label) label.textContent = dark ? 'Modo claro' : 'Modo oscuro';
+            if (state) state.textContent = dark ? 'Activado' : 'Desactivado';
+            if (topLabel) topLabel.textContent = dark ? 'Modo claro' : 'Modo oscuro';
+        });
         storage.set('gd-theme', dark ? 'dark' : 'light');
     };
     setTheme(storage.get('gd-theme', root.dataset.theme || 'light') === 'dark');
-    themeButton?.addEventListener('click', () => setTheme(root.dataset.theme !== 'dark'));
+    themeButtons.forEach(button => button.addEventListener('click', () => setTheme(root.dataset.theme !== 'dark')));
 
     let pendingForm = null;
     let lastModalTrigger = null;
