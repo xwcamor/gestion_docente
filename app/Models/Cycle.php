@@ -11,11 +11,11 @@ class Cycle extends Model
 {
     use HasSlugRouteKey;
 
-    protected $fillable = ['professor_id', 'academic_year', 'cycle_code', 'start_date', 'end_date', 'status'];
+    protected $fillable = ['professor_id', 'academic_year', 'cycle_code', 'start_date', 'end_date', 'status', 'five_minute_talk_days'];
 
     protected function casts(): array
     {
-        return ['start_date' => 'date', 'end_date' => 'date'];
+        return ['start_date' => 'date', 'end_date' => 'date', 'five_minute_talk_days' => 'array'];
     }
 
     protected function slugSource(): string
@@ -31,5 +31,15 @@ class Cycle extends Model
     public function groups(): HasMany
     {
         return $this->hasMany(TeachingGroup::class);
+    }
+
+    public function fiveMinuteTalks(): HasMany
+    {
+        return $this->hasMany(CycleFiveMinuteTalk::class)->orderBy('position');
+    }
+
+    public function generatedDocuments(): HasMany
+    {
+        return $this->hasMany(GeneratedDocument::class);
     }
 }
