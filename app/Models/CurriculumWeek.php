@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class CurriculumWeek extends Model
 {
     protected $fillable = [
-        'curriculum_id', 'curriculum_task_id', 'week_number', 'source_week_number', 'hours_theory',
+        'curriculum_id', 'curriculum_task_id', 'week_number', 'source_week_number', 'source_topic', 'hours_theory',
         'hours_practice', 'hours_virtual', 'is_evaluation', 'source_pages', 'notes',
     ];
     protected function casts(): array
