@@ -985,6 +985,251 @@
     .tree-group-inline-details{column-gap:7px}
     .tree-group-inline-schedule{flex-basis:100%}
 }
+
+/* Periodo propio del curso: editable en línea y sin aumentar demasiado el nodo. */
+.tree-course-period{
+    display:flex!important;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:4px 13px;
+    margin-top:3px;
+    color:var(--muted);
+    font-size:10px;
+    line-height:1.35;
+}
+.tree-course-period .tree-date-field{display:inline-flex;align-items:center;gap:4px}
+.tree-course-period .tree-date-label{font-size:9px;font-weight:750}
+.tree-course-period .tree-inline-date{min-height:21px;padding:2px 6px;font-size:9px}
+.tree-course-period .tree-inline-date.is-empty{
+    border:1px dashed color-mix(in srgb,var(--accent) 45%,var(--line));
+    border-radius:6px;
+    border-bottom-style:dashed;
+    background:var(--accent-soft);
+    color:var(--accent);
+    font-weight:750;
+}
+.tree-course-period .tree-inline-date.is-empty:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 15%,var(--surface))}
+.tree-course-period .tree-inline-editor{min-width:130px;max-width:155px;min-height:29px;font-size:10px}
+
+/* Estado de programación: reemplaza el mensaje repetido "Horario pendiente". */
+.tree-modality-schedule-summary{
+    display:inline-flex!important;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:5px;
+    width:max-content;
+    max-width:100%;
+    margin:0;
+    padding:4px 7px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    font-size:9px!important;
+    font-weight:650;
+    line-height:1.35!important;
+}
+.tree-modality-schedule-summary .icon{flex:none;width:13px;height:13px}
+.tree-modality-schedule-summary.is-pending{border-color:color-mix(in srgb,var(--accent) 24%,var(--line));background:var(--accent-soft);color:var(--accent)}
+.tree-modality-schedule-summary.is-ready{border-color:#cfe4d6;background:#eff7f0;color:#28623d}
+.tree-modality-schedule-summary.is-disabled{background:var(--surface-soft);color:var(--muted)}
+.tree-modality-extra-meta{display:inline-flex;align-items:center;color:var(--muted);font-size:8px}
+
+/* Conectores del árbol: grupo -> curso -> componentes TEC/TAL. */
+.tree-structure-card .workload-tree-root{
+    position:relative!important;
+    display:block!important;
+    padding:12px 0 12px 22px!important;
+}
+.tree-structure-card .workload-tree-root::before{
+    content:"";
+    position:absolute;
+    top:25px;
+    bottom:25px;
+    left:8px;
+    width:2px;
+    border-radius:2px;
+    background:color-mix(in srgb,var(--accent) 42%,var(--line-strong));
+}
+.tree-structure-card .workload-tree-root>.workload-tree-group-shell{
+    position:relative!important;
+    min-width:0;
+    margin:0 0 9px!important;
+    padding:0 0 0 16px!important;
+    overflow:visible!important;
+    border:0!important;
+    border-radius:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+}
+.tree-structure-card .workload-tree-root>.workload-tree-group-shell:last-child{margin-bottom:0!important}
+.tree-structure-card .workload-tree-root>.workload-tree-group-shell::before{
+    content:"";
+    position:absolute;
+    top:33px;
+    left:-14px;
+    width:30px;
+    height:2px;
+    border-radius:2px;
+    background:color-mix(in srgb,var(--accent) 42%,var(--line-strong));
+}
+.tree-structure-card .workload-tree-group{
+    min-width:0;
+    margin:0!important;
+    overflow:visible!important;
+    border:0!important;
+    border-radius:0!important;
+    background:transparent!important;
+}
+.tree-structure-card .workload-group-summary{
+    position:relative;
+    min-width:0;
+    border:1px solid var(--line-strong)!important;
+    border-radius:10px!important;
+    background:var(--surface)!important;
+}
+.tree-structure-card .workload-tree-group[open]>.workload-group-summary{
+    border-color:color-mix(in srgb,var(--accent) 42%,var(--line))!important;
+    border-radius:10px 10px 0 0!important;
+    background:var(--accent-soft)!important;
+}
+.tree-structure-card .workload-tree-children.workload-group-children{
+    position:relative!important;
+    min-width:0;
+    margin:0 0 0 18px!important;
+    padding:9px 7px 12px 22px!important;
+    border:0!important;
+    border-radius:0!important;
+    background:transparent!important;
+}
+.tree-structure-card .workload-tree-children.workload-group-children::before{
+    content:"";
+    position:absolute;
+    top:0;
+    bottom:18px;
+    left:8px;
+    width:2px;
+    border-radius:2px;
+    background:color-mix(in srgb,var(--accent) 36%,var(--line-strong));
+}
+.tree-structure-card .workload-tree-children.workload-group-children>[data-tree-content]{
+    position:relative;
+    min-width:0;
+    margin:0;
+    padding:0;
+}
+.tree-structure-card .workload-tree-course{
+    position:relative!important;
+    min-width:0;
+    margin:0 0 7px!important;
+    padding:0 0 0 16px!important;
+    overflow:visible!important;
+    border:0!important;
+    background:transparent!important;
+}
+.tree-structure-card .workload-tree-course:last-child{margin-bottom:0!important}
+.tree-structure-card .workload-tree-course::before{
+    content:"";
+    position:absolute;
+    top:29px;
+    left:-14px;
+    width:30px;
+    height:2px;
+    border-radius:2px;
+    background:color-mix(in srgb,var(--accent) 36%,var(--line-strong));
+}
+.tree-structure-card .tree-course-branch{
+    min-width:0;
+    overflow:visible!important;
+}
+.tree-structure-card .tree-course-summary{
+    position:relative;
+    min-width:0;
+    border:1px solid var(--line)!important;
+    border-radius:9px!important;
+    background:var(--surface)!important;
+}
+.tree-structure-card .tree-course-branch[open]>.tree-course-summary{
+    border-color:color-mix(in srgb,var(--accent) 40%,var(--line))!important;
+    border-radius:9px 9px 0 0!important;
+    background:color-mix(in srgb,var(--accent-soft) 55%,var(--surface))!important;
+}
+.tree-structure-card .tree-course-children{
+    position:relative!important;
+    min-width:0;
+    margin:0 0 0 22px!important;
+    padding:9px 7px 12px 26px!important;
+    border:0!important;
+    border-radius:0!important;
+    background:transparent!important;
+}
+.tree-structure-card .tree-course-children::before{
+    content:"";
+    position:absolute;
+    top:0;
+    bottom:20px;
+    left:11px;
+    width:2px;
+    border-radius:2px;
+    background:color-mix(in srgb,var(--accent) 32%,var(--line-strong));
+}
+.tree-structure-card .tree-course-tools{
+    position:relative;
+    z-index:1;
+    display:flex;
+    align-items:center;
+    width:max-content;
+    max-width:100%;
+    margin:0 0 4px;
+    padding:3px 7px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    background:var(--surface-soft);
+    color:var(--muted);
+    font-size:9px;
+}
+.tree-structure-card .workload-tree-modality{
+    position:relative!important;
+    min-width:0;
+    margin:0 0 0 14px!important;
+    padding:10px 4px 10px 2px!important;
+    border:0!important;
+    background:transparent!important;
+}
+.tree-structure-card .workload-tree-modality::before{
+    content:"";
+    position:absolute;
+    top:26px;
+    left:-14px;
+    width:14px;
+    height:2px;
+    border-radius:2px;
+    background:color-mix(in srgb,var(--accent) 32%,var(--line-strong));
+}
+.tree-structure-card .tree-branch-mark{display:none!important}
+.tree-structure-card .workload-tree-modality+.workload-tree-modality{
+    border-top:1px solid color-mix(in srgb,var(--line) 72%,transparent)!important;
+}
+@media(max-width:760px){
+    .tree-structure-card .workload-tree-root{padding-left:15px!important}
+    .tree-structure-card .workload-tree-root::before{left:5px}
+    .tree-structure-card .workload-tree-root>.workload-tree-group-shell{padding-left:11px!important}
+    .tree-structure-card .workload-tree-root>.workload-tree-group-shell::before{left:-10px;width:21px}
+    .tree-structure-card .workload-tree-children.workload-group-children{margin-left:10px!important;padding-left:17px!important}
+    .tree-structure-card .workload-tree-children.workload-group-children::before{left:5px}
+    .tree-structure-card .workload-tree-course{padding-left:11px!important}
+    .tree-structure-card .workload-tree-course::before{left:-10px;width:21px}
+    .tree-structure-card .tree-course-children{margin-left:13px!important;padding-left:20px!important}
+    .tree-structure-card .tree-course-children::before{left:8px}
+    .tree-structure-card .workload-tree-modality{margin-left:10px!important}
+    .tree-structure-card .workload-tree-modality::before{left:-10px;width:10px}
+    .tree-course-period{gap:3px 8px;font-size:9px}
+    .tree-course-period .tree-date-label{font-size:8px}
+}
+@media(prefers-reduced-motion:reduce){
+    .tree-structure-card .workload-tree-group-shell::before,
+    .tree-structure-card .workload-tree-course::before,
+    .tree-structure-card .workload-tree-modality::before{transition:none}
+}
+
 </style>
 @endpush
 
