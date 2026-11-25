@@ -75,6 +75,7 @@
                                 data-date="{{ $day['date']->format('d/m/Y') }}"
                                 data-name="{{ $holiday->name }}"
                                 data-scope="{{ $scopeLabels[$holiday->scope] ?? $holiday->scope }}"
+                                data-scope-code="{{ $holiday->scope }}"
                                 data-blocking="{{ $holiday->blocks_classes ? '1' : '0' }}"
                                 data-verified="{{ $holiday->verified ? '1' : '0' }}"
                                 data-source="{{ $holiday->source_url }}"
@@ -468,7 +469,7 @@
 
     const populateEdit = data => {
         if (!editDialog || !editForm) return;
-        editForm.action = data.updateUrl || data.updateUrl === '' ? data.updateUrl : (data.updateUrl || '#');
+        editForm.action = data.updateUrl || '#';
         fields.date.value = data.date || '';
         fields.name.value = data.name || '';
         fields.scope.value = data.scopeCode || 'NATIONAL';
@@ -530,7 +531,7 @@
                     updateUrl: detailButton.dataset.updateUrl,
                     date: detailButton.dataset.date ? detailButton.dataset.date.split('/').reverse().join('-') : '',
                     name: detailButton.dataset.name,
-                    scopeCode: ({Nacional:'NATIONAL',Regional:'REGIONAL,Institucional:'INSTITUTIONAL',Sector:'SECTOR'})[detailButton.dataset.scope] || 'NATIONAL',
+                    scopeCode: detailButton.dataset.scopeCode || 'NATIONAL',
                     blocks: detailButton.dataset.blocking,
                     source: detailButton.dataset.source,
                     sourceNote: detailButton.dataset.sourceNote,
