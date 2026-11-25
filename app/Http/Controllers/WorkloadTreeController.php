@@ -106,7 +106,7 @@ class WorkloadTreeController extends Controller
 
     public function modalities(CourseAssignment $assignment)
     {
-        $assignment->loadMissing(['group.cycle', 'course', 'curriculum.weeks']);
+        $assignment->loadMissing(['group.cycle', 'course']);
         $this->authorizeGroup($assignment->group);
 
         $modalities = $assignment->modalities()
