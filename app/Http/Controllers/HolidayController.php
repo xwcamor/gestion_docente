@@ -156,13 +156,23 @@ class HolidayController extends Controller
     {
         $this->authorizeHoliday($request, $holiday);
         $isAdmin = $request->user()->isAdmin();
-        $data = $this->validatedData($request, $isAdmin, $holiday);
-        $this->ensureNoDuplicate(
-            $data['holiday_date'],
-            $data['name'],
-            $holiday->professor_id,
-            $holiday->id
-        );
+        try {
+            $data = $this->validatedData($request, $isAdmin, $holiday);
+            $this->ensureNoDuplicate(
+                $data['holiday_date'],
+                $data['name'],
+                $holiday->professor_id,
+                $holiday->id
+            );
+        } catch (ValidationException $exception) {
+            return redirect()
+                ->route('holidays.index', $this->returnFilters($request) + [
+                    'dialog' => 'edit-holiday',
+                    'holiday_id' => $holiday->id,
+                ])
+                ->withErrors($exception->errors())
+                ->withInput();
+        }
 
         $before = [
             'holiday_date' => $holiday->holiday_date->toDateString(),
@@ -286,7 +296,7 @@ class HolidayController extends Controller
                     ? $query->whereNull('professor_id')
                     : $query->where('professor_id', $professorId);
             })
-            ->when($ignoreId, fn ($query) => $query->whereKeyNot($ignoreId))
+            ->when($ignoreId, fn ($query) => $query->where('id', '<>', $ignoreId))
             ->exists();
 
         if ($duplicate) {
