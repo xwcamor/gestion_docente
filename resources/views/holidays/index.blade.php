@@ -36,7 +36,7 @@
         <x-icon name="calendar-days" size="15" /><span>Calendario</span>
     </a>
     <a class="holiday-view-option {{ !$isCalendarView ? 'active' : '' }}" href="{{ $listViewUrl }}" @if(!$isCalendarView) aria-current="page" @endif>
-        <x-icon name="list" size="15" /><span>Listado</span>
+        <x-icon name="file-text" size="15" /><span>Listado</span>
     </a>
 </nav>
 
@@ -50,7 +50,7 @@
     <div class="calendar-heading">
         <div><p class="eyebrow">Vista mensual</p><h2>{{ ucfirst($monthNames[$calendarMonth]) }} {{ $calendarYear }}</h2></div>
         <div class="calendar-controls">
-            <a class="calendar-nav" href="{{ $previousMonthUrl }}" aria-label="Mes anterior" title="Mes anterior"><x-icon name="chevron-left" size="15" /></a>
+            <a class="calendar-nav" href="{{ $previousMonthUrl }}" aria-label="Mes anterior" title="Mes anterior"><x-icon name="arrow-left" size="15" /></a>
             <a class="calendar-today" href="{{ route('holidays.index', array_merge(request()->except('page', 'year', 'calendar_month', 'calendar_year'), ['calendar_month' => now()->month, 'calendar_year' => now()->year])) }}">Hoy</a>
             <a class="calendar-nav" href="{{ $nextMonthUrl }}" aria-label="Mes siguiente" title="Mes siguiente"><x-icon name="chevron-right" size="15" /></a>
         </div>
@@ -148,7 +148,7 @@
                         {{ $holiday->holiday_date->format('d/m/Y') }}
                         @if($holiday->source_note) · {{ $holiday->source_note }}@endif
                     </p>
-                    @if($holiday->source_url)<a class="holiday-source" href="{{ $holiday->source_url }}" target="_blank" rel="noopener noreferrer"><x-icon name="external-link" size="12" /> Ver fuente</a>@endif
+                    @if($holiday->source_url)<a class="holiday-source" href="{{ $holiday->source_url }}" target="_blank" rel="noopener noreferrer"><x-icon name="arrow-up-right" size="12" /> Ver fuente</a>@endif
                 </div>
                 <div class="holiday-status">
                     <span class="holiday-impact {{ $holiday->blocks_classes ? 'is-blocking' : 'is-informative' }}">{{ $holiday->blocks_classes ? 'Suspende clases' : 'Informativo' }}</span>
@@ -204,7 +204,7 @@
             <span id="calendar-day-scope"></span><span id="calendar-day-calendar"></span><span id="calendar-day-status"></span><span id="calendar-day-verification"></span>
         </div>
         <p id="calendar-day-note" class="calendar-detail-note" hidden></p>
-        <a id="calendar-day-source" class="calendar-day-source" href="#" target="_blank" rel="noopener noreferrer" hidden><x-icon name="external-link" /> Consultar fuente</a>
+        <a id="calendar-day-source" class="calendar-day-source" href="#" target="_blank" rel="noopener noreferrer" hidden><x-icon name="arrow-up-right" /> Consultar fuente</a>
     </div>
     <div class="dialog-footer calendar-detail-actions">
         <button class="btn btn-secondary" type="button" data-calendar-edit hidden><x-icon name="pencil" /> Editar</button>
