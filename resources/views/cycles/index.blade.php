@@ -164,7 +164,6 @@
             </div>
         </details>
     @empty
-    @empty
         <div class="empty">
             <span class="stat-icon" style="margin:0 auto 10px;width:42px;height:42px"><x-icon name="calendar-days" size="20" /></span>
             <strong>{{ request()->hasAny(['q', 'year']) ? 'No encontramos cargas laborales con esos filtros.' : 'Todavía no has importado una carga laboral.' }}</strong>
