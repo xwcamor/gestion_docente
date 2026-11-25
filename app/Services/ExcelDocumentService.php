@@ -33,12 +33,10 @@ class ExcelDocumentService
     {
         $modality->loadMissing([
             'assignment.curriculum.weeks.task',
-            'assignment.course.curricula.weeks.task',
         ]);
 
         $assignment = $modality->assignment;
-        $curriculum = $assignment->curriculum
-            ?: $assignment->course->curricula->firstWhere('is_active', true);
+        $curriculum = $assignment->curriculum;
 
         if (!$curriculum) {
             return false;
