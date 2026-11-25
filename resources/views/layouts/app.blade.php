@@ -1328,6 +1328,7 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
 <body class="{{ ($appAppearance['sidebar_visible'] ?? true) ? '' : 'sidebar-hidden' }}" data-sidebar-visible="{{ ($appAppearance['sidebar_visible'] ?? true) ? '1' : '0' }}" data-sidebar-color="{{ $appAppearance['sidebar_color'] ?? 'blue' }}">
 
 <svg class="icon-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+ <symbol id="icon-house" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V10z"/><path d="M2 11 12 3l10 8"/></symbol>
  <symbol id="icon-layout-dashboard" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="5" rx="1.5"/><rect x="13" y="10" width="8" height="11" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/></symbol>
  <symbol id="icon-calendar-days" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01"/></symbol>
  <symbol id="icon-calendar-check" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 14l2 2 4-4"/></symbol>
@@ -1422,7 +1423,7 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
             <nav class="sidebar-nav">
                 <div class="nav-label">Espacio de trabajo</div>
                 <a class="nav-link {{ request()->routeIs('dashboard*') ? 'active' : '' }}" href="{{ route('dashboard') }}" title="Panel de inicio">
-                    <x-icon name="layout-dashboard" /><span>Inicio</span>
+                    <x-icon name="house" /><span>Inicio</span>
                 </a>
                 <a class="nav-link {{ request()->routeIs('cycles.*','groups.*','assignments.*','modalities.*','evaluations.*','curricula.*','students.*','documents.*','distribution.*') ? 'active' : '' }}" href="{{ route('cycles.index') }}" title="Cargas laborales">
                     <x-icon name="git-branch" /><span>Cargas laborales</span>
