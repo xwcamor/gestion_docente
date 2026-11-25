@@ -1068,11 +1068,8 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
 
             <nav class="sidebar-nav">
                 <div class="nav-label">Espacio de trabajo</div>
-                <a class="nav-link {{ request()->routeIs('dashboard*') ? 'active' : '' }}" href="{{ route('dashboard') }}" title="Resumen">
-                    <x-icon name="layout-dashboard" /><span>Resumen</span>
-                </a>
-                <a class="nav-link {{ request()->routeIs('cycles.*','groups.*','assignments.*','modalities.*','evaluations.*','curricula.*','students.*','documents.*','distribution.*') ? 'active' : '' }}" href="{{ route('cycles.index') }}" title="Cargas laborales">
-                    <x-icon name="calendar-days" /><span>Cargas laborales</span>
+                <a class="nav-link {{ request()->routeIs('cycles.*','groups.*','assignments.*','modalities.*','evaluations.*','curricula.*','students.*','documents.*','distribution.*','dashboard*') ? 'active' : '' }}" href="{{ route('cycles.index') }}" title="Árbol de carga laboral">
+                    <x-icon name="git-branch" /><span>Árbol de carga laboral</span>
                 </a>
                 <a class="nav-link {{ request()->routeIs('holidays.*') ? 'active' : '' }}" href="{{ route('holidays.index') }}" title="Feriados">
                     <x-icon name="calendar-range" /><span>Feriados</span>
