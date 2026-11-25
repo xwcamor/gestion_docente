@@ -33,20 +33,6 @@
             <span class="workload-tree-total" data-tree-group-total>{{ $cycleGroupCount }} grupos</span>
         </div>
 
-        <form method="POST" action="{{ route('groups.store', $cycle) }}" class="tree-add-group-form">
-            @csrf
-            <input type="hidden" name="return_to_tree" value="1">
-            <label>
-                <span><x-icon name="folder-open" size="19" /> Nombre del grupo</span>
-                <input class="field" name="name" maxlength="100" required placeholder="Ej. Grupo 01">
-            </label>
-            <label>
-                <span><x-icon name="file-text" size="19" /> Código (opcional)</span>
-                <input class="field" name="code" maxlength="80" placeholder="Ej. G01-2026">
-            </label>
-            <button class="btn" type="submit" aria-label="Agregar grupo"><x-icon name="plus" size="19" /> Agregar grupo</button>
-        </form>
-
         <form method="GET" action="{{ route('cycles.tree', $cycle) }}" class="workload-tree-search">
             <label class="workload-tree-search-field">
                 <x-icon name="search" size="19" />
@@ -60,6 +46,36 @@
 
         <div class="workload-tree-root" aria-label="Estructura académica">
             @include('cycles.tree.groups', ['groups' => $groups, 'cycle' => $cycle])
+        </div>
+
+        <form method="POST" action="{{ route('groups.store', $cycle) }}"
+              class="tree-group-draft-form" data-tree-group-form hidden>
+            @csrf
+            <input type="hidden" name="return_to_tree" value="1">
+            <div class="tree-draft-heading">
+                <strong><x-icon name="folder-plus" size="17" /> Nuevo grupo</strong>
+                <span>Borrador · todavía no está guardado</span>
+            </div>
+            <div class="tree-draft-fields">
+                <label class="tree-course-name-input">
+                    <span>Nombre del grupo</span>
+                    <input class="field" name="name" maxlength="100" required placeholder="Ej. Grupo 01">
+                </label>
+                <label class="tree-course-name-input">
+                    <span>Código (opcional)</span>
+                    <input class="field" name="code" maxlength="80" placeholder="Ej. G01-2026">
+                </label>
+            </div>
+            <div class="tree-draft-footer">
+                <span class="tree-draft-error" data-group-form-error hidden role="alert"></span>
+                <div>
+                    <button class="btn btn-ghost" type="button" data-cancel-group-draft>Cancelar</button>
+                    <button class="btn" type="submit" data-group-submit><x-icon name="check" size="16" /> Guardar grupo</button>
+                </div>
+            </div>
+        </form>
+        <div class="tree-add-row tree-add-group-row" data-group-add-row>
+            <button type="button" data-show-group-draft><x-icon name="plus" size="17" /> Agregar grupo</button>
         </div>
     </section>
 
@@ -739,6 +755,35 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
     .tree-structure-card .tree-course-node{flex-basis:36px;width:36px;height:36px}
 }
 
+
+/* Filas de alta inline: el borrador aparece debajo de su nivel */
+.tree-add-row{display:flex;justify-content:center;padding:9px 10px;border-top:1px dashed var(--line-strong);background:var(--surface)}
+.tree-add-row>button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:36px;padding:7px 15px;border:1px dashed color-mix(in srgb,var(--accent) 55%,var(--line));border-radius:8px;background:var(--surface);color:var(--accent);font-size:12px;font-weight:850;cursor:pointer;transition:background .15s ease,border-color .15s ease,transform .15s ease}
+.tree-add-row>button:hover{border-style:solid;background:var(--accent-soft);transform:translateY(-1px)}
+.tree-group-draft-form,.tree-course-draft-form{display:grid;gap:12px;margin:10px 0;padding:14px;border:1px solid color-mix(in srgb,var(--accent) 35%,var(--line));border-left:4px solid var(--accent);border-radius:10px;background:var(--accent-soft)}
+.tree-group-draft-form[hidden],.tree-course-draft-form[hidden],.tree-add-row[hidden]{display:none!important}
+.tree-draft-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.tree-draft-heading strong{display:inline-flex;align-items:center;gap:7px;color:var(--ink);font-size:13px;font-weight:900}
+.tree-draft-heading strong svg{color:var(--accent)}
+.tree-draft-heading>span{padding:4px 7px;border-radius:6px;background:var(--surface);color:var(--muted);font-size:9px;font-weight:750}
+.tree-draft-fields{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(180px,.8fr);gap:10px}
+.tree-draft-fields .field{height:40px;min-width:0;background:var(--surface);font-size:12px}
+.tree-draft-footer,.tree-course-draft-form .tree-course-create-footer{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.tree-draft-footer>div,.tree-course-draft-form .tree-course-create-footer>div{display:flex;align-items:center;gap:7px}
+.tree-draft-error{color:var(--danger);font-size:11px;line-height:1.4}
+.tree-draft-error[hidden]{display:none!important}
+.tree-course-draft-form .tree-entry-components{padding:0}
+.tree-course-draft-form .tree-course-create-footer{padding-top:8px;border-top:1px solid var(--line)}
+.tree-course-draft-form .tree-course-create-footer>small{max-width:440px}
+.tree-course-draft-form .tree-course-create-footer .btn{min-height:36px;font-size:11px}
+.tree-draft-cancel{min-height:36px;font-size:11px}
+@media(max-width:650px){
+ .tree-draft-fields{grid-template-columns:1fr}
+ .tree-draft-footer,.tree-course-draft-form .tree-course-create-footer{align-items:stretch;flex-direction:column}
+ .tree-draft-footer>div,.tree-course-draft-form .tree-course-create-footer>div{display:grid;grid-template-columns:1fr 1fr;width:100%}
+ .tree-draft-footer .btn,.tree-course-draft-form .tree-course-create-footer .btn{width:100%}
+}
+
 </style>
 @endpush
 
@@ -893,8 +938,6 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
     root.querySelectorAll('[data-tree-load]').forEach(groupNode => {
         groupNode.addEventListener('toggle', () => {
             if (!groupNode.open) return;
-
-            // Respaldo accesible para mantener un solo grupo desplegado.
             root.querySelectorAll('[data-tree-load]').forEach(otherGroup => {
                 if (otherGroup !== groupNode) otherGroup.open = false;
             });
@@ -902,7 +945,67 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
         });
     });
 
+    const newlyCreatedGroupId = new URLSearchParams(window.location.search).get('open_group');
+    if (newlyCreatedGroupId) {
+        const newlyCreatedGroup = groupNodeById(newlyCreatedGroupId);
+        if (newlyCreatedGroup) {
+            newlyCreatedGroup.open = true;
+            loadGroup(newlyCreatedGroup);
+            newlyCreatedGroup.scrollIntoView({behavior: 'smooth', block: 'center'});
+        }
+        const cleanUrl = new URL(window.location.href);
+        cleanUrl.searchParams.delete('open_group');
+        window.history.replaceState({}, '', cleanUrl.toString());
+    }
+
     document.addEventListener('click', async event => {
+        const showGroupDraft = event.target.closest('[data-show-group-draft]');
+        if (showGroupDraft) {
+            event.preventDefault();
+            const form = root.querySelector('[data-tree-group-form]');
+            const row = root.querySelector('[data-group-add-row]');
+            if (form) {
+                form.hidden = false;
+                if (row) row.hidden = true;
+                form.querySelector('[name="name"]')?.focus();
+            }
+            return;
+        }
+
+        const showCourseDraft = event.target.closest('[data-show-course-draft]');
+        if (showCourseDraft) {
+            event.preventDefault();
+            const group = showCourseDraft.closest('[data-tree-group-id]');
+            const form = group?.querySelector('[data-tree-course-form]');
+            const row = group?.querySelector('[data-course-add-row]');
+            if (form) {
+                form.hidden = false;
+                if (row) row.hidden = true;
+                form.querySelector('[name="course_name"]')?.focus();
+            }
+            return;
+        }
+
+        const cancelGroupDraft = event.target.closest('[data-cancel-group-draft]');
+        if (cancelGroupDraft) {
+            const form = cancelGroupDraft.closest('[data-tree-group-form]');
+            form?.reset();
+            if (form) form.hidden = true;
+            const row = root.querySelector('[data-group-add-row]');
+            if (row) row.hidden = false;
+            return;
+        }
+
+        const cancelCourseDraft = event.target.closest('[data-cancel-course-draft]');
+        if (cancelCourseDraft) {
+            const form = cancelCourseDraft.closest('[data-tree-course-form]');
+            form?.reset();
+            if (form) form.hidden = true;
+            const group = cancelCourseDraft.closest('[data-tree-group-id]');
+            const row = group?.querySelector('[data-course-add-row]');
+            if (row) row.hidden = false;
+            return;
+        }
         const nrcCell = event.target.closest('[data-inline-nrc]');
         if (nrcCell) {
             event.preventDefault();
@@ -992,6 +1095,39 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
     });
 
     document.addEventListener('submit', async event => {
+        const groupForm = event.target.closest('[data-tree-group-form]');
+        if (groupForm) {
+            event.preventDefault();
+            const submit = groupForm.querySelector('[data-group-submit]');
+            const errorBox = groupForm.querySelector('[data-group-form-error]');
+            if (submit) {
+                submit.disabled = true;
+                submit.textContent = 'Guardando…';
+            }
+            if (errorBox) errorBox.hidden = true;
+
+            try {
+                const payload = await post(groupForm.action, new FormData(groupForm));
+                const destination = new URL(window.location.href);
+                destination.searchParams.delete('q');
+                destination.searchParams.set('open_group', String(payload.group.id));
+                window.location.assign(destination.toString());
+            } catch (error) {
+                if (errorBox) {
+                    errorBox.textContent = error.message;
+                    errorBox.hidden = false;
+                } else {
+                    showFeedback(error.message, true);
+                }
+            } finally {
+                if (submit) {
+                    submit.disabled = false;
+                    submit.innerHTML = '<span>✓</span> Guardar grupo';
+                }
+            }
+            return;
+        }
+
         const courseForm = event.target.closest('[data-tree-course-form]');
         if (courseForm) {
             event.preventDefault();
@@ -1016,6 +1152,9 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
                 const payload = await post(courseForm.action, new FormData(courseForm));
                 const groupId = courseForm.dataset.groupId;
                 courseForm.reset();
+                courseForm.hidden = true;
+                const addRow = courseForm.closest('[data-tree-group-id]')?.querySelector('[data-course-add-row]');
+                if (addRow) addRow.hidden = false;
                 await refreshGroup(groupId, payload.assignment_id);
                 updateCourseDeleteGuards(groupNodeById(groupId), payload.assignments_count);
                 showFeedback(payload.message || 'Curso agregado.');
