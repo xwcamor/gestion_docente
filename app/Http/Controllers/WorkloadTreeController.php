@@ -30,6 +30,9 @@ class WorkloadTreeController extends Controller
             $like = '%'.$term.'%';
             $groupsQuery->where(function ($groups) use ($like) {
                 $groups->where('name', 'like', $like)
+                    ->orWhere('career', 'like', $like)
+                    ->orWhere('semester', 'like', $like)
+                    ->orWhere('code', 'like', $like)
                     ->orWhereHas('assignments.course', function ($courses) use ($like) {
                         $courses->where('name', 'like', $like)
                             ->orWhere('code', 'like', $like);
@@ -521,8 +524,6 @@ class WorkloadTreeController extends Controller
         $searchable = implode(' ', [
             $cycle->academic_year,
             $cycle->cycle_code,
-            $cycle->career,
-            $cycle->semester,
         ]);
 
         return str_contains(mb_strtolower($searchable), mb_strtolower($term));
@@ -530,7 +531,14 @@ class WorkloadTreeController extends Controller
 
     private function groupMatches(TeachingGroup $group, string $term): bool
     {
-        return str_contains(mb_strtolower((string) $group->name), mb_strtolower($term));
+        $searchable = implode(' ', [
+            $group->name,
+            $group->code,
+            $group->career,
+            $group->semester,
+        ]);
+
+        return str_contains(mb_strtolower($searchable), mb_strtolower($term));
     }
 
     private function authorizeCycle(Cycle $cycle): void
