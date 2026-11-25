@@ -627,8 +627,7 @@ class QuickCourseEntryController extends Controller
             ->filter(fn ($row) => filled($row['course_name'] ?? null)
                 || filled($row['tec_code'] ?? null)
                 || filled($row['tall_code'] ?? null))
-            ->values()
-            ->all();
+            ->values();
     }
 
     private function cleanScheduleBlocks(array $schedules): array
