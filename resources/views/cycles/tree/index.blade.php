@@ -667,6 +667,18 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
         }));
     };
 
+    const releaseAjaxForm = (form, submit) => {
+        if (form) {
+            delete form.dataset.submitting;
+            form.classList.remove('form-submitting');
+            form.removeAttribute('aria-busy');
+        }
+        if (submit) {
+            submit.classList.remove('is-loading');
+            submit.removeAttribute('aria-busy');
+        }
+    };
+
     const displayDate = value => {
         if (!value) return 'Sin fecha';
         const parts = value.split('-');
@@ -859,6 +871,7 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
                     errorBox.hidden = false;
                 }
             } finally {
+                releaseAjaxForm(courseForm, submit);
                 if (submit) {
                     submit.disabled = false;
                     submit.innerHTML = '<span>＋</span> Agregar curso';
@@ -888,6 +901,7 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
                 });
                 showFeedback(payload.message || 'Grupo eliminado.');
             } catch (error) {
+                releaseAjaxForm(groupDelete, submit);
                 if (submit) submit.disabled = false;
                 showFeedback(error.message, true);
             }
@@ -909,6 +923,7 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
                 updateCourseDeleteGuards(actualGroup, payload.assignments_count);
                 showFeedback(payload.message || 'Curso retirado del grupo.');
             } catch (error) {
+                releaseAjaxForm(courseDelete, submit);
                 if (submit) submit.disabled = false;
                 showFeedback(error.message, true);
             }
