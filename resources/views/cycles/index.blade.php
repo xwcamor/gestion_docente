@@ -2,16 +2,14 @@
 @section('title', 'Cargas laborales')
 @section('content')
 <div class="breadcrumbs">
-    <a href="{{ route('dashboard') }}">Resumen</a>
-    <x-icon name="chevron-right" size="12" />
-    <span class="current">Cargas laborales</span>
+    <span class="current">Árbol de carga laboral</span>
 </div>
 
 <div class="page-head">
     <div>
         <p class="eyebrow">Programación docente</p>
-        <h1>Cargas laborales</h1>
-        <p class="subhead">Cada carga se organiza por ciclo y grupo. Importa el archivo maestro para registrar cursos, NRC y fechas.</p>
+        <h1>Árbol de carga laboral</h1>
+        <p class="subhead">Organiza todo desde un solo lugar: ciclo, grupo, cursos, malla curricular y modalidades.</p>
     </div>
     <div class="actions">
         <button class="btn btn-secondary" type="button" data-modal-open="cycle-create-dialog"><x-icon name="plus" /> Crear ciclo manualmente</button>
