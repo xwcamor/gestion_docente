@@ -100,7 +100,6 @@ class HolidayController extends Controller
             'nextMonthUrl',
             'personalCount',
             'generalCount',
-            'blockingCount',
             'upcomingCount'
         ));
     }
