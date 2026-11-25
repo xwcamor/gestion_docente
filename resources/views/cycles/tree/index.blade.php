@@ -241,6 +241,7 @@
 .tree-curriculum-note{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:0 0 8px;padding:8px 10px;border:1px solid var(--line);border-radius:7px;background:var(--surface-soft);color:var(--success);font-size:10px}
 .tree-curriculum-note strong{color:var(--ink)}
 .tree-curriculum-note span{color:var(--muted)}
+.tree-course-hint{margin:0 0 9px;color:var(--muted);font-size:10px;line-height:1.45}
 .workload-tree-modality{position:relative;display:flex;align-items:center;gap:10px;min-width:0;padding:11px 3px;border-top:1px solid var(--line)}
 .tree-modality-tag{display:grid;place-items:center;flex:0 0 42px;height:30px;border-radius:7px;font-size:10px;font-weight:850}
 .tree-modality-tag.is-tec{background:var(--info-bg);color:var(--info)}
