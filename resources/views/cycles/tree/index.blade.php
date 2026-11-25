@@ -32,7 +32,7 @@
                     <h2>Estructura</h2>
                     <p>Organiza los grupos y agrega los cursos. No necesitas completar códigos ni horarios aquí.</p>
                 </div>
-                <span class="workload-tree-total" data-tree-group-total>{{ $groups->count() }} grupos</span>
+                <span class="workload-tree-total" data-tree-group-total>{{ $cycleGroupCount }} grupos</span>
             </div>
 
             <form method="POST" action="{{ route('groups.store', $cycle) }}" class="tree-add-group-form">
@@ -1127,12 +1127,18 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
                 const payload = await sendPost(groupDelete.action, new FormData(groupDelete));
                 shell?.remove();
                 const total = document.querySelector('[data-tree-group-total]');
-                const remaining = document.querySelectorAll('[data-group-shell]').length;
-                if (total) total.textContent = remaining + ' grupos';
-                if (remaining === 0) document.querySelector('.workload-tree-root').innerHTML = '<div class="tree-empty-child">No quedan grupos en este ciclo.</div>';
+                const remainingVisible = document.querySelectorAll('[data-group-shell]').length;
+                const remainingTotal = Number(payload.remaining_groups || 0);
+                if (total) total.textContent = remainingTotal + ' grupos';
+                if (remainingVisible === 0) {
+                    const message = remainingTotal > 0
+                        ? 'No hay grupos que coincidan con esta búsqueda.'
+                        : 'No quedan grupos en este ciclo.';
+                    document.querySelector('.workload-tree-root').innerHTML = '<div class="tree-empty-child">' + message + '</div>';
+                }
                 clearEditor();
                 document.querySelectorAll('[data-toggle-group-delete]').forEach(button => {
-                    button.disabled = Number(payload.remaining_groups) <= 1;
+                    button.disabled = remainingTotal <= 1;
                     const label = button.querySelector('[data-group-delete-label]');
                     if (label) label.textContent = button.disabled ? 'Único grupo' : 'Eliminar grupo';
                 });
