@@ -1235,6 +1235,7 @@
     .tree-structure-card .workload-tree-root>.workload-tree-group-shell::before{left:-10px;width:21px}
     .tree-structure-card .workload-tree-children.workload-group-children{margin-left:10px!important;padding-left:17px!important}
     .tree-structure-card .workload-tree-children.workload-group-children::before{left:5px}
+    .tree-structure-card .workload-tree-children.workload-group-children::after{left:-10px;width:15px}
     .tree-structure-card .workload-tree-course{padding-left:11px!important}
     .tree-structure-card .workload-tree-course::before{left:-10px;width:21px}
     .tree-structure-card .tree-course-children{margin-left:13px!important;padding-left:20px!important}
