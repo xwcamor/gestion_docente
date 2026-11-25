@@ -1236,8 +1236,8 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
 
                 @if(auth()->user()->isAdmin())
                     <div class="nav-label nav-section-label">Administración</div>
-                    <a class="nav-link {{ request()->routeIs('admin.professors.*') ? 'active' : '' }}" href="{{ route('admin.professors.index') }}" title="Profesores y cuentas">
-                        <x-icon name="users-round" /><span>Profesores y cuentas</span>
+                    <a class="nav-link {{ request()->routeIs('admin.professors.*') ? 'active' : '' }}" href="{{ route('admin.professors.index') }}" title="Gestión de cuentas">
+                        <x-icon name="users-round" /><span>Gestión de cuentas</span>
                     </a>
                     <a class="nav-link {{ request()->routeIs('admin.audit.*') ? 'active' : '' }}" href="{{ route('admin.audit.index') }}" title="Auditoría">
                         <x-icon name="history" /><span>Auditoría</span>
