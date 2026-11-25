@@ -533,7 +533,8 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
         const shouldDisable = Number(remaining) <= 1;
         document.querySelectorAll('[data-toggle-group-delete]').forEach(button => {
             button.disabled = shouldDisable;
-            button.textContent = shouldDisable ? 'Único grupo' : 'Eliminar grupo';
+            const label = button.querySelector('[data-group-delete-label]');
+            if (label) label.textContent = shouldDisable ? 'Único grupo' : 'Eliminar grupo';
             button.title = shouldDisable ? 'Cada ciclo debe conservar al menos un grupo' : 'Eliminar este grupo';
         });
         document.querySelectorAll('[data-group-delete-confirm] button[type="submit"]').forEach(button => {
