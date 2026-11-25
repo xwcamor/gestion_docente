@@ -87,7 +87,7 @@ class CourseAssignmentController extends Controller
             ->with('success', 'Nombre del curso actualizado. El cambio se refleja en todos los grupos donde se utiliza este curso.');
     }
 
-    public function destroy(CourseAssignment $assignment)
+    public function destroy(Request $request, CourseAssignment $assignment)
     {
         $assignment->load('group');
         $group = $assignment->group;
@@ -124,6 +124,14 @@ class CourseAssignmentController extends Controller
         Storage::disk('local')->delete(
             $generatedPaths->merge($importPaths)->filter()->unique()->values()->all()
         );
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Curso retirado del grupo. Su historial curricular se conserva.',
+                'group_id' => $group->id,
+                'assignments_count' => $group->assignments()->count(),
+            ]);
+        }
 
         return redirect()->route('groups.show', $group)
             ->with('success', 'Curso retirado del grupo. Si ya no está asignado en otros grupos, su malla pasa al historial y no se volverá a vincular automáticamente. Las versiones históricas se conservan.');
