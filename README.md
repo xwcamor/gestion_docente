@@ -178,8 +178,8 @@ El trabajo se organiza alrededor de la carga laboral recibida. El ciclo y sus gr
 
 La entrada principal del sistema es un árbol desplegable con esta jerarquía:
 
-- **Ciclo:** carrera, semestre y periodo; permite abrir la administración del ciclo.
-- **Grupo:** acceso al grupo, padrón de alumnos, calendario, cursos y charla de 5 minutos (esta última solo se muestra si ya hay alumnos). Cada grupo nuevo recibe automáticamente un curso provisional llamado **Nuevo curso**, sin código, con TEC y TAL activos por defecto; el docente puede cambiar el nombre y desactivar el componente que no corresponda. Al agregar un curso desde el árbol solo se solicita el nombre y se crean ambos componentes activos. El código se completa después desde la edición en línea. Si el grupo nace de una importación que ya incluye cursos, estos ocupan ese lugar y no se agrega uno ficticio.
+- **Ciclo:** periodo académico y valores iniciales de carrera/semestre para los grupos nuevos; permite abrir la administración del ciclo.
+- **Grupo:** mantiene su propia carrera y semestre, independientes de los demás grupos. Al crearlo hereda los valores actuales del ciclo, que luego se pueden editar con un clic en el árbol. También da acceso al padrón de alumnos, calendario, cursos y charla de 5 minutos (esta última solo se muestra si ya hay alumnos). Cada grupo nuevo recibe automáticamente un curso provisional llamado **Nuevo curso**, sin código, con TEC y TAL activos por defecto; el docente puede cambiar el nombre y desactivar el componente que no corresponda. Al agregar un curso desde el árbol solo se solicita el nombre y se crean ambos componentes activos. El código se completa después desde la edición en línea. Si el grupo nace de una importación que ya incluye cursos, estos ocupan ese lugar y no se agrega uno ficticio.
 - **Curso:** permite editar el nombre, alias y datos de sus modalidades, y subir o actualizar la malla curricular.
 - **Modalidad TEC/TALL:** muestra NRC, bloque, referencia, fechas, días, horas, ambiente y documentos generados; abre la pantalla de configuración y exportación de esa modalidad.
 
