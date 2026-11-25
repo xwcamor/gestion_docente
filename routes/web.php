@@ -62,6 +62,8 @@ Route::middleware(['auth', 'professor'])->group(function () {
     Route::get('/grupos/{group}/cursos/crear', [CourseAssignmentController::class, 'create'])->name('assignments.create');
     Route::get('/grupos/{group}/carga-rapida', [QuickCourseEntryController::class, 'create'])->name('assignments.quick');
     Route::post('/grupos/{group}/carga-rapida', [QuickCourseEntryController::class, 'store'])->name('assignments.quick.store');
+    Route::get('/grupos/{group}/cursos/{assignment}/editar', [QuickCourseEntryController::class, 'edit'])->name('assignments.quick.edit');
+    Route::patch('/grupos/{group}/cursos/{assignment}', [QuickCourseEntryController::class, 'update'])->name('assignments.quick.update');
     Route::post('/grupos/{group}/cursos', [CourseAssignmentController::class, 'store'])->name('assignments.store');
     Route::patch('/grupos/{group}/cursos/{course}/nombre', [CourseAssignmentController::class, 'updateName'])->name('groups.courses.name.update');
     Route::delete('/asignaciones/{assignment}', [CourseAssignmentController::class, 'destroy'])->name('assignments.destroy');
