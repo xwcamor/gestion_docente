@@ -473,7 +473,7 @@
             const fieldPrefix = 'rows['+rowIndex+']['+prefix+'_schedules][';
             const existingIndices = [...list.querySelectorAll('[name]')].map(input => {
                 if (!input.name.startsWith(fieldPrefix)) return -1;
-                const match = input.name.slice(fieldPrefix.length).match(/^(\\d+)\\]/);
+                const match = input.name.slice(fieldPrefix.length).match(/^(\d+)\]/);
                 return match ? Number(match[1]) : -1;
             });
             const scheduleIndex = Math.max(-1, ...existingIndices) + 1;
