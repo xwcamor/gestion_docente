@@ -1220,12 +1220,13 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
                 grid-template-columns:minmax(0,1fr)!important;
                 grid-template-rows:auto minmax(0,1fr);
             }
-            .sidebar{
+            .sidebar,body.sidebar-collapsed .sidebar{
                 position:relative!important;
                 inset:auto!important;
                 grid-column:1!important;
                 grid-row:1!important;
                 width:100%!important;
+                padding:7px 10px!important;
                 height:auto!important;
                 max-height:none!important;
                 box-sizing:border-box!important;
