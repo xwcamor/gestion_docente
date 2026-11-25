@@ -40,7 +40,10 @@ class GroupController extends Controller
         // se configuran después, desde el detalle de cada grupo.
         $groupsInput = $request->input('groups');
         if (!is_array($groupsInput)) {
-            $groupsInput = [['name' => $request->input('name')]];
+            $groupsInput = [[
+                'name' => $request->input('name'),
+                'code' => $request->input('code'),
+            ]];
         }
 
         $request->merge(['groups' => $groupsInput]);
@@ -53,6 +56,13 @@ class GroupController extends Controller
                 'string',
                 'max:100',
                 Rule::unique('teaching_groups', 'name')
+                    ->where(fn ($query) => $query->where('cycle_id', $cycle->id)),
+            ],
+            'groups.*.code' => [
+                'nullable',
+                'string',
+                'max:80',
+                Rule::unique('teaching_groups', 'code')
                     ->where(fn ($query) => $query->where('cycle_id', $cycle->id)),
             ],
         ], [
@@ -71,11 +81,22 @@ class GroupController extends Controller
             if ($names->unique()->count() !== $names->count()) {
                 $validator->errors()->add('groups', 'Hay nombres repetidos en la lista. Corrígelos antes de guardar.');
             }
+
+            $codes = collect((array) $request->input('groups', []))
+                ->map(fn ($row) => is_array($row) ? mb_strtolower(trim((string) ($row['code'] ?? ''))) : '')
+                ->filter();
+
+            if ($codes->unique()->count() !== $codes->count()) {
+                $validator->errors()->add('groups', 'Hay códigos de grupo repetidos en la lista.');
+            }
         });
 
         $data = $validator->validate();
         $groups = collect($data['groups'])
-            ->map(fn ($row) => ['name' => trim($row['name'])])
+            ->map(fn ($row) => [
+                'name' => trim($row['name']),
+                'code' => filled($row['code'] ?? null) ? trim((string) $row['code']) : null,
+            ])
             ->values();
 
         DB::transaction(function () use ($groups, $cycle) {
@@ -102,12 +123,21 @@ class GroupController extends Controller
     public function update(Request $request, TeachingGroup $group)
     {
         $this->authorizeGroup($group);
-        $request->merge(['name' => trim((string) $request->input('name'))]);
+
+        $changes = [];
+        if ($request->exists('name')) {
+            $changes['name'] = trim((string) $request->input('name'));
+        }
+        if ($request->exists('code')) {
+            $changes['code'] = trim((string) $request->input('code')) ?: null;
+        }
+        $request->merge($changes);
 
         $validator = Validator::make(
             $request->all(),
             [
                 'name' => [
+                    'sometimes',
                     'required',
                     'string',
                     'max:100',
@@ -115,17 +145,32 @@ class GroupController extends Controller
                         ->ignore($group->id)
                         ->where(fn ($query) => $query->where('cycle_id', $group->cycle_id)),
                 ],
+                'code' => [
+                    'sometimes',
+                    'nullable',
+                    'string',
+                    'max:80',
+                    Rule::unique('teaching_groups', 'code')
+                        ->ignore($group->id)
+                        ->where(fn ($query) => $query->where('cycle_id', $group->cycle_id)),
+                ],
             ],
             [
                 'name.required' => 'Escribe el nombre del grupo.',
                 'name.unique' => 'Ya existe otro grupo con ese nombre en este ciclo.',
+                'code.unique' => 'Ese código ya pertenece a otro grupo de este ciclo.',
+                'code.max' => 'El código del grupo no puede superar los 80 caracteres.',
             ]
         );
+
+        if (!$changes) {
+            $validator->after(fn ($validator) => $validator->errors()->add('group', 'No hay datos para actualizar.'));
+        }
 
         if ($validator->fails()) {
             if ($request->expectsJson()) {
                 return response()->json([
-                    'message' => 'Revisa el nombre del grupo.',
+                    'message' => 'Revisa los datos del grupo.',
                     'errors' => $validator->errors(),
                 ], 422);
             }
@@ -137,17 +182,19 @@ class GroupController extends Controller
         }
 
         $group->update($validator->validated());
+        $fresh = $group->fresh();
 
         if ($request->expectsJson()) {
             return response()->json([
-                'message' => 'Nombre del grupo actualizado.',
-                'group_id' => $group->id,
-                'name' => $group->fresh()->name,
+                'message' => 'Datos del grupo actualizados.',
+                'group_id' => $fresh->id,
+                'name' => $fresh->name,
+                'code' => $fresh->code,
             ]);
         }
 
         return redirect()->route('groups.show', $group)
-            ->with('success', 'Nombre del grupo actualizado.');
+            ->with('success', 'Datos del grupo actualizados.');
     }
 
     public function show(TeachingGroup $group, FiveMinuteTalkService $talkService)
