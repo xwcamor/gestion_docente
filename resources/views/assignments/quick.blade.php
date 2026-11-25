@@ -115,12 +115,12 @@
                                             <label class="quick-field-label">
                                                 <span>Inicio</span>
                                                 <input class="field" type="date" name="rows[{{ $index }}][{{ $prefix }}_start_date]" value="{{ $row[$prefix.'_start_date'] ?? '' }}">
-                                                @error("rows.$index.{{ $prefix }}_start_date")<small class="field-error">{{ $message }}</small>@enderror
+                                                @error('rows.'.$index.'.'.$prefix.'_start_date')<small class="field-error">{{ $message }}</small>@enderror
                                             </label>
                                             <label class="quick-field-label">
                                                 <span>Fin</span>
                                                 <input class="field" type="date" name="rows[{{ $index }}][{{ $prefix }}_end_date]" value="{{ $row[$prefix.'_end_date'] ?? '' }}">
-                                                @error("rows.$index.{{ $prefix }}_end_date")<small class="field-error">{{ $message }}</small>@enderror
+                                                @error('rows.'.$index.'.'.$prefix.'_end_date')<small class="field-error">{{ $message }}</small>@enderror
                                             </label>
                                         </div>
 
