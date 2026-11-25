@@ -34,8 +34,18 @@ class CalendarService
         $candidates = [];
         $holidayRows = [];
         foreach ($schedules as $schedule) {
+            $repeatEveryWeeks = max(1, (int) ($schedule->repeat_interval_weeks ?? 1));
+            $firstOccurrence = $modality->start_date->copy();
+            while ((int) $firstOccurrence->dayOfWeekIso !== (int) $schedule->day_of_week) {
+                $firstOccurrence->addDay();
+            }
+
             foreach (CarbonPeriod::create($modality->start_date, $modality->end_date) as $day) {
                 if ((int) $day->dayOfWeekIso !== (int) $schedule->day_of_week) continue;
+
+                $weeksSinceFirstOccurrence = intdiv($firstOccurrence->diffInDays($day), 7);
+                if ($weeksSinceFirstOccurrence % $repeatEveryWeeks !== 0) continue;
+
                 $key = $day->toDateString();
                 $duration = max(0, (int) ((strtotime($schedule->end_time) - strtotime($schedule->start_time)) / 60));
                 if (isset($holidays[$key])) {
@@ -59,7 +69,8 @@ class CalendarService
         }
         $weeklyMinutes = 0;
         foreach ($schedules as $weeklySchedule) {
-            $weeklyMinutes += max(0, (int) ((strtotime($weeklySchedule->end_time) - strtotime($weeklySchedule->start_time)) / 60));
+            $duration = max(0, (int) ((strtotime($weeklySchedule->end_time) - strtotime($weeklySchedule->start_time)) / 60));
+            $weeklyMinutes += $duration / max(1, (int) ($weeklySchedule->repeat_interval_weeks ?? 1));
         }
         $weeklyHours = round($weeklyMinutes / 60, 2);
         $weeklyDifference = $modality->total_hours !== null ? round((float) $modality->total_hours - $weeklyHours, 2) : null;
