@@ -200,6 +200,7 @@
 .tree-course-status{display:inline-flex;align-items:center;gap:4px;flex:none;padding:5px 8px;border-radius:6px;font-size:9px;font-weight:800;white-space:nowrap}
 .tree-course-status.is-ready{background:var(--success-bg);color:var(--success)}
 .tree-course-status.is-pending{background:var(--warning-bg);color:var(--warning)}
+.tree-cycle-inline{display:inline-flex;align-items:center;min-height:22px;padding:1px 4px;border-radius:4px;border-bottom:1px dashed var(--line-strong);cursor:text}.tree-cycle-inline:hover{background:var(--accent-soft);border-bottom-color:var(--accent);color:var(--accent)}
 .tree-inline-date,.tree-inline-nrc{display:inline-flex;align-items:center;min-height:23px;padding:2px 5px;border-radius:5px;border-bottom:1px dashed var(--line-strong);color:var(--ink-soft);cursor:text}
 .tree-inline-date:hover,.tree-inline-nrc:hover{background:var(--accent-soft);border-bottom-color:var(--accent);color:var(--accent)}
 .tree-inline-editor{width:auto;min-width:112px;max-width:160px;min-height:30px;padding:4px 6px;border:1px solid var(--accent);border-radius:6px;background:var(--surface);color:var(--ink);font:inherit;font-size:11px;outline:none}
@@ -754,18 +755,6 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
         groupNode.addEventListener('toggle', () => {
             if (groupNode.open) loadGroup(groupNode);
         });
-    });
-
-    document.addEventListener('change', event => {
-        const checkbox = event.target.closest('[data-course-component]');
-        if (!checkbox) return;
-        const form = checkbox.closest('[data-tree-course-form]');
-        if (!form) return;
-        const anySelected = [...form.querySelectorAll('[data-course-component]')].some(item => item.checked);
-        if (!anySelected) {
-            checkbox.checked = true;
-            showFeedback('Cada curso debe conservar al menos un componente: TEC o TAL.', true);
-        }
     });
 
     document.addEventListener('click', async event => {
