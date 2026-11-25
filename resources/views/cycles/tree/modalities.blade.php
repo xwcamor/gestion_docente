@@ -10,7 +10,7 @@
         <article class="workload-tree-modality {{ $modality->active ? 'is-active' : 'is-disabled' }}"
                  data-modality-row data-modality-type="{{ $type }}" data-modality-id="{{ $modality->id }}" data-active="{{ $modality->active ? '1' : '0' }}" data-active-description="{{ $enabledDescription }}">
             <span class="tree-branch-mark"></span>
-            <span class="tree-modality-tag {{ $type === 'TEC' ? 'is-tec' : 'is-tall' }}"><x-icon name="{{ $type === 'TEC' ? 'file-text' : 'flask-conical' }}" size="18" />{{ $type === 'TEC' ? 'TEC' : 'TAL' }}</span>
+            <span class="tree-modality-tag {{ $type === 'TEC' ? 'is-tec' : 'is-tall' }}"><x-icon name="{{ $type === 'TEC' ? 'file-text' : 'clipboard-check' }}" size="18" />{{ $type === 'TEC' ? 'TEC' : 'TAL' }}</span>
             <div class="tree-modality-copy">
                 <strong>{{ $label }} · NRC
                     @if($modality->active)
