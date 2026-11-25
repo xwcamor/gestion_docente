@@ -21,10 +21,7 @@
         </summary>
 
         <div class="workload-tree-children workload-course-children">
-            <div class="workload-tree-actions">
-                <a class="btn btn-ghost btn-sm" href="{{ route('assignments.quick.edit', [$group, $assignment]) }}?tree=1"><x-icon name="pencil" /> Editar curso y componentes</a>
-                <a class="btn btn-ghost btn-sm" href="{{ route('curricula.show', $assignment) }}"><x-icon name="file-up" /> {{ $curriculum && $curriculum->is_active ? 'Actualizar malla' : 'Subir malla PDF' }}</a>
-            </div>
+            <p class="tree-course-hint">Doble clic en NRC o fechas para editarlos. La malla y el padrón se administran en Gestión académica.</p>
 
             @if($curriculum && $curriculum->is_active)
                 <div class="tree-curriculum-note">
