@@ -17,7 +17,7 @@
             <summary class="workload-tree-summary workload-group-summary" data-select-group>
                 <span class="tree-expand-symbol" aria-hidden="true">
                     <span data-tree-collapsed><x-icon name="plus" size="17" /></span>
-                    <span data-tree-expanded>−</span>
+                    <span data-tree-expanded><x-icon name="minus" size="17" /></span>
                 </span>
                 <span class="tree-node-icon tree-group-icon"><x-icon name="folder-open" size="25" /></span>
                 <span class="tree-node-copy">
