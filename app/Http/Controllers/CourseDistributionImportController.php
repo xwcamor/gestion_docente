@@ -83,7 +83,7 @@ class CourseDistributionImportController extends Controller
 
         $schedules = $spreadsheet->createSheet();
         $schedules->setTitle('Horarios');
-        $scheduleHeaders = ['CODIGO', 'MODALIDAD', 'NRC', 'DIA', 'DESDE', 'HASTA', 'TIPO', 'AMBIENTE'];
+        $scheduleHeaders = ['CODIGO', 'MODALIDAD', 'NRC', 'DIA', 'DESDE', 'HASTA', 'TIPO', 'AMBIENTE', 'INTERVALO SEMANAS'];
         foreach ($scheduleHeaders as $index => $header) {
             $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($index + 1);
             $schedules->setCellValue($column.'1', $header);
@@ -95,16 +95,16 @@ class CourseDistributionImportController extends Controller
             'borders' => ['bottom' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => '385548']]],
         ]);
         $schedules->getRowDimension(1)->setRowHeight(30);
-        foreach (['A' => 25, 'B' => 16, 'C' => 16, 'D' => 18, 'E' => 14, 'F' => 14, 'G' => 18, 'H' => 25] as $column => $width) {
+        foreach (['A' => 25, 'B' => 16, 'C' => 16, 'D' => 18, 'E' => 14, 'F' => 14, 'G' => 18, 'H' => 25, 'I' => 19] as $column => $width) {
             $schedules->getColumnDimension($column)->setWidth($width);
         }
-        $schedules->getStyle('A2:H301')->getNumberFormat()->setFormatCode('@');
+        $schedules->getStyle('A2:I301')->getNumberFormat()->setFormatCode('@');
         $schedules->getStyle('A2:H301')->applyFromArray([
             'alignment' => ['vertical' => Alignment::VERTICAL_CENTER, 'wrapText' => true],
             'borders' => ['bottom' => ['borderStyle' => Border::BORDER_HAIR, 'color' => ['rgb' => 'DCE5DF']]],
         ]);
         $schedules->freezePane('A2');
-        $schedules->setAutoFilter('A1:H301');
+        $schedules->setAutoFilter('A1:I301');
         $schedules->getTabColor()->setRGB('789184');
 
         $guide = $spreadsheet->createSheet();
@@ -174,7 +174,8 @@ class CourseDistributionImportController extends Controller
             '3. FECHA TEC y FECHA TALLER permiten rangos independientes. Los archivos antiguos con una sola FECHA siguen siendo compatibles y aplican ese rango común.',
             '4. La hoja Horarios usa el mismo CODIGO de Cursos y la modalidad TEC o TALL para asociar cada bloque.',
             '5. En Horarios registra una fila por cada día y bloque; si un bloque se repite lunes y miércoles, crea dos filas.',
-            '6. No elimines ni renombres las columnas de Cursos u Horarios. Guarda el archivo como .xlsx antes de subirlo.',
+            '6. INTERVALO SEMANAS es opcional; usa 1 para cada semana, 2 para cada dos semanas, etc. Si lo dejas vacío, se asume 1.',
+            '7. No elimines ni renombres las columnas de Cursos u Horarios. Guarda el archivo como .xlsx antes de subirlo.',
         ];
         foreach ($rules as $index => $rule) {
             $row = 15 + $index;
@@ -353,11 +354,12 @@ class CourseDistributionImportController extends Controller
                                     'classroom' => $schedule['classroom'],
                                     'block_type' => 'CLASS',
                                     'instruction_type' => $schedule['instruction_type'],
+                                    'repeat_interval_weeks' => (int) ($schedule['repeat_interval_weeks'] ?? 1),
                                 ]);
                                 $weeklyMinutes += max(
                                     0,
                                     (int) ((strtotime($schedule['end_time']) - strtotime($schedule['start_time'])) / 60)
-                                );
+                                ) / max(1, (int) ($schedule['repeat_interval_weeks'] ?? 1));
                                 $scheduleBlocksImported++;
                             }
 
