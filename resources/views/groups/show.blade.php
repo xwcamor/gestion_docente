@@ -6,16 +6,15 @@
     <x-icon name="chevron-right" size="12" />
     <a href="{{ route('cycles.index') }}">Ciclos</a>
     <x-icon name="chevron-right" size="12" />
-    <a href="{{ route('cycles.show', $group->cycle) }}">{{ $group->cycle->academic_year }} · Ciclo {{ $group->cycle->cycle_code }}</a>
+    <a href="{{ route('cycles.tree', $group->cycle) }}">{{ $group->cycle->academic_year }} · Ciclo {{ $group->cycle->cycle_code }}</a>
     <x-icon name="chevron-right" size="12" />
     <span class="current">{{ $group->name }}</span>
 </div>
-<a class="cycle-back" href="{{ route('cycles.show', $group->cycle) }}"><x-icon name="arrow-left" size="15" /> Volver a los grupos</a>
+<a class="cycle-back" href="{{ route('cycles.tree', $group->cycle) }}"><x-icon name="arrow-left" size="15" /> Volver al árbol</a>
 
 <div class="page-head group-page-head">
     <div>
-        <p class="eyebrow"><x-icon name="graduation-cap" size="12" /> Gestión académica · Malla curricular y padrón de alumnos</p>
-        <p class="eyebrow"><x-icon name="users" size="12" /> {{ $group->cycle->academic_year }} · Ciclo {{ $group->cycle->cycle_code }}</p>
+        <p class="eyebrow"><x-icon name="graduation-cap" size="12" /> Gestión académica · {{ $group->cycle->academic_year }} · Ciclo {{ $group->cycle->cycle_code }}</p>
         <h1>{{ $group->name }}</h1>
         <div class="cycle-item-meta">
             <span><x-icon name="calendar-range" size="12" /> Carga: {{ $group->cycle->start_date?->format('d/m/Y') }} – {{ $group->cycle->end_date?->format('d/m/Y') }}</span>
@@ -26,9 +25,10 @@
         </div>
     </div>
     <div class="actions">
-        <a class="btn btn-secondary" href="{{ route('cycles.show', $group->cycle) }}"><x-icon name="arrow-left" /> Grupos</a>
+        <a class="btn btn-secondary" href="{{ route('cycles.tree', $group->cycle) }}"><x-icon name="git-branch" /> Árbol</a>
         <a class="btn btn-secondary" href="{{ route('groups.calendar', $group) }}"><x-icon name="calendar-days" /> Calendario</a>
         <button class="btn btn-secondary" type="button" data-modal-open="group-edit-dialog"><x-icon name="edit-3" /> Editar grupo</button>
+        <a class="btn btn-secondary" href="#group-courses"><x-icon name="book-open" /> Cursos y mallas</a>
         <a class="btn" href="#group-roster"><x-icon name="users" /> Alumnos</a>
     </div>
 </div>
