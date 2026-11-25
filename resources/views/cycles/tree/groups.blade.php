@@ -25,8 +25,8 @@
                 </div>
             </div>
         </details>
-        <a class="workload-tree-add-course" href="{{ route('assignments.quick', $group) }}?tree=1">
-            <x-icon name="plus" size="13" /> Agregar curso
+        <a class="workload-tree-add-course" href="{{ route('assignments.quick', $group) }}?tree=1" aria-label="Agregar curso al grupo {{ $group->name }}" title="Agregar curso">
+            <x-icon name="plus" size="13" /> <span>Agregar curso</span>
         </a>
     </div>
 @empty
