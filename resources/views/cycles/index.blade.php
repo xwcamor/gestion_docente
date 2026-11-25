@@ -55,6 +55,7 @@
             <div class="workload-tree-children workload-cycle-children">
                 <div class="workload-tree-actions">
                     <a class="btn btn-ghost btn-sm" href="{{ route('cycles.show', $cycle) }}"><x-icon name="folder-open" /> Abrir ciclo</a>
+                    <a class="btn btn-ghost btn-sm" href="{{ route('groups.create', $cycle) }}"><x-icon name="plus" /> Agregar grupo</a>
                     <form method="POST" action="{{ route('cycles.destroy', $cycle) }}" data-confirm="Se eliminará este ciclo con sus grupos, asignaciones y modalidades. Los cursos del catálogo y los alumnos reutilizados en otros grupos se conservarán. Esta acción no se puede deshacer.">
                         @csrf
                         @method('DELETE')
@@ -71,7 +72,6 @@
                                 <strong>{{ $group->name }}</strong>
                                 <small>{{ $group->assignments_count }} cursos · {{ $group->students_count }} alumnos</small>
                             </span>
-                            <span class="tree-node-count">{{ $group->assignments_count }} cursos</span>
                             <span class="tree-chevron"><x-icon name="chevron-right" size="14" /></span>
                         </summary>
 
