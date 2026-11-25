@@ -12,12 +12,12 @@ class GeneratedDocument extends Model
 
     protected $fillable = [
         'course_modality_id', 'teaching_group_id', 'cycle_id', 'document_type', 'version',
-        'filename', 'stored_path', 'generated_by', 'metadata',
+        'filename', 'stored_path', 'generated_by', 'metadata', 'source_fingerprint', 'generated_at',
     ];
 
     protected function casts(): array
     {
-        return ['metadata' => 'array'];
+        return ['metadata' => 'array', 'generated_at' => 'datetime'];
     }
 
     protected function slugSource(): string
