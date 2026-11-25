@@ -58,6 +58,6 @@
     <div class="tree-empty-child tree-empty-course">
         <x-icon name="book-open" size="30" />
         <strong>Este grupo todavía no tiene cursos</strong>
-        <span>Escribe el nombre de un curso en el campo superior para agregarlo.</span>
+        <span>Usa la fila ＋ Agregar curso que aparece debajo del listado.</span>
     </div>
 @endforelse
