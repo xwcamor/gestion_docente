@@ -840,6 +840,7 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
                 const groupId = courseForm.dataset.groupId;
                 courseForm.reset();
                 await refreshGroup(groupId, payload.assignment_id);
+                updateCourseDeleteGuards(groupNodeById(groupId), payload.assignments_count);
                 showFeedback(payload.message || 'Curso agregado.');
             } catch (error) {
                 if (errorBox) {
