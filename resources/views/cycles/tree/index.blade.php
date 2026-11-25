@@ -37,7 +37,7 @@
     </section>
 
     <section class="tree-focus-strip" aria-live="polite">
-        <span class="tree-focus-icon"><x-icon name="mouse-pointer-2" size="17" /></span>
+        <span class="tree-focus-icon"><x-icon name="info" size="17" /></span>
         <div>
             <small>ESTÁS TRABAJANDO EN</small>
             <strong id="tree-current-focus">{{ $cycle->academic_year }} · Ciclo {{ $cycle->cycle_code }} <span>›</span> Selecciona un grupo</strong>
@@ -158,6 +158,7 @@
 .tree-entry-grid-course{grid-template-columns:minmax(190px,.7fr) minmax(240px,1.3fr)}
 .tree-entry-grid-three{grid-template-columns:repeat(3,minmax(0,1fr))}
 .tree-entry-field .field{height:39px}
+.tree-shared-course-note{margin:0;color:var(--muted);font-size:9px;line-height:1.5}
 .tree-entry-field .field:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 13%,transparent)}
 .tree-entry-components{display:flex;align-items:center;gap:10px 18px;flex-wrap:wrap;margin:0;padding:12px 13px;border:1px solid var(--line-strong);border-radius:10px;background:var(--surface)}
 .tree-entry-components legend{padding:0 5px;color:var(--muted);font-size:9px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}
@@ -354,6 +355,11 @@ html[data-theme="dark"] .tree-focus-strip{background:linear-gradient(90deg,color
     };
 
     document.querySelectorAll('[data-tree-course-form]').forEach(syncCourseForm);
+    document.querySelectorAll('.workload-tree-add-course-inline').forEach(details => {
+        details.addEventListener('toggle', () => {
+            if (details.open) details.querySelector('[name="course_code"]')?.focus();
+        });
+    });
 
     document.addEventListener('change', event => {
         if (!event.target.matches('[data-course-component]')) return;
@@ -519,6 +525,8 @@ html[data-theme="dark"] .tree-focus-strip{background:linear-gradient(90deg,color
         const form = addDetails?.querySelector('[data-tree-course-form]');
         if (!form) return;
 
+        form.reset();
+        syncCourseForm(form);
         form.querySelector('[name="course_code"]').value = addMissing.dataset.courseCode || '';
         form.querySelector('[name="course_name"]').value = addMissing.dataset.courseName || '';
         form.querySelectorAll('[data-course-component]').forEach(input => input.checked = input.value === addMissing.dataset.component);
