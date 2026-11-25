@@ -161,18 +161,18 @@ class WorkloadTreeController extends Controller
 
         $data = $request->validate([
             'course_name' => ['required', 'string', 'max:255'],
-            'course_code' => ['nullable', 'string', 'max:80', 'regex:/^(20\d{4}-)?[A-Z][A-Z0-9]{1,9}-[A-Z0-9]{1,12}$/i'],
+            'course_code' => ['nullable', 'string', 'max:80'],
             'components' => ['required', 'array', 'min:1'],
             'components.*' => ['required', 'distinct', 'in:TEC,TALL'],
         ], [
             'course_name.required' => 'Escribe el nombre del curso.',
-            'course_code.regex' => 'El código opcional debe tener el formato institucional, por ejemplo 202620-PIAD-222.',
+            'course_code.max' => 'El código del curso no puede superar los 80 caracteres.',
             'components.required' => 'Deja al menos una modalidad activa: TEC o TAL.',
             'components.min' => 'Deja al menos una modalidad activa: TEC o TAL.',
         ]);
 
         $sourceCode = '';
-        $baseCode = trim((string) ($data['course_code'] ?? ''));
+        $baseCode = mb_strtoupper(trim((string) ($data['course_code'] ?? '')));
         if ($baseCode !== '') {
             $sourceCode = implode('; ', array_map(
                 fn ($type) => strtoupper($baseCode).'-'.$type,
