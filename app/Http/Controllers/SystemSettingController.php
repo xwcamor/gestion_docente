@@ -22,12 +22,14 @@ class SystemSettingController extends Controller
         if ($request->boolean('interface_preferences')) {
             $data = $request->validate([
                 'sidebar_visible' => ['required', 'boolean'],
+                'sidebar_color' => ['required', 'in:blue,green,violet,amber,graphite'],
                 'use_system_color' => ['nullable', 'boolean'],
                 'accent_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             ]);
 
             $request->user()->forceFill([
                 'sidebar_visible' => (bool) $data['sidebar_visible'],
+                'sidebar_color' => $data['sidebar_color'],
                 'accent_color' => $request->boolean('use_system_color')
                     ? null
                     : ($data['accent_color'] ?? null),
