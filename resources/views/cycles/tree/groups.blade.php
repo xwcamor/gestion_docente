@@ -9,7 +9,7 @@
                  id="tree-group-{{ $group->id }}"
                  data-tree-group-id="{{ $group->id }}"
                  data-group-label="Grupo {{ $group->name }}"
-                 data-group-name="{{ $group->name }}"
+                 data-group-name="{{ $group->name }}"\n                 data-group-code="{{ $group->code }}"
                  data-group-name-url="{{ route('groups.update', $group) }}"
                  data-tree-load="{{ route('workload-tree.courses', $group) }}"
                  data-tree-loaded="0">
@@ -22,7 +22,7 @@
                 <span class="tree-node-copy">
                     <strong><span data-inline-text data-edit-field="name" data-edit-label="Nombre del grupo" data-edit-url="{{ route('groups.update', $group) }}" data-edit-value="{{ $group->name }}" data-edit-kind="group">{{ $group->name }}</span></strong>
                     <small>
-                        <span class="tree-meta-item">Código interno: #{{ $group->id }}</span>
+                        <span class="tree-meta-item">Código: <span data-inline-text data-edit-field="code" data-edit-label="Código del grupo" data-edit-url="{{ route('groups.update', $group) }}" data-edit-value="{{ $group->code }}" data-edit-kind="group-code">{{ $group->code ?: 'Código pendiente (doble clic para agregar)' }}</span></span>
                         <span class="tree-meta-separator">·</span>
                         <span><span data-group-course-count>{{ $group->assignments_count }}</span> cursos</span>
                         <span class="tree-meta-separator">·</span>
