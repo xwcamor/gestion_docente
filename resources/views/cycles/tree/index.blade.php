@@ -185,7 +185,7 @@ html[data-theme="dark"] .tree-course-status.is-pending{color:#f1d49a}
 .tree-loading-state,.tree-load-error{padding:12px 14px;color:var(--muted);font-size:11px;line-height:1.5}
 .tree-load-error{color:var(--danger);background:var(--danger-bg);border-radius:8px}
 html[data-theme="dark"] .workload-tree-hero{background:linear-gradient(115deg,color-mix(in srgb,var(--accent) 18%,#15232d),#141f28 76%);border-color:color-mix(in srgb,var(--accent) 30%,var(--line))}
-@media(max-width:980px){.workload-tree-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.workload-tree-hero{align-items:flex-start;flex-direction:column}.workload-tree-hero-actions{width:100%}}
+@media(max-width:980px){.workload-tree-hero{align-items:flex-start;flex-direction:column}.workload-tree-hero-actions{width:100%}}
 @media(max-width:600px){
  .workload-tree-page .breadcrumbs{margin-bottom:9px}
  .workload-tree-hero{gap:16px;padding:19px 16px;border-radius:12px}
