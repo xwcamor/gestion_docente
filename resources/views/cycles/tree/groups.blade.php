@@ -60,17 +60,32 @@
                     </form>
                 </div>
 
-                <form class="tree-course-entry-form" method="POST"
+                <div data-tree-content>
+                    <div class="tree-loading-state">Despliega el grupo para cargar sus cursos.</div>
+                </div>
+
+                <form class="tree-course-entry-form tree-course-draft-form" method="POST"
                       action="{{ route('workload-tree.courses.store', $group) }}"
                       data-tree-course-form
-                      data-group-id="{{ $group->id }}">
+                      data-group-id="{{ $group->id }}"
+                      hidden>
                     @csrf
-                    <label class="tree-course-name-input">
-                        <span><x-icon name="plus" size="17" /> Agregar curso al grupo</span>
-                        <input class="field" name="course_name" maxlength="255" required placeholder="Escribe el nombre del curso…">
-                    </label>
+                    <div class="tree-draft-heading">
+                        <strong><x-icon name="book-open" size="16" /> Nuevo curso</strong>
+                        <span>Borrador · todavía no está guardado</span>
+                    </div>
+                    <div class="tree-draft-fields">
+                        <label class="tree-course-name-input">
+                            <span>Nombre del curso</span>
+                            <input class="field" name="course_name" maxlength="255" required placeholder="Ej. Desarrollo de Aplicaciones Web">
+                        </label>
+                        <label class="tree-course-name-input">
+                            <span>Código (opcional)</span>
+                            <input class="field" name="course_code" maxlength="80" placeholder="Código institucional">
+                        </label>
+                    </div>
                     <fieldset class="tree-entry-components">
-                        <legend>Componentes del curso</legend>
+                        <legend>Componentes</legend>
                         <label class="tree-component-option is-tec">
                             <input type="checkbox" name="components[]" value="TEC" data-course-component checked>
                             <span>TEC</span><small>Teoría</small>
@@ -81,14 +96,17 @@
                         </label>
                     </fieldset>
                     <div class="tree-course-create-footer">
-                        <small>Selecciona al menos uno. Después podrás completar NRC, fechas y horario en cada componente.</small>
-                        <button class="btn tree-course-create-button" type="submit" data-course-submit><x-icon name="plus" size="17" /> Agregar curso</button>
+                        <small>Selecciona al menos un componente. NRC, fechas y horario se completan después.</small>
+                        <div>
+                            <button class="btn btn-ghost tree-draft-cancel" type="button" data-cancel-course-draft>Cancelar</button>
+                            <button class="btn tree-course-create-button" type="submit" data-course-submit><x-icon name="check" size="16" /> Guardar curso</button>
+                        </div>
                     </div>
                     <div class="tree-course-entry-error" data-course-form-error hidden role="alert"></div>
                 </form>
 
-                <div data-tree-content>
-                    <div class="tree-loading-state">Despliega el grupo para cargar sus cursos.</div>
+                <div class="tree-add-row tree-add-course-row" data-course-add-row>
+                    <button type="button" data-show-course-draft><x-icon name="plus" size="16" /> Agregar curso</button>
                 </div>
             </div>
         </details>
