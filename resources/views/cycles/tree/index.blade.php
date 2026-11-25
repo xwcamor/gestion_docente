@@ -495,7 +495,7 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
 .tree-structure-card .workload-tree-group[open]>.workload-group-summary{border-color:color-mix(in srgb,var(--accent) 48%,var(--line));border-radius:12px 12px 0 0;background:linear-gradient(90deg,var(--accent-soft),var(--surface))}
 .tree-expand-symbol{display:grid;place-items:center;flex:0 0 31px;width:31px;height:31px;margin-top:5px;border:1px solid var(--line-strong);border-radius:8px;background:var(--surface-soft);color:var(--accent)}
 .tree-expand-symbol [data-tree-collapsed],.tree-expand-symbol [data-tree-expanded]{display:grid;place-items:center}
-.tree-expand-symbol [data-tree-expanded]{display:none}
+.tree-expand-symbol [data-tree-expanded]{display:none;font-size:24px;font-weight:550;line-height:1}
 .workload-tree-group[open]>.workload-group-summary .tree-expand-symbol [data-tree-collapsed],
 .tree-course-branch[open]>.tree-course-summary .tree-expand-symbol [data-tree-collapsed]{display:none}
 .workload-tree-group[open]>.workload-group-summary .tree-expand-symbol [data-tree-expanded],
@@ -754,6 +754,13 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
     });
 
     document.addEventListener('click', async event => {
+        // Doble clic edita los datos y no debe abrir/cerrar el nodo padre.
+        if (event.target.closest('[data-inline-text], [data-inline-nrc], [data-inline-date]')) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+        }
+
         const groupDeleteToggle = event.target.closest('[data-toggle-group-delete]');
         if (groupDeleteToggle) {
             event.preventDefault();
