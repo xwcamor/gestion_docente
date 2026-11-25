@@ -306,7 +306,9 @@ html[data-theme="dark"] .tree-focus-strip{background:linear-gradient(90deg,color
             node.dataset.treeBound = 'true';
             node.addEventListener('toggle', () => {
                 node.classList.toggle('is-focused', node.open);
-                node.closest('.workload-tree-group-shell')?.classList.toggle('is-focused', Boolean(node.open && node.matches('.workload-tree-group')));
+                if (node.matches('.workload-tree-group')) {
+                    node.closest('.workload-tree-group-shell')?.classList.toggle('is-focused', node.open);
+                }
                 updateFocus();
                 if (node.open) loadTreeNode(node);
             });
@@ -417,7 +419,7 @@ html[data-theme="dark"] .tree-focus-strip{background:linear-gradient(90deg,color
             } finally {
                 if (submit) {
                     submit.disabled = false;
-                    submit.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg> Guardar curso';
+                    submit.textContent = 'Guardar curso';
                 }
             }
             return;
