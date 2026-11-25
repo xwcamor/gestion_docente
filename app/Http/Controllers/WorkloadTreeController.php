@@ -25,6 +25,11 @@ class WorkloadTreeController extends Controller
                     ->orWhereHas('assignments.course', function ($courses) use ($like) {
                         $courses->where('name', 'like', $like)
                             ->orWhere('code', 'like', $like);
+                    })
+                    ->orWhereHas('assignments.modalities', function ($modalities) use ($like) {
+                        $modalities->where('nrc', 'like', $like)
+                            ->orWhere('block_code', 'like', $like)
+                            ->orWhere('block_reference', 'like', $like);
                     });
             });
         }
@@ -47,9 +52,15 @@ class WorkloadTreeController extends Controller
 
         if ($term !== '' && !$this->cycleMatches($group->cycle, $term) && !$this->groupMatches($group, $term)) {
             $like = '%'.$term.'%';
-            $query->whereHas('course', function ($courses) use ($like) {
-                $courses->where('name', 'like', $like)
-                    ->orWhere('code', 'like', $like);
+            $query->where(function ($assignments) use ($like) {
+                $assignments->whereHas('course', function ($courses) use ($like) {
+                    $courses->where('name', 'like', $like)
+                        ->orWhere('code', 'like', $like);
+                })->orWhereHas('modalities', function ($modalities) use ($like) {
+                    $modalities->where('nrc', 'like', $like)
+                        ->orWhere('block_code', 'like', $like)
+                        ->orWhere('block_reference', 'like', $like);
+                });
             });
         }
 
