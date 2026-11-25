@@ -24,33 +24,14 @@
         </div>
     </section>
 
-    <section class="workload-tree-metrics" aria-label="Resumen del ciclo">
-        <article class="workload-tree-metric workload-tree-metric-primary">
-            <span class="workload-tree-metric-icon"><x-icon name="users" size="18" /></span>
-            <div><small>Grupos</small><strong>{{ number_format($groupCount) }}</strong><span>Secciones del ciclo</span></div>
-        </article>
-        <article class="workload-tree-metric">
-            <span class="workload-tree-metric-icon"><x-icon name="book-open" size="18" /></span>
-            <div><small>Cursos</small><strong>{{ number_format($courseCount) }}</strong><span>Asignaciones registradas</span></div>
-        </article>
-        <article class="workload-tree-metric">
-            <span class="workload-tree-metric-icon"><x-icon name="book-check" size="18" /></span>
-            <div><small>Modalidades</small><strong>{{ number_format($modalityCount) }}</strong><span>{{ number_format($scheduledModalityCount) }} con fechas y horario</span></div>
-        </article>
-        <article class="workload-tree-metric">
-            <span class="workload-tree-metric-icon"><x-icon name="user-round" size="18" /></span>
-            <div><small>Alumnos</small><strong>{{ number_format($studentCount) }}</strong><span>Personas únicas en el ciclo</span></div>
-        </article>
-    </section>
-
     <section class="card workload-tree-browser">
         <div class="card-head workload-tree-browser-head">
             <div>
                 <p class="eyebrow">Estructura académica</p>
                 <h2>Grupos y cursos</h2>
-                <p class="card-description">Abre un grupo para ver sus cursos. Cada curso contiene sus NRC, modalidades, fechas y horarios.</p>
+                <p class="card-description">Despliega un grupo para ver sus cursos. Cada curso muestra sus componentes TEC y TAL; puedes agregar los que falten sin salir del árbol.</p>
             </div>
-            <span class="workload-tree-total">{{ $groups->count() }} de {{ $groupCount }} grupos</span>
+            <span class="workload-tree-total">{{ $groups->count() }} grupos</span>
         </div>
 
         <form method="GET" action="{{ route('cycles.tree', $cycle) }}" class="workload-tree-search">
@@ -123,6 +104,13 @@ html[data-theme="dark"] .tree-course-status.is-pending{color:#f1d49a}
  .workload-tree-children{margin-left:14px;padding-left:9px;padding-right:7px}
  .workload-group-children,.workload-course-children{margin-left:8px;padding-left:8px}
  .workload-tree-actions .btn{flex:1 1 auto}
+ .workload-tree-add-course{position:static;display:inline-flex;align-items:center;justify-content:center;margin:8px 10px 9px;min-height:38px}
+ .workload-tree-group-shell .workload-group-summary{padding-right:12px}
+ .tree-course-components{gap:3px}
+ .tree-component-chip{padding:4px 5px;font-size:8px}
+ .tree-add-modality{width:100%;margin:4px 0 0}
+ .workload-tree-modality.is-missing{align-items:stretch}
+ .workload-tree-group-actions .btn{flex:1 1 auto}
  .workload-tree-modality{align-items:flex-start;flex-wrap:wrap}
  .tree-modality-copy{flex:1 1 calc(100% - 100px)}
  .tree-open-modality{margin-left:52px}
@@ -133,6 +121,7 @@ html[data-theme="dark"] .tree-course-status.is-pending{color:#f1d49a}
  .tree-node-copy strong{font-size:11px}
  .tree-node-copy small{font-size:9px}
  .tree-course-status{font-size:8px;padding:4px 5px}
+ .tree-course-components{display:none}
  .workload-tree-modality{gap:7px}
  .tree-open-modality{margin-left:49px}
 }
@@ -146,14 +135,6 @@ html[data-theme="dark"] .tree-course-status.is-pending{color:#f1d49a}
 .workload-tree-context span{display:inline-flex;align-items:center;gap:6px}
 .workload-tree-hero-actions{display:flex;gap:8px;flex:none;flex-wrap:wrap}
 .workload-tree-hero-actions .btn{min-height:41px;padding:10px 14px}
-.workload-tree-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}
-.workload-tree-metric{display:flex;align-items:flex-start;gap:13px;min-width:0;padding:17px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
-.workload-tree-metric-primary{border-color:color-mix(in srgb,var(--accent) 35%,var(--line));background:var(--accent-soft)}
-.workload-tree-metric-icon{display:grid;place-items:center;width:38px;height:38px;flex:none;border-radius:10px;background:color-mix(in srgb,var(--accent) 12%,var(--surface));color:var(--accent)}
-.workload-tree-metric>div{display:grid;gap:3px;min-width:0}
-.workload-tree-metric small{color:var(--muted);font-size:10px;font-weight:700}
-.workload-tree-metric strong{color:var(--ink);font-size:clamp(27px,3vw,36px);font-weight:830;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.045em}
-.workload-tree-metric span:not(.workload-tree-metric-icon){color:var(--muted);font-size:10px;line-height:1.4}
 .workload-tree-browser{padding:clamp(15px,1.8vw,24px)}
 .workload-tree-browser-head{align-items:flex-end;margin-bottom:13px}
 .workload-tree-browser-head .eyebrow{margin-bottom:5px}
@@ -167,7 +148,7 @@ html[data-theme="dark"] .tree-course-status.is-pending{color:#f1d49a}
 .workload-tree-search-field input::placeholder{color:var(--faint)}
 .workload-tree-search .btn{min-height:42px}
 .workload-tree-root{display:grid;gap:8px}
-.workload-tree-root>.workload-tree-group{margin:0}
+.workload-tree-root>.workload-tree-group-shell{margin:0}
 .workload-tree-root>.tree-empty-child{padding:30px 16px;border:1px dashed var(--line-strong);border-radius:10px;text-align:center}
 .workload-tree-group,.workload-tree-course{border-color:var(--line);background:var(--surface)}
 .workload-tree-summary{transition:background .14s ease}
@@ -177,6 +158,22 @@ html[data-theme="dark"] .tree-course-status.is-pending{color:#f1d49a}
 .tree-node-copy small{font-size:10px}
 .tree-course-status{font-size:10px;padding:5px 8px}
 .workload-tree-actions .btn{min-height:34px;padding:7px 10px;font-size:10px}
+.workload-tree-group-shell{position:relative;border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
+.workload-tree-group-shell .workload-tree-group{margin:0;border:0;border-radius:0;overflow:visible}
+.workload-tree-group-shell .workload-group-summary{padding-right:148px}
+.workload-tree-add-course{position:absolute;top:10px;right:11px;z-index:3;min-height:34px;padding:7px 10px;border:1px solid color-mix(in srgb,var(--accent) 28%,var(--line));border-radius:8px;background:var(--accent-soft);color:var(--accent);font-size:10px;font-weight:750;white-space:nowrap}
+.workload-tree-add-course:hover{border-color:var(--accent);background:var(--accent);color:#fff;text-decoration:none}
+.tree-course-components{display:flex;align-items:center;gap:5px;flex:none}
+.tree-component-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 7px;border-radius:6px;font-size:9px;font-weight:800;letter-spacing:.02em}
+.tree-component-chip.is-present{background:var(--success-bg);color:var(--success)}
+.tree-component-chip.is-missing{background:var(--surface-soft);color:var(--muted);border:1px dashed var(--line-strong)}
+.workload-tree-modality.is-missing{background:var(--surface-soft);border:1px dashed var(--line-strong);border-radius:9px;margin:6px 0;padding:12px}
+.workload-tree-modality.is-missing .tree-modality-tag{opacity:.7}
+.workload-tree-modality.is-missing .tree-modality-copy strong{color:var(--muted)}
+.tree-add-modality{flex:none;min-height:34px;padding:7px 10px;font-size:10px}
+.workload-tree-group-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 9px}
+.workload-tree-group-actions .btn{min-height:32px;padding:6px 9px;font-size:10px}
+
 .workload-tree-modality{padding:12px 4px}
 .tree-modality-tag{height:32px;font-size:11px}
 .tree-modality-copy strong{font-size:12px}
@@ -186,8 +183,6 @@ html[data-theme="dark"] .tree-course-status.is-pending{color:#f1d49a}
 .tree-loading-state,.tree-load-error{padding:12px 14px;color:var(--muted);font-size:11px;line-height:1.5}
 .tree-load-error{color:var(--danger);background:var(--danger-bg);border-radius:8px}
 html[data-theme="dark"] .workload-tree-hero{background:linear-gradient(115deg,color-mix(in srgb,var(--accent) 18%,#15232d),#141f28 76%);border-color:color-mix(in srgb,var(--accent) 30%,var(--line))}
-html[data-theme="dark"] .workload-tree-metric-primary{background:color-mix(in srgb,var(--accent) 16%,#141f28)}
-html[data-theme="dark"] .workload-tree-metric-icon{background:color-mix(in srgb,var(--accent) 18%,#141f28)}
 @media(max-width:980px){.workload-tree-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.workload-tree-hero{align-items:flex-start;flex-direction:column}.workload-tree-hero-actions{width:100%}}
 @media(max-width:600px){
  .workload-tree-page .breadcrumbs{margin-bottom:9px}
@@ -196,18 +191,13 @@ html[data-theme="dark"] .workload-tree-metric-icon{background:color-mix(in srgb,
  .workload-tree-context{display:grid;gap:7px}
  .workload-tree-hero-actions{display:grid;grid-template-columns:1fr 1fr}
  .workload-tree-hero-actions .btn{width:100%;padding:9px 8px;font-size:10px}
- .workload-tree-metrics{gap:8px}
- .workload-tree-metric{gap:9px;padding:12px 10px;border-radius:10px}
- .workload-tree-metric-icon{width:31px;height:31px;border-radius:8px}
- .workload-tree-metric strong{font-size:27px}
- .workload-tree-metric span:not(.workload-tree-metric-icon){font-size:9px}
  .workload-tree-browser{padding:13px 10px}
  .workload-tree-browser-head{align-items:flex-start;flex-direction:column}
  .workload-tree-search{display:grid;grid-template-columns:1fr 1fr}
  .workload-tree-search-field{grid-column:1/-1}
  .workload-tree-search .btn,.workload-tree-search>a{width:100%}
 }
-@media(max-width:380px){.workload-tree-metric{align-items:flex-start;flex-direction:column}.workload-tree-metric strong{font-size:26px}}
+.workload-tree-metric strong{font-size:26px}}
 @media(prefers-reduced-motion:reduce){.workload-tree-summary{transition:none}}
 </style>
 @endpush
