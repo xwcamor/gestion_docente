@@ -1,15 +1,11 @@
 @extends('layouts.app')
 @section('title', 'Cargas laborales')
 @section('content')
-<div class="breadcrumbs">
-    <span class="current">Cargas laborales</span>
-</div>
-
 <div class="page-head">
     <div>
         <p class="eyebrow">Programación docente</p>
         <h1>Ciclos académicos</h1>
-        <p class="subhead">Consulta tus periodos académicos y entra al árbol cuando necesites organizar grupos, cursos, mallas y horarios.</p>
+        <p class="subhead">Administra tus ciclos, grupos y cursos.</p>
     </div>
     <div class="actions">
         <button class="btn btn-secondary" type="button" data-modal-open="cycle-create-dialog"><x-icon name="plus" /> Crear ciclo</button>
