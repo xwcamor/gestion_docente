@@ -13,7 +13,7 @@
 
             <div class="workload-tree-children workload-group-children">
                 <div class="workload-tree-group-actions">
-                    <a class="btn btn-ghost btn-sm" href="{{ route('groups.show', $group) }}"><x-icon name="graduation-cap" /> Gestión académica</a>
+                    <a class="btn btn-ghost btn-sm" href="{{ route('groups.show', ['group' => $group, 'panel' => 'courses']) }}#group-courses"><x-icon name="graduation-cap" /> Gestión académica</a>
                 </div>
                 <div data-tree-content>
                     <div class="tree-loading-state">Despliega el grupo para consultar sus cursos.</div>
