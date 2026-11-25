@@ -34,47 +34,43 @@
                     <form method="POST" action="{{ route('groups.destroy', $group) }}" data-tree-delete-group>
                         @csrf
                         @method('DELETE')
-                        <button class="btn btn-danger btn-sm" type="submit" @disabled($cycleGroupCount <= 1)>
-                            <x-icon name="x" /> Confirmar
-                        </button>
+                        <button class="btn btn-danger btn-sm" type="submit" @disabled($cycleGroupCount <= 1)><x-icon name="x" /> Confirmar</button>
                         <button class="btn btn-ghost btn-sm" type="button" data-inline-cancel>Cancelar</button>
                     </form>
                 </div>
+
+                <form class="tree-course-entry-form" method="POST"
+                      action="{{ route('workload-tree.courses.store', $group) }}"
+                      data-tree-course-form
+                      data-group-id="{{ $group->id }}">
+                    @csrf
+                    <label class="tree-course-name-input">
+                        <span>Agregar curso</span>
+                        <input class="field" name="course_name" maxlength="255" required placeholder="Escribe el nombre del curso…">
+                    </label>
+                    <fieldset class="tree-entry-components">
+                        <legend>¿Qué componentes tiene?</legend>
+                        <label class="tree-component-option is-tec">
+                            <input type="checkbox" name="components[]" value="TEC" data-course-component checked>
+                            <span>TEC</span><small>Teoría</small>
+                        </label>
+                        <label class="tree-component-option is-tall">
+                            <input type="checkbox" name="components[]" value="TALL" data-course-component>
+                            <span>TAL</span><small>Taller</small>
+                        </label>
+                    </fieldset>
+                    <div class="tree-course-create-footer">
+                        <small>Deja al menos uno seleccionado. El código, NRC y horario se completan después.</small>
+                        <button class="btn tree-course-create-button" type="submit" data-course-submit><x-icon name="plus" size="14" /> Crear curso</button>
+                    </div>
+                    <div class="tree-course-entry-error" data-course-form-error hidden role="alert"></div>
+                </form>
 
                 <div data-tree-content>
                     <div class="tree-loading-state">Abre el grupo para ver sus cursos.</div>
                 </div>
             </div>
         </details>
-
-        <div class="tree-course-entry-area">
-            <form class="tree-course-entry-form" method="POST"
-                  action="{{ route('workload-tree.courses.store', $group) }}"
-                  data-tree-course-form
-                  data-group-id="{{ $group->id }}">
-                @csrf
-                <label class="tree-course-name-input">
-                    <span>Nuevo curso</span>
-                    <input class="field" name="course_name" maxlength="255" required placeholder="Escribe el nombre del curso…">
-                </label>
-                <fieldset class="tree-entry-components">
-                    <legend>Componentes</legend>
-                    <label class="tree-component-option is-tec">
-                        <input type="checkbox" name="components[]" value="TEC" data-course-component checked>
-                        <span>TEC</span><small>Teoría</small>
-                    </label>
-                    <label class="tree-component-option is-tall">
-                        <input type="checkbox" name="components[]" value="TALL" data-course-component>
-                        <span>TAL</span><small>Taller</small>
-                    </label>
-                </fieldset>
-                <small class="tree-course-form-note">Puedes activar ambos. Siempre debe quedar al menos uno.</small>
-                <div class="tree-course-entry-error" data-course-form-error hidden role="alert"></div>
-                <button class="btn tree-course-create-button" type="submit" data-course-submit>
-                    <x-icon name="plus" size="14" /> Crear curso
-                </button>
-            </form>
-        </div>
     </div>
 @empty
     <div class="tree-empty-child">Todavía no hay grupos. Crea el primero para empezar.</div>
