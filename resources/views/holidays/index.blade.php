@@ -170,14 +170,14 @@
                         <form method="POST" action="{{ route('holidays.destroy', $holiday) }}" data-confirm="Se quitará esta fecha y se recalcularán las sesiones que correspondan. Los documentos generados podrían quedar pendientes de regeneración. ¿Continuar?">
                             @csrf
                             @method('DELETE')
-                            <button class="btn btn-danger btn-sm" type="submit"><x-icon name="trash-2" size="13" /> Eliminar</button>
+                            <button class="btn btn-danger btn-sm" type="submit"><x-icon name="x" size="13" /> Eliminar</button>
                         </form>
                     </div>
                 @endif
             </article>
         @empty
             <div class="holiday-empty">
-                <span><x-icon name="calendar-search" size="26" /></span>
+                <span><x-icon name="search" size="26" /></span>
                 <strong>{{ request()->hasAny(['q','year','scope','impact']) ? 'No hay fechas con esos filtros' : 'Todavía no hay feriados o cierres' }}</strong>
                 <p>{{ request()->hasAny(['q','year','scope','impact']) ? 'Prueba con otro nombre, año o ámbito.' : 'Registra una fecha para mantener actualizados tus calendarios.' }}</p>
                 @if(request()->hasAny(['q','year','scope','impact']))
