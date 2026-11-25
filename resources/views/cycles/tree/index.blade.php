@@ -545,9 +545,9 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
 
     document.addEventListener('click', event => {
         const groupName = event.target.closest('[data-inline-group-name]');
-        if (groupName && !groupName.querySelector('input')) {
-            event.preventDefault();
+        if (groupName) {
             event.stopPropagation();
+            if (!groupName.querySelector('input')) event.preventDefault();
             return;
         }
 
