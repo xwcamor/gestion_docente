@@ -1237,7 +1237,7 @@
     .tree-structure-card .workload-tree-children.workload-group-children::before{left:5px}
     .tree-structure-card .workload-tree-children.workload-group-children::after{left:-10px;width:15px}
     .tree-structure-card .workload-tree-course{padding-left:11px!important}
-    .tree-structure-card .workload-tree-course::before{left:-10px;width:21px}
+    .tree-structure-card .workload-tree-course::before{left:-12px;width:23px}
     .tree-structure-card .tree-course-children{margin-left:13px!important;padding-left:20px!important}
     .tree-structure-card .tree-course-children::before{left:8px}
     .tree-structure-card .tree-course-children::after{left:-13px;width:21px}
