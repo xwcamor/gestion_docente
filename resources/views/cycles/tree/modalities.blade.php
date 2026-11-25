@@ -9,8 +9,26 @@
             <span class="tree-branch-mark"></span>
             <span class="tree-modality-tag {{ $type === 'TEC' ? 'is-tec' : 'is-tall' }}">{{ $type === 'TEC' ? 'TEC' : 'TAL' }}</span>
             <div class="tree-modality-copy">
-                <strong>{{ $label }} · NRC {{ $modality->nrc ?: 'pendiente' }}</strong>
-                <small>{{ $modality->start_date?->format('d/m/Y') ?: 'Sin inicio' }} – {{ $modality->end_date?->format('d/m/Y') ?: 'Sin fin' }}</small>
+                <strong>{{ $label }} · NRC
+                    <span class="tree-inline-nrc"
+                          data-inline-nrc
+                          data-nrc-url="{{ route('workload-tree.modalities.nrc', $modality) }}"
+                          data-nrc="{{ $modality->nrc }}"
+                          title="Doble clic para editar el NRC">{{ $modality->nrc ?: 'NRC pendiente' }}</span>
+                </strong>
+                <small class="tree-modality-dates"
+                       data-modality-dates
+                       data-dates-url="{{ route('workload-tree.modalities.dates', $modality) }}"
+                       data-start-date="{{ $modality->start_date?->toDateString() }}"
+                       data-end-date="{{ $modality->end_date?->toDateString() }}"
+                       title="Doble clic sobre una fecha para editarla">
+                    Inicio:
+                    <span class="tree-inline-date" data-inline-date="start_date">{{ $modality->start_date?->format('d/m/Y') ?: 'Sin fecha' }}</span>
+                    <span class="tree-date-separator">·</span>
+                    Fin:
+                    <span class="tree-inline-date" data-inline-date="end_date">{{ $modality->end_date?->format('d/m/Y') ?: 'Sin fecha' }}</span>
+                    <span class="tree-inline-hint">doble clic para editar</span>
+                </small>
                 <small>
                     @if($classSchedules->isNotEmpty())
                         {{ $daysLabel }} · {{ $scheduleLabel }} · {{ number_format((float) $modality->total_hours, 2) }} h/sem.
@@ -25,7 +43,7 @@
                 @endif
             </div>
             <span class="tree-course-status {{ $modalityReady ? 'is-ready' : 'is-pending' }}">{{ $modalityReady ? 'Configurada' : 'Pendiente' }}</span>
-            <a class="btn btn-secondary btn-sm tree-open-modality" href="{{ route('modalities.show', $modality) }}"><x-icon name="arrow-up-right" /> Abrir</a>
+            <a class="btn btn-secondary btn-sm tree-open-modality" href="{{ route('modalities.show', $modality) }}"><x-icon name="arrow-up-right" /> Horario</a>
         </div>
     @else
         <div class="workload-tree-modality is-missing">
@@ -33,11 +51,18 @@
             <span class="tree-modality-tag {{ $type === 'TEC' ? 'is-tec' : 'is-tall' }}">{{ $type === 'TEC' ? 'TEC' : 'TAL' }}</span>
             <div class="tree-modality-copy">
                 <strong>{{ $label }} todavía no agregada</strong>
-                <small>Este curso aún no tiene el componente {{ $type === 'TEC' ? 'TEC' : 'TAL' }}.</small>
+                <small>Agrega este componente sin salir del árbol.</small>
             </div>
-            <a class="btn btn-secondary tree-add-modality" href="{{ route('assignments.quick.edit', [$assignment->group, $assignment]) }}?tree=1&add={{ $type }}">
+            <button class="btn btn-secondary tree-add-modality"
+                    type="button"
+                    data-open-course-dialog
+                    data-group-id="{{ $assignment->group->id }}"
+                    data-create-url="{{ route('workload-tree.courses.store', $assignment->group) }}"
+                    data-course-code="{{ $assignment->course->code }}"
+                    data-course-name="{{ $assignment->course->name }}"
+                    data-component="{{ $type }}">
                 <x-icon name="plus" size="13" /> Agregar {{ $type === 'TEC' ? 'TEC' : 'TAL' }}
-            </a>
+            </button>
         </div>
     @endif
 @endforeach
