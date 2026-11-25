@@ -9,12 +9,27 @@ class CourseCodeParser
     private const PATTERN = '/(?<![A-Z0-9])(?:(?<period>20\d{4})-)?(?<program>[A-Z][A-Z0-9]{1,9})-(?<course>[A-Z0-9]{1,12})-(?<modality>TEC|TALL|TAL)(?:[-_\s]*NRC[_\s-]*(?<nrc>\d{3,12}))?(?![A-Z0-9])/i';
 
     /**
+     * Splits a pasted institutional alias such as:
+     * 202620-PIAD-224-TEC-NRC_11523: SISTEMAS OPERATIVOS
+     */
+    public function splitAlias(string $alias): array
+    {
+        $alias = trim($alias);
+        $parts = preg_split('/\\s*:\\s*/u', $alias, 2);
+
+        return [
+            'source_code' => trim($parts[0] ?? ''),
+            'course_name' => trim($parts[1] ?? ''),
+        ];
+    }
+
+    /**
      * Accepts one full code or multiple modality codes for the same course,
      * separated by semicolons, new lines or other punctuation.
      */
     public function parse(string $sourceCode): array
     {
-        $sourceCode = trim($sourceCode);
+        $sourceCode = $this->splitAlias($sourceCode)['source_code'];
 
         if ($sourceCode === '') {
             return [
