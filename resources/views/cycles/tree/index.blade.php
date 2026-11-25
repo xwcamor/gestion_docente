@@ -36,15 +36,6 @@
         </div>
     </section>
 
-    <section class="tree-focus-strip" aria-live="polite">
-        <span class="tree-focus-icon"><x-icon name="info" size="17" /></span>
-        <div>
-            <small>ESTÁS TRABAJANDO EN</small>
-            <strong id="tree-current-focus">{{ $cycle->academic_year }} · Ciclo {{ $cycle->cycle_code }} <span>›</span> Selecciona un grupo</strong>
-        </div>
-        <span class="tree-focus-tip">Los cambios se guardan aquí mismo</span>
-    </section>
-
     <section class="card workload-tree-browser">
         <div class="card-head workload-tree-browser-head">
             <div>
@@ -95,13 +86,6 @@
 .tree-entry-field .field{width:100%;min-width:0}
 .tree-entry-field small{color:var(--muted);font-size:9px;font-weight:450}
 .tree-group-create-form .btn{min-height:39px;white-space:nowrap}
-.tree-focus-strip{display:flex;align-items:center;gap:12px;margin:0 0 16px;padding:12px 15px;border:1px solid color-mix(in srgb,var(--accent) 36%,var(--line));border-left:4px solid var(--accent);border-radius:11px;background:linear-gradient(90deg,var(--accent-soft),var(--surface));box-shadow:0 3px 12px rgba(25,56,78,.045)}
-.tree-focus-icon{display:grid;place-items:center;width:36px;height:36px;flex:none;border-radius:10px;background:var(--accent);color:#fff}
-.tree-focus-strip>div{display:grid;gap:3px;min-width:0}
-.tree-focus-strip small{color:var(--accent);font-size:8px;font-weight:850;letter-spacing:.12em}
-.tree-focus-strip strong{overflow:hidden;color:var(--ink);font-size:12px;font-weight:800;text-overflow:ellipsis;white-space:nowrap}
-.tree-focus-strip strong span{padding:0 5px;color:var(--accent)}
-.tree-focus-tip{margin-left:auto;color:var(--muted);font-size:9px;font-weight:600;text-align:right}
 .workload-tree-browser{padding:clamp(14px,1.8vw,22px);border-color:var(--line-strong);border-radius:14px}
 .workload-tree-browser-head{align-items:flex-end;margin-bottom:13px}
 .workload-tree-browser-head .eyebrow{margin-bottom:5px;color:var(--accent);font-size:9px;font-weight:850;letter-spacing:.12em}
@@ -225,7 +209,6 @@
 .tree-load-error{color:var(--danger);background:var(--danger-bg);border-radius:8px}
 @keyframes tree-reveal{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
 html[data-theme="dark"] .workload-tree-hero{background:linear-gradient(115deg,color-mix(in srgb,var(--accent) 19%,#15232d),#141f28 76%);border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}
-html[data-theme="dark"] .tree-focus-strip{background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 19%,#141f28),#141f28)}
 @media(max-width:980px){.workload-tree-hero{align-items:flex-start;flex-direction:column}.workload-tree-hero-actions{width:100%}}
 @media(max-width:700px){
  .tree-group-create-form{grid-template-columns:1fr}
@@ -275,32 +258,12 @@ html[data-theme="dark"] .tree-focus-strip{background:linear-gradient(90deg,color
 (() => {
     const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
     const liveFeedback = document.getElementById('tree-live-feedback');
-    const cycleLabel = @json($cycle->academic_year.' · Ciclo '.$cycle->cycle_code);
 
     const showFeedback = (message, isError = false) => {
         if (!liveFeedback || !message) return;
         liveFeedback.textContent = message;
         liveFeedback.classList.toggle('is-error', isError);
         liveFeedback.hidden = false;
-    };
-
-    const updateFocus = () => {
-        const label = document.getElementById('tree-current-focus');
-        if (!label) return;
-        const group = [...document.querySelectorAll('.workload-tree-group[open]')].at(-1);
-        const course = group ? [...group.querySelectorAll('.workload-tree-course[open]')].at(-1) : null;
-        const pieces = [cycleLabel];
-        if (group) pieces.push(group.dataset.groupLabel || group.querySelector('.workload-group-summary strong')?.textContent?.trim() || 'Grupo');
-        if (course) pieces.push(course.querySelector('[data-course-name]')?.textContent?.trim() || 'Curso');
-        label.textContent = '';
-        pieces.forEach((piece, index) => {
-            if (index) {
-                const separator = document.createElement('span');
-                separator.textContent = '›';
-                label.append(separator);
-            }
-            label.append(document.createTextNode(piece));
-        });
     };
 
     const bindTreeNodes = (scope) => {
@@ -312,7 +275,6 @@ html[data-theme="dark"] .tree-focus-strip{background:linear-gradient(90deg,color
                 if (node.matches('.workload-tree-group')) {
                     node.closest('.workload-tree-group-shell')?.classList.toggle('is-focused', node.open);
                 }
-                updateFocus();
                 if (node.open) loadTreeNode(node);
             });
         });
@@ -338,7 +300,6 @@ html[data-theme="dark"] .tree-focus-strip{background:linear-gradient(90deg,color
             content.innerHTML = await response.text();
             node.dataset.treeLoaded = 'true';
             bindTreeNodes(content);
-            updateFocus();
         } catch (error) {
             content.innerHTML = '<div class="tree-load-error" role="alert">No se pudo cargar. Cierra y vuelve a abrir para intentar otra vez.</div>';
             node.dataset.treeLoaded = 'false';
@@ -378,7 +339,6 @@ html[data-theme="dark"] .tree-focus-strip{background:linear-gradient(90deg,color
         groupNode.open = true;
         groupNode.dataset.treeLoaded = 'false';
         await loadTreeNode(groupNode, true);
-        updateFocus();
     };
 
     document.addEventListener('submit', async event => {
@@ -460,8 +420,7 @@ html[data-theme="dark"] .tree-focus-strip{background:linear-gradient(90deg,color
                 if (summary) summary.dataset.courseLabel = payload.name;
                 editForm.closest('details')?.removeAttribute('open');
                 showFeedback(payload.message);
-                updateFocus();
-            } catch (error) {
+                        } catch (error) {
                 showFeedback(error.message, true);
             } finally {
                 if (button) {
