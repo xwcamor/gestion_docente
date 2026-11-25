@@ -120,16 +120,17 @@
             </div>
             <div class="form-row">
                 <div>
-                    <label for="career">Nombre de la carrera <span class="muted">*</span></label>
+                    <label for="career">Carrera predeterminada para grupos nuevos <span class="muted">*</span></label>
                     <input class="field" id="career" name="career" value="{{ old('career', auth()->user()->professor->career) }}" maxlength="255" required placeholder="Ej. Desarrollo de Software">
                     @error('career')<p class="field-error">{{ $message }}</p>@enderror
                 </div>
                 <div>
-                    <label for="semester">Semestre académico <span class="muted">*</span></label>
+                    <label for="semester">Semestre predeterminado para grupos nuevos <span class="muted">*</span></label>
                     <input class="field" id="semester" name="semester" value="{{ old('semester') }}" maxlength="60" required placeholder="Ej. IV semestre">
                     @error('semester')<p class="field-error">{{ $message }}</p>@enderror
                 </div>
             </div>
+            <p class="help">Estos valores se copian al crear grupos. Luego puedes cambiar la carrera y el semestre de cada grupo por separado.</p>
             <div class="form-row">
                 <div>
                     <label for="start_date">Fecha de inicio <span class="muted">*</span></label>
