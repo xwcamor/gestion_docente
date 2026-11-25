@@ -7,6 +7,7 @@ use App\Models\Cycle;
 use App\Models\TeachingGroup;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\DB;
 use App\Services\StudentImportService;
 use App\Services\CourseRegistrationService;
 use App\Services\CalendarService;
@@ -83,7 +84,7 @@ class WorkloadTreeController extends Controller
 
         $term = trim((string) $request->query('q', ''));
         $query = $group->assignments()
-            ->with(['course', 'modalities:id,course_assignment_id,modality,nrc'])
+            ->with(['course', 'modalities' => fn ($modalities) => $modalities->with('schedules')->withCount('documents')])
             ->withCount('modalities')
             ->orderBy('id');
 
@@ -332,6 +333,67 @@ class WorkloadTreeController extends Controller
             'end_date' => $modality->end_date?->toDateString(),
             'calendar_updated' => $calendarUpdated,
             'warning' => $calendarWarning,
+        ]);
+    }
+
+    public function updateModalityActive(Request $request, CourseModality $modality, CalendarService $calendar)
+    {
+        $modality->loadMissing('assignment.group');
+        $this->authorizeGroup($modality->assignment->group);
+
+        $data = $request->validate([
+            'active' => ['required', 'boolean'],
+        ]);
+
+        $active = (bool) $data['active'];
+
+        DB::transaction(function () use ($modality, $active) {
+            $assignment = CourseAssignment::query()
+                ->whereKey($modality->course_assignment_id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $lockedModality = CourseModality::query()
+                ->whereKey($modality->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if (!$active && $lockedModality->active) {
+                $activeCount = $assignment->modalities()->where('active', true)->count();
+
+                if ($activeCount <= 1) {
+                    throw ValidationException::withMessages([
+                        'active' => 'Cada curso debe conservar al menos una modalidad activa. Activa TEC o TAL antes de deshabilitar esta.',
+                    ]);
+                }
+            }
+
+            $lockedModality->update(['active' => $active]);
+        });
+
+        $warning = null;
+        $calendarUpdated = false;
+
+        if ($active && $modality->start_date && $modality->end_date
+            && $modality->schedules()->where('block_type', 'CLASS')->exists()) {
+            try {
+                $calendar->rebuild($modality->fresh());
+                $calendarUpdated = true;
+            } catch (\Throwable $exception) {
+                report($exception);
+                $warning = 'La modalidad se activó, pero el calendario no pudo recalcularse. Revisa sus fechas y horario.';
+            }
+        }
+
+        $activeCount = $modality->assignment->modalities()->where('active', true)->count();
+
+        return response()->json([
+            'message' => $warning ?: ($active
+                ? ($calendarUpdated ? 'Modalidad activada y calendario actualizado.' : 'Modalidad activada.')
+                : 'Modalidad desactivada. Se conservaron su NRC, fechas, horarios e historial.'),
+            'active' => $active,
+            'active_count' => $activeCount,
+            'warning' => $warning,
         ]);
     }
 
