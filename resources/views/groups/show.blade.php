@@ -450,13 +450,57 @@
     </div>
 </details>
 
+<details class="card group-panel group-documents-panel" id="group-documents" data-group-panel @if(request()->boolean('documents')) open @endif>
+    <summary class="group-panel-summary">
+        <span class="group-panel-icon"><x-icon name="file-spreadsheet" /></span>
+        <span class="group-panel-title">
+            <strong>Excel del grupo</strong>
+            <small>Cinco documentos alimentados por la misma información del grupo</small>
+        </span>
+        <span class="group-panel-count">5 documentos</span>
+        <x-icon name="chevron-right" class="group-panel-chevron" />
+    </summary>
+    <div class="group-panel-body">
+        <div class="group-document-grid">
+            @foreach([
+                ['type' => 'alumnos', 'title' => 'Registro de alumnos', 'description' => 'Padrón actualizado del grupo, sin duplicar fichas.', 'icon' => 'users'],
+                ['type' => 'malla', 'title' => 'Malla curricular', 'description' => 'Temas, semanas, operaciones, actividades y horas por curso.', 'icon' => 'book-open'],
+                ['type' => 'charla', 'title' => 'Registro de charlas', 'description' => 'Una fecha por día real de clase, hasta hoy, con alumnos del padrón.', 'icon' => 'presentation'],
+                ['type' => 'plan', 'title' => 'Plan de sesión', 'description' => 'Planes de las sesiones del grupo, organizados por curso y modalidad.', 'icon' => 'clipboard-list'],
+                ['type' => 'avance', 'title' => 'Control de avance', 'description' => 'Temas y fechas programados según las mallas vinculadas.', 'icon' => 'chart-no-axes-combined'],
+            ] as $document)
+                @php($latestDocument = $groupDocuments->get($document['type'])?->first())
+                <article class="group-document-card">
+                    <div class="group-document-main">
+                        <span class="group-document-icon"><x-icon name="{{ $document['icon'] }}" /></span>
+                        <div>
+                            <strong>{{ $document['title'] }}</strong>
+                            <p>{{ $document['description'] }}</p>
+                            @if($latestDocument)
+                                <small>Última descarga: v{{ $latestDocument->version }} · {{ ($latestDocument->generated_at ?? $latestDocument->created_at)?->format('d/m/Y H:i') }}</small>
+                            @else
+                                <small>Aún no se ha generado</small>
+                            @endif
+                        </div>
+                    </div>
+                    <form method="POST" action="{{ route('documents.group.generate', [$group, $document['type']]) }}" data-loading-form="1">
+                        @csrf
+                        <button class="btn btn-secondary btn-sm" type="submit"><x-icon name="download" /> Descargar Excel</button>
+                    </form>
+                </article>
+            @endforeach
+        </div>
+        <p class="help group-documents-note">Los archivos se vuelven a generar con los datos actuales cada vez que descargas. El formato de evaluación queda fuera de este paquete.</p>
+    </div>
+</details>
+
 @if($studentCount > 0)
 <details class="card group-panel group-talk-panel" id="group-talks" data-group-panel @if(request()->boolean('talks')) open @endif>
     <summary class="group-panel-summary">
         <span class="group-panel-icon group-talk-icon"><x-icon name="clipboard-check" /></span>
         <span class="group-panel-title">
             <strong>Charlas de 5 minutos</strong>
-            <small>Fechas calculadas automáticamente según la carga horaria del grupo</small>
+            <small>Fechas obtenidas de los horarios reales de los cursos hasta la fecha de hoy</small>
         </span>
         <span class="group-panel-count">{{ $talkDoneCount }} realizadas · {{ $talkPendingCount }} pendientes</span>
         <x-section-status :status="$talkStatus" />
@@ -466,14 +510,8 @@
         <div class="talks-intro">
             <div>
                 <strong>Catálogo institucional</strong>
-                <p>Se programa una charla por cada día disponible del grupo y se excluyen los feriados. Al terminar los 96 temas oficiales, el catálogo vuelve automáticamente al primero. Marca el check al realizarla y ajusta los participantes de cada charla; el valor inicial corresponde al padrón del grupo.</p>
+                <p>El sistema reúne los días de dictado de los cursos, respeta el inicio y término de cada uno y excluye feriados. Solo muestra fechas hasta hoy. Las charlas históricas se marcan como dictadas automáticamente; la cantidad de participantes siempre se toma del padrón actual del grupo.</p>
             </div>
-            @if($groupTalks->isNotEmpty())
-                <form method="POST" action="{{ route('documents.group-talks', $group) }}">
-                    @csrf
-                    <button class="btn btn-secondary btn-sm" type="submit"><x-icon name="file-text" /> Descargar Excel del grupo</button>
-                </form>
-            @endif
         </div>
 
         <div class="talks-period">
@@ -483,14 +521,8 @@
                     {{ \Illuminate\Support\Carbon::parse($talkScheduleSummary['range_start'])->format('d/m/Y') }}
                     – {{ \Illuminate\Support\Carbon::parse($talkScheduleSummary['range_end'])->format('d/m/Y') }}
                 </strong>
-                <span>{{ $talkScheduleSummary['eligible_dates_count'] }} fechas disponibles</span>
-                <span>Días: {{ implode(', ', $talkScheduleSummary['weekday_labels']) }}</span>
-                @if($talkScheduleSummary['uses_cycle_range'])
-                    <span>Se usa el rango del ciclo porque el rango propio de carga no está completo</span>
-                @endif
-                @if($talkScheduleSummary['uses_default_weekdays'])
-                    <span>Se usa lunes a viernes como días predeterminados</span>
-                @endif
+                <span>{{ $talkScheduleSummary['eligible_dates_count'] }} fechas hasta hoy</span>
+                <span>Días reales: {{ implode(', ', $talkScheduleSummary['weekday_labels']) ?: 'Sin fechas' }}</span>
             @else
                 <strong>Periodo sin configurar</strong>
                 <span>Completa las fechas Desde/Hasta del ciclo o de Carga horaria; por defecto se usan lunes a viernes</span>
@@ -535,22 +567,11 @@
                                                 aria-label="{{ $talk->status === 'done' ? 'Marcar charla como pendiente' : 'Marcar charla como realizada' }}"
                                             >
                                             <span class="talk-status-mark" aria-hidden="true"></span>
-                                            <span class="talk-status-label">{{ $talk->status === 'done' ? 'Realizada' : 'Pendiente' }}</span>
+                                            <span class="talk-status-label">{{ $talk->status === 'done' ? 'Dictado' : 'Pendiente' }}</span>
                                         </label>
                                         <div class="talk-participants">
-                                            <input
-                                                class="field talk-participant-input"
-                                                type="number"
-                                                name="participant_count"
-                                                min="0"
-                                                max="9999"
-                                                step="1"
-                                                required
-                                                value="{{ $talk->participant_count ?? $studentCount }}"
-                                                aria-label="Cantidad de participantes de la charla"
-                                                title="Puedes editar la cantidad de participantes de esta charla"
-                                            >
-                                            <small>alumnos</small>
+                                            <strong>{{ $studentCount }}</strong>
+                                            <small>alumnos del padrón</small>
                                         </div>
                                         <input class="field" name="observations" value="{{ $talk->observations }}" maxlength="2000" placeholder="Observaciones del grupo" aria-label="Observaciones">
                                         <button class="btn btn-secondary btn-sm" type="submit"><x-icon name="check" /> Guardar cambios</button>
@@ -563,7 +584,7 @@
             </div>
             @if(!$talkScheduleSummary['range_configured'])
                 <div class="alert alert-info mt-16">
-                    Para programar las charlas, completa en <strong>Carga horaria</strong> el inicio, el término y los días de disponibilidad.
+                    Para programar las charlas, configura las fechas y los bloques de clase de cada curso y vuelve a calcular su calendario.
                 </div>
             @elseif($talkScheduleSummary['eligible_dates_count'] === 0)
                 <div class="alert alert-warning mt-16">
@@ -572,9 +593,9 @@
             @endif
         @else
             @if(!$talkScheduleSummary['range_configured'])
-                <div class="empty"><strong>Configura la carga horaria del grupo.</strong><span>Al guardar las fechas y los días disponibles, el sistema programará automáticamente las charlas.</span></div>
+                <div class="empty"><strong>Configura los horarios de los cursos.</strong><span>Las fechas de charlas se obtienen de los días y periodos reales de dictado de cada modalidad.</span></div>
             @elseif($talkScheduleSummary['eligible_dates_count'] === 0)
-                <div class="empty"><strong>No hay días disponibles para programar charlas.</strong><span>Revisa el rango de carga horaria, los días seleccionados y los feriados.</span></div>
+                <div class="empty"><strong>No hay fechas de dictado hasta hoy.</strong><span>Revisa que los cursos tengan inicio, término y horarios de clase calculados.</span></div>
             @else
                 <div class="empty"><strong>Las charlas del grupo están al día.</strong><span>No hay temas adicionales sin fecha. El catálogo se repetirá automáticamente cuando existan más días disponibles.</span></div>
             @endif
@@ -592,6 +613,16 @@
 .section-status-partial{color:#98651d;background:#fff7e8;border-color:#f1dfb8}
 .section-status-pending{color:#68747c;background:#f3f5f6;border-color:#dce2e5}
 
+
+.group-document-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.group-document-card{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px;border:1px solid #e2e9ed;border-radius:10px;background:#fff}
+.group-document-main{display:flex;align-items:flex-start;gap:10px;min-width:0}
+.group-document-icon{display:grid;place-items:center;flex:none;width:34px;height:34px;border-radius:9px;background:#edf5f6;color:#276b79}
+.group-document-main strong{display:block;color:#263c48;font-size:13px}
+.group-document-main p{margin:4px 0;color:#667780;font-size:11px;line-height:1.45}
+.group-document-main small{color:#87949b;font-size:10px}
+.group-documents-note{margin-top:12px}
+@media(max-width:760px){.group-document-grid{grid-template-columns:1fr}.group-document-card{align-items:flex-start;flex-direction:column}.group-document-card form,.group-document-card form button{width:100%}}
 
 .group-workload-panel{border-color:#d9e6e1}
 .group-workload-icon{background:#edf6f1;color:#35765b}
