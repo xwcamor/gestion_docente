@@ -1185,90 +1185,144 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
             .top-account-dropdown{right:0;width:210px}
         }
 
-        /* Alinea el sidebar fijo con la columna real del contenido.
-           box-sizing evita que el padding se sume al ancho de la columna y tape el main. */
+        /* Layout definitivo: el sidebar ocupa su columna y nunca cubre el contenido. */
         .app-shell{
             display:grid!important;
             grid-template-columns:var(--sidebar-width) minmax(0,1fr)!important;
+            grid-template-areas:"sidebar main";
+            align-items:stretch!important;
             width:100%;
             min-width:0;
+            min-height:calc(100dvh - 60px);
         }
-        .sidebar{
+        .app-shell>.sidebar{
+            grid-area:sidebar!important;
+            position:sticky!important;
+            inset:auto!important;
+            top:60px!important;
+            align-self:start!important;
             box-sizing:border-box!important;
-            width:var(--sidebar-width)!important;
-            min-width:0;
-            margin:0!important;
-        }
-        .main{
-            grid-column:2!important;
-            grid-row:1;
+            width:100%!important;
             min-width:0!important;
+            max-width:100%!important;
+            height:calc(100dvh - 60px)!important;
+            max-height:calc(100dvh - 60px)!important;
+            margin:0!important;
+            overflow-x:hidden!important;
+            overflow-y:auto!important;
+            padding:16px 12px!important;
+            z-index:20!important;
+        }
+        .app-shell>.main{
+            grid-area:main!important;
+            grid-column:auto!important;
+            grid-row:auto!important;
+            position:relative!important;
+            width:100%!important;
+            min-width:0!important;
+            max-width:none!important;
+            margin:0!important;
             box-sizing:border-box!important;
         }
         body.sidebar-collapsed .app-shell{
             grid-template-columns:84px minmax(0,1fr)!important;
+            grid-template-areas:"sidebar main";
         }
-        body.sidebar-collapsed .sidebar{
-            width:84px!important;
-            box-sizing:border-box!important;
+        body.sidebar-collapsed .app-shell>.sidebar{
+            width:100%!important;
+            padding-right:8px!important;
+            padding-left:8px!important;
         }
-        body.sidebar-hidden .app-shell{grid-template-columns:minmax(0,1fr)!important}
-        body.sidebar-hidden .main{grid-column:1!important}
+        body.sidebar-hidden .app-shell{
+            grid-template-columns:minmax(0,1fr)!important;
+            grid-template-areas:"main";
+        }
+        body.sidebar-hidden .app-shell>.sidebar{display:none!important}
+        body.sidebar-hidden .app-shell>.main{grid-area:main!important}
 
         @media(max-width:1050px){
-            .app-shell,body.sidebar-collapsed .app-shell{
+            .app-shell,
+            body.sidebar-collapsed .app-shell{
                 grid-template-columns:minmax(0,1fr)!important;
+                grid-template-areas:"sidebar" "main";
                 grid-template-rows:auto minmax(0,1fr);
+                align-items:start!important;
             }
-            .sidebar,body.sidebar-collapsed .sidebar{
+            .app-shell>.sidebar,
+            body.sidebar-collapsed .app-shell>.sidebar{
+                grid-area:sidebar!important;
                 position:relative!important;
                 inset:auto!important;
-                grid-column:1!important;
-                grid-row:1!important;
+                top:auto!important;
+                left:auto!important;
+                right:auto!important;
+                bottom:auto!important;
                 width:100%!important;
-                padding:7px 10px!important;
                 height:auto!important;
+                min-height:0!important;
                 max-height:none!important;
+                margin:0!important;
+                padding:7px 10px!important;
                 box-sizing:border-box!important;
                 overflow-x:auto!important;
                 overflow-y:hidden!important;
+                border-right:0!important;
+                border-bottom:1px solid var(--sidebar-border,var(--line))!important;
+                box-shadow:none!important;
             }
-            .sidebar-inner{
+            .app-shell>.sidebar .sidebar-inner{
                 display:block!important;
                 width:max-content!important;
                 min-width:100%!important;
                 min-height:0!important;
             }
-            .sidebar-toolbar,.sidebar-footer{display:none!important}
-            .sidebar-nav{
+            .app-shell>.sidebar .sidebar-toolbar,
+            .app-shell>.sidebar .sidebar-footer{display:none!important}
+            .app-shell>.sidebar .sidebar-nav{
                 display:flex!important;
-                align-items:center;
-                gap:5px;
-                width:max-content;
-                min-width:100%;
+                align-items:center!important;
+                gap:5px!important;
+                width:max-content!important;
+                min-width:100%!important;
+                overflow:visible!important;
             }
-            .sidebar .nav-label{display:none!important}
-            .sidebar .nav-link{
+            .app-shell>.sidebar .nav-label{display:none!important}
+            .app-shell>.sidebar .nav-link{
                 display:inline-flex!important;
-                justify-content:center;
-                min-height:38px;
-                padding:8px 10px;
-                white-space:nowrap;
+                justify-content:center!important;
+                min-height:38px!important;
+                padding:8px 10px!important;
+                white-space:nowrap!important;
             }
-            .sidebar .nav-link span{display:inline!important}
-            body.sidebar-collapsed .sidebar .nav-link{justify-content:center;padding:8px 10px}
-            body.sidebar-collapsed .sidebar .nav-link span{display:inline!important}
-            .main{grid-column:1!important;grid-row:2!important;min-width:0!important}
-            body.sidebar-hidden .main{grid-row:1!important}
+            .app-shell>.sidebar .nav-link span{display:inline!important}
+            body.sidebar-collapsed .app-shell>.sidebar .nav-link{
+                justify-content:center!important;
+                padding:8px 10px!important;
+            }
+            body.sidebar-collapsed .app-shell>.sidebar .nav-link span{display:inline!important}
+            .app-shell>.main{
+                grid-area:main!important;
+                grid-column:auto!important;
+                grid-row:auto!important;
+                width:100%!important;
+                min-width:0!important;
+                padding:12px clamp(14px,2vw,22px) 22px!important;
+            }
         }
         @media(max-width:720px){
-            .sidebar{position:relative!important;top:auto!important;left:auto!important;bottom:auto!important}
-            .main{padding:10px 10px 24px!important}
+            .app-shell>.sidebar,
+            body.sidebar-collapsed .app-shell>.sidebar{
+                position:relative!important;
+                top:auto!important;
+                padding:6px 8px!important;
+            }
+            .app-shell>.sidebar .nav-link{min-height:36px!important;padding:7px 8px!important;font-size:10px!important}
+            .app-shell>.sidebar .nav-link .icon{width:16px!important;height:16px!important}
+            .app-shell>.main{padding:10px 10px 24px!important}
         }
         @media(prefers-reduced-motion:reduce){
             .app-shell{transition:none!important}
         }
-
 </style>
 </head>
 <body class="{{ ($appAppearance['sidebar_visible'] ?? true) ? '' : 'sidebar-hidden' }}" data-sidebar-visible="{{ ($appAppearance['sidebar_visible'] ?? true) ? '1' : '0' }}" data-sidebar-color="{{ $appAppearance['sidebar_color'] ?? 'blue' }}">
