@@ -470,9 +470,10 @@
             const list = editor.querySelector('[data-schedule-list]');
             const rowIndex = addSchedule.dataset.rowIndex;
             const prefix = addSchedule.dataset.prefix;
+            const fieldPrefix = 'rows['+rowIndex+']['+prefix+'_schedules][';
             const existingIndices = [...list.querySelectorAll('[name]')].map(input => {
-                const pattern = new RegExp('^rows\\\\['+rowIndex+'\\\\]\\\\['+prefix+'_schedules\\\\]\\\\[(\\\\d+)\\\\]');
-                const match = input.name.match(pattern);
+                if (!input.name.startsWith(fieldPrefix)) return -1;
+                const match = input.name.slice(fieldPrefix.length).match(/^(\\d+)\\]/);
                 return match ? Number(match[1]) : -1;
             });
             const scheduleIndex = Math.max(-1, ...existingIndices) + 1;
