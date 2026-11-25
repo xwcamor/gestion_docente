@@ -50,7 +50,7 @@
         </div>
     </section>
 
-    <dialog class="ui-dialog tree-dialog" id="tree-group-dialog" aria-labelledby="tree-group-dialog-title">
+    <dialog class="ui-dialog tree-dialog" id="tree-group-dialog" aria-labelledby="tree-group-dialog-title" @if($errors->has('groups.0.name')) open @endif>
         <div class="dialog-head">
             <div><h2 id="tree-group-dialog-title">Crear grupo</h2><p>El grupo se agregará directamente a este ciclo.</p></div>
             <button class="dialog-close" type="button" data-tree-dialog-close aria-label="Cerrar"><x-icon name="x" /></button>
@@ -185,6 +185,7 @@
 .tree-component-choice.is-tec{background:var(--info-bg);color:var(--info)}
 .tree-component-choice.is-tall{background:var(--accent-soft);color:var(--accent)}
 .tree-component-config{display:grid;gap:11px;padding:13px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.tree-component-config[hidden]{display:none!important}
 .tree-component-config-head{display:flex;align-items:center;gap:8px;padding-bottom:9px;border-bottom:1px solid var(--line);color:var(--ink);font-size:12px}
 .tree-schedule-optional{padding-top:10px;border-top:1px solid var(--line)}
 .tree-schedule-optional summary{color:var(--accent);font-size:10px;font-weight:750;cursor:pointer}
@@ -521,7 +522,7 @@ html[data-theme="dark"] .workload-tree-hero{background:linear-gradient(115deg,co
         } finally {
             if (courseSubmit) {
                 courseSubmit.disabled = false;
-                courseSubmit.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg> Guardar curso';
+                courseSubmit.textContent = 'Guardar curso';
             }
         }
     });
