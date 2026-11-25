@@ -20,9 +20,9 @@ class CalendarService
         if ($schedules->isEmpty()) {
             throw ValidationException::withMessages(['schedule' => 'Agregue al menos un horario de clase antes de calcular las sesiones.']);
         }
-        $assignment = $modality->assignment()->with(['group','curriculum.weeks.task.operations','curriculum.weeks.contentItems','course.curricula.weeks.task.operations','course.curricula.weeks.contentItems'])->firstOrFail();
+        $assignment = $modality->assignment()->with(['group','curriculum.weeks.task.operations','curriculum.weeks.contentItems'])->firstOrFail();
         $professorId = $assignment->group->professor_id;
-        $curriculum = $assignment->curriculum ?: $assignment->course->curricula->firstWhere('is_active', true);
+        $curriculum = $assignment->curriculum;
         $courseStart = $modality->start_date->copy();
         $courseWeekAnchor = $courseStart->copy()->startOfWeek(\Carbon\Carbon::MONDAY);
         $holidays = Holiday::query()
