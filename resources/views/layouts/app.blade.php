@@ -1121,6 +1121,15 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
  <symbol id="icon-moon" viewBox="0 0 24 24"><path d="M20.5 15.2A8.5 8.5 0 0 1 8.8 3.5 8.5 8.5 0 1 0 20.5 15.2z"/></symbol>
  <symbol id="icon-shield-check" viewBox="0 0 24 24"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11z"/><path d="m9 12 2 2 4-4"/></symbol>
  <symbol id="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></symbol>
+
+ <symbol id="icon-git-branch" viewBox="0 0 24 24"><circle cx="6" cy="4" r="2"/><circle cx="6" cy="20" r="2"/><circle cx="18" cy="6" r="2"/><path d="M6 6v12M18 8a4 4 0 0 1-4 4h-4a4 4 0 0 0-4 4"/></symbol>
+ <symbol id="icon-book-check" viewBox="0 0 24 24"><path d="M12 7v14M3 18V5a1 1 0 0 1 1-1h3a5 5 0 0 1 5 5 5 5 0 0 1 5-5h3a1 1 0 0 1 1 1v5M3 18V5M3 18h4a5 5 0 0 1 5 3M17 16l2 2 3-4"/></symbol>
+ <symbol id="icon-book-x" viewBox="0 0 24 24"><path d="M12 7v14M3 18V5a1 1 0 0 1 1-1h3a5 5 0 0 1 5 5 5 5 0 0 1 5-5h3a1 1 0 0 1 1 1v8M3 18h4a5 5 0 0 1 5 3M16 15l5 5m0-5-5 5"/></symbol>
+ <symbol id="icon-folder-open" viewBox="0 0 24 24"><path d="M3 8a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v1"/><path d="M3 12h18l-2.5 7h-13L3 12z"/></symbol>
+ <symbol id="icon-message-circle" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.5 9 9 0 0 1-4-.9L3 21l1.9-5.1a9 9 0 0 1-.9-4A8.5 8.5 0 1 1 21 11.5z"/></symbol>
+ <symbol id="icon-pencil" viewBox="0 0 24 24"><path d="m16 4 4 4L9 19H5v-4L16 4zM14 6l4 4M5 21h14"/></symbol>
+ <symbol id="icon-file-up" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 18v-7m-3 3 3-3 3 3"/></symbol>
+ <symbol id="icon-sliders-horizontal" viewBox="0 0 24 24"><path d="M4 6h7m4 0h5M4 12h3m4 0h9M4 18h9m4 0h3"/><circle cx="13" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="15" cy="18" r="2"/></symbol>
 </svg>
 
 <header class="topbar">
