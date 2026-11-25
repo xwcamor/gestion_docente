@@ -1802,6 +1802,30 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
     }
     .tree-loading-state:before{animation:none!important}
 }
+/* Legibilidad adicional en pantallas estrechas: texto táctil sin microetiquetas */
+@media(max-width:520px){
+    .tree-meta-pill{font-size:9px}
+    .tree-group-context-label{font-size:9px}
+    .tree-group-context-item>.tree-inline-editable{font-size:11px}
+    .tree-course-status{font-size:9px}
+    .tree-modality-copy>strong{font-size:11px}
+    .tree-modality-copy>small,.tree-modality-dates{font-size:9px}
+    .tree-date-label{font-size:9px}
+    .tree-modality-toggle,.tree-open-modality,.tree-add-modality{
+        min-height:35px;
+        padding:6px 8px;
+        font-size:9px;
+    }
+    .tree-draft-note,.tree-draft-heading>span{font-size:9px}
+    .tree-structure-card .tree-group-schedule-value,
+    .tree-structure-card .tree-group-schedule-pending{font-size:10px}
+}
+@media(max-width:360px){
+    .tree-group-title-row>strong{font-size:13px}
+    .tree-meta-pill{font-size:8px}
+    .tree-modality-toggle,.tree-open-modality,.tree-add-modality{font-size:9px}
+}
+
 </style>
 @endpush
 
