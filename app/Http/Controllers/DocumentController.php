@@ -20,7 +20,7 @@ class DocumentController extends Controller
         FiveMinuteTalkService $talkService
     ) {
         abort_unless(
-            $modality->assignment->group->professor_id === auth()->user()->professor->id,
+            $modality->active && $modality->assignment->group->professor_id === auth()->user()->professor->id,
             404
         );
 
