@@ -1001,6 +1001,8 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
         if (cancelGroupDraft) {
             const form = cancelGroupDraft.closest('[data-tree-group-form]');
             form?.reset();
+            const errorBox = form?.querySelector('[data-group-form-error]');
+            if (errorBox) { errorBox.hidden = true; errorBox.textContent = ''; }
             if (form) form.hidden = true;
             const row = root.querySelector('[data-group-add-row]');
             if (row) row.hidden = false;
@@ -1011,6 +1013,8 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
         if (cancelCourseDraft) {
             const form = cancelCourseDraft.closest('[data-tree-course-form]');
             form?.reset();
+            const errorBox = form?.querySelector('[data-course-form-error]');
+            if (errorBox) { errorBox.hidden = true; errorBox.textContent = ''; }
             if (form) form.hidden = true;
             const group = cancelCourseDraft.closest('[data-tree-group-id]');
             const row = group?.querySelector('[data-course-add-row]');
@@ -1178,7 +1182,7 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
                 releaseAjaxForm(courseForm, submit);
                 if (submit) {
                     submit.disabled = false;
-                    submit.innerHTML = '<span>＋</span> Agregar curso';
+                    submit.textContent = 'Guardar curso';
                 }
             }
             return;
@@ -1197,7 +1201,7 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
                 const total = root.querySelector('[data-tree-group-total]');
                 if (total) total.textContent = remaining + (remaining === 1 ? ' grupo' : ' grupos');
                 if (!root.querySelector('[data-group-shell]')) {
-                    root.querySelector('.workload-tree-root').innerHTML = '<div class="tree-empty-child"><strong>No hay grupos todavía</strong><span>Agrega un grupo desde el campo superior.</span></div>';
+                    root.querySelector('.workload-tree-root').innerHTML = '<div class="tree-empty-child"><strong>No hay grupos todavía</strong><span>Usa la fila ＋ Agregar grupo que aparece debajo.</span></div>';
                 }
                 root.querySelectorAll('[data-toggle-group-delete]').forEach(button => {
                     button.disabled = remaining <= 1;
