@@ -55,9 +55,8 @@
             </div>
             <button class="btn btn-secondary tree-add-modality"
                     type="button"
-                    data-open-course-dialog
+                    data-open-inline-course-entry
                     data-group-id="{{ $assignment->group->id }}"
-                    data-create-url="{{ route('workload-tree.courses.store', $assignment->group) }}"
                     data-course-code="{{ $assignment->course->code }}"
                     data-course-name="{{ $assignment->course->name }}"
                     data-component="{{ $type }}">
