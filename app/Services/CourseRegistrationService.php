@@ -23,6 +23,7 @@ class CourseRegistrationService
         array $modalityDates = [],
         array $modalitySchedules = [],
         array $blockCodes = [],
+        array $blockReferences = [],
     ): array {
         $courseName = trim($courseName);
         $parsed = $this->parser->parse($sourceCode);
@@ -71,7 +72,7 @@ class CourseRegistrationService
         // Course identity is its institutional code, not its display name.
         // Different institutional codes may legitimately share the same course name.
 
-        return DB::transaction(function () use ($group, $courseName, $parsed, $requestedTypes, $course, $students, $modalityDates, $modalitySchedules, $blockCodes) {
+        return DB::transaction(function () use ($group, $courseName, $parsed, $requestedTypes, $course, $students, $modalityDates, $modalitySchedules, $blockCodes, $blockReferences) {
             $courseRecord = $course ?: Course::firstOrCreate(
                 [
                     'professor_id' => $group->professor_id,
@@ -115,6 +116,7 @@ class CourseRegistrationService
                     'modality' => $type,
                     'nrc' => $parsed['nrc_by_modality'][$type] ?? null,
                     'block_code' => $blockCodes[$type] ?? null,
+                    'block_reference' => $blockReferences[$type] ?? null,
                     'start_date' => $modalityDates[$type]['start_date'] ?? null,
                     'end_date' => $modalityDates[$type]['end_date'] ?? null,
                     'curriculum_start_week' => 1,
