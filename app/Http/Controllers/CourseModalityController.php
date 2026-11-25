@@ -32,7 +32,9 @@ class CourseModalityController extends Controller
         $hasAnySchedule = $classSchedules->isNotEmpty();
         $hasClassSchedule = $hasAnySchedule;
         $schedulesByDay = $classSchedules->groupBy('day_of_week');
-        $weeklyMinutes = $classSchedules->sum(fn ($schedule) => $schedule->duration_minutes);
+        $weeklyMinutes = $classSchedules->sum(
+            fn ($schedule) => $schedule->duration_minutes / max(1, (int) ($schedule->repeat_interval_weeks ?? 1))
+        );
         $weeklyHoursCalculated = round($weeklyMinutes / 60, 2);
         $sessionsWithContentCount = $modality->sessions()
             ->where('status', 'scheduled')
