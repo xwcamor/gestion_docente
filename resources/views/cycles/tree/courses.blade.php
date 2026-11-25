@@ -32,13 +32,13 @@
                         <span class="tree-date-field">
                             <span class="tree-date-label">Inicio</span>
                             <span class="tree-inline-date {{ $courseStartDate ? '' : 'is-empty' }}"
-                                  data-inline-date="course_start_date"
+                                  data-inline-date="course_start_date" data-empty-label="Agregar fecha"
                                   title="Clic para agregar o editar la fecha de inicio">{{ $assignment->course_start_date?->format('d/m/Y') ?: 'Agregar fecha' }}</span>
                         </span>
                         <span class="tree-date-field">
                             <span class="tree-date-label">Fin</span>
                             <span class="tree-inline-date {{ $courseEndDate ? '' : 'is-empty' }}"
-                                  data-inline-date="course_end_date"
+                                  data-inline-date="course_end_date" data-empty-label="Agregar fecha"
                                   title="Clic para agregar o editar la fecha de fin">{{ $assignment->course_end_date?->format('d/m/Y') ?: 'Agregar fecha' }}</span>
                         </span>
                     </div>
