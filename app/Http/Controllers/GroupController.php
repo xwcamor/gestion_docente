@@ -139,6 +139,7 @@ class GroupController extends Controller
         // Las charlas son una actividad del grupo y solo se habilitan cuando
         // existe al menos un alumno en el padrón.
         $studentCount = $group->students()->count();
+        $groupDocuments = $group->documents()->orderByDesc('generated_at')->orderByDesc('id')->get()->groupBy('document_type');
         $talkScheduleSummary = $studentCount > 0
             ? $talkService->ensureScheduled($group)
             : null;
@@ -260,9 +261,10 @@ class GroupController extends Controller
 
         // The execution table only contains talks with a date. Unscheduled
         // catalogue entries remain reusable in storage but are not shown.
-        $groupTalks = $studentCount > 0
+        $eligibleTalkDates = $talkScheduleSummary['dates'] ?? [];
+        $groupTalks = $studentCount > 0 && $eligibleTalkDates
             ? $group->fiveMinuteTalks()
-                ->whereNotNull('scheduled_date')
+                ->whereIn('scheduled_date', $eligibleTalkDates)
                 ->orderBy('scheduled_date')
                 ->orderBy('position')
                 ->get()
@@ -287,6 +289,7 @@ class GroupController extends Controller
 
         return view('groups.show', compact(
             'group',
+            'groupDocuments',
             'assignments',
             'courseCount',
             'modalityCount',
@@ -423,7 +426,6 @@ class GroupController extends Controller
 
         $validator = Validator::make($request->all(), [
             'status' => ['required', 'in:pending,done'],
-            'participant_count' => ['required', 'integer', 'min:0', 'max:9999'],
             'observations' => ['nullable', 'string', 'max:2000'],
         ]);
 
@@ -441,10 +443,11 @@ class GroupController extends Controller
         }
 
         $data = $validator->validated();
-        $before = $talk->only(['status', 'participant_count', 'observations']);
+        $before = $talk->only(['status', 'status_source', 'observations']);
         $talk->update([
             'status' => $data['status'],
-            'participant_count' => (int) $data['participant_count'],
+            'status_source' => 'MANUAL',
+            'participant_count' => (int) $group->students()->count(),
             'observations' => $data['observations'] ?? null,
         ]);
 
@@ -454,7 +457,7 @@ class GroupController extends Controller
             'Se registró la ejecución de la charla del grupo '.$group->name.': '.$talk->topic,
             $talk,
             $before,
-            $talk->only(['status', 'participant_count', 'observations'])
+            $talk->only(['status', 'status_source', 'observations', 'participant_count'])
         );
 
         return redirect()
