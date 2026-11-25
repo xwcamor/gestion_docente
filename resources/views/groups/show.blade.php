@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Grupo '.$group->name)
+@section('title', 'Gestión académica · '.$group->name)
 @section('content')
 <div class="breadcrumbs">
     <a href="{{ route('dashboard') }}">Resumen</a>
@@ -14,6 +14,7 @@
 
 <div class="page-head group-page-head">
     <div>
+        <p class="eyebrow"><x-icon name="graduation-cap" size="12" /> Gestión académica · Malla curricular y padrón de alumnos</p>
         <p class="eyebrow"><x-icon name="users" size="12" /> {{ $group->cycle->academic_year }} · Ciclo {{ $group->cycle->cycle_code }}</p>
         <h1>{{ $group->name }}</h1>
         <div class="cycle-item-meta">
@@ -28,7 +29,7 @@
         <a class="btn btn-secondary" href="{{ route('cycles.show', $group->cycle) }}"><x-icon name="arrow-left" /> Grupos</a>
         <a class="btn btn-secondary" href="{{ route('groups.calendar', $group) }}"><x-icon name="calendar-days" /> Calendario</a>
         <button class="btn btn-secondary" type="button" data-modal-open="group-edit-dialog"><x-icon name="edit-3" /> Editar grupo</button>
-        <a class="btn" href="{{ route('assignments.quick', $group) }}"><x-icon name="plus" /> Agregar cursos</a>
+        <a class="btn" href="#group-roster"><x-icon name="users" /> Alumnos</a>
     </div>
 </div>
 
