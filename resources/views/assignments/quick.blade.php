@@ -1,18 +1,22 @@
 @extends('layouts.app')
-@section('title', 'Carga rápida de cursos')
+@section('title', ($editingAssignment ?? null) ? 'Editar curso y horario' : 'Crear cursos y horarios')
 @section('content')
+@php($isEditing = ($editingAssignment ?? null) !== null)
+@php($rows = old('rows', $rows ?? [[]]))
+@php($weekdayLabels = [1 => 'L', 2 => 'M', 3 => 'X', 4 => 'J', 5 => 'V', 6 => 'S', 7 => 'D'])
+
 <div class="breadcrumbs">
-    <a href="{{ route('cycles.index') }}">Ciclos</a><x-icon name="chevron-right" size="12" />
+    <a href="{{ route('cycles.index') }}">Cargas laborales</a><x-icon name="chevron-right" size="12" />
     <a href="{{ route('cycles.show', $group->cycle) }}">{{ $group->cycle->academic_year }} · {{ $group->cycle->cycle_code }}</a><x-icon name="chevron-right" size="12" />
     <a href="{{ route('groups.show', $group) }}">{{ $group->name }}</a><x-icon name="chevron-right" size="12" />
-    <span class="current">Carga rápida</span>
+    <span class="current">{{ $isEditing ? 'Editar curso' : 'Cursos y horarios' }}</span>
 </div>
 
 <div class="page-head">
     <div>
-        <p class="eyebrow">Registro académico · {{ $group->name }}</p>
-        <h1>Carga rápida de cursos</h1>
-        <p class="subhead">Registra cada curso una sola vez y configura por separado sus componentes de teoría y taller.</p>
+        <p class="eyebrow">{{ $group->name }} · {{ $group->cycle->academic_year }} / {{ $group->cycle->cycle_code }}</p>
+        <h1>{{ $isEditing ? 'Editar curso y horario' : 'Crear cursos y horarios' }}</h1>
+        <p class="subhead">Pega el alias institucional. El sistema detecta el nombre, la modalidad y el NRC; después configura fechas y repetición semanal.</p>
     </div>
     <a class="btn btn-secondary" href="{{ route('groups.show', $group) }}"><x-icon name="arrow-left" /> Volver al grupo</a>
 </div>
@@ -20,44 +24,49 @@
 @if($errors->any())
     <div class="alert alert-error" role="alert">
         <strong>Hay datos que revisar.</strong>
-        Corrige los mensajes señalados en cada curso y vuelve a guardar.
+        Corrige los campos señalados; no se guardaron cambios incompletos.
     </div>
 @endif
 
-<form method="POST" action="{{ route('assignments.quick.store', $group) }}" id="quick-course-form" data-loading-form="1">
+<form method="POST"
+      action="{{ $isEditing ? route('assignments.quick.update', [$group, $editingAssignment]) : route('assignments.quick.store', $group) }}"
+      id="quick-course-form"
+      data-loading-form="1">
     @csrf
+    @if($isEditing)
+        @method('PATCH')
+    @endif
+
     <section class="card quick-register-card">
         <div class="card-head">
             <div>
-                <h2>{{ $group->name }} · {{ $group->cycle->academic_year }} / {{ $group->cycle->cycle_code }}</h2>
-                <p class="card-description">Una fila por curso. TEC y TAL pueden tener códigos NRC y periodos diferentes.</p>
-            </div>
-            <span class="badge badge-blue">Hasta 60 cursos</span>
-        </div>
-
-        <div class="alert alert-info quick-code-help">
-            <x-icon name="info" size="16" />
-            <div>
-                <strong>Cómo ingresar los cursos</strong>
-                <p>Coloca el código completo en su componente correspondiente. Un curso puede tener solo TEC, solo TAL o ambos. Las fechas Desde/Hasta se guardan por separado para cada modalidad; puedes dejarlas vacías y completarlas después.</p>
-                <p class="quick-code-example">
-                    <code>202620-PIAD-222-TEC-NRC_11518</code>
-                    <span>y</span>
-                    <code>202620-PIAD-222-TAL-NRC_11520</code>
-                    <span>son dos códigos del mismo curso.</span>
+                <h2>{{ $isEditing ? $editingAssignment->course->name : 'Datos del curso' }}</h2>
+                <p class="card-description">
+                    {{ $isEditing ? 'Modifica el alias, NRC, bloques, fechas y horarios sin salir del grupo.' : 'Una fila por curso. Puedes registrar teoría, taller o ambos, cada uno con sus propios datos.' }}
                 </p>
             </div>
+            @unless($isEditing)
+                <span class="badge badge-blue">Hasta 60 cursos</span>
+            @endunless
         </div>
 
-        @php($rows = old('rows', array_fill(0, 5, [])))
+        <div class="alert alert-info quick-alias-help">
+            <x-icon name="info" size="16" />
+            <div>
+                <strong>Pega el alias completo</strong>
+                <p>Ejemplo: <code>202620-PIAD-224-TEC-NRC_11523: SISTEMAS OPERATIVOS Y COMUNICACIÓN DE DATOS</code></p>
+                <p>Se completarán automáticamente el nombre, el código base, TEC/TALL y el NRC. El bloque institucional, ambiente y horario se pueden añadir debajo.</p>
+            </div>
+        </div>
+
         <div class="quick-course-table-wrap">
             <table class="quick-course-table">
                 <thead>
                     <tr>
                         <th class="quick-number-heading">#</th>
-                        <th class="quick-course-heading">Curso</th>
-                        <th class="quick-modality-heading quick-tec-heading">Teoría (TEC)</th>
-                        <th class="quick-modality-heading quick-tall-heading">Taller (TAL)</th>
+                        <th class="quick-course-heading">Nombre del curso</th>
+                        <th class="quick-modality-heading">Teoría · TEC</th>
+                        <th class="quick-modality-heading">Taller / práctica · TALL</th>
                         <th class="quick-actions-heading" aria-label="Acciones"></th>
                     </tr>
                 </thead>
@@ -67,59 +76,93 @@
                             <td class="quick-row-number">{{ $index + 1 }}</td>
                             <td class="quick-course-name-cell">
                                 <label class="quick-field-label">
-                                    <span>Curso</span>
-                                    <input class="field" name="rows[{{ $index }}][course_name]" value="{{ $row['course_name'] ?? '' }}" maxlength="255" placeholder="Nombre del curso" aria-label="Nombre del curso">
+                                    <span>Nombre detectado / editable</span>
+                                    <input class="field" data-course-name name="rows[{{ $index }}][course_name]" value="{{ $row['course_name'] ?? '' }}" maxlength="255" required placeholder="Se detecta desde el alias">
                                 </label>
-                                <small class="quick-row-preview" data-row-preview aria-live="polite">Ingresa uno o ambos componentes.</small>
+                                <small class="quick-row-preview" data-row-preview aria-live="polite">Pega el alias TEC o TALL para reconocer el curso.</small>
                                 @error("rows.$index.course_name")<small class="field-error">{{ $message }}</small>@enderror
                                 @error("rows.$index.row_error")<small class="field-error quick-row-error">{{ $message }}</small>@enderror
                             </td>
-                            <td class="quick-modality-cell">
-                                <div class="quick-modality-fields">
-                                    <label class="quick-field-label quick-code-field">
-                                        <span>Código institucional TEC</span>
-                                        <input class="field mono quick-modality-code" data-code-input data-modality="TEC" name="rows[{{ $index }}][tec_code]" value="{{ $row['tec_code'] ?? '' }}" maxlength="200" placeholder="202620-PIAD-222-TEC-NRC_11518" aria-label="Código completo TEC">
-                                        <small class="quick-code-preview" data-code-preview aria-live="polite"></small>
-                                        @error("rows.$index.tec_code")<small class="field-error">{{ $message }}</small>@enderror
-                                    </label>
-                                    <div class="quick-date-fields">
-                                        <label class="quick-field-label">
-                                            <span>Desde</span>
-                                            <input class="field" type="date" name="rows[{{ $index }}][tec_start_date]" value="{{ $row['tec_start_date'] ?? '' }}" aria-label="Fecha Desde de TEC">
-                                            @error("rows.$index.tec_start_date")<small class="field-error">{{ $message }}</small>@enderror
+
+                            @foreach(['TEC' => 'tec', 'TALL' => 'tall'] as $type => $prefix)
+                                @php($codeField = $prefix.'_code')
+                                @php($blockField = $prefix.'_block_code')
+                                @php($scheduleField = $prefix.'_schedules')
+                                @php($scheduleRows = $row[$scheduleField] ?? [])
+                                @php($defaultType = $type === 'TEC' ? 'THEORY' : 'LAB')
+                                <td class="quick-modality-cell">
+                                    <div class="quick-modality-fields">
+                                        <label class="quick-field-label quick-code-field">
+                                            <span>Alias {{ $type }}</span>
+                                            <input class="field mono quick-modality-code"
+                                                   data-code-input
+                                                   data-modality="{{ $type }}"
+                                                   name="rows[{{ $index }}][{{ $codeField }}]"
+                                                   value="{{ $row[$codeField] ?? '' }}"
+                                                   maxlength="255"
+                                                   placeholder="{{ $type === 'TEC' ? '...-TEC-NRC_11523: Nombre del curso' : '...-TAL-NRC_11524: Nombre del curso' }}"
+                                                   aria-label="Alias institucional {{ $type }}">
+                                            <small class="quick-code-preview" data-code-preview aria-live="polite"></small>
+                                            @error("rows.$index.$codeField")<small class="field-error">{{ $message }}</small>@enderror
                                         </label>
+
                                         <label class="quick-field-label">
-                                            <span>Hasta</span>
-                                            <input class="field" type="date" name="rows[{{ $index }}][tec_end_date]" value="{{ $row['tec_end_date'] ?? '' }}" aria-label="Fecha Hasta de TEC">
-                                            @error("rows.$index.tec_end_date")<small class="field-error">{{ $message }}</small>@enderror
+                                            <span>Bloque institucional (opcional)</span>
+                                            <input class="field" name="rows[{{ $index }}][{{ $blockField }}]" value="{{ $row[$blockField] ?? '' }}" maxlength="100" placeholder="Ej. {{ $type }}-01">
                                         </label>
+
+                                        <div class="quick-date-fields">
+                                            <label class="quick-field-label">
+                                                <span>Inicio</span>
+                                                <input class="field" type="date" name="rows[{{ $index }}][{{ $prefix }}_start_date]" value="{{ $row[$prefix.'_start_date'] ?? '' }}">
+                                                @error("rows.$index.{{ $prefix }}_start_date")<small class="field-error">{{ $message }}</small>@enderror
+                                            </label>
+                                            <label class="quick-field-label">
+                                                <span>Fin</span>
+                                                <input class="field" type="date" name="rows[{{ $index }}][{{ $prefix }}_end_date]" value="{{ $row[$prefix.'_end_date'] ?? '' }}">
+                                                @error("rows.$index.{{ $prefix }}_end_date")<small class="field-error">{{ $message }}</small>@enderror
+                                            </label>
+                                        </div>
+
+                                        <details class="quick-schedule-editor">
+                                            <summary>
+                                                <span>Horario semanal</span>
+                                                <small><span data-schedule-count>{{ count($scheduleRows) }}</span> bloques</small>
+                                                <x-icon name="chevron-right" class="quick-schedule-chevron" size="14" />
+                                            </summary>
+                                            <div class="quick-schedule-body">
+                                                <p class="help">Marca los días, indica las horas y el intervalo de repetición. El calendario se detiene en la fecha Fin.</p>
+                                                <div class="quick-schedule-list" data-schedule-list>
+                                                    @foreach($scheduleRows as $scheduleIndex => $schedule)
+                                                        @include('assignments.partials.schedule-row', [
+                                                            'rowIndex' => $index,
+                                                            'prefix' => $prefix,
+                                                            'scheduleIndex' => $scheduleIndex,
+                                                            'schedule' => $schedule,
+                                                            'defaultInstructionType' => $defaultType,
+                                                        ])
+                                                    @endforeach
+                                                </div>
+                                                <button class="btn btn-secondary btn-sm quick-add-schedule" type="button" data-prefix="{{ $prefix }}" data-row-index="{{ $index }}">
+                                                    <x-icon name="plus" /> Agregar bloque semanal
+                                                </button>
+                                                @if($isEditing && count($scheduleRows) > 0)
+                                                    <label class="quick-clear-schedules">
+                                                        <input type="checkbox" name="rows[{{ $index }}][{{ $prefix }}_clear_schedules]" value="1">
+                                                        <span>Quitar todos los horarios de {{ $type }}</span>
+                                                    </label>
+                                                @endif
+                                                @error("rows.$index.$scheduleField")<small class="field-error">{{ $message }}</small>@enderror
+                                            </div>
+                                        </details>
                                     </div>
-                                </div>
-                            </td>
-                            <td class="quick-modality-cell">
-                                <div class="quick-modality-fields">
-                                    <label class="quick-field-label quick-code-field">
-                                        <span>Código institucional TAL</span>
-                                        <input class="field mono quick-modality-code" data-code-input data-modality="TALL" name="rows[{{ $index }}][tall_code]" value="{{ $row['tall_code'] ?? '' }}" maxlength="200" placeholder="202620-PIAD-222-TAL-NRC_11520" aria-label="Código completo TAL">
-                                        <small class="quick-code-preview" data-code-preview aria-live="polite"></small>
-                                        @error("rows.$index.tall_code")<small class="field-error">{{ $message }}</small>@enderror
-                                    </label>
-                                    <div class="quick-date-fields">
-                                        <label class="quick-field-label">
-                                            <span>Desde</span>
-                                            <input class="field" type="date" name="rows[{{ $index }}][tall_start_date]" value="{{ $row['tall_start_date'] ?? '' }}" aria-label="Fecha Desde de TAL">
-                                            @error("rows.$index.tall_start_date")<small class="field-error">{{ $message }}</small>@enderror
-                                        </label>
-                                        <label class="quick-field-label">
-                                            <span>Hasta</span>
-                                            <input class="field" type="date" name="rows[{{ $index }}][tall_end_date]" value="{{ $row['tall_end_date'] ?? '' }}" aria-label="Fecha Hasta de TAL">
-                                            @error("rows.$index.tall_end_date")<small class="field-error">{{ $message }}</small>@enderror
-                                        </label>
-                                    </div>
-                                </div>
-                            </td>
+                                </td>
+                            @endforeach
+
                             <td class="quick-remove-cell">
-                                <button class="btn btn-ghost btn-sm quick-remove-row" type="button" aria-label="Quitar curso"><x-icon name="x" size="13" /></button>
+                                @unless($isEditing)
+                                    <button class="btn btn-ghost btn-sm quick-remove-row" type="button" aria-label="Quitar curso" title="Quitar curso"><x-icon name="x" /></button>
+                                @endunless
                             </td>
                         </tr>
                     @endforeach
@@ -132,53 +175,68 @@
                 <td class="quick-row-number"></td>
                 <td class="quick-course-name-cell">
                     <label class="quick-field-label">
-                        <span>Curso</span>
-                        <input class="field" name="rows[__INDEX__][course_name]" maxlength="255" placeholder="Nombre del curso" aria-label="Nombre del curso">
+                        <span>Nombre detectado / editable</span>
+                        <input class="field" data-course-name name="rows[__INDEX__][course_name]" maxlength="255" required placeholder="Se detecta desde el alias">
                     </label>
-                    <small class="quick-row-preview" data-row-preview aria-live="polite">Ingresa uno o ambos componentes.</small>
+                    <small class="quick-row-preview" data-row-preview aria-live="polite">Pega el alias TEC o TALL para reconocer el curso.</small>
                 </td>
-                <td class="quick-modality-cell">
-                    <div class="quick-modality-fields">
-                        <label class="quick-field-label quick-code-field">
-                            <span>Código institucional TEC</span>
-                            <input class="field mono quick-modality-code" data-code-input data-modality="TEC" name="rows[__INDEX__][tec_code]" maxlength="200" placeholder="202620-PIAD-222-TEC-NRC_11518" aria-label="Código completo TEC">
-                            <small class="quick-code-preview" data-code-preview aria-live="polite"></small>
-                        </label>
-                        <div class="quick-date-fields">
-                            <label class="quick-field-label"><span>Desde</span><input class="field" type="date" name="rows[__INDEX__][tec_start_date]" aria-label="Fecha Desde de TEC"></label>
-                            <label class="quick-field-label"><span>Hasta</span><input class="field" type="date" name="rows[__INDEX__][tec_end_date]" aria-label="Fecha Hasta de TEC"></label>
+                @foreach(['TEC' => 'tec', 'TALL' => 'tall'] as $type => $prefix)
+                    <td class="quick-modality-cell">
+                        <div class="quick-modality-fields">
+                            <label class="quick-field-label quick-code-field">
+                                <span>Alias {{ $type }}</span>
+                                <input class="field mono quick-modality-code" data-code-input data-modality="{{ $type }}" name="rows[__INDEX__][{{ $prefix }}_code]" maxlength="255" placeholder="{{ $type === 'TEC' ? '...-TEC-NRC_11523: Nombre' : '...-TAL-NRC_11524: Nombre' }}">
+                                <small class="quick-code-preview" data-code-preview aria-live="polite"></small>
+                            </label>
+                            <label class="quick-field-label">
+                                <span>Bloque institucional (opcional)</span>
+                                <input class="field" name="rows[__INDEX__][{{ $prefix }}_block_code]" maxlength="100" placeholder="Ej. {{ $type }}-01">
+                            </label>
+                            <div class="quick-date-fields">
+                                <label class="quick-field-label"><span>Inicio</span><input class="field" type="date" name="rows[__INDEX__][{{ $prefix }}_start_date]"></label>
+                                <label class="quick-field-label"><span>Fin</span><input class="field" type="date" name="rows[__INDEX__][{{ $prefix }}_end_date]"></label>
+                            </div>
+                            <details class="quick-schedule-editor">
+                                <summary><span>Horario semanal</span><small><span data-schedule-count>0</span> bloques</small><x-icon name="chevron-right" class="quick-schedule-chevron" size="14" /></summary>
+                                <div class="quick-schedule-body">
+                                    <p class="help">Marca los días, indica las horas y el intervalo de repetición. El calendario se detiene en la fecha Fin.</p>
+                                    <div class="quick-schedule-list" data-schedule-list></div>
+                                    <button class="btn btn-secondary btn-sm quick-add-schedule" type="button" data-prefix="{{ $prefix }}" data-row-index="__INDEX__"><x-icon name="plus" /> Agregar bloque semanal</button>
+                                </div>
+                            </details>
                         </div>
-                    </div>
-                </td>
-                <td class="quick-modality-cell">
-                    <div class="quick-modality-fields">
-                        <label class="quick-field-label quick-code-field">
-                            <span>Código institucional TAL</span>
-                            <input class="field mono quick-modality-code" data-code-input data-modality="TALL" name="rows[__INDEX__][tall_code]" maxlength="200" placeholder="202620-PIAD-222-TAL-NRC_11520" aria-label="Código completo TAL">
-                            <small class="quick-code-preview" data-code-preview aria-live="polite"></small>
-                        </label>
-                        <div class="quick-date-fields">
-                            <label class="quick-field-label"><span>Desde</span><input class="field" type="date" name="rows[__INDEX__][tall_start_date]" aria-label="Fecha Desde de TAL"></label>
-                            <label class="quick-field-label"><span>Hasta</span><input class="field" type="date" name="rows[__INDEX__][tall_end_date]" aria-label="Fecha Hasta de TAL"></label>
-                        </div>
-                    </div>
-                </td>
-                <td class="quick-remove-cell">
-                    <button class="btn btn-ghost btn-sm quick-remove-row" type="button" aria-label="Quitar curso"><x-icon name="x" size="13" /></button>
-                </td>
+                    </td>
+                @endforeach
+                <td class="quick-remove-cell"><button class="btn btn-ghost btn-sm quick-remove-row" type="button" aria-label="Quitar curso" title="Quitar curso"><x-icon name="x" /></button></td>
             </tr>
         </template>
 
-        @error('rows')<p class="field-error">{{ $message }}</p>@enderror
+        <template id="quick-schedule-row-template">
+            @include('assignments.partials.schedule-row', [
+                'rowIndex' => '__ROW_INDEX__',
+                'prefix' => '__PREFIX__',
+                'scheduleIndex' => '__SCHEDULE_INDEX__',
+                'schedule' => [],
+                'defaultInstructionType' => '__DEFAULT_INSTRUCTION__',
+            ])
+        </template>
 
+        @error('rows')<p class="field-error">{{ $message }}</p>@enderror
         <div class="quick-register-actions">
-            <button class="btn btn-secondary" type="button" id="quick-add-row"><x-icon name="plus" /> Agregar curso</button>
-            <span class="help">Cada fila admite un código TEC y un código TAL. Los NRC pueden ser diferentes.</span>
+            @unless($isEditing)
+                <button class="btn btn-secondary" type="button" id="quick-add-row"><x-icon name="plus" /> Agregar curso</button>
+                <span class="help">Pega un alias por modalidad. Si el curso tiene TEC y TALL, colócalos en la misma fila.</span>
+            @else
+                <span class="help">El nombre se actualiza en todos los grupos donde se reutiliza este curso. Los NRC y horarios solo cambian en este grupo.</span>
+            @endunless
         </div>
 
         <div class="form-actions">
-            <a class="btn btn-secondary" href="{{ route('groups.show', $group) }}">Cancelar</a>
-            <button class="btn" type="submit"><x-icon name="check" /> Guardar cursos</button>
+            <a class="btn btn-secondary" href="{{ route('groups.show', $group) }}"><x-icon name="x" /> Cancelar</a>
+            <button class="btn" type="submit">
+                <x-icon name="check" />
+                {{ $isEditing ? 'Guardar cambios del curso' : 'Guardar cursos y horarios' }}
+            </button>
         </div>
     </section>
 </form>
@@ -187,39 +245,58 @@
 @push('styles')
 <style>
 .quick-register-card{padding:18px}
-.quick-code-help{align-items:flex-start;line-height:1.55}
-.quick-code-help>div{min-width:0}
-.quick-code-help p{margin:3px 0 0}
-.quick-code-example{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
-.quick-code-example code{font-size:10px}
+.quick-alias-help{align-items:flex-start;line-height:1.55}
+.quick-alias-help>div{min-width:0}
+.quick-alias-help p{margin:3px 0 0}
+.quick-alias-help code{font-size:10px;overflow-wrap:anywhere}
 .quick-course-table-wrap{overflow-x:auto;margin-top:14px;border:1px solid var(--line);border-radius:10px}
-.quick-course-table{width:100%;min-width:1040px;table-layout:fixed;border-collapse:separate;border-spacing:0;font-size:12px}
-.quick-course-table th{padding:12px 11px;background:var(--surface-soft);color:var(--muted);text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.3px;border-bottom:1px solid var(--line);white-space:nowrap}
-.quick-course-table th.quick-modality-heading{text-align:center;color:var(--info);background:var(--info-bg);font-size:11px}
-.quick-course-table th.quick-tec-heading{border-left:1px solid var(--line)}
-.quick-course-table th.quick-tall-heading{border-left:1px solid var(--line)}
-.quick-course-table td{padding:13px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+.quick-course-table{width:100%;min-width:1160px;table-layout:fixed;border-collapse:separate;border-spacing:0;font-size:12px}
+.quick-course-table th{padding:11px;background:var(--surface-soft);color:var(--muted);text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.3px;border-bottom:1px solid var(--line)}
+.quick-course-table th.quick-modality-heading{text-align:center;color:var(--info);background:var(--info-bg)}
+.quick-course-table td{padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:top}
 .quick-course-table tbody tr:last-child td{border-bottom:0}
-.quick-course-table .field{min-width:0;width:100%;font-size:11px}
+.quick-course-table .field{width:100%;min-width:0;font-size:11px}
 .quick-number-heading,.quick-row-number{width:38px;text-align:center}
-.quick-row-number{padding-top:20px!important;color:var(--muted);font-weight:750}
-.quick-course-heading{width:250px}
-.quick-course-name-cell{width:250px}
-.quick-field-label{display:grid;gap:5px;min-width:0}
-.quick-field-label>span{color:var(--muted);font-size:10px;font-weight:700}
-.quick-field-label .field{min-height:38px;padding:8px 10px}
+.quick-row-number{padding-top:18px!important;color:var(--muted);font-weight:750}
+.quick-course-heading,.quick-course-name-cell{width:235px}
+.quick-field-label{display:grid;gap:5px;min-width:0;margin-bottom:8px}
+.quick-field-label>span,.quick-schedule-field>span{color:var(--muted);font-size:10px;font-weight:700}
+.quick-field-label .field{min-height:36px;padding:8px 9px}
+.quick-code-field .field{font-size:10px}
 .quick-modality-cell{border-left:1px solid var(--line)}
-.quick-modality-fields{display:grid;grid-template-columns:minmax(0,1fr);gap:9px;min-width:0}
-.quick-code-field{min-width:0}
-.quick-code-field .field{min-width:0;font-size:11px}
-.quick-date-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
-.quick-date-fields .field{min-width:0}
-.quick-code-preview,.quick-row-preview{display:block;min-height:14px;margin-top:4px;color:var(--muted);font-size:10px;line-height:1.45}
+.quick-modality-fields{display:grid;gap:4px;min-width:0}
+.quick-date-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.quick-date-fields .quick-field-label{margin-bottom:0}
+.quick-code-preview,.quick-row-preview{display:block;min-height:13px;margin:3px 0 7px;color:var(--muted);font-size:10px;line-height:1.4;overflow-wrap:anywhere}
 .quick-code-preview.is-warning,.quick-row-preview.is-warning,.quick-row-error{color:var(--danger)}
-.quick-row-preview.is-valid{color:var(--info)}
-.quick-remove-cell{width:46px;text-align:center}
-.quick-remove-cell .btn{margin-top:1px}
-.quick-row-error{display:block;margin-top:8px;padding:7px 9px;border:1px solid color-mix(in srgb,var(--danger) 22%,var(--line));border-radius:7px;background:var(--danger-bg);font-size:10px;line-height:1.45}
+.quick-row-preview.is-valid{color:var(--success)}
+.quick-remove-cell{width:42px;text-align:center}
+.quick-row-error{display:block;margin-top:6px;padding:7px;border:1px solid var(--line);border-radius:7px;background:var(--danger-bg);font-size:10px}
+.quick-schedule-editor{margin-top:10px;border:1px solid var(--line);border-radius:8px;background:var(--surface-soft);overflow:hidden}
+.quick-schedule-editor>summary{display:flex;align-items:center;gap:7px;padding:9px;cursor:pointer;list-style:none}
+.quick-schedule-editor>summary::-webkit-details-marker{display:none}
+.quick-schedule-editor>summary>span{font-size:11px;font-weight:750;color:var(--ink)}
+.quick-schedule-editor>summary>small{margin-left:auto;color:var(--muted);font-size:10px;white-space:nowrap}
+.quick-schedule-chevron{color:var(--muted);transition:transform .15s ease}
+.quick-schedule-editor[open] .quick-schedule-chevron{transform:rotate(90deg)}
+.quick-schedule-body{padding:10px;border-top:1px solid var(--line)}
+.quick-schedule-body>.help{margin:0 0 9px;font-size:10px}
+.quick-schedule-list{display:grid;gap:8px}
+.quick-schedule-row{display:grid;grid-template-columns:minmax(160px,1.4fr) minmax(90px,.65fr) minmax(90px,.65fr) minmax(90px,.7fr) minmax(115px,.8fr) minmax(110px,.8fr) auto;align-items:end;gap:7px;padding:9px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.quick-schedule-days{min-width:0}
+.quick-schedule-label{display:block;margin-bottom:6px;color:var(--muted);font-size:10px;font-weight:700}
+.quick-weekdays{display:flex;gap:4px;flex-wrap:wrap}
+.quick-weekday{display:grid;place-items:center;cursor:pointer}
+.quick-weekday input{position:absolute;opacity:0;pointer-events:none}
+.quick-weekday span{display:grid;place-items:center;width:25px;height:25px;border:1px solid var(--line-strong);border-radius:50%;background:var(--surface);color:var(--ink-soft);font-size:10px;font-weight:700}
+.quick-weekday input:checked+span{border-color:var(--accent);background:var(--accent);color:#fff}
+.quick-weekday input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+.quick-schedule-field{display:grid;gap:5px;min-width:0;margin:0}
+.quick-schedule-field .field{min-height:34px;padding:6px 7px;font-size:10px}
+.quick-schedule-remove{min-height:34px;padding:6px}
+.quick-add-schedule{margin-top:9px}
+.quick-clear-schedules{display:flex;align-items:center;gap:7px;margin-top:10px;color:var(--danger);font-size:10px}
+.quick-clear-schedules input{width:14px;height:14px}
 .quick-register-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px}
 .quick-register-actions .help{max-width:70ch}
 @media(max-width:1100px){
@@ -227,22 +304,23 @@
  .quick-course-table{display:block;min-width:0;table-layout:auto}
  .quick-course-table thead{display:none}
  .quick-course-table tbody{display:grid;gap:12px}
- .quick-course-table tr{display:grid;grid-template-columns:minmax(0,1fr);gap:11px;padding:14px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+ .quick-course-table tr{display:grid;grid-template-columns:1fr;gap:11px;padding:13px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
  .quick-course-table td{display:block;width:auto!important;min-width:0;padding:0;border:0}
  .quick-course-table td.quick-row-number{display:none}
- .quick-course-table td.quick-course-name-cell{grid-column:1}
- .quick-course-table td.quick-modality-cell{grid-column:1;padding-top:11px;border-top:1px solid var(--line)}
- .quick-course-table td.quick-modality-cell:before{display:block;margin-bottom:9px;padding:6px 8px;border-radius:6px;background:var(--info-bg);color:var(--info);font-size:10px;font-weight:800}
- .quick-course-table td.quick-modality-cell:nth-of-type(3):before{content:"TEORÍA · TEC"}
- .quick-course-table td.quick-modality-cell:nth-of-type(4):before{content:"TALLER · TAL"}
- .quick-modality-fields{grid-template-columns:minmax(0,1fr);gap:9px}
- .quick-code-field .field{min-width:0}
- .quick-course-table td.quick-remove-cell{display:flex;justify-content:flex-end}
+ .quick-course-table td.quick-modality-cell{padding-top:11px;border-top:1px solid var(--line)}
+ .quick-course-table td.quick-modality-cell:before{display:block;margin-bottom:9px;padding:6px 8px;border-radius:6px;background:var(--info-bg);color:var(--info);font-size:10px;font-weight:800;content:"TEORÍA · TEC"}
+ .quick-course-table td.quick-modality-cell:nth-of-type(4):before{content:"TALLER / PRÁCTICA · TALL"}
+ .quick-schedule-row{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .quick-schedule-days{grid-column:1/-1}
+ .quick-schedule-remove{justify-self:end}
 }
 @media(max-width:560px){
- .quick-register-card{padding:13px}
- .quick-date-fields{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
- .quick-code-example{align-items:flex-start;flex-direction:column;gap:3px}
+ .quick-register-card{padding:12px}
+ .quick-date-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .quick-schedule-row{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .quick-schedule-days{grid-column:1/-1}
+ .quick-schedule-room{grid-column:1/-1}
+ .quick-schedule-remove{grid-column:2}
  .quick-register-actions{align-items:stretch;flex-direction:column}
  .quick-register-actions .btn{width:100%}
  .quick-register-card .form-actions{align-items:stretch;flex-direction:column-reverse}
@@ -255,18 +333,17 @@
 <script>
 (() => {
     const body = document.getElementById('quick-course-rows');
-    const addButton = document.getElementById('quick-add-row');
-    const template = document.getElementById('quick-course-row-template');
-    if (!body || !addButton || !template) return;
+    const addCourseButton = document.getElementById('quick-add-row');
+    const courseTemplate = document.getElementById('quick-course-row-template');
+    const scheduleTemplate = document.getElementById('quick-schedule-row-template');
+    if (!body || !courseTemplate || !scheduleTemplate) return;
 
-    let nextIndex = Math.max(-1, ...[...body.querySelectorAll('[name]')].map(input => {
-        const match = input.name.match(/^rows\[(\d+)\]/);
-        return match ? Number(match[1]) : -1;
-    })) + 1;
-
-    const parseCode = value => {
+    const parseAlias = value => {
+        const colon = value.indexOf(':');
+        const code = (colon >= 0 ? value.slice(0, colon) : value).trim();
+        const name = colon >= 0 ? value.slice(colon + 1).trim() : '';
         const pattern = /(?:(20\d{4})-)?([A-Z][A-Z0-9]{1,9})-([A-Z0-9]{1,12})-(TEC|TALL|TAL)(?:[-_\s]*NRC[_\s-]*(\d{3,12}))?/gi;
-        const entries = [...value.matchAll(pattern)].map(match => ({
+        const entries = [...code.matchAll(pattern)].map(match => ({
             base: [match[1], match[2], match[3]].filter(Boolean).join('-'),
             period: match[1] || '',
             program: match[2],
@@ -274,96 +351,144 @@
             type: match[4].toUpperCase() === 'TAL' ? 'TALL' : match[4].toUpperCase(),
             nrc: match[5] || ''
         }));
-        return { entries };
+        return { code, name, entries };
     };
 
     const updateRow = row => {
-        const inputs = [...row.querySelectorAll('[data-code-input]')];
-        const parsed = {};
+        const nameInput = row.querySelector('[data-course-name]');
+        const parsedByType = {};
+        const aliasNames = [];
 
-        inputs.forEach(input => {
+        row.querySelectorAll('[data-code-input]').forEach(input => {
+            const result = parseAlias(input.value);
+            const type = input.dataset.modality;
             const preview = input.closest('.quick-field-label').querySelector('[data-code-preview]');
-            const expected = input.dataset.modality;
-            const result = parseCode(input.value);
-            parsed[expected] = result;
+            parsedByType[type] = result;
 
+            if (result.name) aliasNames.push(result.name);
             if (!input.value.trim()) {
                 preview.textContent = '';
                 preview.classList.remove('is-warning');
                 return;
             }
-
-            if (!result.entries.length) {
-                preview.textContent = 'No se reconoció el código institucional.';
-                preview.classList.add('is-warning');
-                return;
-            }
-
-            if (result.entries.length !== 1 || result.entries[0].type !== expected) {
-                preview.textContent = expected === 'TEC'
-                    ? 'Ingresa un único código de teoría (TEC).'
-                    : 'Ingresa un único código de taller (TAL/TALL).';
+            if (result.entries.length !== 1 || result.entries[0].type !== type) {
+                preview.textContent = type === 'TEC'
+                    ? 'Pega un alias TEC con NRC, por ejemplo ...-TEC-NRC_11523: Nombre.'
+                    : 'Pega un alias TAL/TALL con NRC, por ejemplo ...-TAL-NRC_11524: Nombre.';
                 preview.classList.add('is-warning');
                 return;
             }
 
             const entry = result.entries[0];
             preview.textContent = [
-                entry.period ? 'Periodo ' + entry.period : '',
-                'Programa ' + entry.program,
-                'Curso ' + entry.course,
-                entry.nrc ? 'NRC ' + entry.nrc : 'Sin NRC'
+                entry.period ? 'Periodo '+entry.period : '',
+                'Programa '+entry.program,
+                'Curso '+entry.course,
+                entry.nrc ? 'NRC '+entry.nrc : 'NRC pendiente'
             ].filter(Boolean).join(' · ');
             preview.classList.remove('is-warning');
         });
 
-        const rowPreview = row.querySelector('[data-row-preview]');
-        const tecEntry = parsed.TEC?.entries?.length === 1 ? parsed.TEC.entries[0] : null;
-        const tallEntry = parsed.TALL?.entries?.length === 1 ? parsed.TALL.entries[0] : null;
-        const tec = tecEntry?.type === 'TEC' ? tecEntry : null;
-        const tall = tallEntry?.type === 'TALL' ? tallEntry : null;
-
-        if (tec && tall && tec.base !== tall.base) {
-            rowPreview.textContent = 'Los códigos TEC y TAL deben pertenecer al mismo periodo, programa y curso.';
-            rowPreview.classList.add('is-warning');
-            rowPreview.classList.remove('is-valid');
-        } else if (tec && tall) {
-            rowPreview.textContent = 'TEC y TAL identifican el mismo curso. Cada uno conserva su NRC y sus fechas.';
-            rowPreview.classList.add('is-valid');
-            rowPreview.classList.remove('is-warning');
-        } else {
-            rowPreview.textContent = 'Ingresa TEC, TAL o ambos componentes.';
-            rowPreview.classList.remove('is-warning', 'is-valid');
+        const uniqueNames = [...new Set(aliasNames)];
+        if (uniqueNames.length === 1 && (!nameInput.dataset.userEdited || nameInput.value === nameInput.dataset.autoValue || !nameInput.value.trim())) {
+            nameInput.value = uniqueNames[0];
+            nameInput.dataset.autoValue = uniqueNames[0];
         }
+
+        const tec = parsedByType.TEC?.entries?.length === 1 ? parsedByType.TEC.entries[0] : null;
+        const tall = parsedByType.TALL?.entries?.length === 1 ? parsedByType.TALL.entries[0] : null;
+        const preview = row.querySelector('[data-row-preview]');
+
+        if (uniqueNames.length > 1) {
+            preview.textContent = 'Los alias TEC y TALL tienen nombres distintos. Verifica que correspondan al mismo curso.';
+            preview.classList.add('is-warning');
+            preview.classList.remove('is-valid');
+        } else if (tec && tall && tec.base !== tall.base) {
+            preview.textContent = 'Los alias TEC y TALL deben pertenecer al mismo periodo, programa y número de curso.';
+            preview.classList.add('is-warning');
+            preview.classList.remove('is-valid');
+        } else if (tec || tall) {
+            preview.textContent = 'Código base '+(tec || tall).base+'. NRC detectado por separado para cada modalidad.';
+            preview.classList.add('is-valid');
+            preview.classList.remove('is-warning');
+        } else if (preview) {
+            preview.textContent = 'Pega el alias TEC o TALL para detectar sus datos.';
+            preview.classList.remove('is-valid', 'is-warning');
+        }
+    };
+
+    const updateScheduleCount = details => {
+        const list = details.querySelector('[data-schedule-list]');
+        const count = details.querySelector('[data-schedule-count]');
+        if (count && list) count.textContent = list.querySelectorAll('[data-schedule-row]').length;
     };
 
     const bindRow = row => {
         row.querySelectorAll('[data-code-input]').forEach(input => {
             input.addEventListener('input', () => updateRow(row));
         });
+        row.querySelector('[data-course-name]')?.addEventListener('input', event => {
+            const input = event.currentTarget;
+            if (input.value !== input.dataset.autoValue) input.dataset.userEdited = '1';
+        });
         row.querySelector('.quick-remove-row')?.addEventListener('click', () => {
             if (body.querySelectorAll('[data-row]').length <= 1) return;
             row.remove();
             renumber();
         });
+        row.querySelectorAll('.quick-schedule-editor').forEach(updateScheduleCount);
         updateRow(row);
     };
 
     const renumber = () => {
         body.querySelectorAll('[data-row]').forEach((row, index) => {
-            row.querySelector('.quick-row-number').textContent = index + 1;
+            const number = row.querySelector('.quick-row-number');
+            if (number) number.textContent = index + 1;
         });
-        addButton.disabled = body.querySelectorAll('[data-row]').length >= 60;
+        if (addCourseButton) addCourseButton.disabled = body.querySelectorAll('[data-row]').length >= 60;
     };
 
     body.querySelectorAll('[data-row]').forEach(bindRow);
-    addButton.addEventListener('click', () => {
+
+    addCourseButton?.addEventListener('click', () => {
         if (body.querySelectorAll('[data-row]').length >= 60) return;
-        const index = nextIndex++;
-        const rowHtml = template.innerHTML.replaceAll('__INDEX__', String(index));
-        body.insertAdjacentHTML('beforeend', rowHtml);
+        const index = Math.max(-1, ...[...body.querySelectorAll('[data-row]')].map(row => {
+            const input = row.querySelector('[name]');
+            const match = input?.name.match(/^rows\[(\d+)\]/);
+            return match ? Number(match[1]) : -1;
+        })) + 1;
+        const html = courseTemplate.innerHTML.replaceAll('__INDEX__', String(index));
+        body.insertAdjacentHTML('beforeend', html);
         bindRow(body.lastElementChild);
         renumber();
+    });
+
+    document.addEventListener('click', event => {
+        const addSchedule = event.target.closest('.quick-add-schedule');
+        if (addSchedule) {
+            const editor = addSchedule.closest('.quick-schedule-editor');
+            const list = editor.querySelector('[data-schedule-list]');
+            const rowIndex = addSchedule.dataset.rowIndex;
+            const prefix = addSchedule.dataset.prefix;
+            const scheduleIndex = list.querySelectorAll('[data-schedule-row]').length;
+            const defaultInstruction = prefix === 'tec' ? 'THEORY' : 'LAB';
+            const html = scheduleTemplate.innerHTML
+                .replaceAll('__ROW_INDEX__', rowIndex)
+                .replaceAll('__PREFIX__', prefix)
+                .replaceAll('__SCHEDULE_INDEX__', String(scheduleIndex))
+                .replaceAll('__DEFAULT_INSTRUCTION__', defaultInstruction);
+            list.insertAdjacentHTML('beforeend', html);
+            editor.open = true;
+            updateScheduleCount(editor);
+            return;
+        }
+
+        const removeSchedule = event.target.closest('.quick-schedule-remove');
+        if (removeSchedule) {
+            const editor = removeSchedule.closest('.quick-schedule-editor');
+            removeSchedule.closest('[data-schedule-row]')?.remove();
+            updateScheduleCount(editor);
+        }
     });
 
     renumber();
