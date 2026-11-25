@@ -32,7 +32,7 @@
         <span class="dashboard-metric-copy"><small>Cursos asignados</small><strong>{{ $coursesCount }}</strong><em>{{ $activeModalitiesCount }} componentes activos</em></span>
     </a>
     <a class="dashboard-metric metric-amber" href="{{ route('cycles.index') }}">
-        <span class="dashboard-metric-icon"><x-icon name="clipboard-list" size="19" /></span>
+        <span class="dashboard-metric-icon"><x-icon name="clipboard-check" size="19" /></span>
         <span class="dashboard-metric-copy"><small>Por configurar</small><strong>{{ $pendingModalitiesCount }}</strong><em>Componentes con datos pendientes</em></span>
     </a>
     <a class="dashboard-metric metric-green" href="{{ route('cycles.index') }}">
@@ -146,7 +146,7 @@
         </div>
         @forelse($groups as $group)
             <a class="dashboard-group-row" href="{{ route('cycles.tree', $group->cycle) }}">
-                <span class="dashboard-group-icon"><x-icon name="folder" size="17" /></span>
+                <span class="dashboard-group-icon"><x-icon name="folder-open" size="17" /></span>
                 <span class="dashboard-group-copy">
                     <strong>{{ $group->name }}</strong>
                     <small>{{ $group->cycle->academic_year }} · Ciclo {{ $group->cycle->cycle_code }}</small>
@@ -156,7 +156,7 @@
             </a>
         @empty
             <div class="dashboard-empty">
-                <span><x-icon name="folder-plus" size="22" /></span>
+                <span><x-icon name="plus" size="22" /></span>
                 <strong>Aún no hay grupos registrados</strong>
                 <p>Crea un ciclo o importa tu primera carga laboral para comenzar.</p>
                 <a href="{{ route('cycles.index') }}">Ir a cargas laborales <x-icon name="arrow-right" size="13" /></a>
@@ -185,7 +185,7 @@
             </a>
         @empty
             <div class="dashboard-empty">
-                <span><x-icon name="calendar-plus" size="22" /></span>
+                <span><x-icon name="calendar-days" size="22" /></span>
                 <strong>No hay ciclos todavía</strong>
                 <p>Registra un ciclo para organizar tus grupos y cursos.</p>
                 <a href="{{ route('cycles.index', ['nuevo' => 1]) }}">Crear ciclo <x-icon name="arrow-right" size="13" /></a>
