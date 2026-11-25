@@ -1270,8 +1270,13 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
         @media(min-width:721px){
             .app-shell,body.sidebar-collapsed .app-shell{
                 display:grid!important;
+                grid-template-columns:var(--sidebar-width,252px) minmax(0,1fr)!important;
+                grid-template-rows:minmax(0,1fr)!important;
                 grid-template-areas:"sidebar main"!important;
                 align-items:start!important;
+            }
+            body.sidebar-collapsed .app-shell{
+                grid-template-columns:84px minmax(0,1fr)!important;
             }
             .app-shell>.sidebar{
                 position:sticky!important;
