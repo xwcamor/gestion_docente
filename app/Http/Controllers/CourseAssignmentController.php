@@ -22,9 +22,9 @@ class CourseAssignmentController extends Controller
     public function create(TeachingGroup $group)
     {
         $this->authorizeGroup($group);
-        $group->load('cycle');
 
-        return view('assignments.create', compact('group'));
+        // Un solo flujo de alta: alias, NRC, fechas, datos adicionales y horario.
+        return redirect()->route('assignments.quick', $group);
     }
 
     public function store(Request $request, TeachingGroup $group, CourseRegistrationService $registration, StudentImportService $students)
