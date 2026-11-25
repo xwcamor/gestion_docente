@@ -29,6 +29,8 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->n
 Route::middleware(['auth', 'professor'])->group(function () {
     Route::get('/perfil', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/perfil', [ProfileController::class, 'update'])->name('profile.update');
+    Route::get('/administracion/configuracion', [SystemSettingController::class, 'edit'])->name('admin.settings.edit');
+    Route::patch('/administracion/configuracion', [SystemSettingController::class, 'update'])->name('admin.settings.update');
 
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
@@ -47,6 +49,7 @@ Route::middleware(['auth', 'professor'])->group(function () {
     Route::post('/ciclos', [CycleController::class, 'store'])->name('cycles.store');
     Route::patch('/ciclos/{cycle}', [CycleController::class, 'update'])->name('cycles.update');
     Route::delete('/ciclos/{cycle}', [CycleController::class, 'destroy'])->name('cycles.destroy');
+    Route::get('/ciclos/{cycle}/arbol', [WorkloadTreeController::class, 'index'])->name('cycles.tree');
     Route::get('/ciclos/{cycle}', [CycleController::class, 'show'])->name('cycles.show');
 
     Route::get('/ciclos/{cycle}/grupos/crear', [GroupController::class, 'create'])->name('groups.create');
@@ -110,7 +113,5 @@ Route::middleware(['auth', 'professor'])->group(function () {
         Route::patch('/profesores/{user}/estado', [AdminProfessorController::class, 'toggleStatus'])->name('professors.status');
         Route::delete('/profesores/{user}', [AdminProfessorController::class, 'destroy'])->name('professors.destroy');
         Route::get('/auditoria', [AuditLogController::class, 'index'])->name('audit.index');
-        Route::get('/configuracion', [SystemSettingController::class, 'edit'])->name('settings.edit');
-        Route::patch('/configuracion', [SystemSettingController::class, 'update'])->name('settings.update');
     });
 });
