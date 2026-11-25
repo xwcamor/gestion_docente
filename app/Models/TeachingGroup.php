@@ -65,4 +65,9 @@ class TeachingGroup extends Model
     {
         return $this->hasMany(ImportBatch::class);
     }
+
+    public function documents(): HasMany
+    {
+        return $this->hasMany(GeneratedDocument::class, 'teaching_group_id');
+    }
 }
