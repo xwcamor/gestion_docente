@@ -272,7 +272,7 @@ class WorkloadTreeController extends Controller
         $duplicate = Course::query()
             ->where('professor_id', $assignment->group->professor_id)
             ->where('code', $code)
-            ->whereKeyNot($assignment->course_id)
+            ->where('id', '<>', $assignment->course_id)
             ->exists();
 
         if ($duplicate) {
