@@ -187,6 +187,13 @@ Los niveles del árbol comienzan contraídos y se despliegan bajo demanda. En la
 
 **Plantilla de carga laboral:** se descarga desde la pantalla Importar carga laboral y contiene tres hojas. `Cursos` registra curso, código institucional, bloques, NRC y fechas independientes TEC/TALL; `Horarios` registra una fila por día y bloque con CODIGO, modalidad TEC/TALL, NRC opcional, día, horas, tipo, ambiente e INTERVALO SEMANAS opcional (vacío equivale a 1); `Instrucciones` explica el llenado. El importador valida la correspondencia curso/modalidad, cruces de horario e intervalos de 15 minutos. Al confirmar, guarda la repetición semanal, calcula horas promedio por semana y reconstruye las sesiones excluyendo feriados bloqueados. Si una modalidad ya tenía horarios configurados manualmente, se conservan para no sobrescribirlos al reimportar.
 
+### Inicio y administración
+
+- **Dashboard inicial:** muestra indicadores reales de ciclos, grupos, cursos, componentes activos y pendientes, alumnos, próximas clases y feriados; incluye accesos directos a las tareas frecuentes.
+- **Gestión de cuentas (administrador):** búsqueda por nombre, correo, ID o escuela; filtros por rol y estado; orden y paginación; edición de perfiles; activación/desactivación; restablecimiento de contraseña con confirmación. Las cuentas con historial académico no se eliminan, y el sistema protege la última cuenta administradora activa.
+- **Feriados y cierres:** vista calendario y listado con filtros por año, ámbito y efecto. Cada docente puede administrar fechas personales; solo los administradores pueden crear, editar o eliminar fechas generales compartidas. Al cambiar o quitar una fecha que bloquea clases, el sistema recalcula los calendarios de las modalidades afectadas y marca los Excel anteriores para regeneración. Las fuentes y notas de referencia quedan asociadas al registro.
+- **Auditoría:** las acciones administrativas de cuentas y feriados quedan registradas sin guardar contraseñas en el historial.
+
 ## Funcionalidades principales
 
 - Acceso individual por profesor y gestión de sus datos académicos.
