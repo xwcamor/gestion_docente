@@ -211,7 +211,7 @@
         <form method="POST" action="#" id="calendar-day-delete-form" data-confirm="Se quitará esta fecha y se recalcularán los calendarios afectados. ¿Continuar?" hidden>
             @csrf
             @method('DELETE')
-            <button class="btn btn-danger" type="submit"><x-icon name="trash-2" /> Eliminar</button>
+            <button class="btn btn-danger" type="submit"><x-icon name="x" /> Eliminar</button>
         </form>
         <button class="btn btn-ghost" type="button" data-modal-close>Cerrar</button>
     </div>
