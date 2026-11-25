@@ -37,13 +37,17 @@ class QuickCourseEntryController extends Controller
 
         $rows = [[
             'course_name' => $assignment->course->name,
-            'tec_code' => $this->courseAlias($assignment->course->code, 'TEC', $assignment->course->name, $assignment->modalities->firstWhere('modality', 'TEC')),
+            'tec_code' => $assignment->modalities->firstWhere('modality', 'TEC')
+                ? $this->courseAlias($assignment->course->code, 'TEC', $assignment->course->name, $assignment->modalities->firstWhere('modality', 'TEC'))
+                : '',
             'tec_block_code' => $assignment->modalities->firstWhere('modality', 'TEC')?->block_code,
             'tec_block_reference' => $assignment->modalities->firstWhere('modality', 'TEC')?->block_reference,
             'tec_start_date' => $assignment->modalities->firstWhere('modality', 'TEC')?->start_date?->toDateString(),
             'tec_end_date' => $assignment->modalities->firstWhere('modality', 'TEC')?->end_date?->toDateString(),
             'tec_schedules' => $this->groupScheduleRows($assignment->modalities->firstWhere('modality', 'TEC')),
-            'tall_code' => $this->courseAlias($assignment->course->code, 'TALL', $assignment->course->name, $assignment->modalities->firstWhere('modality', 'TALL')),
+            'tall_code' => $assignment->modalities->firstWhere('modality', 'TALL')
+                ? $this->courseAlias($assignment->course->code, 'TALL', $assignment->course->name, $assignment->modalities->firstWhere('modality', 'TALL'))
+                : '',
             'tall_block_code' => $assignment->modalities->firstWhere('modality', 'TALL')?->block_code,
             'tall_block_reference' => $assignment->modalities->firstWhere('modality', 'TALL')?->block_reference,
             'tall_start_date' => $assignment->modalities->firstWhere('modality', 'TALL')?->start_date?->toDateString(),
