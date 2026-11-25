@@ -8,7 +8,7 @@
         <p class="subhead">Controla accesos, perfiles docentes y estado de cada cuenta.</p>
     </div>
     <div class="actions">
-        <button class="btn" type="button" data-modal-open="account-create-dialog"><x-icon name="user-plus" /> Nueva cuenta docente</button>
+        <button class="btn" type="button" data-modal-open="account-create-dialog"><x-icon name="users-round" /> Nueva cuenta docente</button>
     </div>
 </div>
 
@@ -115,7 +115,7 @@
                         @csrf
                         @method('DELETE')
                         <button class="btn btn-danger btn-sm" type="submit" @disabled($isSelf) aria-label="Eliminar cuenta">
-                            <x-icon name="trash-2" size="14" /> Eliminar
+                            <x-icon name="x" size="14" /> Eliminar
                         </button>
                     </form>
                 </div>
@@ -194,7 +194,7 @@
         </div>
         <div class="dialog-footer">
             <button class="btn btn-secondary" type="button" data-modal-close>Cancelar</button>
-            <button class="btn" type="submit"><x-icon name="user-plus" /> Crear cuenta</button>
+            <button class="btn" type="submit"><x-icon name="users-round" /> Crear cuenta</button>
         </div>
     </form>
 </dialog>
