@@ -28,7 +28,7 @@
             <div>
                 <p class="eyebrow">ÁRBOL DE TRABAJO</p>
                 <h2><x-icon name="git-branch" size="23" /> Grupos, cursos y componentes</h2>
-                <p>Usa + y − para desplegar niveles. Haz doble clic en los nombres, códigos, NRC o fechas para editarlos.</p>
+                <p>Usa + y − para desplegar. Haz clic en carrera, semestre y códigos; doble clic en nombres, NRC y fechas para editarlos.</p>
             </div>
             <span class="workload-tree-total" data-tree-group-total>{{ $cycleGroupCount }} grupos</span>
         </div>
