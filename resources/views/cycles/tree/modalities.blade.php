@@ -7,7 +7,7 @@
         @php($daysLabel = $classSchedules->pluck('day_of_week')->unique()->sort()->map(fn ($day) => [1 => 'Lun', 2 => 'Mar', 3 => 'Mié', 4 => 'Jue', 5 => 'Vie', 6 => 'Sáb', 7 => 'Dom'][(int) $day] ?? '')->filter()->implode(' · '))
         @php($scheduleLabel = $classSchedules->map(fn ($item) => substr((string) $item->start_time, 0, 5).'–'.substr((string) $item->end_time, 0, 5))->unique()->implode(', '))
         @php($modalityReady = $modality->start_date && $modality->end_date && $classSchedules->isNotEmpty())
-        @php($enabledDescription = $classSchedules->isNotEmpty() ? $daysLabel.' · '.$scheduleLabel.' · '.number_format((float) $modality->total_hours, 2).' h/sem.' : 'Horario pendiente')
+        @php($enabledDescription = $classSchedules->isNotEmpty() ? $daysLabel.' · '.$scheduleLabel.' · '.number_format((float) $modality->total_hours, 2).' h/sem.' : 'Programación horaria')
         <article class="workload-tree-modality {{ $modality->active ? 'is-active' : 'is-disabled' }}"
                  data-modality-row data-modality-type="{{ $type }}" data-modality-id="{{ $modality->id }}" data-active="{{ $modality->active ? '1' : '0' }}" data-active-description="{{ $enabledDescription }}">
             <span class="tree-branch-mark"></span>
@@ -49,16 +49,22 @@
                         @endif
                     </span>
                 </div>
-                <small data-modality-description data-active-description="{{ $enabledDescription }}">
+                <small class="tree-modality-schedule-summary {{ !$modality->active ? 'is-disabled' : ($classSchedules->isNotEmpty() ? 'is-ready' : 'is-pending') }}"
+                       data-modality-description
+                       data-active-description="{{ $enabledDescription }}">
                     @if(!$modality->active)
                         Desactivada · datos conservados
                     @elseif($classSchedules->isNotEmpty())
-                        {{ $daysLabel }} · {{ $scheduleLabel }} · {{ number_format((float) $modality->total_hours, 2) }} h/sem.
+                        <x-icon name="calendar-check" size="13" /> {{ $daysLabel }} · {{ $scheduleLabel }} · {{ number_format((float) $modality->total_hours, 2) }} h/sem.
                     @else
-                        Horario pendiente
+                        <x-icon name="calendar-days" size="13" /> Programación horaria
                     @endif
-                    @if($modality->block_code) · Bloque {{ $modality->block_code }}@endif
-                    @if($modality->block_reference) · Ref. {{ $modality->block_reference }}@endif
+                    @if($modality->block_code)
+                        <span class="tree-modality-extra-meta">Bloque {{ $modality->block_code }}</span>
+                    @endif
+                    @if($modality->block_reference)
+                        <span class="tree-modality-extra-meta">Ref. {{ $modality->block_reference }}</span>
+                    @endif
                 </small>
                 @if($modality->active && $modality->documents_count > 0)
                     <small>{{ $modality->documents_count }} documentos generados</small>
