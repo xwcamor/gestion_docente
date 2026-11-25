@@ -56,7 +56,7 @@ class WorkloadTreeController extends Controller
 
         $data = $request->validate([
             'career' => ['sometimes', 'required', 'string', 'max:255'],
-            'semester' => ['sometimes', 'required', 'string', 'max:60'],
+            'semester' => ['sometimes', 'required', 'string', 'in:I,II,III,IV,V,VI'],
         ], [
             'career.required' => 'Escribe el nombre de la carrera.',
             'semester.required' => 'Escribe el semestre.',
@@ -95,7 +95,7 @@ class WorkloadTreeController extends Controller
             'career.required' => 'Escribe la carrera de este grupo.',
             'career.max' => 'La carrera no puede superar los 255 caracteres.',
             'semester.required' => 'Escribe el semestre de este grupo.',
-            'semester.max' => 'El semestre no puede superar los 60 caracteres.',
+            'semester.in' => 'Selecciona un semestre entre I y VI.',
         ]);
 
         if (!$data) {
