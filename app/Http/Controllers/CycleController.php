@@ -105,8 +105,8 @@ class CycleController extends Controller
             return $cycle;
         });
 
-        return redirect()->route('cycles.show', $cycle)
-            ->with('success', 'Ciclo y primer grupo creados correctamente.');
+        return redirect()->route('cycles.tree', $cycle)
+            ->with('success', 'Ciclo y primer grupo creados. Ya puedes organizar sus cursos.');
     }
 
     public function update(Request $request, Cycle $cycle)
@@ -262,7 +262,7 @@ class CycleController extends Controller
             'academic_year' => ['required', 'integer', 'min:2020', 'max:2100'],
             'cycle_code' => ['required', 'string', 'max:20', $uniqueCycleCode],
             'career' => ['required', 'string', 'max:255'],
-            'semester' => ['required', 'string', 'max:60'],
+            'semester' => ['required', 'string', Rule::in(['I', 'II', 'III', 'IV', 'V', 'VI'])],
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
         ];
