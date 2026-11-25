@@ -241,7 +241,9 @@ class CourseDistributionImportService
         $count = 0;
         $maxRow = $sheet->getHighestDataRow();
         for ($rowNumber = 2; $rowNumber <= $maxRow; $rowNumber++) {
-            $value = fn ($key) => trim((string) ($sheet->getCell($headers[$key].$rowNumber)->getFormattedValue() ?? ''));
+            $value = fn ($key) => isset($headers[$key])
+                ? trim((string) ($sheet->getCell($headers[$key].$rowNumber)->getFormattedValue() ?? ''))
+                : '';
             $code = $value('codigo');
             $modalityName = strtoupper($this->normalize($value('modalidad')));
             $nrc = $this->cleanNrc($value('nrc') );
@@ -250,6 +252,8 @@ class CourseDistributionImportService
             $endTime = $this->parseTime($value('hasta'));
             $instructionText = $this->normalize($value('tipo'));
             $classroom = $value('ambiente');
+            $intervalText = $value('intervalo semanas');
+            $repeatIntervalWeeks = $intervalText === '' ? 1 : (preg_match('/^\\d+$/', $intervalText) ? (int) $intervalText : 0);
 
             if ($code === '' && $modalityName === '' && $dayText === '' && $value('desde') === '' && $value('hasta') === '') {
                 continue;
@@ -302,6 +306,10 @@ class CourseDistributionImportService
                 $errors[] = "Hoja Horarios, fila {$rowNumber}: las horas deben estar en intervalos de 15 minutos.";
                 continue;
             }
+            if ($repeatIntervalWeeks < 1 || $repeatIntervalWeeks > 52) {
+                $errors[] = "Hoja Horarios, fila {$rowNumber}: INTERVALO SEMANAS debe ser un número entre 1 y 52.";
+                continue;
+            }
 
             $instructionType = match ($instructionText) {
                 'TEORIA', 'THEORY' => 'THEORY',
@@ -320,6 +328,7 @@ class CourseDistributionImportService
                 'classroom' => $classroom !== '' ? $classroom : null,
                 'instruction_type' => $instructionType,
                 'block_type' => 'CLASS',
+                'repeat_interval_weeks' => $repeatIntervalWeeks,
                 'nrc' => $expectedNrc ?: $nrc,
             ];
             $count++;
