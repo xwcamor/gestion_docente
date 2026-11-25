@@ -1802,6 +1802,58 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
     }
     .tree-loading-state:before{animation:none!important}
 }
+
+/* Campos pendientes: el color de acento señala claramente qué falta completar. */
+.tree-inline-editable[data-edit-value=""]{
+    color:var(--accent)!important;
+    background:var(--accent-soft);
+    border:1px dashed color-mix(in srgb,var(--accent) 42%,var(--line));
+    border-radius:6px;
+    padding:3px 7px;
+    font-weight:750;
+}
+.tree-inline-editable[data-edit-value=""]:hover{
+    background:color-mix(in srgb,var(--accent) 16%,var(--surface));
+    border-color:var(--accent);
+}
+.tree-group-time-range{
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:8px 18px;
+    min-width:0;
+}
+.tree-group-time-unit{
+    display:inline-flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:6px;
+    min-width:0;
+}
+.tree-group-time-label{
+    color:var(--muted);
+    font-size:10px;
+    font-weight:700;
+}
+.tree-group-time-unit .tree-inline-editable{
+    min-height:26px;
+    font-size:11px;
+    font-variant-numeric:tabular-nums;
+}
+.tree-inline-editor[type="time"]{
+    min-width:124px;
+    max-width:150px;
+    font-variant-numeric:tabular-nums;
+}
+.tree-group-time-help{color:var(--muted);font-size:9px;line-height:1.4}
+@media(max-width:520px){
+    .tree-group-time-range{gap:7px 12px}
+    .tree-group-time-unit{gap:5px}
+    .tree-group-time-label{font-size:9px}
+    .tree-group-time-unit .tree-inline-editable{font-size:10px}
+    .tree-inline-editor[type="time"]{min-width:115px;max-width:135px}
+}
+
 /* Legibilidad adicional en pantallas estrechas: texto táctil sin microetiquetas */
 @media(max-width:520px){
     .tree-meta-pill{font-size:9px}
@@ -2288,6 +2340,7 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
                 || (option + ' semestre').toLowerCase() === rawOriginal.toLowerCase()) || '')
             : rawOriginal;
         const originalDisplay = node.textContent.trim();
+        const inputType = config.inputType === 'time' ? 'time' : 'text';
         const input = document.createElement(options ? 'select' : 'input');
         input.className = 'tree-inline-editor';
         input.setAttribute('aria-label', config.label || 'Editar texto');
@@ -2307,14 +2360,14 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
             });
             input.value = original;
         } else {
-            input.type = 'text';
-            input.maxLength = config.maxLength || 255;
+            input.type = inputType;
+            if (inputType === 'text') input.maxLength = config.maxLength || 255;
             input.value = original;
         }
 
         node.replaceChildren(input);
         input.focus();
-        input.select?.();
+        if (!options && inputType === 'text') input.select?.();
 
         let finished = false;
         const restore = () => {
@@ -2331,7 +2384,7 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
             }
             if (!value && !config.allowEmpty) {
                 restore();
-                showFeedback(options ? 'Selecciona un semestre.' : 'El valor no puede quedar vacío.', true);
+                showFeedback(options ? 'Selecciona un semestre.' : (inputType === 'time' ? 'Selecciona una hora.' : 'El valor no puede quedar vacío.'), true);
                 return;
             }
             finished = true;
@@ -2361,7 +2414,7 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
                 save();
             }
         });
-        if (options) input.addEventListener('change', save, {once: true});
+        if (options || inputType === 'time') input.addEventListener('change', save, {once: true});
         input.addEventListener('blur', save, {once: true});
     };
 
@@ -2497,17 +2550,18 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
         startTextEditor(editable, {
             value: editable.dataset.editValue || '',
             options: editable.dataset.editOptions ? editable.dataset.editOptions.split('|').filter(Boolean) : null,
+            inputType: editable.dataset.editInputType || 'text',
             url: editable.dataset.editUrl,
             field,
             label: editable.dataset.editLabel,
             responseField: editable.dataset.editResponse || '',
             maxLength: field === 'code' ? 80 : 255,
-            emptyLabel: field === 'code'
+            emptyLabel: editable.dataset.editEmptyLabel || (field === 'code'
                 ? 'Código pendiente (clic para agregar)'
                 : (field === 'career'
                     ? 'Carrera pendiente (clic para agregar)'
-                    : (field === 'semester' ? 'Semestre pendiente (clic para agregar)' : '')),
-            allowEmpty: kind === 'group-code' || kind === 'course-code',
+                    : (field === 'semester' ? 'Semestre pendiente (clic para agregar)' : ''))),
+            allowEmpty: kind === 'group-code' || kind === 'course-code' || kind === 'group-time',
             onSaved: saved => {
                 if (kind === 'group' || kind === 'group-code') {
                     if (group) {
@@ -2525,6 +2579,11 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
                         const selector = isCareer ? '[data-group-career-display]' : '[data-group-semester-display]';
                         group.dataset[key] = saved || '';
                         group.querySelector(selector)?.setAttribute('data-edit-value', saved || '');
+                    }
+                } else if (kind === 'group-time') {
+                    if (group) {
+                        const key = field === 'workload_start_time' ? 'groupStartTime' : 'groupEndTime';
+                        group.dataset[key] = saved || '';
                     }
                 } else if (kind === 'cycle-career' || kind === 'cycle-semester') {
                     root.querySelectorAll(kind === 'cycle-career' ? '[data-cycle-career-display]' : '[data-cycle-semester-display]').forEach(node => {
