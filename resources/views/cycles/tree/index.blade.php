@@ -37,8 +37,12 @@
             @csrf
             <input type="hidden" name="return_to_tree" value="1">
             <label>
-                <span><x-icon name="folder-plus" size="19" /> Nuevo grupo</span>
-                <input class="field" name="name" maxlength="100" required placeholder="Escribe el nombre o código del grupo…">
+                <span><x-icon name="folder-plus" size="19" /> Nombre del grupo</span>
+                <input class="field" name="name" maxlength="100" required placeholder="Ej. Grupo 01">
+            </label>
+            <label>
+                <span><x-icon name="tag" size="19" /> Código (opcional)</span>
+                <input class="field" name="code" maxlength="80" placeholder="Ej. G01-2026">
             </label>
             <button class="btn" type="submit" aria-label="Agregar grupo"><x-icon name="plus" size="19" /> Agregar grupo</button>
         </form>
@@ -473,7 +477,7 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
 .tree-structure-card .tree-panel-heading h2{display:flex;align-items:center;gap:10px;font-size:clamp(22px,2.1vw,29px);font-weight:900}
 .tree-structure-card .tree-panel-heading p:not(.eyebrow){margin-top:7px;font-size:13px;line-height:1.55}
 .tree-structure-card .workload-tree-total{padding:8px 12px;font-size:13px}
-.tree-add-group-form{display:flex;align-items:end;gap:12px;margin:0 0 16px;padding:14px;border:1px solid color-mix(in srgb,var(--accent) 28%,var(--line));border-radius:12px;background:var(--accent-soft)}
+.tree-add-group-form{display:grid;grid-template-columns:minmax(190px,1.35fr) minmax(170px,.85fr) auto;align-items:end;gap:12px;margin:0 0 16px;padding:14px;border:1px solid color-mix(in srgb,var(--accent) 28%,var(--line));border-radius:12px;background:var(--accent-soft)}
 .tree-add-group-form label{display:grid;flex:1;gap:7px;min-width:0;color:var(--ink-soft);font-size:13px;font-weight:800}
 .tree-add-group-form label>span{display:flex;align-items:center;gap:8px}
 .tree-add-group-form .field{height:46px;min-width:0;background:var(--surface);font-size:15px}
@@ -573,7 +577,7 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
 .tree-inline-editor{width:auto;min-width:110px;max-width:min(320px,75vw);min-height:33px;padding:5px 8px;border:1px solid var(--accent);border-radius:6px;background:var(--surface);color:var(--ink);font:inherit;font-size:14px;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 12%,transparent);outline:none}
 @media(max-width:760px){
  .tree-structure-card{padding:14px}
- .tree-add-group-form{align-items:stretch;flex-direction:column}
+ .tree-add-group-form{grid-template-columns:minmax(0,1fr)}
  .tree-add-group-form>.btn{width:100%}
  .tree-structure-card .tree-course-entry-form{grid-template-columns:minmax(0,1fr)}
  .tree-structure-card .tree-entry-components,.tree-course-create-footer,.tree-course-entry-error{grid-column:1}
@@ -930,7 +934,7 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
                 restore();
                 return;
             }
-            if (!value) {
+            if (!value && !config.allowEmpty) {
                 restore();
                 showFeedback('El valor no puede quedar vacío.', true);
                 return;
@@ -1104,11 +1108,16 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
                 label: editable.dataset.editLabel,
                 maxLength: field === 'code' ? 80 : 255,
                 emptyLabel: field === 'code' ? 'Código pendiente (doble clic para agregar)' : '',
+                allowEmpty: kind === 'group-code',
                 onSaved: (saved) => {
-                    if (kind === 'group') {
+                    if (kind === 'group' || kind === 'group-code') {
                         if (group) {
-                            group.dataset.groupName = saved;
-                            group.dataset.groupLabel = 'Grupo ' + saved;
+                            if (field === 'name') {
+                                group.dataset.groupName = saved;
+                                group.dataset.groupLabel = 'Grupo ' + saved;
+                            } else {
+                                group.dataset.groupCode = saved || '';
+                            }
                         }
                     } else if (course) {
                         course.dataset[field === 'name' ? 'courseName' : 'courseCode'] = saved || '';
