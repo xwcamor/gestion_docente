@@ -27,7 +27,7 @@
                     <button class="btn btn-ghost btn-sm tree-group-delete-trigger" type="button" data-toggle-group-delete
                             @disabled($cycleGroupCount <= 1)
                             title="{{ $cycleGroupCount <= 1 ? 'Cada ciclo debe conservar al menos un grupo' : 'Eliminar este grupo' }}">
-                        <x-icon name="x" size="13" /> {{ $cycleGroupCount <= 1 ? 'Único grupo' : 'Eliminar grupo' }}
+                        <x-icon name="x" size="13" /> <span data-group-delete-label>{{ $cycleGroupCount <= 1 ? 'Único grupo' : 'Eliminar grupo' }}</span>
                     </button>
                     @if($cycleGroupCount <= 1)
                         <span class="tree-last-group-note">Este ciclo debe conservar un grupo</span>
