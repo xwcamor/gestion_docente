@@ -2279,23 +2279,48 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
     });
 
     const startTextEditor = (node, config) => {
-        if (node.querySelector('input')) return;
-        const original = config.value ?? '';
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.maxLength = config.maxLength || 255;
+        if (node.querySelector('input, select')) return;
+
+        const options = Array.isArray(config.options) ? config.options : null;
+        const rawOriginal = String(config.value ?? '').trim();
+        const original = options
+            ? (options.find(option => option.toLowerCase() === rawOriginal.toLowerCase()
+                || (option + ' semestre').toLowerCase() === rawOriginal.toLowerCase()) || '')
+            : rawOriginal;
+        const originalDisplay = node.textContent.trim();
+        const input = document.createElement(options ? 'select' : 'input');
         input.className = 'tree-inline-editor';
-        input.value = original;
         input.setAttribute('aria-label', config.label || 'Editar texto');
+
+        if (options) {
+            const placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.textContent = 'Seleccionar semestre';
+            placeholder.disabled = true;
+            placeholder.selected = !original;
+            input.appendChild(placeholder);
+            options.forEach(option => {
+                const item = document.createElement('option');
+                item.value = option;
+                item.textContent = option;
+                input.appendChild(item);
+            });
+            input.value = original;
+        } else {
+            input.type = 'text';
+            input.maxLength = config.maxLength || 255;
+            input.value = original;
+        }
+
         node.replaceChildren(input);
         input.focus();
-        input.select();
+        input.select?.();
 
         let finished = false;
         const restore = () => {
             if (finished) return;
             finished = true;
-            node.textContent = config.emptyLabel && !original ? config.emptyLabel : original;
+            node.textContent = originalDisplay || (config.emptyLabel && !original ? config.emptyLabel : original);
         };
         const save = async () => {
             if (finished) return;
@@ -2306,7 +2331,7 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
             }
             if (!value && !config.allowEmpty) {
                 restore();
-                showFeedback('El valor no puede quedar vacío.', true);
+                showFeedback(options ? 'Selecciona un semestre.' : 'El valor no puede quedar vacío.', true);
                 return;
             }
             finished = true;
@@ -2319,7 +2344,7 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
                 config.onSaved?.(saved, payload);
                 showFeedback(payload.message || 'Dato actualizado.');
             } catch (error) {
-                node.textContent = original || config.emptyLabel || '';
+                node.textContent = originalDisplay || original || config.emptyLabel || '';
                 showFeedback(error.message, true);
             } finally {
                 node.classList.remove('tree-inline-saving');
@@ -2336,6 +2361,7 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
                 save();
             }
         });
+        if (options) input.addEventListener('change', save, {once: true});
         input.addEventListener('blur', save, {once: true});
     };
 
@@ -2470,6 +2496,7 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
         const kind = editable.dataset.editKind || '';
         startTextEditor(editable, {
             value: editable.dataset.editValue || '',
+            options: editable.dataset.editOptions ? editable.dataset.editOptions.split('|').filter(Boolean) : null,
             url: editable.dataset.editUrl,
             field,
             label: editable.dataset.editLabel,
