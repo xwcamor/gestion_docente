@@ -601,35 +601,15 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
         if (toggleModality) {
             event.preventDefault();
             const course = toggleModality.closest('[data-tree-course-item]');
-            const row = toggleModality.closest('[data-modality-row]');
+            const groupNode = toggleModality.closest('.workload-tree-group-shell')?.querySelector('[data-tree-group-id]');
             const currentlyActive = toggleModality.dataset.active === '1';
             toggleModality.disabled = true;
             const label = toggleModality.querySelector('[data-toggle-label]');
             if (label) label.textContent = 'Guardando…';
 
             sendInlineUpdate(toggleModality.dataset.modalityUrl, {active: currentlyActive ? 0 : 1})
-                .then(payload => {
-                    toggleModality.dataset.active = payload.active ? '1' : '0';
-                    row.dataset.active = payload.active ? '1' : '0';
-                    row.classList.toggle('is-active', payload.active);
-                    row.classList.toggle('is-disabled', !payload.active);
-
-                    const status = row.querySelector('[data-modality-status]');
-                    if (status) {
-                        status.className = 'tree-course-status ' + (!payload.active ? 'is-disabled' : 'is-pending');
-                        status.textContent = payload.active ? 'Activa' : 'Desactivada';
-                    }
-
-                    const description = row.querySelector('[data-modality-description]');
-                    if (description) {
-                        description.textContent = payload.active
-                            ? (description.dataset.activeDescription || 'Modalidad activa.')
-                            : 'Modalidad desactivada · Horarios e historial conservados';
-                    }
-                    const link = row.querySelector('.tree-open-modality');
-                    if (link) link.hidden = !payload.active;
-
-                    syncModalitySwitches(course);
+                .then(async payload => {
+                    await refreshGroup(groupNode);
                     showFeedback(payload.message || 'Modalidad actualizada.', Boolean(payload.warning));
                 })
                 .catch(error => {
