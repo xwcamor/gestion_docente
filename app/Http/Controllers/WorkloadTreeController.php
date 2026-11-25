@@ -82,6 +82,7 @@ class WorkloadTreeController extends Controller
     {
         $this->authorizeGroup($group);
         $group->loadMissing('cycle');
+        $group->loadCount('assignments');
 
         $term = trim((string) $request->query('q', ''));
         $query = $group->assignments()
@@ -161,7 +162,7 @@ class WorkloadTreeController extends Controller
         );
 
         return response()->json([
-            'message' => 'Curso agregado a la estructura. Puedes completar NRC, fechas y horario desde Edición rápida.',
+            'message' => 'Curso agregado. Completa NRC, fechas y horario directamente en los nodos TEC y TAL.',
             'group_id' => $group->id,
             'assignment_id' => $result['assignment']->id,
             'assignments_count' => $group->assignments()->count(),
