@@ -318,8 +318,9 @@ html[data-theme="dark"] .tree-course-status.is-pending{color:#f1d49a}
 .workload-tree-group-shell{position:relative;border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
 .workload-tree-group-shell .workload-tree-group{margin:0;border:0;border-radius:0;overflow:visible}
 .workload-tree-group-shell .workload-group-summary{padding-right:148px}
-.workload-tree-add-course{position:absolute;top:10px;right:11px;z-index:3;min-height:34px;padding:7px 10px;border:1px solid color-mix(in srgb,var(--accent) 28%,var(--line));border-radius:8px;background:var(--accent-soft);color:var(--accent);font-size:10px;font-weight:750;white-space:nowrap}
+.workload-tree-add-course{position:absolute;top:10px;right:11px;z-index:3;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:34px;padding:7px 10px;border:1px solid color-mix(in srgb,var(--accent) 28%,var(--line));border-radius:8px;background:var(--accent-soft);color:var(--accent);font:inherit;font-size:10px;font-weight:750;white-space:nowrap;cursor:pointer}
 .workload-tree-add-course:hover{border-color:var(--accent);background:var(--accent);color:#fff;text-decoration:none}
+.workload-tree-add-course:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .tree-course-components{display:flex;align-items:center;gap:5px;flex:none}
 .tree-component-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 7px;border-radius:6px;font-size:9px;font-weight:800;letter-spacing:.02em}
 .tree-component-chip.is-present{background:var(--success-bg);color:var(--success)}
