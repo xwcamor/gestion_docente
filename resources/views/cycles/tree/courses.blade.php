@@ -48,7 +48,6 @@
                     </div>
                 </details>
             </div>
-            <p class="tree-course-hint">Doble clic en NRC o fechas para editarlos.</p>
             <div data-tree-content>
                 <div class="tree-loading-state">Despliega el curso para consultar sus modalidades y NRC.</div>
             </div>
