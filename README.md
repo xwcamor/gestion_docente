@@ -235,7 +235,7 @@ La estructura usa nombres explícitos y cortos para los índices que podrían su
 
 ### Error SQLSTATE[42S22]: columna `slug` desconocida
 
-Las migraciones correctivas `2026_11_24_000008_repair_curricula_slug_column.php` y `2026_11_24_000009_repair_missing_slug_columns.php` reparan columnas slug faltantes. Las migraciones `2026_11_24_000010_repair_class_sessions_slug_column.php` y `2026_11_24_000011_repair_generated_documents_slug_column.php` refuerzan la reparación de sesiones y documentos generados. La migración `2026_11_24_000012_add_weekly_repeat_interval_to_modality_schedules.php` incorpora el intervalo de repetición semanal con valor predeterminado de 1, por lo que los horarios existentes conservan su comportamiento. La migración `2026_11_25_000001_archive_curricula_without_course_assignments.php` archiva las mallas activas cuyos cursos ya no tienen asignaciones en ningún grupo; conserva los documentos y todas las versiones históricas.
+Las migraciones correctivas `2026_11_24_000008_repair_curricula_slug_column.php` y `2026_11_24_000009_repair_missing_slug_columns.php` reparan columnas slug faltantes. Las migraciones `2026_11_24_000010_repair_class_sessions_slug_column.php` y `2026_11_24_000011_repair_generated_documents_slug_column.php` refuerzan la reparación de sesiones y documentos generados. La migración `2026_11_24_000012_add_weekly_repeat_interval_to_modality_schedules.php` incorpora el intervalo de repetición semanal con valor predeterminado de 1, por lo que los horarios existentes conservan su comportamiento. La migración `2026_11_25_000001_archive_curricula_without_course_assignments.php` archiva las mallas activas cuyos cursos ya no tienen asignaciones en ningún grupo; conserva los documentos y todas las versiones históricas. La migración `2026_11_25_000006_add_sidebar_color_to_users.php` agrega una preferencia personal de color para el menú lateral, con valor inicial `blue`; no altera el color institucional ni los datos académicos.
 
 Actualiza el repositorio y ejecuta:
 
@@ -268,6 +268,14 @@ Antes de diseñar o modificar pantallas, consulta:
 - **[Guía UI/UX para futuros sistemas](docs/GUIA_UI_UX_FUTUROS_SISTEMAS.md):** cuándo utilizar Anti UI Slop, Think UI, Taste Skill, Emil Design Engineering, Vercel Guidelines, Anthropic Frontend Design, Hallmark, Make Interfaces Feel Better, UI/UX Pro Max y Stageshow. Incluye checklist e instalación selectiva.
 
 Al reutilizar la guía en otro proyecto, copia `AGENTS.md`, `DESIGN.md` y la guía UI/UX. Actualiza los tokens de `DESIGN.md` según la marca y tecnología del nuevo sistema; no copies automáticamente los colores de Gestión Docente.
+
+### Navegación y apariencia personal
+
+- En escritorio, el sidebar permanece fijo debajo del topbar y tiene su propio desplazamiento; la altura del contenido de una página, incluido el árbol de trabajo, no lo empuja hacia abajo.
+- En pantallas estrechas, el sidebar cambia a una navegación horizontal.
+- El topbar mantiene el acceso al menú y al tema. Las acciones de cuenta se agrupan en un desplegable con perfil, ajustes, cuentas (administradores), ayuda y cierre de sesión.
+- En **Ajustes de interfaz** se puede seleccionar una de cinco paletas personales para el sidebar: **Azul, Verde, Violeta, Ámbar y Grafito**. Esta paleta solo colorea el menú; el color de botones y enlaces principales se configura por separado.
+- Para aplicar la nueva preferencia en una instalación existente, ejecuta `php artisan migrate`; no uses `migrate:fresh`.
 
 ## Repositorio
 
