@@ -54,19 +54,16 @@
             <input type="hidden" name="return_to_tree" value="1">
             <div class="tree-draft-heading">
                 <strong><x-icon name="folder-plus" size="17" /> Nuevo grupo</strong>
-                <span>Borrador · todavía no está guardado</span>
+                <span>Curso inicial automático</span>
             </div>
             <div class="tree-draft-fields">
                 <label class="tree-course-name-input">
                     <span>Nombre del grupo</span>
                     <input class="field" name="name" maxlength="100" required placeholder="Ej. Grupo 01">
                 </label>
-                <label class="tree-course-name-input">
-                    <span>Código (opcional)</span>
-                    <input class="field" name="code" maxlength="80" placeholder="Ej. G01-2026">
-                </label>
             </div>
             <div class="tree-draft-footer">
+                <span class="tree-draft-note">El grupo tendrá un curso inicial con TEC y TAL activos.</span>
                 <span class="tree-draft-error" data-group-form-error hidden role="alert"></span>
                 <div>
                     <button class="btn btn-ghost" type="button" data-cancel-group-draft>Cancelar</button>
@@ -756,7 +753,7 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
 }
 
 
-/* Filas de alta inline: el borrador aparece debajo de su nivel */
+/* Filas de alta inline: grupo y curso comparten el mismo formulario visual */
 .tree-add-row{display:flex;justify-content:center;padding:9px 10px;border-top:1px dashed var(--line-strong);background:var(--surface)}
 .tree-add-row>button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:36px;padding:7px 15px;border:1px dashed color-mix(in srgb,var(--accent) 55%,var(--line));border-radius:8px;background:var(--surface);color:var(--accent);font-size:12px;font-weight:850;cursor:pointer;transition:background .15s ease,border-color .15s ease,transform .15s ease}
 .tree-add-row>button:hover{border-style:solid;background:var(--accent-soft);transform:translateY(-1px)}
@@ -766,24 +763,22 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
 .tree-draft-heading strong{display:inline-flex;align-items:center;gap:7px;color:var(--ink);font-size:13px;font-weight:900}
 .tree-draft-heading strong svg{color:var(--accent)}
 .tree-draft-heading>span{padding:4px 7px;border-radius:6px;background:var(--surface);color:var(--muted);font-size:9px;font-weight:750}
-.tree-draft-fields{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(180px,.8fr);gap:10px}
+.tree-draft-fields{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
 .tree-draft-fields .field{height:40px;min-width:0;background:var(--surface);font-size:12px}
-.tree-draft-footer,.tree-course-draft-form .tree-course-create-footer{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.tree-draft-footer>div,.tree-course-draft-form .tree-course-create-footer>div{display:flex;align-items:center;gap:7px}
+.tree-course-name-input{display:grid;gap:5px;min-width:0;color:var(--ink-soft);font-size:10px;font-weight:800}
+.tree-course-name-input .field{width:100%;height:40px;min-width:0;background:var(--surface);font-size:12px}
+.tree-draft-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.tree-draft-footer>div{display:flex;align-items:center;gap:7px}
+.tree-draft-footer .btn{min-height:38px}
+.tree-draft-note{color:var(--muted);font-size:9px;line-height:1.45}
 .tree-draft-error{color:var(--danger);font-size:11px;line-height:1.4}
 .tree-draft-error[hidden]{display:none!important}
-.tree-course-draft-form .tree-entry-components{padding:0}
-.tree-course-draft-form .tree-course-create-footer{padding-top:8px;border-top:1px solid var(--line)}
-.tree-course-draft-form .tree-course-create-footer>small{max-width:440px}
-.tree-course-draft-form .tree-course-create-footer .btn{min-height:36px;font-size:11px}
-.tree-draft-cancel{min-height:36px;font-size:11px}
+.tree-course-draft-form .tree-course-entry-error{margin:0}
 @media(max-width:650px){
- .tree-draft-fields{grid-template-columns:1fr}
- .tree-draft-footer,.tree-course-draft-form .tree-course-create-footer{align-items:stretch;flex-direction:column}
- .tree-draft-footer>div,.tree-course-draft-form .tree-course-create-footer>div{display:grid;grid-template-columns:1fr 1fr;width:100%}
- .tree-draft-footer .btn,.tree-course-draft-form .tree-course-create-footer .btn{width:100%}
+ .tree-draft-footer{align-items:stretch;flex-direction:column}
+ .tree-draft-footer>div{display:grid;grid-template-columns:1fr 1fr;width:100%}
+ .tree-draft-footer .btn{width:100%}
 }
-
 
 /* La acción para retirar un curso siempre está visible en su fila */
 .tree-structure-card .workload-tree-course{position:relative}
@@ -1150,15 +1145,6 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
             event.preventDefault();
             const submit = courseForm.querySelector('[data-course-submit]');
             const errorBox = courseForm.querySelector('[data-course-form-error]');
-            const selected = [...courseForm.querySelectorAll('[data-course-component]')].some(item => item.checked);
-            if (!selected) {
-                if (errorBox) {
-                    errorBox.textContent = 'Selecciona TEC o TAL; cada curso debe tener al menos uno.';
-                    errorBox.hidden = false;
-                }
-                return;
-            }
-
             if (submit) {
                 submit.disabled = true;
                 submit.textContent = 'Agregando…';
