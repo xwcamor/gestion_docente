@@ -11,9 +11,8 @@ class GroupStarterCourseService
 {
     /**
      * Guarantees that a newly-created group starts with one editable course.
-     *
-     * The starter intentionally has no modality: the teacher chooses TEC,
-     * TALL or both after entering the real course name and institutional code.
+     * Both TEC and TALL begin active; the teacher can deactivate either one
+     * from the course tree after reviewing the actual course requirements.
      */
     public function ensure(TeachingGroup $group): CourseAssignment
     {
@@ -34,11 +33,24 @@ class GroupStarterCourseService
                 'name' => 'Nuevo curso',
             ]);
 
-            return $lockedGroup->assignments()->create([
+            $lockedGroup->loadMissing('cycle');
+
+            $assignment = $lockedGroup->assignments()->create([
                 'course_id' => $course->id,
                 'assigned_at' => now()->toDateString(),
                 'notes' => 'Curso provisional creado automáticamente al crear el grupo.',
             ]);
+
+            foreach (['TEC', 'TALL'] as $type) {
+                $assignment->modalities()->create([
+                    'modality' => $type,
+                    'active' => true,
+                    'curriculum_start_week' => 1,
+                    'period_label' => $lockedGroup->cycle->academic_year.'-'.$lockedGroup->cycle->cycle_code.'-'.$type,
+                ]);
+            }
+
+            return $assignment->load('modalities');
         });
     }
 }
