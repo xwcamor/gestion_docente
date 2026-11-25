@@ -226,7 +226,6 @@ html[data-theme="dark"] .workload-tree-hero{background:linear-gradient(115deg,co
  .tree-entry-grid-course .tree-entry-field:nth-child(2){grid-column:1/-1}
  .tree-course-entry-footer{align-items:stretch;flex-direction:column}
  .tree-course-entry-footer .btn{width:100%}
- .tree-focus-tip{display:none}
  .tree-course-components{gap:3px}
  .tree-component-chip{padding:4px 6px;font-size:8px}
  .workload-tree-modality{align-items:flex-start;flex-wrap:wrap}
@@ -241,8 +240,6 @@ html[data-theme="dark"] .workload-tree-hero{background:linear-gradient(115deg,co
  .workload-tree-search{display:grid;grid-template-columns:1fr 1fr}
  .workload-tree-search-field{grid-column:1/-1}
  .workload-tree-search .btn,.workload-tree-search>a{width:100%}
- .tree-focus-strip{padding:10px}
- .tree-focus-strip strong{font-size:10px}
  .tree-entry-grid,.tree-entry-grid-three{grid-template-columns:1fr}
  .tree-entry-grid-course .tree-entry-field:nth-child(2){grid-column:auto}
  .tree-course-actions{align-items:stretch;flex-direction:column}
@@ -458,7 +455,6 @@ html[data-theme="dark"] .workload-tree-hero{background:linear-gradient(115deg,co
                     content.innerHTML = '<div class="tree-empty-child">Este grupo todavía no tiene cursos. Usa «Agregar curso» para comenzar.</div>';
                 }
                 showFeedback(payload.message);
-                updateFocus();
             } catch (error) {
                 showFeedback(error.message, true);
                 if (button) {
@@ -641,7 +637,6 @@ html[data-theme="dark"] .workload-tree-hero{background:linear-gradient(115deg,co
     });
 
     bindTreeNodes(document);
-    updateFocus();
 })();
 </script>
 @endpush
