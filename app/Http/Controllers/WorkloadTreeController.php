@@ -6,7 +6,6 @@ use App\Models\CourseAssignment;
 use App\Models\Cycle;
 use App\Models\TeachingGroup;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class WorkloadTreeController extends Controller
 {
