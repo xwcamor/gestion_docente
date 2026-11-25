@@ -99,11 +99,13 @@ class GroupController extends Controller
             ])
             ->values();
 
-        DB::transaction(function () use ($groups, $cycle) {
+        $createdGroups = [];
+
+        DB::transaction(function () use ($groups, $cycle, &$createdGroups) {
             Cycle::query()->whereKey($cycle->id)->lockForUpdate()->firstOrFail();
 
             foreach ($groups as $groupData) {
-                $cycle->groups()->create([
+                $createdGroups[] = $cycle->groups()->create([
                     'professor_id' => $cycle->professor_id,
                     ...$groupData,
                 ]);
@@ -111,6 +113,21 @@ class GroupController extends Controller
         });
 
         $count = $groups->count();
+
+        if ($request->expectsJson()) {
+            $created = collect($createdGroups)->map(fn ($group) => [
+                'id' => $group->id,
+                'name' => $group->name,
+                'code' => $group->code,
+            ])->values();
+
+            return response()->json([
+                'message' => $count.' '.($count === 1 ? 'grupo creado' : 'grupos creados').' correctamente.',
+                'group' => $created->first(),
+                'groups' => $created,
+                'groups_count' => $cycle->groups()->count(),
+            ]);
+        }
 
         $destination = $request->boolean('return_to_tree')
             ? route('cycles.tree', $cycle)
