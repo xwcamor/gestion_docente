@@ -225,6 +225,9 @@
     </div>
     <form method="POST" action="{{ route('holidays.store') }}">
         @csrf
+        @foreach(['presentation','calendar_month','calendar_year','q','year','scope','impact'] as $filter)
+            <input type="hidden" name="{{ $filter }}" value="{{ request($filter) }}">
+        @endforeach
         <div class="dialog-body">
             @if($errors->any() && request('dialog') !== 'edit-holiday')
                 <div class="dialog-error" role="alert"><strong>Revisa los datos ingresados:</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
@@ -281,6 +284,9 @@
     <form method="POST" action="#" id="holiday-edit-form">
         @csrf
         @method('PATCH')
+        @foreach(['presentation','calendar_month','calendar_year','q','year','scope','impact'] as $filter)
+            <input type="hidden" name="{{ $filter }}" value="{{ request($filter) }}">
+        @endforeach
         <div class="dialog-body">
             <div class="form-row">
                 <div><label for="edit_holiday_date">Fecha</label><input class="field" id="edit_holiday_date" type="date" name="holiday_date" value="{{ old('holiday_date') }}" required></div>
