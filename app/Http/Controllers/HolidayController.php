@@ -86,7 +86,6 @@ class HolidayController extends Controller
 
         $personalCount = (clone $base)->where('professor_id', $professorId)->count();
         $generalCount = (clone $base)->whereNull('professor_id')->count();
-        $blockingCount = (clone $base)->where('blocks_classes', true)->count();
         $upcomingCount = (clone $base)->whereDate('holiday_date', '>=', now()->toDateString())->count();
 
         return view('holidays.index', compact(
@@ -115,7 +114,7 @@ class HolidayController extends Controller
 
         $this->ensureNoDuplicate($data['holiday_date'], $data['name'], $professorId);
 
-        $holiday = DB::transaction(function () use ($data, $professorId, $isGlobal, $isAdmin, $calendar) {
+        $holiday = DB::transaction(function () use ($data, $professorId, $isAdmin, $calendar) {
             $holiday = Holiday::create([
                 'professor_id' => $professorId,
                 'holiday_date' => $data['holiday_date'],
