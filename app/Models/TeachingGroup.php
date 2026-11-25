@@ -13,10 +13,35 @@ class TeachingGroup extends Model
     use HasSlugRouteKey;
 
     protected $fillable = [
-        'cycle_id', 'professor_id', 'name', 'code', 'assigned_at', 'notes',
+        'cycle_id', 'professor_id', 'name', 'code', 'career', 'semester', 'assigned_at', 'notes',
         'workload_type', 'workload_start_date', 'workload_end_date', 'workload_days',
         'workload_start_time', 'workload_end_time', 'supervisor_theory_hours', 'supervisor_lab_hours',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (TeachingGroup $group) {
+            if (filled($group->career) && filled($group->semester)) {
+                return;
+            }
+
+            $cycle = Cycle::query()
+                ->select(['id', 'career', 'semester'])
+                ->find($group->cycle_id);
+
+            if (!$cycle) {
+                return;
+            }
+
+            if (blank($group->career)) {
+                $group->career = $cycle->career;
+            }
+
+            if (blank($group->semester)) {
+                $group->semester = $cycle->semester;
+            }
+        });
+    }
 
     protected function casts(): array
     {
