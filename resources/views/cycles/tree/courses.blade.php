@@ -23,6 +23,7 @@
                     <form method="POST" action="{{ route('workload-tree.courses.name', $assignment) }}" data-tree-course-name-form>
                         @csrf
                         @method('PATCH')
+                        <p class="tree-shared-course-note">Este nombre pertenece al catálogo del curso y se actualizará también en los otros grupos donde esté asignado.</p>
                         <label class="tree-entry-field">
                             <span>Nombre del curso</span>
                             <input class="field" name="name" value="{{ $assignment->course->name }}" maxlength="255" required>
