@@ -16,18 +16,19 @@ use Illuminate\Validation\ValidationException;
 
 class QuickCourseEntryController extends Controller
 {
-    public function create(TeachingGroup $group)
+    public function create(Request $request, TeachingGroup $group)
     {
         $this->authorizeGroup($group);
         $group->load('cycle');
 
         $rows = [[]];
         $editingAssignment = null;
+        $returnToTree = $request->boolean('tree');
 
-        return view('assignments.quick', compact('group', 'rows', 'editingAssignment'));
+        return view('assignments.quick', compact('group', 'rows', 'editingAssignment', 'returnToTree'));
     }
 
-    public function edit(TeachingGroup $group, CourseAssignment $assignment)
+    public function edit(Request $request, TeachingGroup $group, CourseAssignment $assignment)
     {
         $this->authorizeGroup($group);
         abort_unless((int) $assignment->teaching_group_id === (int) $group->id, 404);
@@ -35,29 +36,35 @@ class QuickCourseEntryController extends Controller
         $group->load('cycle');
         $assignment->load(['course', 'modalities.schedules']);
 
+        $tecModality = $assignment->modalities->firstWhere('modality', 'TEC');
+        $tallModality = $assignment->modalities->firstWhere('modality', 'TALL');
+        $requestedType = strtoupper((string) $request->query('add'));
+        $requestedType = $requestedType === 'TAL' ? 'TALL' : $requestedType;
+
         $rows = [[
             'course_name' => $assignment->course->name,
-            'tec_code' => $assignment->modalities->firstWhere('modality', 'TEC')
-                ? $this->courseAlias($assignment->course->code, 'TEC', $assignment->course->name, $assignment->modalities->firstWhere('modality', 'TEC'))
+            'tec_code' => $tecModality || $requestedType === 'TEC'
+                ? $this->courseAlias($assignment->course->code, 'TEC', $assignment->course->name, $tecModality)
                 : '',
-            'tec_block_code' => $assignment->modalities->firstWhere('modality', 'TEC')?->block_code,
-            'tec_block_reference' => $assignment->modalities->firstWhere('modality', 'TEC')?->block_reference,
-            'tec_start_date' => $assignment->modalities->firstWhere('modality', 'TEC')?->start_date?->toDateString(),
-            'tec_end_date' => $assignment->modalities->firstWhere('modality', 'TEC')?->end_date?->toDateString(),
-            'tec_schedules' => $this->groupScheduleRows($assignment->modalities->firstWhere('modality', 'TEC')),
-            'tall_code' => $assignment->modalities->firstWhere('modality', 'TALL')
-                ? $this->courseAlias($assignment->course->code, 'TALL', $assignment->course->name, $assignment->modalities->firstWhere('modality', 'TALL'))
+            'tec_block_code' => $tecModality?->block_code,
+            'tec_block_reference' => $tecModality?->block_reference,
+            'tec_start_date' => $tecModality?->start_date?->toDateString(),
+            'tec_end_date' => $tecModality?->end_date?->toDateString(),
+            'tec_schedules' => $this->groupScheduleRows($tecModality),
+            'tall_code' => $tallModality || $requestedType === 'TALL'
+                ? $this->courseAlias($assignment->course->code, 'TALL', $assignment->course->name, $tallModality)
                 : '',
-            'tall_block_code' => $assignment->modalities->firstWhere('modality', 'TALL')?->block_code,
-            'tall_block_reference' => $assignment->modalities->firstWhere('modality', 'TALL')?->block_reference,
-            'tall_start_date' => $assignment->modalities->firstWhere('modality', 'TALL')?->start_date?->toDateString(),
-            'tall_end_date' => $assignment->modalities->firstWhere('modality', 'TALL')?->end_date?->toDateString(),
-            'tall_schedules' => $this->groupScheduleRows($assignment->modalities->firstWhere('modality', 'TALL')),
+            'tall_block_code' => $tallModality?->block_code,
+            'tall_block_reference' => $tallModality?->block_reference,
+            'tall_start_date' => $tallModality?->start_date?->toDateString(),
+            'tall_end_date' => $tallModality?->end_date?->toDateString(),
+            'tall_schedules' => $this->groupScheduleRows($tallModality),
         ]];
 
         $editingAssignment = $assignment;
+        $returnToTree = $request->boolean('tree');
 
-        return view('assignments.quick', compact('group', 'rows', 'editingAssignment'));
+        return view('assignments.quick', compact('group', 'rows', 'editingAssignment', 'returnToTree'));
     }
 
     public function store(
@@ -186,7 +193,11 @@ class QuickCourseEntryController extends Controller
             $message .= ' NRC pendiente: '.implode(', ', array_unique($missingNrc)).'.';
         }
 
-        $redirect = redirect()->route('groups.show', $group)->with($missingNrc ? 'warning' : 'success', $message);
+        $group->loadMissing('cycle');
+        $destination = $request->boolean('return_to_tree')
+            ? route('cycles.tree', $group->cycle)
+            : route('groups.show', $group);
+        $redirect = redirect()->to($destination)->with($missingNrc ? 'warning' : 'success', $message);
         if ($calendarWarnings) {
             $redirect->with('warning', implode(' ', array_unique($calendarWarnings)));
         }
@@ -359,7 +370,11 @@ class QuickCourseEntryController extends Controller
             $message .= " Se recalcularon {$calendarUpdated} calendarios.";
         }
 
-        $redirect = redirect()->route('groups.show', $group)->with('success', $message);
+        $group->loadMissing('cycle');
+        $destination = $request->boolean('return_to_tree')
+            ? route('cycles.tree', $group->cycle)
+            : route('groups.show', $group);
+        $redirect = redirect()->to($destination)->with('success', $message);
         if ($calendarWarnings) {
             $redirect->with('warning', implode(' ', array_unique($calendarWarnings)));
         }
