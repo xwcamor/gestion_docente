@@ -264,6 +264,8 @@ La importación crea o reutiliza el ciclo y el grupo indicado, registra cada cur
 
 El ciclo se reconoce desde el patrón `202620-PIAD-...` en CODIGO (año + ciclo). Las horas usan formato HH:MM y bloques de 15 minutos. La vista previa muestra los bloques detectados; si hay errores, no permite confirmar hasta corregir el archivo. Al confirmar, calcula horas semanales y genera sesiones con los feriados bloqueados excluidos.
 
+Al retirar un curso de un grupo, el curso y las mallas históricas del catálogo no se eliminan. Si ya no existe ninguna asignación de ese curso en otros grupos, su versión activa se archiva (`is_active=false`) para que una futura alta del mismo código no la vincule automáticamente. Si el curso sigue asignado en otro grupo, la malla permanece disponible. Al eliminar un grupo se aplica la misma regla a cada curso que contenía.
+
 
 ## Registro simplificado de cursos
 
