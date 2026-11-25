@@ -22,6 +22,21 @@ class CycleController extends Controller
         $professor = auth()->user()->professor;
         $query = $professor->cycles()
             ->withCount('groups')
+            ->with([
+                'groups' => fn ($groups) => $groups
+                    ->withCount(['assignments', 'students'])
+                    ->with([
+                        'assignments' => fn ($assignments) => $assignments
+                            ->with([
+                                'course',
+                                'curriculum.weeks',
+                                'modalities.schedules',
+                                'modalities.documents',
+                            ])
+                            ->orderBy('id'),
+                    ])
+                    ->orderBy('name'),
+            ])
             ->orderByDesc('academic_year')
             ->orderByDesc('start_date');
 
