@@ -4,87 +4,64 @@
 <div class="workload-tree-page">
     <div class="breadcrumbs">
         <a href="{{ route('cycles.index') }}">Cargas laborales</a>
-        <x-icon name="chevron-right" size="12" />
+        <x-icon name="chevron-right" size="13" />
         <span class="current">{{ $cycle->academic_year }} · Ciclo {{ $cycle->cycle_code }}</span>
     </div>
 
     <section class="workload-tree-hero">
         <div class="workload-tree-hero-copy">
-            <p class="eyebrow"><x-icon name="git-branch" size="13" /> EDITOR DE CARGA LABORAL</p>
+            <p class="eyebrow"><x-icon name="git-branch" size="16" /> ORGANIZACIÓN ACADÉMICA</p>
             <h1>{{ $cycle->academic_year }} <span>· Ciclo {{ $cycle->cycle_code }}</span></h1>
             <div class="workload-tree-context">
-                <span><x-icon name="graduation-cap" size="14" /> {{ $cycle->career ?: 'Carrera pendiente' }}</span>
-                <span>Semestre {{ $cycle->semester ?: '—' }}</span>
-                <span><x-icon name="calendar-range" size="14" /> {{ $cycle->start_date?->format('d/m/Y') }} – {{ $cycle->end_date?->format('d/m/Y') }}</span>
+                <span><x-icon name="graduation-cap" size="16" /> {{ $cycle->career ?: 'Carrera pendiente' }}</span>
+                <span><x-icon name="layers" size="16" /> Semestre {{ $cycle->semester ?: '—' }}</span>
+                <span><x-icon name="calendar-range" size="16" /> {{ $cycle->start_date?->format('d/m/Y') ?: 'Sin inicio' }} – {{ $cycle->end_date?->format('d/m/Y') ?: 'Sin fin' }}</span>
             </div>
         </div>
         <div class="workload-tree-hero-actions">
-            <a class="btn btn-secondary" href="{{ route('cycles.show', $cycle) }}"><x-icon name="settings" /> Datos del ciclo</a>
-
+            <a class="btn btn-secondary" href="{{ route('cycles.show', $cycle) }}"><x-icon name="settings" size="16" /> Datos del ciclo</a>
         </div>
     </section>
 
-    <div class="tree-workspace-grid">
-        <section class="card tree-structure-card">
-            <div class="tree-panel-heading">
-                <div>
-                    <p class="eyebrow">PANEL 1</p>
-                    <h2>Estructura</h2>
-                    <p>Organiza los grupos y agrega los cursos. No necesitas completar códigos ni horarios aquí.</p>
-                </div>
-                <span class="workload-tree-total" data-tree-group-total>{{ $cycleGroupCount }} grupos</span>
+    <section class="card tree-structure-card">
+        <div class="tree-panel-heading">
+            <div>
+                <p class="eyebrow">ÁRBOL DE TRABAJO</p>
+                <h2><x-icon name="network" size="23" /> Grupos, cursos y componentes</h2>
+                <p>Usa + y − para desplegar niveles. Haz doble clic en los nombres, códigos, NRC o fechas para editarlos.</p>
             </div>
+            <span class="workload-tree-total" data-tree-group-total>{{ $cycleGroupCount }} grupos</span>
+        </div>
 
-            <form method="POST" action="{{ route('groups.store', $cycle) }}" class="tree-add-group-form">
-                @csrf
-                <input type="hidden" name="return_to_tree" value="1">
-                <input class="field" name="name" maxlength="100" required placeholder="Nombre del grupo nuevo…">
-                <button class="btn" type="submit"><x-icon name="plus" size="14" /> Crear grupo</button>
-            </form>
+        <form method="POST" action="{{ route('groups.store', $cycle) }}" class="tree-add-group-form">
+            @csrf
+            <input type="hidden" name="return_to_tree" value="1">
+            <label>
+                <span><x-icon name="folder-plus" size="19" /> Nuevo grupo</span>
+                <input class="field" name="name" maxlength="100" required placeholder="Escribe el nombre o código del grupo…">
+            </label>
+            <button class="btn" type="submit" aria-label="Agregar grupo"><x-icon name="plus" size="19" /> Agregar grupo</button>
+        </form>
 
-            <form method="GET" action="{{ route('cycles.tree', $cycle) }}" class="workload-tree-search">
-                <label class="workload-tree-search-field">
-                    <x-icon name="search" size="17" />
-                    <input type="search" name="q" value="{{ $term }}" placeholder="Buscar grupo o curso…" aria-label="Buscar en el árbol">
-                </label>
-                <button class="btn btn-secondary" type="submit">Buscar</button>
-                @if($term !== '')
-                    <a class="btn btn-ghost" href="{{ route('cycles.tree', $cycle) }}"><x-icon name="x" /> Limpiar</a>
-                @endif
-            </form>
+        <form method="GET" action="{{ route('cycles.tree', $cycle) }}" class="workload-tree-search">
+            <label class="workload-tree-search-field">
+                <x-icon name="search" size="19" />
+                <input type="search" name="q" value="{{ $term }}" placeholder="Buscar grupo, curso, código o NRC…" aria-label="Buscar en el árbol">
+            </label>
+            <button class="btn btn-secondary" type="submit">Buscar</button>
+            @if($term !== '')
+                <a class="btn btn-ghost" href="{{ route('cycles.tree', $cycle) }}"><x-icon name="x" size="16" /> Limpiar</a>
+            @endif
+        </form>
 
-            <div class="workload-tree-root">
-                @include('cycles.tree.groups', ['groups' => $groups, 'cycle' => $cycle])
-            </div>
-        </section>
+        <div class="workload-tree-root" role="tree" aria-label="Estructura académica">
+            @include('cycles.tree.groups', ['groups' => $groups, 'cycle' => $cycle])
+        </div>
+    </section>
 
-        <section class="card tree-editor-card" aria-live="polite">
-            <div class="tree-panel-heading">
-                <div>
-                    <p class="eyebrow">PANEL 2</p>
-                    <h2>Edición rápida</h2>
-                    <p>Selecciona un grupo o curso a la izquierda. Doble clic sobre un dato para cambiarlo.</p>
-                </div>
-                <span class="tree-editor-indicator"><span></span> Editor</span>
-            </div>
-
-            <div class="tree-editor-empty" id="tree-editor-empty">
-                <span class="tree-editor-empty-icon"><x-icon name="info" size="22" /></span>
-                <strong>¿Qué deseas editar?</strong>
-                <p>Selecciona un grupo para cambiar su nombre o un curso para editar su nombre, código, TEC, TAL, NRC y fechas.</p>
-            </div>
-
-            <div class="tree-editor-content" id="tree-editor-content" hidden>
-                <div class="tree-editor-breadcrumb" id="tree-editor-kind">GRUPO</div>
-                <h3 id="tree-editor-title">Seleccionado</h3>
-                <p class="tree-editor-description" id="tree-editor-description"></p>
-                <div class="tree-editor-fields" id="tree-editor-fields"></div>
-            </div>
-        </section>
-    </div>
-    <p class="tree-live-feedback" id="tree-live-feedback" role="status" hidden></p>
+    <p class="tree-live-feedback" id="tree-live-feedback" role="status" aria-live="polite" hidden></p>
 </div>
-@endsection
+
 
 @push('styles')
 <style>
@@ -487,88 +464,169 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
  .tree-editor-modality-head{align-items:flex-start}
 }
 @media(prefers-reduced-motion:reduce){.tree-structure-card *, .tree-editor-card *{scroll-behavior:auto!important;transition:none!important}}
+
+/* Árbol académico de una sola columna: jerarquía clara y lectura amplia */
+.tree-workspace-grid{display:block}
+.tree-structure-card{display:block;width:100%;min-width:0;padding:clamp(18px,2.2vw,30px);border:1px solid var(--line-strong);border-radius:16px;background:var(--surface);box-shadow:0 7px 24px rgba(25,56,78,.05)}
+.tree-structure-card .tree-panel-heading{align-items:center;margin-bottom:20px}
+.tree-structure-card .tree-panel-heading .eyebrow{margin:0 0 7px;font-size:11px}
+.tree-structure-card .tree-panel-heading h2{display:flex;align-items:center;gap:10px;font-size:clamp(22px,2.1vw,29px);font-weight:900}
+.tree-structure-card .tree-panel-heading p:not(.eyebrow){margin-top:7px;font-size:13px;line-height:1.55}
+.tree-structure-card .workload-tree-total{padding:8px 12px;font-size:13px}
+.tree-add-group-form{display:flex;align-items:end;gap:12px;margin:0 0 16px;padding:14px;border:1px solid color-mix(in srgb,var(--accent) 28%,var(--line));border-radius:12px;background:var(--accent-soft)}
+.tree-add-group-form label{display:grid;flex:1;gap:7px;min-width:0;color:var(--ink-soft);font-size:13px;font-weight:800}
+.tree-add-group-form label>span{display:flex;align-items:center;gap:8px}
+.tree-add-group-form .field{height:46px;min-width:0;background:var(--surface);font-size:15px}
+.tree-add-group-form>.btn{min-height:46px;padding:10px 16px;font-size:13px;font-weight:850;white-space:nowrap}
+.tree-structure-card .workload-tree-search{gap:10px;margin-bottom:18px}
+.tree-structure-card .workload-tree-search-field{height:47px}
+.tree-structure-card .workload-tree-search-field input{font-size:14px}
+.tree-structure-card .workload-tree-search .btn{min-height:47px;font-size:13px}
+.tree-structure-card .workload-tree-root{display:grid;gap:8px;padding:3px 0}
+.tree-structure-card .workload-tree-group-shell{overflow:visible;border:0;border-left:2px solid color-mix(in srgb,var(--accent) 26%,var(--line));border-radius:0;background:transparent;box-shadow:none}
+.tree-structure-card .workload-tree-group-shell.is-selected{border-color:var(--accent);box-shadow:none}
+.tree-structure-card .workload-tree-group{overflow:visible;background:transparent}
+.tree-structure-card .workload-group-summary{display:flex;align-items:flex-start;gap:13px;min-height:0;padding:14px 15px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.tree-structure-card .workload-group-summary:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--line));background:var(--accent-soft)}
+.tree-structure-card .workload-tree-group[open]>.workload-group-summary{border-color:color-mix(in srgb,var(--accent) 48%,var(--line));border-radius:12px 12px 0 0;background:linear-gradient(90deg,var(--accent-soft),var(--surface))}
+.tree-expand-symbol{display:grid;place-items:center;flex:0 0 31px;width:31px;height:31px;margin-top:5px;border:1px solid var(--line-strong);border-radius:8px;background:var(--surface-soft);color:var(--accent)}
+.tree-expand-symbol [data-tree-collapsed],.tree-expand-symbol [data-tree-expanded]{display:grid;place-items:center}
+.tree-expand-symbol [data-tree-expanded]{display:none}
+.workload-tree-group[open]>.workload-group-summary .tree-expand-symbol [data-tree-collapsed],
+.tree-course-branch[open]>.tree-course-summary .tree-expand-symbol [data-tree-collapsed]{display:none}
+.workload-tree-group[open]>.workload-group-summary .tree-expand-symbol [data-tree-expanded],
+.tree-course-branch[open]>.tree-course-summary .tree-expand-symbol [data-tree-expanded]{display:grid}
+.tree-node-icon,.tree-course-node{display:grid;place-items:center;flex:0 0 47px;width:47px;height:47px;border-radius:12px}
+.tree-group-icon{background:var(--info-bg);color:var(--info)}
+.workload-tree-group[open]>.workload-group-summary .tree-group-icon{background:var(--accent);color:#fff}
+.tree-course-node{background:var(--accent-soft);color:var(--accent)}
+.tree-node-copy{display:grid;flex:1;gap:5px;min-width:0;padding-top:1px}
+.tree-node-copy strong{color:var(--ink);font-size:clamp(16px,1.4vw,19px);font-weight:900;line-height:1.35;overflow-wrap:anywhere}
+.tree-node-copy small{display:flex;align-items:center;gap:6px;flex-wrap:wrap;color:var(--muted);font-size:12px;line-height:1.55;overflow-wrap:anywhere}
+.tree-meta-separator{color:var(--line-strong)}
+.tree-group-row-actions{display:flex;align-items:center;gap:7px;margin-left:auto}
+.tree-icon-action{display:grid;place-items:center;flex:none;width:36px;height:36px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--muted);cursor:pointer;transition:all .15s ease}
+.tree-icon-action:hover:not(:disabled){border-color:var(--danger);background:var(--danger-bg);color:var(--danger)}
+.tree-icon-action:disabled{opacity:.35;cursor:not-allowed}
+.tree-structure-card .workload-tree-children{position:relative;margin:0 0 0 31px;padding:14px 15px 17px 30px;border:0;border-left:2px solid color-mix(in srgb,var(--accent) 24%,var(--line));border-radius:0 0 0 12px}
+.tree-structure-card .workload-tree-group-actions{display:flex;margin:0 0 10px;padding:0;border:0}
+.tree-structure-card .tree-course-entry-form{display:grid;grid-template-columns:minmax(220px,1fr) auto;align-items:end;gap:11px;margin:0 0 14px;padding:13px;border:1px dashed color-mix(in srgb,var(--accent) 42%,var(--line));border-radius:11px;background:var(--surface-soft)}
+.tree-course-name-input{display:grid;gap:7px;min-width:0;color:var(--ink-soft);font-size:13px;font-weight:850}
+.tree-course-name-input>span{display:flex;align-items:center;gap:7px;color:var(--accent)}
+.tree-course-name-input .field{height:43px;min-width:0;background:var(--surface);font-size:14px}
+.tree-structure-card .tree-entry-components{grid-column:1/-1;display:flex;gap:9px;margin:0;padding:4px 0;border:0;background:transparent}
+.tree-structure-card .tree-entry-components legend{padding:0 4px 5px;color:var(--muted);font-size:11px;font-weight:850}
+.tree-structure-card .tree-component-option{display:flex;align-items:center;gap:8px;min-width:0;padding:8px 13px;border:1px solid var(--line);border-radius:9px;background:var(--surface);cursor:pointer}
+.tree-structure-card .tree-component-option span{font-size:13px;font-weight:950}
+.tree-structure-card .tree-component-option small{color:var(--muted);font-size:11px}
+.tree-structure-card .tree-component-option input{width:17px;height:17px;accent-color:var(--accent)}
+.tree-course-create-footer{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.tree-course-create-footer>small{color:var(--muted);font-size:11px;line-height:1.45}
+.tree-course-create-button{min-height:42px;padding:9px 14px;font-size:13px;font-weight:850;white-space:nowrap}
+.tree-course-entry-error{grid-column:1/-1;padding:10px 12px;border:1px solid var(--danger);border-radius:8px;background:var(--danger-bg);color:var(--danger);font-size:12px}
+.tree-course-entry-error[hidden]{display:none!important}
+.tree-loading-state{padding:17px;color:var(--muted);font-size:13px}
+.tree-structure-card .workload-tree-course{position:relative;margin:0 0 10px;border:0;border-radius:0;background:transparent;overflow:visible}
+.tree-course-branch{overflow:visible}
+.tree-course-summary{display:flex;align-items:flex-start;gap:11px;min-height:0;padding:12px 13px;border:1px solid var(--line);border-radius:11px;background:var(--surface);list-style:none;cursor:pointer;transition:border-color .15s ease,background .15s ease}
+.tree-course-summary::-webkit-details-marker{display:none}
+.tree-course-summary:hover{border-color:color-mix(in srgb,var(--accent) 40%,var(--line));background:var(--accent-soft)}
+.tree-course-branch[open]>.tree-course-summary{border-color:color-mix(in srgb,var(--accent) 42%,var(--line));border-radius:11px 11px 0 0;background:var(--accent-soft)}
+.tree-course-branch[open]>.tree-course-summary .tree-course-node{background:var(--accent);color:#fff}
+.tree-course-summary .tree-expand-symbol{margin-top:4px}
+.tree-course-summary .tree-node-copy{padding-top:1px}
+.tree-course-summary .tree-node-copy strong{font-size:16px}
+.tree-course-summary .tree-node-copy small{font-size:12px}
+.tree-course-components{display:flex;align-items:center;gap:6px;flex:none;padding-top:5px}
+.tree-component-chip{min-width:39px;justify-content:center;padding:6px 9px;border-radius:7px;font-size:11px}
+.tree-component-chip.is-present{background:var(--success-bg);color:var(--success)}
+.tree-component-chip.is-missing{border:1px dashed var(--line-strong);background:var(--surface-soft);color:var(--muted)}
+.tree-component-chip.is-disabled{background:var(--surface-soft);color:var(--muted);text-decoration:line-through}
+.tree-course-children{position:relative;margin:0 0 0 30px;padding:13px 14px 16px 28px;border-left:2px solid color-mix(in srgb,var(--accent) 23%,var(--line));border-bottom:1px solid var(--line);border-radius:0 0 0 10px}
+.tree-course-tools{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 5px;color:var(--muted);font-size:12px;font-weight:800}
+.tree-course-tools>span{display:inline-flex;align-items:center;gap:7px}
+.tree-course-tools .tree-icon-action{width:33px;height:33px}
+.tree-course-delete-confirm,.tree-group-delete-confirm{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0 12px;padding:12px;border:1px solid var(--danger);border-radius:9px;background:var(--danger-bg)}
+.tree-course-delete-confirm[hidden],.tree-group-delete-confirm[hidden]{display:none!important}
+.tree-delete-confirm p{margin:0;color:var(--danger);font-size:12px;line-height:1.5}
+.tree-delete-confirm form{display:flex;gap:7px;flex-wrap:wrap}
+.tree-delete-confirm .btn{min-height:35px;font-size:11px}
+.tree-structure-card .workload-tree-modality{display:flex;align-items:center;gap:12px;min-width:0;margin:0;padding:13px 5px;border-top:1px solid var(--line)}
+.tree-modality-tag{display:flex;align-items:center;justify-content:center;gap:6px;flex:0 0 65px;height:40px;border-radius:9px;font-size:12px;font-weight:950}
+.tree-modality-tag.is-tec{background:var(--info-bg);color:var(--info)}
+.tree-modality-tag.is-tall{background:var(--accent-soft);color:var(--accent)}
+.tree-modality-copy{display:grid;flex:1;gap:5px;min-width:0}
+.tree-modality-copy strong{color:var(--ink);font-size:14px;font-weight:850;line-height:1.4;overflow-wrap:anywhere}
+.tree-modality-copy small{color:var(--muted);font-size:12px;line-height:1.55;overflow-wrap:anywhere}
+.tree-inline-nrc,.tree-inline-date,.tree-inline-text{display:inline-flex;min-height:22px;align-items:center;padding:1px 4px;border-radius:4px;cursor:text}
+.tree-inline-nrc:hover,.tree-inline-date:hover,.tree-inline-text:hover{background:var(--accent-soft);color:var(--accent)}
+.tree-course-status{padding:6px 9px;border-radius:7px;font-size:10px}
+.tree-modality-toggle{min-height:36px;padding:7px 10px;font-size:11px}
+.tree-structure-card .tree-add-modality{min-height:37px;font-size:11px}
+.tree-modality-copy [data-modality-description]{font-size:11px}
+.tree-structure-card .tree-empty-child{display:grid;justify-items:center;gap:8px;padding:34px 18px;border:1px dashed var(--line-strong);border-radius:12px;color:var(--muted);text-align:center}
+.tree-empty-child strong{color:var(--ink);font-size:16px}
+.tree-empty-child span{font-size:13px}
+.tree-live-feedback{display:block;margin:14px 0 0;padding:12px 14px;border:1px solid var(--success);border-radius:9px;background:var(--success-bg);color:var(--success);font-size:13px;line-height:1.5}
+.tree-live-feedback[hidden]{display:none!important}
+.tree-live-feedback.is-error{border-color:var(--danger);background:var(--danger-bg);color:var(--danger)}
+.tree-inline-editor{width:auto;min-width:110px;max-width:min(320px,75vw);min-height:33px;padding:5px 8px;border:1px solid var(--accent);border-radius:6px;background:var(--surface);color:var(--ink);font:inherit;font-size:14px;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 12%,transparent);outline:none}
+@media(max-width:760px){
+ .tree-structure-card{padding:14px}
+ .tree-add-group-form{align-items:stretch;flex-direction:column}
+ .tree-add-group-form>.btn{width:100%}
+ .tree-structure-card .tree-course-entry-form{grid-template-columns:minmax(0,1fr)}
+ .tree-structure-card .tree-entry-components,.tree-course-create-footer,.tree-course-entry-error{grid-column:1}
+ .tree-course-create-footer{align-items:stretch;flex-direction:column}
+ .tree-course-create-button{width:100%}
+ .tree-course-summary{flex-wrap:wrap}
+ .tree-course-components{margin-left:43px;padding:0}
+ .tree-course-children{margin-left:20px;padding-left:15px}
+ .tree-structure-card .workload-tree-children{margin-left:20px;padding-left:15px}
+ .tree-structure-card .workload-tree-modality{display:grid;grid-template-columns:65px minmax(0,1fr);align-items:start;gap:9px}
+ .tree-modality-copy{grid-column:2}
+ .tree-course-status,.tree-modality-toggle,.tree-open-modality,.tree-add-modality{grid-column:2;justify-self:start}
+ .tree-course-delete-confirm,.tree-group-delete-confirm{align-items:stretch;flex-direction:column}
+ .tree-delete-confirm form{display:grid;grid-template-columns:1fr 1fr}
+ .tree-group-row-actions{margin-left:auto}
+}
+@media(max-width:480px){
+ .tree-structure-card .workload-group-summary{gap:8px;padding:10px}
+ .tree-expand-symbol{flex-basis:27px;width:27px;height:27px}
+ .tree-node-icon,.tree-course-node{flex-basis:38px;width:38px;height:38px}
+ .tree-node-copy strong{font-size:15px}
+ .tree-node-copy small{font-size:11px}
+ .tree-group-row-actions .tree-icon-action{width:31px;height:31px}
+ .tree-course-summary{gap:8px;padding:10px}
+ .tree-course-summary .tree-node-copy strong{font-size:14px}
+ .tree-course-summary .tree-node-copy small{font-size:11px}
+ .tree-modality-copy strong{font-size:13px}
+ .tree-modality-copy small{font-size:11px}
+ .tree-modality-tag{height:36px;flex-basis:58px;font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){.tree-structure-card *{scroll-behavior:auto!important;transition:none!important}}
+
 </style>
 @endpush
 
 @push('scripts')
 <script>
 (() => {
-    const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
-    const feedback = document.getElementById('tree-live-feedback');
-    const editorEmpty = document.getElementById('tree-editor-empty');
-    const editorContent = document.getElementById('tree-editor-content');
-    const editorKind = document.getElementById('tree-editor-kind');
-    const editorTitle = document.getElementById('tree-editor-title');
-    const editorDescription = document.getElementById('tree-editor-description');
-    const editorFields = document.getElementById('tree-editor-fields');
-    let selectedGroupId = null;
-    let selectedAssignmentId = null;
+    const root = document.querySelector('.workload-tree-page');
+    if (!root) return;
 
-    const showFeedback = (message, isError = false) => {
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+    const feedback = root.querySelector('#tree-live-feedback');
+    const groupSearch = root.querySelector('.workload-tree-search [name="q"]');
+
+    const showFeedback = (message, error = false) => {
         if (!feedback || !message) return;
         feedback.textContent = message;
-        feedback.classList.toggle('is-error', isError);
+        feedback.classList.toggle('is-error', error);
         feedback.hidden = false;
     };
 
-    const showEditor = () => {
-        editorEmpty.hidden = true;
-        editorContent.hidden = false;
-    };
-
-    const clearEditor = () => {
-        selectedGroupId = null;
-        selectedAssignmentId = null;
-        editorContent.hidden = true;
-        editorEmpty.hidden = false;
-        document.querySelectorAll('.tree-structure-card .is-selected').forEach(node => node.classList.remove('is-selected'));
-    };
-
-    const element = (tag, className, text) => {
-        const node = document.createElement(tag);
-        if (className) node.className = className;
-        if (text !== undefined && text !== null) node.textContent = text;
-        return node;
-    };
-
-    const editorField = (label, value, config = {}) => {
-        const wrapper = element('div', 'tree-editor-field');
-        wrapper.append(element('label', '', label));
-        const valueNode = element('span', 'tree-editor-value' + (value ? '' : ' is-empty'), value || 'Doble clic para completar');
-        if (config.editable) {
-            valueNode.dataset.editorText = '1';
-            valueNode.dataset.value = value || '';
-            valueNode.dataset.url = config.url;
-            valueNode.dataset.field = config.field;
-            valueNode.dataset.label = label;
-            valueNode.dataset.maxLength = String(config.maxLength || 255);
-            valueNode.title = 'Doble clic para editar';
-        }
-        wrapper.append(valueNode);
-        if (config.hint) wrapper.append(element('small', 'tree-editor-hint', config.hint));
-        return wrapper;
-    };
-
-    document.addEventListener('change', event => {
-        if (!event.target.matches('[data-course-component]')) return;
-        const form = event.target.closest('[data-tree-course-form]');
-        if (!form) return;
-        const selected = [...form.querySelectorAll('[data-course-component]')].some(input => input.checked);
-        if (!selected) {
-            event.target.checked = true;
-            showFeedback('Cada curso debe tener al menos un componente: TEC o TAL.', true);
-        }
-    });
-
-    const sendInlineUpdate = async (url, values) => {
-        const body = new FormData();
-        Object.entries(values).forEach(([key, value]) => body.append(key, value ?? ''));
-        const response = await fetch(url, {
-            method: 'PATCH',
-            body,
-            credentials: 'same-origin',
-            headers: {'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf}
-        });
+    const responsePayload = async response => {
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
             const messages = Object.values(payload.errors || {}).flat();
@@ -577,66 +635,322 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
         return payload;
     };
 
-    const sendPost = async (url, body = new FormData()) => {
-        const response = await fetch(url, {
+    const post = async (url, body = new FormData()) => {
+        return responsePayload(await fetch(url, {
             method: 'POST',
             body,
             credentials: 'same-origin',
-            headers: {'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf}
-        });
-        const payload = await response.json().catch(() => ({}));
-        if (!response.ok) {
-            const messages = Object.values(payload.errors || {}).flat();
-            throw new Error(messages.join(' ') || payload.message || 'No se pudo completar la acción.');
-        }
-        return payload;
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrf
+            }
+        }));
+    };
+
+    const patch = async (url, values) => {
+        const body = new FormData();
+        Object.entries(values).forEach(([key, value]) => body.append(key, value ?? ''));
+        return responsePayload(await fetch(url, {
+            method: 'PATCH',
+            body,
+            credentials: 'same-origin',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrf
+            }
+        }));
     };
 
     const displayDate = value => {
         if (!value) return 'Sin fecha';
-        const [year, month, day] = value.split('-');
-        return day + '/' + month + '/' + year;
+        const parts = value.split('-');
+        return parts.length === 3 ? parts[2] + '/' + parts[1] + '/' + parts[0] : value;
     };
 
-    const startTextEditor = (target, config) => {
-        if (target.querySelector('input')) return;
+    const groupNodeById = id => root.querySelector('[data-tree-group-id="' + id + '"]');
+    const courseNodeById = id => root.querySelector('[data-assignment-id="' + id + '"]');
+
+    const updateCourseDeleteGuards = (groupNode, count) => {
+        if (!groupNode) return;
+        const countNode = groupNode.querySelector('[data-group-course-count]');
+        if (countNode && Number.isFinite(Number(count))) countNode.textContent = String(count);
+        const mustKeepOne = Number(count) <= 1;
+        groupNode.querySelectorAll('[data-toggle-course-delete], [data-tree-delete-course] button[type="submit"]').forEach(button => {
+            button.disabled = mustKeepOne;
+            if (button.matches('[data-toggle-course-delete]')) {
+                button.title = mustKeepOne ? 'El grupo debe conservar al menos un curso' : 'Retirar curso de este grupo';
+            }
+        });
+    };
+
+    const loadGroup = async (groupNode, force = false) => {
+        if (!groupNode || (!force && groupNode.dataset.treeLoaded === '1') || groupNode.dataset.treeLoading === '1') return;
+        const content = groupNode.querySelector('[data-tree-content]');
+        if (!content) return;
+
+        groupNode.dataset.treeLoading = '1';
+        content.innerHTML = '<div class="tree-loading-state">Cargando cursos…</div>';
+
+        const url = new URL(groupNode.dataset.treeLoad, window.location.href);
+        if (groupSearch?.value.trim()) url.searchParams.set('q', groupSearch.value.trim());
+
+        try {
+            const response = await fetch(url.toString(), {
+                credentials: 'same-origin',
+                headers: {'X-Requested-With': 'XMLHttpRequest', 'Accept': 'text/html'}
+            });
+            if (!response.ok || response.redirected) throw new Error('No se pudieron cargar los cursos.');
+            content.innerHTML = await response.text();
+            groupNode.dataset.treeLoaded = '1';
+            const count = groupNode.querySelector('[data-group-course-count]')?.textContent || 0;
+            updateCourseDeleteGuards(groupNode, count);
+        } catch (error) {
+            content.innerHTML = '<div class="tree-load-error"></div>';
+            content.querySelector('.tree-load-error').textContent = error.message;
+            groupNode.dataset.treeLoaded = '0';
+        } finally {
+            groupNode.dataset.treeLoading = '0';
+        }
+    };
+
+    const refreshGroup = async (groupId, assignmentId = null) => {
+        const groupNode = groupNodeById(groupId);
+        if (!groupNode) return null;
+        groupNode.open = true;
+        groupNode.dataset.treeLoaded = '0';
+        await loadGroup(groupNode, true);
+
+        const course = assignmentId ? courseNodeById(assignmentId) : null;
+        if (course) {
+            const branch = course.querySelector('[data-course-branch]');
+            if (branch) branch.open = true;
+            course.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+        }
+        return course;
+    };
+
+    root.querySelectorAll('[data-tree-load]').forEach(groupNode => {
+        groupNode.addEventListener('toggle', () => {
+            if (groupNode.open) loadGroup(groupNode);
+        });
+    });
+
+    document.addEventListener('change', event => {
+        const checkbox = event.target.closest('[data-course-component]');
+        if (!checkbox) return;
+        const form = checkbox.closest('[data-tree-course-form]');
+        if (!form) return;
+        const anySelected = [...form.querySelectorAll('[data-course-component]')].some(item => item.checked);
+        if (!anySelected) {
+            checkbox.checked = true;
+            showFeedback('Cada curso debe conservar al menos un componente: TEC o TAL.', true);
+        }
+    });
+
+    document.addEventListener('click', async event => {
+        const groupDeleteToggle = event.target.closest('[data-toggle-group-delete]');
+        if (groupDeleteToggle) {
+            event.preventDefault();
+            event.stopPropagation();
+            const group = groupDeleteToggle.closest('[data-tree-group-id]');
+            const confirm = group?.querySelector('[data-group-delete-confirm]');
+            if (confirm) confirm.hidden = !confirm.hidden;
+            return;
+        }
+
+        const courseDeleteToggle = event.target.closest('[data-toggle-course-delete]');
+        if (courseDeleteToggle) {
+            event.preventDefault();
+            event.stopPropagation();
+            const course = courseDeleteToggle.closest('[data-tree-course-item]');
+            const confirm = course?.querySelector('[data-course-delete-confirm]');
+            if (confirm) confirm.hidden = !confirm.hidden;
+            return;
+        }
+
+        const cancel = event.target.closest('[data-inline-cancel]');
+        if (cancel) {
+            cancel.closest('.tree-delete-confirm')?.setAttribute('hidden', '');
+            return;
+        }
+
+        const addModality = event.target.closest('[data-open-inline-course-entry]');
+        if (addModality) {
+            const button = addModality;
+            button.disabled = true;
+            try {
+                const payload = await post(button.dataset.storeUrl);
+                const course = button.closest('[data-tree-course-item]');
+                const groupId = button.dataset.groupId || course?.dataset.groupId;
+                const assignmentId = course?.dataset.assignmentId;
+                await refreshGroup(groupId, assignmentId);
+                showFeedback(payload.message || 'Componente agregado.');
+            } catch (error) {
+                button.disabled = false;
+                showFeedback(error.message, true);
+            }
+            return;
+        }
+
+        const toggleModality = event.target.closest('[data-toggle-modality]');
+        if (toggleModality) {
+            const button = toggleModality;
+            const active = button.dataset.active === '1';
+            button.disabled = true;
+            try {
+                const payload = await patch(button.dataset.modalityUrl, {active: active ? 0 : 1});
+                const course = button.closest('[data-tree-course-item]');
+                const groupId = course?.dataset.groupId;
+                const assignmentId = course?.dataset.assignmentId;
+                await refreshGroup(groupId, assignmentId);
+                showFeedback(payload.message || 'Estado del componente actualizado.', Boolean(payload.warning));
+            } catch (error) {
+                button.disabled = false;
+                showFeedback(error.message, true);
+            }
+            return;
+        }
+    });
+
+    document.addEventListener('submit', async event => {
+        const courseForm = event.target.closest('[data-tree-course-form]');
+        if (courseForm) {
+            event.preventDefault();
+            const submit = courseForm.querySelector('[data-course-submit]');
+            const errorBox = courseForm.querySelector('[data-course-form-error]');
+            const selected = [...courseForm.querySelectorAll('[data-course-component]')].some(item => item.checked);
+            if (!selected) {
+                if (errorBox) {
+                    errorBox.textContent = 'Selecciona TEC o TAL; cada curso debe tener al menos uno.';
+                    errorBox.hidden = false;
+                }
+                return;
+            }
+
+            if (submit) {
+                submit.disabled = true;
+                submit.textContent = 'Agregando…';
+            }
+            if (errorBox) errorBox.hidden = true;
+
+            try {
+                const payload = await post(courseForm.action, new FormData(courseForm));
+                const groupId = courseForm.dataset.groupId;
+                courseForm.reset();
+                await refreshGroup(groupId, payload.assignment_id);
+                showFeedback(payload.message || 'Curso agregado.');
+            } catch (error) {
+                if (errorBox) {
+                    errorBox.textContent = error.message;
+                    errorBox.hidden = false;
+                }
+            } finally {
+                if (submit) {
+                    submit.disabled = false;
+                    submit.innerHTML = '<span>＋</span> Agregar curso';
+                }
+            }
+            return;
+        }
+
+        const groupDelete = event.target.closest('[data-tree-delete-group]');
+        if (groupDelete) {
+            event.preventDefault();
+            const submit = groupDelete.querySelector('[type="submit"]');
+            const shell = groupDelete.closest('[data-group-shell]');
+            if (submit) submit.disabled = true;
+            try {
+                const payload = await post(groupDelete.action, new FormData(groupDelete));
+                shell?.remove();
+                const remaining = Number(payload.remaining_groups || 0);
+                const total = root.querySelector('[data-tree-group-total]');
+                if (total) total.textContent = remaining + (remaining === 1 ? ' grupo' : ' grupos');
+                if (!root.querySelector('[data-group-shell]')) {
+                    root.querySelector('.workload-tree-root').innerHTML = '<div class="tree-empty-child"><strong>No hay grupos todavía</strong><span>Agrega un grupo desde el campo superior.</span></div>';
+                }
+                root.querySelectorAll('[data-toggle-group-delete]').forEach(button => {
+                    button.disabled = remaining <= 1;
+                    button.title = remaining <= 1 ? 'El ciclo debe conservar al menos un grupo' : 'Eliminar grupo';
+                });
+                showFeedback(payload.message || 'Grupo eliminado.');
+            } catch (error) {
+                if (submit) submit.disabled = false;
+                showFeedback(error.message, true);
+            }
+            return;
+        }
+
+        const courseDelete = event.target.closest('[data-tree-delete-course]');
+        if (courseDelete) {
+            event.preventDefault();
+            const submit = courseDelete.querySelector('[type="submit"]');
+            const course = courseDelete.closest('[data-tree-course-item]');
+            const groupNode = courseDelete.closest('[data-tree-group-id]');
+            const groupId = groupNode?.dataset.treeGroupId || course?.dataset.groupId;
+            if (submit) submit.disabled = true;
+            try {
+                const payload = await post(courseDelete.action, new FormData(courseDelete));
+                course?.remove();
+                const actualGroup = groupNodeById(groupId);
+                updateCourseDeleteGuards(actualGroup, payload.assignments_count);
+                showFeedback(payload.message || 'Curso retirado del grupo.');
+            } catch (error) {
+                if (submit) submit.disabled = false;
+                showFeedback(error.message, true);
+            }
+        }
+    });
+
+    const startTextEditor = (node, config) => {
+        if (node.querySelector('input')) return;
         const original = config.value ?? '';
         const input = document.createElement('input');
         input.type = 'text';
         input.maxLength = config.maxLength || 255;
         input.className = 'tree-inline-editor';
         input.value = original;
-        input.setAttribute('aria-label', config.label);
-        target.replaceChildren(input);
+        input.setAttribute('aria-label', config.label || 'Editar texto');
+        node.replaceChildren(input);
         input.focus();
         input.select();
 
-        let settled = false;
+        let finished = false;
         const restore = () => {
-            if (settled) return;
-            settled = true;
-            config.restore(original);
+            if (finished) return;
+            finished = true;
+            node.textContent = config.emptyLabel && !original ? config.emptyLabel : original;
         };
         const save = async () => {
-            if (settled) return;
+            if (finished) return;
             const value = input.value.trim();
-            if (!value || value === original) {
+            if (value === original) {
                 restore();
                 return;
             }
-            settled = true;
-            target.classList.add('tree-inline-saving');
+            if (!value) {
+                restore();
+                showFeedback('El valor no puede quedar vacío.', true);
+                return;
+            }
+            finished = true;
+            node.classList.add('tree-inline-saving');
             try {
-                const payload = await sendInlineUpdate(config.url, {[config.field]: value});
-                config.success(payload);
-                showFeedback(payload.message || 'Cambio guardado.');
+                const payload = await patch(config.url, {[config.field]: value});
+                const saved = config.field === 'name' ? payload.name : payload.code;
+                node.dataset.editValue = saved || '';
+                node.textContent = saved || config.emptyLabel || '';
+                config.onSaved?.(saved, payload);
+                showFeedback(payload.message || 'Dato actualizado.');
             } catch (error) {
-                config.restore(original);
+                node.textContent = original || config.emptyLabel || '';
                 showFeedback(error.message, true);
             } finally {
-                target.classList.remove('tree-inline-saving');
+                node.classList.remove('tree-inline-saving');
             }
         };
+
         input.addEventListener('keydown', event => {
             if (event.key === 'Escape') {
                 event.preventDefault();
@@ -664,30 +978,27 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
         input.focus();
         input.select();
 
-        let settled = false;
+        let finished = false;
         const restore = () => {
-            if (settled) return;
-            settled = true;
-            cell.textContent = original || 'Sin NRC';
+            if (finished) return;
+            finished = true;
+            cell.textContent = original || 'NRC pendiente';
         };
         const save = async () => {
-            if (settled) return;
+            if (finished) return;
             const value = input.value.trim();
             if (value === original) {
                 restore();
                 return;
             }
-            settled = true;
+            finished = true;
             try {
-                const payload = await sendInlineUpdate(cell.dataset.nrcUrl, {nrc: value});
+                const payload = await patch(cell.dataset.nrcUrl, {nrc: value});
                 cell.dataset.nrc = payload.nrc || '';
-                cell.textContent = payload.nrc || 'Sin NRC';
-                const source = selectedCourseNode()?.querySelector('[data-editor-modality][data-modality-id="' + cell.dataset.modalityId + '"]');
-                if (source) source.dataset.nrc = payload.nrc || '';
-                updateSelectedTreeData();
+                cell.textContent = payload.nrc || 'NRC pendiente';
                 showFeedback(payload.message || 'NRC actualizado.');
             } catch (error) {
-                cell.textContent = original || 'Sin NRC';
+                cell.textContent = original || 'NRC pendiente';
                 showFeedback(error.message, true);
             }
         };
@@ -704,11 +1015,23 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
         input.addEventListener('blur', save, {once: true});
     };
 
+    const syncCoursePeriod = course => {
+        if (!course) return;
+        const wrappers = [...course.querySelectorAll('[data-modality-dates]')];
+        const starts = [...new Set(wrappers.map(item => item.dataset.startDate).filter(Boolean))];
+        const ends = [...new Set(wrappers.map(item => item.dataset.endDate).filter(Boolean))];
+        const label = starts.length === 1 && ends.length === 1
+            ? 'Inicio y fin: ' + displayDate(starts[0]) + ' – ' + displayDate(ends[0])
+            : (starts.length || ends.length ? 'Fechas diferentes por TEC/TAL' : 'Inicio y fin pendientes');
+        const summary = course.querySelector('[data-course-period]');
+        if (summary) summary.textContent = label;
+    };
+
     const startDateEditor = (cell, wrapper) => {
         if (cell.querySelector('input')) return;
         const field = cell.dataset.inlineDate;
-        const datasetKey = field === 'start_date' ? 'startDate' : 'endDate';
-        const original = wrapper.dataset[datasetKey] || '';
+        const key = field === 'start_date' ? 'startDate' : 'endDate';
+        const original = wrapper.dataset[key] || '';
         const input = document.createElement('input');
         input.type = 'date';
         input.className = 'tree-inline-editor';
@@ -718,42 +1041,36 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
         input.focus();
         input.showPicker?.();
 
-        let settled = false;
+        let finished = false;
         const restore = () => {
-            if (settled) return;
-            settled = true;
-            cell.textContent = original ? displayDate(original) : 'Sin fecha';
+            if (finished) return;
+            finished = true;
+            cell.textContent = displayDate(original);
         };
         const save = async () => {
-            if (settled) return;
+            if (finished) return;
             const value = input.value;
             if (value === original) {
                 restore();
                 return;
             }
-            settled = true;
             const values = {
-                start_date: field === 'start_date' ? value : wrapper.dataset.startDate,
-                end_date: field === 'end_date' ? value : wrapper.dataset.endDate
+                start_date: field === 'start_date' ? value : (wrapper.dataset.startDate || ''),
+                end_date: field === 'end_date' ? value : (wrapper.dataset.endDate || '')
             };
+            finished = true;
             try {
-                const payload = await sendInlineUpdate(wrapper.dataset.datesUrl, values);
+                const payload = await patch(wrapper.dataset.datesUrl, values);
                 wrapper.dataset.startDate = payload.start_date || '';
                 wrapper.dataset.endDate = payload.end_date || '';
-                const source = selectedCourseNode()?.querySelector('[data-editor-modality][data-modality-id="' + wrapper.dataset.modalityId + '"]');
-                if (source) {
-                    source.dataset.startDate = payload.start_date || '';
-                    source.dataset.endDate = payload.end_date || '';
-                }
                 wrapper.querySelectorAll('[data-inline-date]').forEach(dateNode => {
-                    dateNode.textContent = payload[dateNode.dataset.inlineDate]
-                        ? displayDate(payload[dateNode.dataset.inlineDate])
-                        : 'Sin fecha';
+                    const dateValue = payload[dateNode.dataset.inlineDate];
+                    dateNode.textContent = displayDate(dateValue || '');
                 });
-                updateSelectedTreeData();
+                syncCoursePeriod(wrapper.closest('[data-tree-course-item]'));
                 showFeedback(payload.message || 'Fechas actualizadas.');
             } catch (error) {
-                cell.textContent = original ? displayDate(original) : 'Sin fecha';
+                cell.textContent = displayDate(original);
                 showFeedback(error.message, true);
             }
         };
@@ -770,489 +1087,56 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
         input.addEventListener('blur', save, {once: true});
     };
 
-    const selectedGroupNode = () => selectedGroupId
-        ? document.querySelector('[data-tree-group-id="' + selectedGroupId + '"]')
-        : null;
-
-    const selectedCourseNode = () => selectedAssignmentId
-        ? document.querySelector('[data-assignment-id="' + selectedAssignmentId + '"]')
-        : null;
-
-    const updateSelectedTreeData = () => {
-        const course = selectedCourseNode();
-        if (!course) return;
-        const nameValue = editorFields.querySelector('[data-editor-field="name"] [data-editor-text]');
-        const codeValue = editorFields.querySelector('[data-editor-field="code"] [data-editor-text]');
-        if (nameValue) course.dataset.courseName = nameValue.dataset.value || '';
-        if (codeValue) course.dataset.courseCode = codeValue.dataset.value || '';
-    };
-
-    const selectGroup = groupNode => {
-        if (!groupNode) return;
-        selectedGroupId = groupNode.dataset.treeGroupId;
-        selectedAssignmentId = null;
-        document.querySelectorAll('.tree-structure-card .is-selected').forEach(node => node.classList.remove('is-selected'));
-        groupNode.closest('.workload-tree-group-shell')?.classList.add('is-selected');
-
-        editorKind.textContent = 'GRUPO';
-        editorTitle.textContent = 'Grupo ' + (groupNode.dataset.groupName || '');
-        editorDescription.textContent = 'Este grupo pertenece al ciclo seleccionado. Doble clic en el nombre para cambiarlo.';
-        editorFields.replaceChildren(
-            editorField('Nombre del grupo', groupNode.dataset.groupName, {
-                editable: true, url: groupNode.dataset.groupNameUrl, field: 'name', maxLength: 100
-            })
-        );
-        showEditor();
-    };
-
-    const makeModalityEditor = (course, source) => {
-        const type = source.dataset.type;
-        const exists = source.dataset.exists === '1';
-        const active = source.dataset.active === '1';
-        const wrapper = element('section', 'tree-editor-modality' + (exists && !active ? ' is-disabled' : ''));
-        const head = element('div', 'tree-editor-modality-head');
-        const title = element('div', 'tree-editor-modality-title');
-        const tag = element('span', 'tree-modality-tag ' + (type === 'TEC' ? 'is-tec' : 'is-tall'), type);
-        title.append(tag, element('span', '', type === 'TEC' ? 'Teoría' : 'Taller'));
-        head.append(title);
-
-        if (exists) {
-            const toggle = element('button', 'tree-modality-toggle ' + (active ? 'is-on' : 'is-off'));
-            toggle.type = 'button';
-            toggle.dataset.editorModalityToggle = '1';
-            toggle.dataset.modalityUrl = source.dataset.activeUrl;
-            toggle.dataset.active = active ? '1' : '0';
-            toggle.dataset.modalityId = source.dataset.modalityId;
-            toggle.dataset.assignmentId = course.dataset.assignmentId;
-            toggle.dataset.groupId = course.dataset.groupId;
-            toggle.setAttribute('aria-pressed', active ? 'true' : 'false');
-            toggle.append(element('span', 'tree-toggle-dot'));
-            toggle.append(element('span', 'tree-toggle-label', active ? 'Desactivar' : 'Activar'));
-            if (active) {
-                const other = [...course.querySelectorAll('[data-editor-modality]')]
-                    .filter(item => item.dataset.exists === '1' && item.dataset.active === '1').length;
-                if (other <= 1) {
-                    toggle.disabled = true;
-                    toggle.querySelector('.tree-toggle-label').textContent = 'Obligatoria';
-                    toggle.title = 'Debe quedar al menos una modalidad activa.';
-                }
-            }
-            head.append(toggle);
-
-            const fields = element('div', 'tree-editor-modality-fields');
-            const nrc = element('div', 'tree-editor-field');
-            nrc.append(element('label', '', 'NRC'));
-            const nrcValue = element('span', 'tree-editor-value' + (source.dataset.nrc ? '' : ' is-empty'), source.dataset.nrc || 'Doble clic para agregar');
-            nrcValue.dataset.inlineNrc = '1';
-            nrcValue.dataset.nrc = source.dataset.nrc || '';
-            nrcValue.dataset.nrcUrl = source.dataset.nrcUrl;
-            nrcValue.dataset.modalityId = source.dataset.modalityId || '';
-            nrcValue.title = 'Doble clic para editar NRC';
-            nrc.append(nrcValue);
-            fields.append(nrc);
-
-            const dates = element('div', 'tree-editor-field tree-editor-dates');
-            dates.append(element('label', '', 'Periodo'));
-            const dateValues = element('div', 'tree-editor-date-values');
-            dateValues.dataset.modalityDates = '1';
-            dateValues.dataset.datesUrl = source.dataset.datesUrl;
-            dateValues.dataset.modalityId = source.dataset.modalityId || '';
-            dateValues.dataset.startDate = source.dataset.startDate || '';
-            dateValues.dataset.endDate = source.dataset.endDate || '';
-            const start = element('span', 'tree-editor-value' + (source.dataset.startDate ? '' : ' is-empty'), displayDate(source.dataset.startDate));
-            start.dataset.inlineDate = 'start_date';
-            const end = element('span', 'tree-editor-value' + (source.dataset.endDate ? '' : ' is-empty'), displayDate(source.dataset.endDate));
-            end.dataset.inlineDate = 'end_date';
-            dateValues.append(start, element('span', 'tree-date-separator', '–'), end);
-            dates.append(dateValues);
-            fields.append(dates);
-            wrapper.append(head, fields);
-
-            const schedule = element('div', 'tree-editor-schedule');
-            schedule.append(element('span', '', source.dataset.scheduleLabel || 'Horario pendiente'));
-            if (active && source.dataset.modalityUrl) {
-                const link = element('a', 'btn btn-secondary btn-sm', 'Editar horario');
-                link.href = source.dataset.modalityUrl;
-                schedule.append(link);
-            } else {
-                schedule.append(element('span', 'tree-editor-hint', 'Se conserva su configuración.'));
-            }
-            wrapper.append(schedule);
-        } else {
-            head.append(element('span', 'tree-course-status is-pending', 'No agregada'));
-            const add = element('button', 'btn btn-secondary btn-sm', 'Agregar ' + type);
-            add.type = 'button';
-            add.dataset.addEditorModality = '1';
-            add.dataset.storeUrl = source.dataset.storeUrl;
-            add.dataset.type = type;
-            head.append(add);
-            wrapper.append(head, element('small', 'tree-editor-hint', 'Agrega este componente cuando lo necesites.'));
-        }
-
-        return wrapper;
-    };
-
-    const selectCourse = course => {
-        if (!course) return;
-        const groupNode = course.closest('.workload-tree-group-shell')?.querySelector('[data-tree-group-id]');
-        if (!groupNode) return;
-        selectedGroupId = groupNode.dataset.treeGroupId;
-        selectedAssignmentId = course.dataset.assignmentId;
-        document.querySelectorAll('.tree-structure-card .is-selected').forEach(node => node.classList.remove('is-selected'));
-        groupNode.closest('.workload-tree-group-shell')?.classList.add('is-selected');
-        course.classList.add('is-selected');
-
-        editorKind.textContent = 'CURSO';
-        editorTitle.textContent = course.dataset.courseName || 'Curso';
-        editorDescription.textContent = 'Doble clic en el nombre o código para editar. Activa los componentes que necesites; siempre debe quedar uno activo.';
-        editorFields.replaceChildren();
-
-        const identity = element('div', 'tree-editor-identity');
-        identity.append(
-            editorField('Nombre del curso', course.dataset.courseName, {
-                editable: true, url: course.dataset.courseNameUrl, field: 'name'
-            }),
-            editorField('Código institucional (opcional)', course.dataset.courseCode, {
-                editable: true, url: course.dataset.courseCodeUrl, field: 'code', maxLength: 80,
-                hint: 'Opcional. Si el curso se comparte con otros grupos, el cambio también se reflejará allí.'
-            })
-        );
-        editorFields.append(identity);
-
-        const sourceContainer = course.querySelector('[data-editor-modalities]');
-        const sources = sourceContainer ? [...sourceContainer.querySelectorAll('[data-editor-modality]')] : [];
-        const modalityList = element('div', 'tree-editor-modality-list');
-        modalityList.append(element('div', 'tree-editor-section-title', 'Componentes del curso'));
-        ['TEC', 'TALL'].forEach(type => {
-            const source = sources.find(item => item.dataset.type === type);
-            if (source) modalityList.append(makeModalityEditor(course, source));
-        });
-        editorFields.append(modalityList);
-
-        const remove = element('div', 'tree-editor-remove-course');
-        const removeButton = element('button', '', 'Retirar curso de este grupo');
-        removeButton.type = 'button';
-        removeButton.dataset.editorDeleteCourse = '1';
-        remove.append(removeButton);
-        editorFields.append(remove);
-        showEditor();
-    };
-
-    const bindTreeNodes = scope => {
-        scope.querySelectorAll('[data-tree-load]').forEach(node => {
-            if (node.dataset.treeBound === '1') return;
-            node.dataset.treeBound = '1';
-            node.addEventListener('toggle', () => {
-                node.classList.toggle('is-focused', node.open);
-                if (node.open) loadTreeNode(node);
-            });
-        });
-    };
-
-    const loadTreeNode = async (node, force = false) => {
-        if (!node || (!force && node.dataset.treeLoaded === '1') || node.dataset.treeLoading === '1') return;
-        const content = node.querySelector('[data-tree-content]');
-        if (!content) return;
-        node.dataset.treeLoading = '1';
-        content.innerHTML = '<div class="tree-loading-state">Cargando cursos…</div>';
-        const url = new URL(node.dataset.treeLoad, window.location.href);
-        const search = document.querySelector('.workload-tree-search [name="q"]');
-        if (search?.value.trim()) url.searchParams.set('q', search.value.trim());
-
-        try {
-            const response = await fetch(url.toString(), {
-                credentials: 'same-origin',
-                headers: {'X-Requested-With': 'XMLHttpRequest', 'Accept': 'text/html'}
-            });
-            if (!response.ok || response.redirected) throw new Error('No se pudieron cargar los cursos.');
-            content.innerHTML = await response.text();
-            node.dataset.treeLoaded = '1';
-        } catch (error) {
-            content.innerHTML = '<div class="tree-load-error">' + error.message + '</div>';
-            node.dataset.treeLoaded = '0';
-        } finally {
-            node.dataset.treeLoading = '0';
-        }
-    };
-
-    const refreshGroup = async (groupId, assignmentId = null) => {
-        const groupNode = document.querySelector('[data-tree-group-id="' + groupId + '"]');
-        if (!groupNode) return null;
-        groupNode.open = true;
-        groupNode.dataset.treeLoaded = '0';
-        await loadTreeNode(groupNode, true);
-        const course = assignmentId
-            ? groupNode.querySelector('[data-assignment-id="' + assignmentId + '"]')
-            : null;
-        if (course) selectCourse(course);
-        return course;
-    };
-
-    document.addEventListener('click', event => {
-        const groupSummary = event.target.closest('[data-select-group]');
-        if (groupSummary) {
-            const groupNode = groupSummary.closest('[data-tree-group-id]');
-            if (groupNode) selectGroup(groupNode);
-            return;
-        }
-
-        const courseButton = event.target.closest('[data-select-course]');
-        if (courseButton) {
-            const course = courseButton.closest('[data-tree-course-item]');
-            if (course) selectCourse(course);
-            return;
-        }
-
-        const toggleGroupDelete = event.target.closest('[data-toggle-group-delete]');
-        if (toggleGroupDelete) {
-            const confirm = toggleGroupDelete.closest('.workload-tree-group-children')?.querySelector('[data-group-delete-confirm]');
-            if (confirm) confirm.hidden = !confirm.hidden;
-            return;
-        }
-
-        const toggleCourseDelete = event.target.closest('[data-toggle-course-delete]');
-        if (toggleCourseDelete) {
-            const confirm = toggleCourseDelete.closest('[data-tree-course-item]')?.querySelector('[data-course-delete-confirm]');
-            if (confirm) confirm.hidden = !confirm.hidden;
-            return;
-        }
-
-        const cancel = event.target.closest('[data-inline-cancel]');
-        if (cancel) {
-            cancel.closest('.tree-delete-confirm')?.setAttribute('hidden', '');
-            return;
-        }
-
-        const editorDelete = event.target.closest('[data-editor-delete-course]');
-        if (editorDelete) {
-            const source = selectedCourseNode();
-            const deleteForm = source?.querySelector('[data-tree-delete-course]');
-            const confirm = source?.querySelector('[data-course-delete-confirm]');
-            if (confirm) {
-                confirm.hidden = false;
-                confirm.scrollIntoView({behavior: 'smooth', block: 'nearest'});
-            }
-            return;
-        }
-
-        const addModality = event.target.closest('[data-add-editor-modality]');
-        if (addModality) {
-            const button = addModality;
-            button.disabled = true;
-            button.textContent = 'Agregando…';
-            sendPost(button.dataset.storeUrl)
-                .then(async payload => {
-                    const courseId = selectedAssignmentId;
-                    const groupId = selectedGroupId;
-                    await refreshGroup(groupId, courseId);
-                    showFeedback(payload.message || 'Componente agregado.');
-                })
-                .catch(error => {
-                    button.disabled = false;
-                    button.textContent = 'Agregar ' + button.dataset.type;
-                    showFeedback(error.message, true);
-                });
-            return;
-        }
-
-        const toggleModality = event.target.closest('[data-editor-modality-toggle]');
-        if (toggleModality) {
-            const button = toggleModality;
-            const currentlyActive = button.dataset.active === '1';
-            button.disabled = true;
-            button.querySelector('.tree-toggle-label').textContent = 'Guardando…';
-            sendInlineUpdate(button.dataset.modalityUrl, {active: currentlyActive ? 0 : 1})
-                .then(async payload => {
-                    const groupId = button.dataset.groupId;
-                    const assignmentId = button.dataset.assignmentId;
-                    await refreshGroup(groupId, assignmentId);
-                    showFeedback(payload.message || 'Modalidad actualizada.', Boolean(payload.warning));
-                })
-                .catch(error => {
-                    button.disabled = false;
-                    button.querySelector('.tree-toggle-label').textContent = currentlyActive ? 'Desactivar' : 'Activar';
-                    showFeedback(error.message, true);
-                });
-            return;
-        }
-    });
-
-    document.addEventListener('submit', async event => {
-        const courseForm = event.target.closest('[data-tree-course-form]');
-        if (courseForm) {
-            event.preventDefault();
-            const submit = courseForm.querySelector('[data-course-submit]');
-            const errorBox = courseForm.querySelector('[data-course-form-error]');
-            if (errorBox) {
-                errorBox.hidden = true;
-                errorBox.textContent = '';
-            }
-            if (submit) {
-                submit.disabled = true;
-                submit.textContent = 'Creando…';
-            }
-            try {
-                const payload = await sendPost(courseForm.action, new FormData(courseForm));
-                courseForm.reset();
-                const groupId = courseForm.dataset.groupId;
-                await refreshGroup(groupId, payload.assignment_id);
-                const groupNode = document.querySelector('[data-tree-group-id="' + groupId + '"]');
-                const count = groupNode?.querySelector('[data-group-course-count]');
-                if (count) count.textContent = payload.assignments_count;
-                showFeedback(payload.message || 'Curso creado.');
-            } catch (error) {
-                if (errorBox) {
-                    errorBox.textContent = error.message;
-                    errorBox.hidden = false;
-                }
-            } finally {
-                if (submit) {
-                    submit.disabled = false;
-                    submit.textContent = 'Crear curso';
-                }
-            }
-            return;
-        }
-
-        const groupDelete = event.target.closest('[data-tree-delete-group]');
-        if (groupDelete) {
-            event.preventDefault();
-            const submit = groupDelete.querySelector('[type="submit"]');
-            const shell = groupDelete.closest('[data-group-shell]');
-            if (submit) {
-                submit.disabled = true;
-                submit.textContent = 'Eliminando…';
-            }
-            try {
-                const payload = await sendPost(groupDelete.action, new FormData(groupDelete));
-                shell?.remove();
-                const total = document.querySelector('[data-tree-group-total]');
-                const remainingVisible = document.querySelectorAll('[data-group-shell]').length;
-                const remainingTotal = Number(payload.remaining_groups || 0);
-                if (total) total.textContent = remainingTotal + ' grupos';
-                if (remainingVisible === 0) {
-                    const message = remainingTotal > 0
-                        ? 'No hay grupos que coincidan con esta búsqueda.'
-                        : 'No quedan grupos en este ciclo.';
-                    document.querySelector('.workload-tree-root').innerHTML = '<div class="tree-empty-child">' + message + '</div>';
-                }
-                clearEditor();
-                document.querySelectorAll('[data-toggle-group-delete]').forEach(button => {
-                    button.disabled = remainingTotal <= 1;
-                    const label = button.querySelector('[data-group-delete-label]');
-                    if (label) label.textContent = button.disabled ? 'Único grupo' : 'Eliminar grupo';
-                });
-                document.querySelectorAll('[data-group-delete-confirm] button[type="submit"]').forEach(button => {
-                    button.disabled = remainingTotal <= 1;
-                });
-                showFeedback(payload.message || 'Grupo eliminado.');
-            } catch (error) {
-                if (submit) {
-                    submit.disabled = false;
-                    submit.textContent = 'Confirmar';
-                }
-                showFeedback(error.message, true);
-            }
-            return;
-        }
-
-        const courseDelete = event.target.closest('[data-tree-delete-course]');
-        if (courseDelete) {
-            event.preventDefault();
-            const submit = courseDelete.querySelector('[type="submit"]');
-            const course = courseDelete.closest('[data-tree-course-item]');
-            const groupNode = courseDelete.closest('[data-tree-group-id]');
-            const groupId = groupNode?.dataset.treeGroupId || selectedGroupId;
-            if (submit) {
-                submit.disabled = true;
-                submit.textContent = 'Retirando…';
-            }
-            try {
-                const payload = await sendPost(courseDelete.action, new FormData(courseDelete));
-                course?.remove();
-                const actualGroup = document.querySelector('[data-tree-group-id="' + groupId + '"]');
-                const count = actualGroup?.querySelector('[data-group-course-count]');
-                if (count) count.textContent = payload.assignments_count;
-                clearEditor();
-                showFeedback(payload.message || 'Curso retirado.');
-            } catch (error) {
-                if (submit) {
-                    submit.disabled = false;
-                    submit.textContent = 'Confirmar';
-                }
-                showFeedback(error.message, true);
-            }
-        }
-    });
-
     document.addEventListener('dblclick', event => {
-        const editable = event.target.closest('[data-editor-text]');
+        const editable = event.target.closest('[data-inline-text]');
         if (editable) {
-            const config = {
-                value: editable.dataset.value || '',
-                url: editable.dataset.url,
-                field: editable.dataset.field,
-                label: editable.dataset.label,
-                maxLength: Number(editable.dataset.maxLength || 255),
-                restore: value => {
-                    editable.textContent = value || 'Sin código';
-                    editable.dataset.value = value;
-                },
-                success: payload => {
-                    const field = editable.dataset.field;
-                    editable.dataset.value = field === 'name' ? payload.name : (payload.code ?? '');
-                    editable.textContent = editable.dataset.value || 'Sin código';
-                    const groupNode = selectedGroupNode();
-                    const course = selectedCourseNode();
-
-                    if (selectedAssignmentId && course) {
-                        const sharedCourses = document.querySelectorAll('[data-course-id="' + course.dataset.courseId + '"]');
-                        sharedCourses.forEach(sharedCourse => {
-                            if (field === 'name') {
-                                sharedCourse.dataset.courseName = payload.name;
-                                const nameNode = sharedCourse.querySelector('[data-select-course] .tree-node-copy strong');
-                                if (nameNode) nameNode.textContent = payload.name;
-                                const confirmName = sharedCourse.querySelector('.tree-course-delete-confirm p strong');
-                                if (confirmName) confirmName.textContent = '¿Retirar ' + payload.name + ' de este grupo?';
-                            } else {
-                                sharedCourse.dataset.courseCode = payload.code || '';
-                                const codeNode = sharedCourse.querySelector('[data-select-course] .tree-node-copy small');
-                                if (codeNode) codeNode.textContent = payload.code || 'Código opcional';
-                            }
-                        });
-                        if (field === 'name') editorTitle.textContent = payload.name;
-                    } else if (groupNode && field === 'name') {
-                        groupNode.dataset.groupName = payload.name;
-                        groupNode.dataset.groupLabel = 'Grupo ' + payload.name;
-                        groupNode.querySelector('[data-select-group] .tree-node-copy strong').textContent = 'Grupo ' + payload.name;
-                        editorTitle.textContent = 'Grupo ' + payload.name;
+            event.preventDefault();
+            event.stopPropagation();
+            const group = editable.closest('[data-tree-group-id]');
+            const course = editable.closest('[data-tree-course-item]');
+            const field = editable.dataset.editField;
+            const kind = editable.dataset.editKind;
+            startTextEditor(editable, {
+                value: editable.dataset.editValue || '',
+                url: editable.dataset.editUrl,
+                field,
+                label: editable.dataset.editLabel,
+                maxLength: field === 'code' ? 80 : 255,
+                emptyLabel: field === 'code' ? 'Código pendiente (doble clic para agregar)' : '',
+                onSaved: (saved) => {
+                    if (kind === 'group') {
+                        if (group) {
+                            group.dataset.groupName = saved;
+                            group.dataset.groupLabel = 'Grupo ' + saved;
+                        }
+                    } else if (course) {
+                        course.dataset[field === 'name' ? 'courseName' : 'courseCode'] = saved || '';
+                        if (kind === 'course-name') {
+                            const title = course.querySelector('.tree-course-delete-confirm p strong');
+                            if (title) title.textContent = '¿Retirar ' + saved + ' de este grupo? Se retirarán sus modalidades y horarios del grupo. El historial curricular se conserva.';
+                        }
                     }
                 }
-            };
-            startTextEditor(editable, config);
+            });
             return;
         }
 
         const nrc = event.target.closest('[data-inline-nrc]');
         if (nrc) {
+            event.preventDefault();
+            event.stopPropagation();
             startNrcEditor(nrc);
             return;
         }
 
         const date = event.target.closest('[data-inline-date]');
         if (date) {
+            event.preventDefault();
+            event.stopPropagation();
             const wrapper = date.closest('[data-modality-dates]');
             if (wrapper) startDateEditor(date, wrapper);
         }
     });
-
-    document.querySelectorAll('[data-tree-load]').forEach(node => {
-        node.addEventListener('toggle', () => {
-            if (node.open) loadTreeNode(node);
-        });
-    });
-
-    // Deep-link access may request a group editor without expanding it automatically.
 })();
 </script>
 @endpush
