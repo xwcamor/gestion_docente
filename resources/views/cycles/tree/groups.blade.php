@@ -23,7 +23,7 @@
                 <span class="tree-node-copy">
                     <strong><span data-inline-text data-edit-field="name" data-edit-label="Nombre del grupo" data-edit-url="{{ route('groups.update', $group) }}" data-edit-value="{{ $group->name }}" data-edit-kind="group">{{ $group->name }}</span></strong>
                     <small>
-                        <span class="tree-meta-item">Código: <span data-inline-text data-edit-field="code" data-edit-label="Código del grupo" data-edit-url="{{ route('groups.update', $group) }}" data-edit-value="{{ $group->code }}" data-edit-kind="group-code">{{ $group->code ?: 'Código pendiente (doble clic para agregar)' }}</span></span>
+                        <span class="tree-meta-item">Código: <span data-inline-text data-edit-on-click data-edit-field="code" data-edit-kind="group-code" data-edit-label="Código del grupo" data-edit-url="{{ route('groups.update', $group) }}" data-edit-value="{{ $group->code }}" data-edit-kind="group-code">{{ $group->code ?: 'Código pendiente (doble clic para agregar)' }}</span></span>
                         <span class="tree-meta-separator">·</span>
                         <span><span data-group-course-count>{{ $group->assignments_count }}</span> cursos</span>
                         <span class="tree-meta-separator">·</span>
@@ -31,9 +31,9 @@
                     </small>
                     <small>
                         <x-icon name="graduation-cap" size="13" />
-                        Carrera: {{ $cycle->career ?: 'Pendiente' }}
+                        Carrera: <span data-cycle-career-display>{{ $cycle->career ?: 'Pendiente' }}</span>
                         <span class="tree-meta-separator">·</span>
-                        Semestre: {{ $cycle->semester ?: '—' }}
+                        Semestre: <span data-cycle-semester-display>{{ $cycle->semester ?: '—' }}</span>
                     </small>
                     <small>
                         <x-icon name="clock" size="13" />
