@@ -36,13 +36,13 @@
                 </details>
 
                 <details class="tree-course-action-inline tree-course-remove">
-                    <summary><x-icon name="trash-2" size="13" /> Eliminar</summary>
+                    <summary><x-icon name="x" size="13" /> Eliminar</summary>
                     <div class="tree-remove-confirm">
                         <p>Se retirará este curso de este grupo y sus modalidades. El historial curricular se conservará.</p>
                         <form method="POST" action="{{ route('assignments.destroy', $assignment) }}" data-tree-delete-course>
                             @csrf
                             @method('DELETE')
-                            <button class="btn btn-danger btn-sm" type="submit"><x-icon name="trash-2" /> Confirmar retiro</button>
+                            <button class="btn btn-danger btn-sm" type="submit"><x-icon name="x" /> Confirmar retiro</button>
                             <button class="btn btn-ghost btn-sm" type="button" data-inline-cancel>Cancelar</button>
                         </form>
                     </div>
