@@ -313,19 +313,22 @@ class WorkloadTreeController extends Controller
             'end_date' => ['nullable', 'date'],
         ]);
 
-        $startDate = $data['start_date'] ?? null;
-        $endDate = $data['end_date'] ?? null;
+        // Permite guardar inicio y fin por separado. Si el cliente no envía uno
+        // de los campos, conserva su valor actual.
+        $startDate = array_key_exists('start_date', $data)
+            ? ($data['start_date'] ?: null)
+            : $modality->start_date?->toDateString();
+        $endDate = array_key_exists('end_date', $data)
+            ? ($data['end_date'] ?: null)
+            : $modality->end_date?->toDateString();
 
-        if (filled($startDate) xor filled($endDate)) {
-            throw ValidationException::withMessages([
-                'start_date' => 'Para guardar el periodo debes completar ambas fechas.',
-                'end_date' => 'Para guardar el periodo debes completar ambas fechas.',
-            ]);
-        }
+        $hasSessions = $modality->sessions()->exists();
+        $clearsExistingDate = (!$startDate && $modality->start_date)
+            || (!$endDate && $modality->end_date);
 
-        if (!$startDate && !$endDate && $modality->sessions()->exists()) {
+        if ($hasSessions && $clearsExistingDate) {
             throw ValidationException::withMessages([
-                'start_date' => 'Esta modalidad ya tiene sesiones generadas. No borres las fechas desde aquí; modifica el periodo y recalcula el calendario.',
+                'start_date' => 'Esta modalidad ya tiene sesiones generadas. No borres una fecha desde aquí; modifica el periodo y recalcula el calendario.',
             ]);
         }
 
@@ -352,11 +355,18 @@ class WorkloadTreeController extends Controller
             }
         }
 
+        $hasClassSchedule = $modality->schedules()->where('block_type', 'CLASS')->exists();
+        $pendingMessage = !$startDate && !$endDate
+            ? 'Fechas guardadas. Completa inicio y fin para generar el calendario.'
+            : (!$startDate
+                ? 'Fecha guardada. Falta la fecha de inicio para generar el calendario.'
+                : (!$endDate
+                    ? 'Fecha guardada. Falta la fecha de fin para generar el calendario.'
+                    : 'Fechas guardadas. Agrega un horario para generar el calendario.'));
+
         return response()->json([
             'message' => $calendarWarning
-                ?: ($calendarUpdated
-                    ? 'Fechas guardadas y calendario actualizado.'
-                    : 'Fechas guardadas. El calendario se generará cuando exista un horario completo.'),
+                ?: ($calendarUpdated ? 'Fechas guardadas y calendario actualizado.' : $pendingMessage),
             'start_date' => $modality->start_date?->toDateString(),
             'end_date' => $modality->end_date?->toDateString(),
             'calendar_updated' => $calendarUpdated,
