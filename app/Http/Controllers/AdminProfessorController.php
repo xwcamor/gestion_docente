@@ -274,13 +274,16 @@ class AdminProfessorController extends Controller
         abort_if($user->id === $request->user()->id, 422, 'No puedes eliminar tu propia cuenta.');
 
         $professor = $user->professor;
-        $hasAcademicData = $professor && (
+        $hasAcademicData = ($professor && (
             $professor->cycles()->exists()
             || $professor->groups()->exists()
             || $professor->courses()->exists()
             || $professor->holidays()->exists()
             || $professor->fiveMinuteTalkTopics()->exists()
-        );
+            || DB::table('students')->where('professor_id', $professor->id)->exists()
+        ))
+            || DB::table('generated_documents')->where('generated_by', $user->id)->exists()
+            || DB::table('import_batches')->where('user_id', $user->id)->exists();
 
         if ($hasAcademicData) {
             return back()->with('error', 'No se eliminó la cuenta porque tiene historial académico. Desactívala para retirar el acceso sin perder sus registros.');
