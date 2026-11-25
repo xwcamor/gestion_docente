@@ -374,8 +374,9 @@ class WorkloadTreeController extends Controller
         ]);
 
         $active = (bool) $data['active'];
+        $switchedToModalityId = null;
 
-        DB::transaction(function () use ($modality, $active) {
+        DB::transaction(function () use ($modality, $active, &$switchedToModalityId) {
             $assignment = CourseAssignment::query()
                 ->whereKey($modality->course_assignment_id)
                 ->lockForUpdate()
@@ -390,37 +391,62 @@ class WorkloadTreeController extends Controller
                 $activeCount = $assignment->modalities()->where('active', true)->count();
 
                 if ($activeCount <= 1) {
-                    throw ValidationException::withMessages([
-                        'active' => 'Cada curso debe conservar al menos una modalidad activa. Activa TEC o TAL antes de deshabilitar esta.',
-                    ]);
+                    // Si existe el otro componente, cambiar de TEC a TAL (o viceversa)
+                    // en una sola transacción; nunca se deja el curso sin componente activo.
+                    $replacement = $assignment->modalities()
+                        ->where('id', '<>', $lockedModality->id)
+                        ->where('active', false)
+                        ->lockForUpdate()
+                        ->first();
+
+                    if (!$replacement) {
+                        throw ValidationException::withMessages([
+                            'active' => 'El curso debe conservar al menos un componente activo. Agrega o activa el otro componente antes de desactivar este.',
+                        ]);
+                    }
+
+                    $replacement->update(['active' => true]);
+                    $switchedToModalityId = $replacement->id;
                 }
             }
 
             $lockedModality->update(['active' => $active]);
         });
 
+        $calendarTarget = $active
+            ? $modality->fresh()
+            : ($switchedToModalityId ? CourseModality::query()->find($switchedToModalityId) : null);
+
         $warning = null;
         $calendarUpdated = false;
 
-        if ($active && $modality->start_date && $modality->end_date
-            && $modality->schedules()->where('block_type', 'CLASS')->exists()) {
+        if ($calendarTarget && $calendarTarget->active && $calendarTarget->start_date && $calendarTarget->end_date
+            && $calendarTarget->schedules()->where('block_type', 'CLASS')->exists()) {
             try {
-                $calendar->rebuild($modality->fresh());
+                $calendar->rebuild($calendarTarget);
                 $calendarUpdated = true;
             } catch (\Throwable $exception) {
                 report($exception);
-                $warning = 'La modalidad se activó, pero el calendario no pudo recalcularse. Revisa sus fechas y horario.';
+                $warning = 'El componente cambió de estado, pero el calendario no pudo recalcularse. Revisa sus fechas y horario.';
             }
         }
 
         $activeCount = $modality->assignment->modalities()->where('active', true)->count();
+        $switchedTo = $switchedToModalityId
+            ? CourseModality::query()->whereKey($switchedToModalityId)->value('modality')
+            : null;
 
         return response()->json([
-            'message' => $warning ?: ($active
-                ? ($calendarUpdated ? 'Modalidad activada y calendario actualizado.' : 'Modalidad activada.')
-                : 'Modalidad desactivada. Se conservaron su NRC, fechas, horarios e historial.'),
+            'message' => $warning ?: (
+                $switchedTo
+                    ? 'Cambio realizado: ahora está activo '.($switchedTo === 'TEC' ? 'TEC (Teoría)' : 'TAL (Taller)').'.'
+                    : ($active
+                        ? ($calendarUpdated ? 'Componente activado y calendario actualizado.' : 'Componente activado.')
+                        : 'Componente desactivado. Se conservaron su NRC, fechas, horarios e historial.')
+            ),
             'active' => $active,
             'active_count' => $activeCount,
+            'switched_to' => $switchedTo,
             'warning' => $warning,
         ]);
     }
