@@ -8,6 +8,7 @@ use App\Models\ModalitySchedule;
 use App\Models\GeneratedDocument;
 use App\Models\ImportBatch;
 use App\Services\AuditLogger;
+use App\Services\GroupStarterCourseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -74,7 +75,7 @@ class CycleController extends Controller
         return redirect()->route('cycles.index', ['nuevo' => 1]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request, GroupStarterCourseService $starterCourses)
     {
         $professorId = auth()->user()->professor->id;
         $request->merge([
@@ -92,13 +93,14 @@ class CycleController extends Controller
         $groupName = $data['group_name'];
         unset($data['group_name']);
 
-        $cycle = DB::transaction(function () use ($data, $professorId, $groupName) {
+        $cycle = DB::transaction(function () use ($data, $professorId, $groupName, $starterCourses) {
             $cycle = Cycle::create([...$data, 'professor_id' => $professorId]);
 
-            $cycle->groups()->create([
+            $group = $cycle->groups()->create([
                 'professor_id' => $professorId,
                 'name' => $groupName,
             ]);
+            $starterCourses->ensure($group);
 
             return $cycle;
         });
