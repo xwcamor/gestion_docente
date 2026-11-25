@@ -103,8 +103,27 @@ class CourseAssignmentController extends Controller
 
         $courseId = (int) $assignment->course_id;
 
-        DB::transaction(function () use ($assignment, $courseId) {
-            $assignment->delete();
+        DB::transaction(function () use ($assignment, $group, $courseId) {
+            // El bloqueo del grupo evita que dos solicitudes concurrentes retiren
+            // el último curso al mismo tiempo.
+            $lockedGroup = TeachingGroup::query()
+                ->whereKey($group->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $lockedAssignment = CourseAssignment::query()
+                ->whereKey($assignment->id)
+                ->where('teaching_group_id', $lockedGroup->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($lockedGroup->assignments()->count() <= 1) {
+                throw ValidationException::withMessages([
+                    'course' => 'Cada grupo debe conservar al menos un curso. Agrega otro curso antes de retirar este.',
+                ]);
+            }
+
+            $lockedAssignment->delete();
 
             // La malla pertenece al curso del catálogo y se conserva como historial.
             // Si ya no queda ninguna asignación del curso en ningún grupo, se archiva
