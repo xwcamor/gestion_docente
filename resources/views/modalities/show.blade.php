@@ -17,6 +17,7 @@
                 $schedule->end_time,
                 $schedule->classroom ?? '',
                 $schedule->instruction_type ?? 'THEORY',
+                $schedule->repeat_interval_weeks ?? 1,
             ]))
             ->map(fn ($blocks) => [
                 'days' => $blocks->pluck('day_of_week')->map(fn ($day) => (int) $day)->unique()->sort()->values()->all(),
@@ -24,6 +25,7 @@
                 'end_time' => substr($blocks->first()->end_time, 0, 5),
                 'classroom' => $blocks->first()->classroom,
                 'instruction_type' => $blocks->first()->instruction_type ?? 'THEORY',
+                'repeat_interval_weeks' => (int) ($blocks->first()->repeat_interval_weeks ?? 1),
             ])->values()->all();
     } else {
         $scheduleRows = array_map(function ($row) {
@@ -32,7 +34,7 @@
         }, $scheduleRows);
     }
     if (!$scheduleRows) {
-        $scheduleRows = [['days' => [], 'start_time' => '', 'end_time' => '', 'classroom' => '', 'instruction_type' => 'THEORY']];
+        $scheduleRows = [['days' => [], 'start_time' => '', 'end_time' => '', 'classroom' => '', 'instruction_type' => 'THEORY', 'repeat_interval_weeks' => 1]];
     }
 @endphp
 <details class="card modality-section" id="calendar" @if($errors->any()) open @endif>
@@ -56,7 +58,7 @@
                         <span class="modality-day-chip">
                             <b>{{ $dayLabel }}</b>
                             @foreach($schedulesByDay->get($day) as $schedule)
-                                <small>{{ substr($schedule->start_time, 0, 5) }}–{{ substr($schedule->end_time, 0, 5) }} · {{ ($schedule->instruction_type ?? 'THEORY') === 'LAB' ? 'Lab.' : 'Teoría' }}</small>
+                                <small>{{ substr($schedule->start_time, 0, 5) }}–{{ substr($schedule->end_time, 0, 5) }} · {{ ($schedule->instruction_type ?? 'THEORY') === 'LAB' ? 'Lab.' : 'Teoría' }}@if(($schedule->repeat_interval_weeks ?? 1) > 1) · cada {{ $schedule->repeat_interval_weeks }} sem.@endif</small>
                             @endforeach
                         </span>
                     @endif
@@ -98,6 +100,14 @@
                                 <select class="field" id="schedule-type-{{ $index }}" name="schedules[{{ $index }}][instruction_type]" data-schedule-input>
                                     <option value="THEORY" @selected(($scheduleRow['instruction_type'] ?? 'THEORY') === 'THEORY')>Teoría</option>
                                     <option value="LAB" @selected(($scheduleRow['instruction_type'] ?? 'THEORY') === 'LAB')>Laboratorio</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="schedule-interval-{{ $index }}">Repetir cada</label>
+                                <select class="field" id="schedule-interval-{{ $index }}" name="schedules[{{ $index }}][repeat_interval_weeks]" data-schedule-input>
+                                    @foreach([1 => '1 semana', 2 => '2 semanas', 3 => '3 semanas', 4 => '4 semanas'] as $interval => $label)
+                                        <option value="{{ $interval }}" @selected((int) ($scheduleRow['repeat_interval_weeks'] ?? 1) === $interval)>{{ $label }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                             <div>
@@ -311,7 +321,7 @@
 .schedule-editor-heading h3{margin:0 0 2px}
 .schedule-editor-heading .help{margin:0}
 .schedule-editor{display:grid;gap:6px}
-.schedule-row{display:grid;grid-template-columns:minmax(300px,1.7fr) minmax(125px,.8fr) minmax(110px,.7fr) minmax(110px,.7fr) minmax(145px,1fr) auto;align-items:end;gap:7px;padding:8px;border:1px solid #e0e8e5;border-radius:8px;background:#fbfcfb}
+.schedule-row{display:grid;grid-template-columns:minmax(260px,1.6fr) minmax(112px,.8fr) minmax(105px,.75fr) minmax(105px,.75fr) minmax(105px,.75fr) minmax(140px,1fr) auto;align-items:end;gap:7px;padding:8px;border:1px solid #e0e8e5;border-radius:8px;background:#fbfcfb}
 .schedule-days-field{min-width:0}
 .schedule-days-options{display:flex;align-items:center;flex-wrap:wrap;gap:4px}
 .schedule-days-options .weekday{margin:0;padding:4px 5px;font-size:9px}
@@ -441,7 +451,8 @@ html[data-theme="dark"] .modality-section-icon{background:#24343b}
         const [sh,sm] = start.split(':').map(Number);
         const [eh,em] = end.split(':').map(Number);
         const minutes = (eh*60+em)-(sh*60+sm);
-        return days.map(day => ({day,start,end,minutes}));
+        const interval = Math.max(1, Number(row.querySelector('[name$="[repeat_interval_weeks]"]')?.value || 1));
+        return days.map(day => ({day,start,end,minutes,interval}));
     });
 
     const rowTemplate = index => `
@@ -456,6 +467,7 @@ html[data-theme="dark"] .modality-section-icon{background:#24343b}
                 <label class="weekday"><input type="checkbox" name="schedules[${index}][days][]" value="7" data-schedule-input data-schedule-day> Dom</label>
             </div></div>
             <div><label for="schedule-type-${index}">Tipo</label><select class="field" id="schedule-type-${index}" name="schedules[${index}][instruction_type]" data-schedule-input><option value="THEORY">Teoría</option><option value="LAB">Laboratorio</option></select></div>
+            <div><label for="schedule-interval-${index}">Repetir cada</label><select class="field" id="schedule-interval-${index}" name="schedules[${index}][repeat_interval_weeks]" data-schedule-input><option value="1">1 semana</option><option value="2">2 semanas</option><option value="3">3 semanas</option><option value="4">4 semanas</option></select></div>
             <div><label for="schedule-start-${index}">Desde</label><input class="field" id="schedule-start-${index}" type="time" step="900" name="schedules[${index}][start_time]" data-schedule-input data-schedule-start></div>
             <div><label for="schedule-end-${index}">Hasta</label><input class="field" id="schedule-end-${index}" type="time" step="900" name="schedules[${index}][end_time]" data-schedule-input data-schedule-end></div>
             <div><label for="schedule-room-${index}">Aula / ambiente</label><input class="field" id="schedule-room-${index}" name="schedules[${index}][classroom]" maxlength="100" placeholder="Ej. LAB 103" data-schedule-input></div>
@@ -486,7 +498,7 @@ html[data-theme="dark"] .modality-section-icon{background:#24343b}
         const from = parse(startInput.value);
         const to = parse(endInput.value);
         const currentBlocks = blocks();
-        const weeklyMinutes = currentBlocks.reduce((sum, block) => sum + block.minutes, 0);
+        const weeklyMinutes = currentBlocks.reduce((sum, block) => sum + (block.minutes / block.interval), 0);
         weeklyLive.textContent = formatHours(weeklyMinutes);
         weeklyPreview.textContent = formatHours(weeklyMinutes);
 
@@ -504,7 +516,15 @@ html[data-theme="dark"] .modality-section-icon{background:#24343b}
         while (cursor <= to) {
             const key = dateKey(cursor);
             const day = cursor.getDay() === 0 ? 7 : cursor.getDay();
-            const dayBlocks = currentBlocks.filter(block => block.day === day);
+            const dayBlocks = currentBlocks.filter(block => {
+                if (block.day !== day) return false;
+                const firstOccurrence = new Date(from);
+                while ((firstOccurrence.getDay() === 0 ? 7 : firstOccurrence.getDay()) !== block.day) {
+                    firstOccurrence.setDate(firstOccurrence.getDate() + 1);
+                }
+                const weeksSinceFirst = Math.floor((cursor.getTime() - firstOccurrence.getTime()) / (7 * 86400000));
+                return weeksSinceFirst >= 0 && weeksSinceFirst % block.interval === 0;
+            });
             if (dayBlocks.length) {
                 if (holidays.has(key)) excluded.set(key,{date:new Date(cursor),name:holidays.get(key),blocks:dayBlocks.length});
                 else { scheduledDates.set(key,{date:new Date(cursor),blocks:dayBlocks.length}); sessions += dayBlocks.length; }
@@ -548,7 +568,15 @@ html[data-theme="dark"] .modality-section-icon{background:#24343b}
 
         const endKey = dateKey(to);
         const endDay = to.getDay() === 0 ? 7 : to.getDay();
-        const endIsClassDay = currentBlocks.some(block => block.day === endDay) && !holidays.has(endKey);
+        const endIsClassDay = currentBlocks.some(block => {
+            if (block.day !== endDay) return false;
+            const firstOccurrence = new Date(from);
+            while ((firstOccurrence.getDay() === 0 ? 7 : firstOccurrence.getDay()) !== block.day) {
+                firstOccurrence.setDate(firstOccurrence.getDate() + 1);
+            }
+            const weeksSinceFirst = Math.floor((to.getTime() - firstOccurrence.getTime()) / (7 * 86400000));
+            return weeksSinceFirst >= 0 && weeksSinceFirst % block.interval === 0;
+        }) && !holidays.has(endKey);
         note.textContent = sessions+' bloques dentro del rango; '+excludedDates.length+' fecha(s) feriada(s) excluida(s).'
             +(!endIsClassDay && lastTeachingDate ? ' La fecha final no es lectiva: la última clase efectiva será '+fmt(lastTeachingDate)+'.' : '');
         adjust.disabled = !lastTeachingDate || lastTeachingDate.getTime() === to.getTime();
