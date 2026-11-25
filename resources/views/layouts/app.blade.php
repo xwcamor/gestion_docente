@@ -1094,6 +1094,46 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
         @media(max-width:720px){
             .app-shell{margin-top:54px}
         }
+        @media(max-width:520px){
+            .topbar{height:54px;padding:0 8px;gap:7px}
+            .brand{flex:1;gap:7px;min-width:0;font-size:11px}
+            .brand-mark{width:28px;height:28px}
+            .brand small{display:none}
+            .top-actions{flex:none;gap:4px}
+            .top-sidebar-toggle,.top-theme-toggle{
+                display:grid;
+                place-items:center;
+                width:31px;
+                min-width:31px;
+                height:31px;
+                min-height:31px;
+                padding:5px;
+            }
+            .top-sidebar-toggle span,.top-theme-toggle span{display:none}
+            .top-user{display:none}
+            .top-help{
+                display:grid;
+                place-items:center;
+                width:31px;
+                height:31px;
+                padding:5px;
+                font-size:0;
+            }
+            .top-help .icon{width:16px;height:16px}
+            .top-actions form{flex:none;margin:0}
+            .top-actions .logout{
+                display:grid;
+                place-items:center;
+                width:31px;
+                min-height:31px;
+                height:31px;
+                padding:5px;
+                gap:0;
+                font-size:0;
+            }
+            .top-actions .logout .icon{width:16px;height:16px}
+            .app-shell{margin-top:54px}
+        }
 
 </style>
 </head>
