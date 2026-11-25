@@ -38,6 +38,7 @@ Route::middleware(['auth', 'professor'])->group(function () {
     Route::get('/arbol/grupos/{group}/cursos', [WorkloadTreeController::class, 'courses'])->name('workload-tree.courses');
     Route::get('/arbol/asignaciones/{assignment}/modalidades', [WorkloadTreeController::class, 'modalities'])->name('workload-tree.modalities');
     Route::post('/arbol/grupos/{group}/cursos', [WorkloadTreeController::class, 'storeCourse'])->name('workload-tree.courses.store');
+    Route::post('/arbol/asignaciones/{assignment}/modalidades/{type}', [WorkloadTreeController::class, 'storeModality'])->name('workload-tree.modalities.store');
     Route::patch('/arbol/modalidades/{modality}/fechas', [WorkloadTreeController::class, 'updateModalityDates'])->name('workload-tree.modalities.dates');
     Route::patch('/arbol/modalidades/{modality}/nrc', [WorkloadTreeController::class, 'updateModalityNrc'])->name('workload-tree.modalities.nrc');
     Route::patch('/arbol/modalidades/{modality}/estado', [WorkloadTreeController::class, 'updateModalityActive'])->name('workload-tree.modalities.active');
