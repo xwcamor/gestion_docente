@@ -64,8 +64,6 @@
 </form>
 
 @if(auth()->user()->isAdmin())
-
-@if(auth()->user()->isAdmin())
 <form class="branding-layout" method="POST" action="{{ route('admin.settings.update') }}" enctype="multipart/form-data" data-loading-form="1">
     @csrf
     @method('PATCH')
