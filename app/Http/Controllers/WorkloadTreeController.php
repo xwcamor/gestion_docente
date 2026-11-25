@@ -159,6 +159,11 @@ class WorkloadTreeController extends Controller
     ) {
         $this->authorizeGroup($group);
 
+        // Si el formulario no envía componentes, ambos se crean activos por defecto.
+        if (!$request->has('components')) {
+            $request->merge(['components' => ['TEC', 'TALL']]);
+        }
+
         $data = $request->validate([
             'course_name' => ['required', 'string', 'max:255'],
             'course_code' => ['nullable', 'string', 'max:80'],
