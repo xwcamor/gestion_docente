@@ -8,6 +8,7 @@ use App\Models\CourseModality;
 use App\Models\TeachingGroup;
 use App\Services\CourseDistributionImportService;
 use App\Services\CalendarService;
+use App\Services\GroupStarterCourseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -266,7 +267,7 @@ class CourseDistributionImportController extends Controller
         return view('distribution.preview', ['data' => $data]);
     }
 
-    public function confirm(Request $request, CalendarService $calendar)
+    public function confirm(Request $request, CalendarService $calendar, GroupStarterCourseService $starterCourses)
     {
         $data = session('distribution_import.preview');
         abort_unless(is_array($data) && !empty($data['rows']), 419, 'La vista previa expiró. Vuelve a subir el Excel.');
@@ -292,7 +293,8 @@ class CourseDistributionImportController extends Controller
             $professor,
             &$calendarModalityIds,
             &$scheduleBlocksImported,
-            &$modalitiesWithExistingSchedules
+            &$modalitiesWithExistingSchedules,
+            $starterCourses
         ) {
             $cycle = Cycle::firstOrCreate(
                 ['professor_id' => $professor->id, 'academic_year' => $data['academic_year'], 'cycle_code' => $data['cycle_code']],
@@ -371,6 +373,10 @@ class CourseDistributionImportController extends Controller
                     }
                 }
             }
+
+            // Los cursos del Excel cuentan como cursos iniciales. Solo se crea
+            // el provisional cuando el grupo quedó sin ninguna asignación.
+            $starterCourses->ensure($group);
 
             return $cycle;
         });
