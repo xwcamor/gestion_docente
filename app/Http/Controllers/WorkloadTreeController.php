@@ -374,6 +374,46 @@ class WorkloadTreeController extends Controller
         ]);
     }
 
+    public function updateCourseDates(Request $request, CourseAssignment $assignment)
+    {
+        $assignment->loadMissing('group');
+        $this->authorizeGroup($assignment->group);
+
+        $data = $request->validate([
+            'course_start_date' => ['nullable', 'date'],
+            'course_end_date' => ['nullable', 'date'],
+        ], [
+            'course_start_date.date' => 'Selecciona una fecha de inicio válida para el curso.',
+            'course_end_date.date' => 'Selecciona una fecha de fin válida para el curso.',
+        ]);
+
+        $startDate = array_key_exists('course_start_date', $data)
+            ? ($data['course_start_date'] ?: null)
+            : $assignment->course_start_date?->toDateString();
+        $endDate = array_key_exists('course_end_date', $data)
+            ? ($data['course_end_date'] ?: null)
+            : $assignment->course_end_date?->toDateString();
+
+        if ($startDate && $endDate && $endDate < $startDate) {
+            throw ValidationException::withMessages([
+                'course_end_date' => 'La fecha de fin del curso debe ser igual o posterior a la fecha de inicio.',
+            ]);
+        }
+
+        $assignment->update([
+            'course_start_date' => $startDate,
+            'course_end_date' => $endDate,
+        ]);
+
+        $assignment->refresh();
+
+        return response()->json([
+            'message' => 'Periodo del curso actualizado.',
+            'course_start_date' => $assignment->course_start_date?->toDateString(),
+            'course_end_date' => $assignment->course_end_date?->toDateString(),
+        ]);
+    }
+
     public function updateModalityDates(Request $request, CourseModality $modality, CalendarService $calendar)
     {
         $modality->loadMissing('assignment.group');
