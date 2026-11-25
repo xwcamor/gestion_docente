@@ -32,28 +32,27 @@
             <div class="tree-course-children">
                 <div class="tree-course-tools">
                     <span><x-icon name="git-branch" size="15" /> Componentes del curso</span>
-                    <button class="tree-icon-action tree-course-remove-trigger" type="button"
-                            data-toggle-course-delete
-                            @disabled($group->assignments_count <= 1)
-                            aria-label="Retirar curso"
-                            title="{{ $group->assignments_count <= 1 ? 'El grupo debe conservar al menos un curso' : 'Retirar curso de este grupo' }}">
-                        <x-icon name="x" size="17" />
-                    </button>
                 </div>
-
-                <div class="tree-delete-confirm tree-course-delete-confirm" data-course-delete-confirm hidden>
-                    <p><strong>¿Retirar {{ $assignment->course->name }} de este grupo?</strong> Se retirarán sus modalidades y horarios del grupo. El historial curricular se conserva.</p>
-                    <form method="POST" action="{{ route('assignments.destroy', $assignment) }}" data-tree-delete-course>
-                        @csrf
-                        @method('DELETE')
-                        <button class="btn btn-danger btn-sm" type="submit" @disabled($group->assignments_count <= 1)>Confirmar eliminación</button>
-                        <button class="btn btn-ghost btn-sm" type="button" data-inline-cancel>Cancelar</button>
-                    </form>
-                </div>
-
                 @include('cycles.tree.modalities', ['assignment' => $assignment, 'modalities' => $assignment->modalities])
             </div>
         </details>
+
+        <button class="tree-icon-action tree-course-delete-trigger" type="button"
+                data-toggle-course-delete
+                @disabled($group->assignments_count <= 1)
+                aria-label="Retirar curso del grupo"
+                title="{{ $group->assignments_count <= 1 ? 'El grupo debe conservar al menos un curso' : 'Retirar curso de este grupo' }}">
+            <x-icon name="trash-2" size="16" />
+        </button>
+        <div class="tree-delete-confirm tree-course-delete-confirm" data-course-delete-confirm hidden>
+            <p><strong>¿Retirar {{ $assignment->course->name }} de este grupo?</strong> Se retirarán sus modalidades y horarios del grupo. El historial curricular se conserva.</p>
+            <form method="POST" action="{{ route('assignments.destroy', $assignment) }}" data-tree-delete-course>
+                @csrf
+                @method('DELETE')
+                <button class="btn btn-danger btn-sm" type="submit" @disabled($group->assignments_count <= 1)>Confirmar eliminación</button>
+                <button class="btn btn-ghost btn-sm" type="button" data-inline-cancel>Cancelar</button>
+            </form>
+        </div>
     </article>
 @empty
     <div class="tree-empty-child tree-empty-course">
