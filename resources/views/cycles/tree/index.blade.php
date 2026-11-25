@@ -963,6 +963,27 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
             return;
         }
 
+        const courseCode = event.target.closest('[data-inline-course-code]');
+        if (courseCode) {
+            startTextEditor(courseCode, {
+                value: courseCode.dataset.courseCode || '',
+                url: courseCode.dataset.courseCodeUrl,
+                field: 'code',
+                label: 'Código institucional del curso',
+                maxLength: 80,
+                restore: value => {
+                    courseCode.textContent = value || 'Sin código';
+                    courseCode.dataset.courseCode = value;
+                },
+                success: payload => {
+                    courseCode.textContent = payload.code;
+                    courseCode.dataset.courseCode = payload.code;
+                    showFeedback(payload.message || 'Código actualizado en el catálogo.');
+                }
+            });
+            return;
+        }
+
         const dateCell = event.target.closest('[data-inline-date]');
         if (dateCell) {
             const wrapper = dateCell.closest('[data-modality-dates]');
