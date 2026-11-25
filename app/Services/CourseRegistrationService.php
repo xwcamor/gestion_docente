@@ -61,7 +61,11 @@ class CourseRegistrationService
 
         $group->loadMissing('cycle');
 
-        $course = $this->findExistingCourse($group->professor_id, $parsed);
+        // El código institucional es opcional en el alta rápida.
+        // Sin código se crea un curso independiente; nunca se reutiliza uno por nombre.
+        $course = filled($parsed['base_code'])
+            ? $this->findExistingCourse($group->professor_id, $parsed)
+            : null;
 
         if ($course && mb_strtolower(trim($course->name)) !== mb_strtolower($courseName)) {
             throw ValidationException::withMessages([
@@ -73,13 +77,19 @@ class CourseRegistrationService
         // Different institutional codes may legitimately share the same course name.
 
         return DB::transaction(function () use ($group, $courseName, $parsed, $requestedTypes, $course, $students, $modalityDates, $modalitySchedules, $blockCodes, $blockReferences) {
-            $courseRecord = $course ?: Course::firstOrCreate(
-                [
+            $courseRecord = $course ?: (filled($parsed['base_code'])
+                ? Course::firstOrCreate(
+                    [
+                        'professor_id' => $group->professor_id,
+                        'code' => $parsed['base_code'],
+                    ],
+                    ['name' => $courseName]
+                )
+                : Course::create([
                     'professor_id' => $group->professor_id,
-                    'code' => $parsed['base_code'],
-                ],
-                ['name' => $courseName]
-            );
+                    'code' => null,
+                    'name' => $courseName,
+                ]));
 
             $defaultCurriculum = $courseRecord->curricula()
                 ->where('is_active', true)
