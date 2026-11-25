@@ -174,7 +174,7 @@ El trabajo se organiza alrededor de la carga laboral recibida. El ciclo y sus gr
 4. **Preparar los Excel con IA:** organizar por separado Plan de sesión y Control de avance para teoría y taller/práctica.
 5. **Registrar las charlas de 5 minutos:** completar la charla correspondiente a cada fecha del grupo cuando ya exista su padrón de alumnos.
 
-**Plantilla de carga laboral:** se descarga desde la pantalla Importar carga laboral y contiene tres hojas. `Cursos` registra curso, código institucional, bloques, NRC y rango de fechas; `Horarios` registra una fila por día y bloque con CODIGO, modalidad TEC/TALL, NRC opcional, día, hora inicial/final, tipo de enseñanza y ambiente; `Instrucciones` explica el llenado. El importador valida la correspondencia curso/modalidad, cruces de horario e intervalos de 15 minutos. Al confirmar, guarda los horarios, calcula horas semanales y reconstruye las sesiones excluyendo feriados bloqueados. Si una modalidad ya tenía horarios configurados manualmente, se conservan para no sobrescribirlos al reimportar.
+**Plantilla de carga laboral:** se descarga desde la pantalla Importar carga laboral y contiene tres hojas. `Cursos` registra curso, código institucional, bloques, NRC y fechas independientes TEC/TALL; `Horarios` registra una fila por día y bloque con CODIGO, modalidad TEC/TALL, NRC opcional, día, horas, tipo, ambiente e INTERVALO SEMANAS opcional (vacío equivale a 1); `Instrucciones` explica el llenado. El importador valida la correspondencia curso/modalidad, cruces de horario e intervalos de 15 minutos. Al confirmar, guarda la repetición semanal, calcula horas promedio por semana y reconstruye las sesiones excluyendo feriados bloqueados. Si una modalidad ya tenía horarios configurados manualmente, se conservan para no sobrescribirlos al reimportar.
 
 ## Funcionalidades principales
 
@@ -217,7 +217,7 @@ La estructura usa nombres explícitos y cortos para los índices que podrían su
 
 ### Error SQLSTATE[42S22]: columna `slug` desconocida
 
-Las migraciones correctivas `2026_11_24_000008_repair_curricula_slug_column.php` y `2026_11_24_000009_repair_missing_slug_columns.php` reparan columnas slug faltantes. Las migraciones `2026_11_24_000010_repair_class_sessions_slug_column.php` y `2026_11_24_000011_repair_generated_documents_slug_column.php` refuerzan la reparación de sesiones y documentos generados cuando una base local conserva un esquema anterior. Completan los valores faltantes y aseguran índices únicos sin eliminar registros académicos.
+Las migraciones correctivas `2026_11_24_000008_repair_curricula_slug_column.php` y `2026_11_24_000009_repair_missing_slug_columns.php` reparan columnas slug faltantes. Las migraciones `2026_11_24_000010_repair_class_sessions_slug_column.php` y `2026_11_24_000011_repair_generated_documents_slug_column.php` refuerzan la reparación de sesiones y documentos generados. La migración `2026_11_24_000012_add_weekly_repeat_interval_to_modality_schedules.php` incorpora el intervalo de repetición semanal con valor predeterminado de 1, por lo que los horarios existentes conservan su comportamiento.
 
 Actualiza el repositorio y ejecuta:
 
@@ -258,7 +258,7 @@ https://github.com/xwcamor/gestion_docente
 
 ## Importar cursos desde Excel institucional
 
-En **Cargas laborales → Importar carga laboral**, descarga la plantilla y completa las hojas **Cursos** y **Horarios**. En Cursos utiliza CURSO, CODIGO, BLOQUE TEC, NRC TEC, BLOQUE TALLER, BLOQUE, NRC TALLER, FECHA TEC y FECHA TALLER. Cada modalidad conserva su propio rango de fechas. Los archivos anteriores con una sola columna FECHA siguen siendo compatibles. En Horarios utiliza CODIGO, MODALIDAD, NRC, DIA, DESDE, HASTA, TIPO y AMBIENTE.
+En **Cargas laborales → Importar carga laboral**, descarga la plantilla y completa las hojas **Cursos** y **Horarios**. En Cursos utiliza CURSO, CODIGO, BLOQUE TEC, NRC TEC, BLOQUE TALLER, BLOQUE, NRC TALLER, FECHA TEC y FECHA TALLER. Cada modalidad conserva su propio rango de fechas. Los archivos anteriores con una sola columna FECHA siguen siendo compatibles. En Horarios utiliza CODIGO, MODALIDAD, NRC, DIA, DESDE, HASTA, TIPO, AMBIENTE e INTERVALO SEMANAS (opcional: 1 = cada semana, 2 = cada dos semanas; vacío = 1).
 
 La importación crea o reutiliza el ciclo y el grupo indicado, registra cada curso, conserva TEC/TALL como modalidades independientes y asocia cada bloque horario mediante CODIGO + MODALIDAD. Se puede volver a importar el mismo archivo al mismo grupo sin duplicar asignaciones ni modalidades; los horarios manuales que ya existían se conservan.
 
@@ -267,4 +267,4 @@ El ciclo se reconoce desde el patrón `202620-PIAD-...` en CODIGO (año + ciclo)
 
 ## Registro simplificado de cursos
 
-El alta individual y la carga rápida registran el nombre y las modalidades del curso. En la carga rápida cada fila representa un curso y permite ingresar por separado el código institucional TEC y el código TAL/TALL, aunque tengan NRC y rangos de fechas diferentes. El intérprete obtiene periodo, programa, código base, modalidad y NRC desde segmentos como `202620-PIAD-222-TEC-NRC_11518`. Cada modalidad conserva su propio rango Desde/Hasta; esos campos son opcionales y, si se dejan vacíos, pueden completarse después en su configuración. La detección de duplicados se basa en el código institucional, no solo en el nombre, porque pueden existir cursos con el mismo nombre y códigos distintos. Los errores propios del registro se muestran en la fila del curso y los errores de campos junto al control correspondiente.
+La carga rápida utiliza una fila por curso y permite pegar alias como `202620-PIAD-224-TEC-NRC_11523: SISTEMAS OPERATIVOS Y COMUNICACIÓN DE DATOS`. El sistema detecta nombre, código base, modalidad y NRC. Cada modalidad puede conservar fechas, código de bloque, referencia de bloque y horario independientes. El horario se configura por bloques con días, horas, tipo, ambiente e intervalo de repetición de 1 a 4 semanas. Desde el grupo, la acción **Editar curso y horario** abre el mismo formulario con los datos existentes. El nombre se comparte con otros grupos que reutilizan el curso del catálogo; el código base no se cambia desde esa pantalla porque identifica el curso compartido.
