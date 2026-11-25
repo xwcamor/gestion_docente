@@ -49,6 +49,7 @@ class GroupCalendarController extends Controller
             ->withExists([
                 'sessions as has_generated_sessions' => fn ($query) => $query->where('status', 'scheduled'),
             ])
+            ->where('active', true)
             ->whereIn('course_assignment_id', $assignmentIds)
             ->when($modalityFilter, fn ($query) => $query->where('modality', $modalityFilter))
             ->orderBy('modality')
@@ -199,6 +200,7 @@ class GroupCalendarController extends Controller
 
         $modalities = CourseModality::query()
             ->with(['assignment.course', 'schedules'])
+            ->where('active', true)
             ->whereHas('assignment', fn ($query) => $query->where('teaching_group_id', $group->id))
             ->when($filters['modality'] ?? null, fn ($query, $value) => $query->where('modality', $value))
             ->orderBy('modality')
