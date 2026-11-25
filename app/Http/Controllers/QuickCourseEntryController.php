@@ -39,11 +39,13 @@ class QuickCourseEntryController extends Controller
             'course_name' => $assignment->course->name,
             'tec_code' => $this->courseAlias($assignment->course->code, 'TEC', $assignment->course->name, $assignment->modalities->firstWhere('modality', 'TEC')),
             'tec_block_code' => $assignment->modalities->firstWhere('modality', 'TEC')?->block_code,
+            'tec_block_reference' => $assignment->modalities->firstWhere('modality', 'TEC')?->block_reference,
             'tec_start_date' => $assignment->modalities->firstWhere('modality', 'TEC')?->start_date?->toDateString(),
             'tec_end_date' => $assignment->modalities->firstWhere('modality', 'TEC')?->end_date?->toDateString(),
             'tec_schedules' => $this->groupScheduleRows($assignment->modalities->firstWhere('modality', 'TEC')),
             'tall_code' => $this->courseAlias($assignment->course->code, 'TALL', $assignment->course->name, $assignment->modalities->firstWhere('modality', 'TALL')),
             'tall_block_code' => $assignment->modalities->firstWhere('modality', 'TALL')?->block_code,
+            'tall_block_reference' => $assignment->modalities->firstWhere('modality', 'TALL')?->block_reference,
             'tall_start_date' => $assignment->modalities->firstWhere('modality', 'TALL')?->start_date?->toDateString(),
             'tall_end_date' => $assignment->modalities->firstWhere('modality', 'TALL')?->end_date?->toDateString(),
             'tall_schedules' => $this->groupScheduleRows($assignment->modalities->firstWhere('modality', 'TALL')),
@@ -114,6 +116,10 @@ class QuickCourseEntryController extends Controller
                     'TEC' => trim((string) ($row['tec_block_code'] ?? '')) ?: null,
                     'TALL' => trim((string) ($row['tall_block_code'] ?? '')) ?: null,
                 ];
+                $blockReferences = [
+                    'TEC' => trim((string) ($row['tec_block_reference'] ?? '')) ?: null,
+                    'TALL' => trim((string) ($row['tall_block_reference'] ?? '')) ?: null,
+                ];
 
                 try {
                     $result = $registration->register(
@@ -124,7 +130,8 @@ class QuickCourseEntryController extends Controller
                         $students,
                         $modalityDates,
                         $modalitySchedules,
-                        $blockCodes
+                        $blockCodes,
+                        $blockReferences
                     );
                 } catch (ValidationException $exception) {
                     $errors = [];
@@ -260,6 +267,9 @@ class QuickCourseEntryController extends Controller
                     'block_code' => filled($row[$prefix.'_block_code'] ?? null)
                         ? trim($row[$prefix.'_block_code'])
                         : $modality->block_code,
+                    'block_reference' => filled($row[$prefix.'_block_reference'] ?? null)
+                        ? trim($row[$prefix.'_block_reference'])
+                        : $modality->block_reference,
                     'start_date' => $row[$prefix.'_start_date'] ?: null,
                     'end_date' => $row[$prefix.'_end_date'] ?: null,
                     'curriculum_start_week' => $modality->curriculum_start_week ?: 1,
@@ -388,12 +398,14 @@ class QuickCourseEntryController extends Controller
             'rows.*.course_name' => ['nullable', 'string', 'max:255'],
             'rows.*.tec_code' => ['nullable', 'string', 'max:200'],
             'rows.*.tec_block_code' => ['nullable', 'string', 'max:100'],
+            'rows.*.tec_block_reference' => ['nullable', 'string', 'max:100'],
             'rows.*.tec_clear_schedules' => ['nullable', 'boolean'],
             'rows.*.tall_clear_schedules' => ['nullable', 'boolean'],
             'rows.*.tec_start_date' => ['nullable', 'date'],
             'rows.*.tec_end_date' => ['nullable', 'date'],
             'rows.*.tall_code' => ['nullable', 'string', 'max:200'],
             'rows.*.tall_block_code' => ['nullable', 'string', 'max:100'],
+            'rows.*.tall_block_reference' => ['nullable', 'string', 'max:100'],
             'rows.*.tall_start_date' => ['nullable', 'date'],
             'rows.*.tall_end_date' => ['nullable', 'date'],
             'rows.*.tec_schedules' => ['nullable', 'array', 'max:20'],
@@ -430,7 +442,10 @@ class QuickCourseEntryController extends Controller
                 ];
                 $hasAnyCode = $codes['TEC'] !== '' || $codes['TALL'] !== '';
                 $hasAnySchedule = !empty($row['tec_schedules'] ?? []) || !empty($row['tall_schedules'] ?? []);
-                $hasAnyExtra = filled($row['tec_block_code'] ?? null) || filled($row['tall_block_code'] ?? null);
+                $hasAnyExtra = filled($row['tec_block_code'] ?? null)
+                    || filled($row['tec_block_reference'] ?? null)
+                    || filled($row['tall_block_code'] ?? null)
+                    || filled($row['tall_block_reference'] ?? null);
                 $hasAnyDate = filled($row['tec_start_date'] ?? null)
                     || filled($row['tec_end_date'] ?? null)
                     || filled($row['tall_start_date'] ?? null)
@@ -466,10 +481,11 @@ class QuickCourseEntryController extends Controller
                     $startDate = $row[$prefix.'_start_date'] ?? null;
                     $endDate = $row[$prefix.'_end_date'] ?? null;
                     $blockCode = $row[$prefix.'_block_code'] ?? null;
+                    $blockReference = $row[$prefix.'_block_reference'] ?? null;
                     $scheduleInput = $row[$prefix.'_schedules'] ?? [];
 
                     if ($code === '') {
-                        if (filled($startDate) || filled($endDate) || filled($blockCode) || !empty($scheduleInput)) {
+                        if (filled($startDate) || filled($endDate) || filled($blockCode) || filled($blockReference) || !empty($scheduleInput)) {
                             $validator->errors()->add(
                                 "rows.{$index}.{$prefix}_code",
                                 "Completa el alias {$type} antes de indicar fechas, bloque u horario."
