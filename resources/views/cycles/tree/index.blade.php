@@ -757,7 +757,6 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
         input.value = original;
         input.setAttribute('aria-label', config.label);
         target.replaceChildren(input);
-        target.classList.add('tree-inline-saving');
         input.focus();
         input.select();
 
@@ -766,7 +765,6 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
             if (settled) return;
             settled = true;
             config.restore(original);
-            target.classList.remove('tree-inline-saving');
         };
         const save = async () => {
             if (settled) return;
