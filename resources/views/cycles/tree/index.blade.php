@@ -653,10 +653,13 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
     };
 
     const patch = async (url, values) => {
+        // PHP procesa multipart/form-data de forma fiable en POST.
+        // Laravel transforma este POST en PATCH mediante _method.
         const body = new FormData();
+        body.append('_method', 'PATCH');
         Object.entries(values).forEach(([key, value]) => body.append(key, value ?? ''));
         return responsePayload(await fetch(url, {
-            method: 'PATCH',
+            method: 'POST',
             body,
             credentials: 'same-origin',
             headers: {
