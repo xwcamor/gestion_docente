@@ -49,6 +49,10 @@ class ExcelDocumentService
 
     public function generateForModality(CourseModality $modality, string $type, int $userId): GeneratedDocument
     {
+        if (!$modality->active) {
+            throw ValidationException::withMessages(['document' => 'Activa esta modalidad desde el árbol antes de generar documentos.']);
+        }
+
         if (!array_key_exists($type, self::DOCUMENTS)) {
             throw ValidationException::withMessages([
                 'document' => 'El tipo de Excel solicitado no está disponible. Las charlas de 5 minutos se generan desde el ciclo.',
@@ -118,6 +122,7 @@ class ExcelDocumentService
                 'assignment.group',
                 'schedules' => fn ($query) => $query->where('block_type', 'CLASS'),
             ])
+            ->where('active', true)
             ->whereHas('assignment.group', fn ($query) => $query->where('cycle_id', $cycle->id))
             ->get();
 
