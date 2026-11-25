@@ -852,6 +852,17 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
             if (!response.ok || response.redirected) throw new Error('No se pudieron cargar los cursos.');
             content.innerHTML = await response.text();
             groupNode.dataset.treeLoaded = '1';
+
+            // Dentro de cada grupo, solo se despliega un curso a la vez.
+            content.querySelectorAll('[data-course-branch]').forEach(courseBranch => {
+                courseBranch.addEventListener('toggle', () => {
+                    if (!courseBranch.open) return;
+                    content.querySelectorAll('[data-course-branch]').forEach(otherCourse => {
+                        if (otherCourse !== courseBranch) otherCourse.open = false;
+                    });
+                });
+            });
+
             const count = groupNode.querySelector('[data-group-course-count]')?.textContent || 0;
             updateCourseDeleteGuards(groupNode, count);
         } catch (error) {
@@ -881,7 +892,13 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
 
     root.querySelectorAll('[data-tree-load]').forEach(groupNode => {
         groupNode.addEventListener('toggle', () => {
-            if (groupNode.open) loadGroup(groupNode);
+            if (!groupNode.open) return;
+
+            // Respaldo accesible para mantener un solo grupo desplegado.
+            root.querySelectorAll('[data-tree-load]').forEach(otherGroup => {
+                if (otherGroup !== groupNode) otherGroup.open = false;
+            });
+            loadGroup(groupNode);
         });
     });
 
