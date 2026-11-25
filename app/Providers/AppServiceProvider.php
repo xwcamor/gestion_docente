@@ -57,6 +57,7 @@ class AppServiceProvider extends ServiceProvider
                     ? 'color-mix(in srgb, var(--accent) 82%, #000)'
                     : $branding['primary_hover'],
                 'sidebar_visible' => $user?->sidebar_visible ?? true,
+                'sidebar_color' => $user?->sidebar_color ?: 'blue',
             ]);
         });
     }
