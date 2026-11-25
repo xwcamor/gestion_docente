@@ -40,7 +40,7 @@ class FiveMinuteTalkService
         }
 
         $modalities = $group->assignments()
-            ->with(['modalities.schedules' => fn ($query) => $query->where('block_type', 'CLASS')])
+            ->with(['modalities' => fn ($query) => $query->where('active', true)->with(['schedules' => fn ($schedules) => $schedules->where('block_type', 'CLASS')])])
             ->get()
             ->flatMap(fn ($assignment) => $assignment->modalities)
             ->values();
