@@ -47,6 +47,34 @@ class WorkloadTreeController extends Controller
         return view('cycles.tree.index', compact('cycle', 'groups', 'term', 'cycleGroupCount'));
     }
 
+    public function updateCycleContext(Request $request, Cycle $cycle)
+    {
+        $this->authorizeCycle($cycle);
+
+        $data = $request->validate([
+            'career' => ['sometimes', 'required', 'string', 'max:255'],
+            'semester' => ['sometimes', 'required', 'string', 'max:60'],
+        ], [
+            'career.required' => 'Escribe el nombre de la carrera.',
+            'semester.required' => 'Escribe el semestre.',
+        ]);
+
+        if (!$data) {
+            return response()->json([
+                'message' => 'No hay datos del ciclo para actualizar.',
+            ], 422);
+        }
+
+        $cycle->update($data);
+        $cycle->refresh();
+
+        return response()->json([
+            'message' => 'Datos académicos del ciclo actualizados.',
+            'career' => $cycle->career,
+            'semester' => $cycle->semester,
+        ]);
+    }
+
     public function groups(Cycle $cycle, Request $request)
     {
         $this->authorizeCycle($cycle);
