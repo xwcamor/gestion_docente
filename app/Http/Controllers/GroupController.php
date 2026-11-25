@@ -123,6 +123,13 @@ class GroupController extends Controller
         );
 
         if ($validator->fails()) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Revisa el nombre del grupo.',
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
             return redirect()
                 ->route('groups.show', ['group' => $group, 'dialog' => 'edit-group'])
                 ->withErrors($validator)
@@ -130,6 +137,14 @@ class GroupController extends Controller
         }
 
         $group->update($validator->validated());
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Nombre del grupo actualizado.',
+                'group_id' => $group->id,
+                'name' => $group->fresh()->name,
+            ]);
+        }
 
         return redirect()->route('groups.show', $group)
             ->with('success', 'Nombre del grupo actualizado.');
@@ -469,7 +484,7 @@ class GroupController extends Controller
             ->with('success', 'Registro de charla de '.$group->name.' actualizado.');
     }
 
-    public function destroy(TeachingGroup $group)
+    public function destroy(Request $request, TeachingGroup $group)
     {
         $this->authorizeGroup($group);
         $cycle = $group->cycle;
@@ -528,16 +543,35 @@ class GroupController extends Controller
         });
 
         if (!$deleted) {
-            return redirect()->route('cycles.show', $cycle)
-                ->with('error', 'Cada ciclo debe conservar al menos un grupo. Agrega otro grupo antes de eliminar este.');
+            $message = 'No puedes eliminar el único grupo del ciclo. Primero agrega otro grupo.';
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => $message,
+                    'remaining_groups' => 1,
+                ], 422);
+            }
+
+            return redirect()->route($request->boolean('return_to_tree') ? 'cycles.tree' : 'cycles.show', $cycle)
+                ->with('error', $message);
         }
 
         Storage::disk('local')->delete(
             $generatedPaths->merge($importPaths)->filter()->unique()->values()->all()
         );
 
-        return redirect()->route('cycles.show', $cycle)
-            ->with('success', 'Grupo eliminado. Los cursos del catálogo y alumnos reutilizados se conservaron; las mallas de cursos sin otras asignaciones pasaron al historial.');
+        $message = 'Grupo eliminado. Los cursos y alumnos compartidos se conservaron cuando tenían otras asignaciones.';
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => $message,
+                'group_id' => $group->id,
+                'remaining_groups' => $cycle->groups()->count(),
+            ]);
+        }
+
+        return redirect()->route($request->boolean('return_to_tree') ? 'cycles.tree' : 'cycles.show', $cycle)
+            ->with('success', $message);
     }
 
     public function storeStudent(Request $request, TeachingGroup $group, AuditLogger $audit)
