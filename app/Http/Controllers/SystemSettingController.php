@@ -9,15 +9,36 @@ use Illuminate\Support\Facades\Storage;
 
 class SystemSettingController extends Controller
 {
-    public function edit()
+    public function edit(Request $request)
     {
         $branding = SystemSetting::branding();
+        $user = $request->user();
 
-        return view('admin.settings.index', compact('branding'));
+        return view('admin.settings.index', compact('branding', 'user'));
     }
 
     public function update(Request $request, AuditLogger $audit)
     {
+        if ($request->boolean('interface_preferences')) {
+            $data = $request->validate([
+                'sidebar_visible' => ['required', 'boolean'],
+                'use_system_color' => ['nullable', 'boolean'],
+                'accent_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            ]);
+
+            $request->user()->forceFill([
+                'sidebar_visible' => (bool) $data['sidebar_visible'],
+                'accent_color' => $request->boolean('use_system_color')
+                    ? null
+                    : ($data['accent_color'] ?? null),
+            ])->save();
+
+            return redirect()->route('admin.settings.edit')
+                ->with('success', 'Tus preferencias de interfaz fueron guardadas.');
+        }
+
+        abort_unless($request->user()->isAdmin(), 403);
+
         $data = $request->validate([
             'system_name' => ['required', 'string', 'max:80'],
             'system_short_name' => ['required', 'string', 'max:8'],
