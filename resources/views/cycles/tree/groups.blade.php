@@ -4,7 +4,6 @@
     @php($endTime = filled($group->workload_end_time) ? substr((string) $group->workload_end_time, 0, 5) : '')
     <div class="workload-tree-group-shell" data-group-shell="{{ $group->id }}" data-group-id="{{ $group->id }}">
         <details class="workload-tree-group"
-                 name="workload-groups"
                  id="tree-group-{{ $group->id }}"
                  data-tree-group-id="{{ $group->id }}"
                  data-group-label="Grupo {{ $group->name }}"
