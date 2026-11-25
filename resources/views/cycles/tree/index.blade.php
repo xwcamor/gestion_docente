@@ -1923,11 +1923,7 @@
             label: editable.dataset.editLabel,
             responseField: editable.dataset.editResponse || '',
             maxLength: field === 'code' ? 80 : 255,
-            emptyLabel: editable.dataset.editEmptyLabel || (field === 'code'
-                ? 'Código pendiente (clic para agregar)'
-                : (field === 'career'
-                    ? 'Carrera pendiente (clic para agregar)'
-                    : (field === 'semester' ? 'Semestre pendiente (clic para agregar)' : ''))),
+            emptyLabel: editable.dataset.editEmptyLabel || (['code', 'career', 'semester'].includes(field) ? 'Falta' : ''),
             allowEmpty: kind === 'group-code' || kind === 'course-code' || kind === 'group-time',
             onSaved: saved => {
                 if (kind === 'group' || kind === 'group-code') {
