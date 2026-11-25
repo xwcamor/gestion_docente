@@ -260,7 +260,7 @@
             .top-user{display:none}
             .logout{min-height:31px;padding:6px 8px;font-size:10px}
             .app-shell{min-height:calc(100vh - 54px)}
-            .sidebar{top:54px;padding:6px 8px}
+            .sidebar{top:auto!important;padding:6px 8px}
             .sidebar>div{width:100%;min-width:0}
             .nav-link{flex:1;justify-content:center;gap:5px;padding:8px 6px;font-size:10px;text-align:center;white-space:normal}
             .nav-dot{display:none}
@@ -509,7 +509,7 @@
 .sidebar-preference-button .icon{color:var(--accent)}
 .sidebar-preference-button small{margin-left:auto;color:var(--muted);font-size:9px;font-weight:500}
 body.sidebar-collapsed .app-shell{grid-template-columns:70px minmax(0,1fr)}
-body.sidebar-collapsed .sidebar{padding-right:8px;padding-left:8px}
+body.sidebar-collapsed .sidebar{width:68px;padding-right:8px;padding-left:8px}
 body.sidebar-collapsed .sidebar-toolbar{justify-content:center;padding-right:0;padding-left:0;border-bottom:0}
 body.sidebar-collapsed .sidebar-toolbar-label,
 body.sidebar-collapsed .sidebar .nav-label,
@@ -1008,8 +1008,9 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
         .top-actions{gap:8px}
         .top-sidebar-toggle{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:35px;padding:7px 10px;border:1px solid var(--line-strong);border-radius:8px;background:var(--surface);color:var(--ink-soft);font-size:10px;font-weight:700;cursor:pointer;transition:border-color .14s ease,background .14s ease,color .14s ease}
         .top-sidebar-toggle:hover{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
-        .app-shell{grid-template-columns:var(--sidebar-width) minmax(0,1fr)!important;min-height:calc(100vh - 60px);min-height:calc(100dvh - 60px)}
-        .sidebar{position:sticky;top:60px;height:calc(100vh - 60px);height:calc(100dvh - 60px);padding:16px 12px;background:var(--surface)!important;border-right:1px solid var(--line)!important;box-shadow:1px 0 7px rgba(25,43,33,.025)}
+        .app-shell{grid-template-columns:var(--sidebar-width) minmax(0,1fr)!important;align-items:start;min-height:calc(100vh - 60px);min-height:calc(100dvh - 60px)}
+        .sidebar{position:fixed!important;top:60px!important;left:0!important;bottom:0!important;z-index:25;width:var(--sidebar-width);height:auto!important;max-height:none;overflow-x:hidden;overflow-y:auto;align-self:auto;padding:16px 12px;background:var(--sidebar-bg,var(--surface))!important;border-right:1px solid var(--sidebar-border,var(--line))!important;box-shadow:1px 0 7px rgba(25,43,33,.025)}
+        .main{grid-column:2;min-width:0}
         .sidebar-inner{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:15px!important;width:100%;min-height:100%}
         .sidebar-toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 4px 12px;border-bottom:1px solid var(--line)}
         .sidebar-toolbar-label{color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.12em}
@@ -1038,6 +1039,7 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
         body.sidebar-collapsed .sidebar-footer{justify-content:center;padding:12px 0 0}
         body.sidebar-hidden .app-shell{grid-template-columns:minmax(0,1fr)!important}
         body.sidebar-hidden .sidebar{display:none!important}
+        body.sidebar-hidden .main{grid-column:1}
         .main{width:100%!important;max-width:none!important;margin:0!important;padding:12px clamp(14px,1.6vw,28px) 24px!important}
         .main .settings-page-head,.main .branding-layout,.main .profile-layout,.main .profile-page-head,.main .workload-tree-page{max-width:none!important;width:100%!important}
         .main .branding-layout{grid-template-columns:minmax(0,1.65fr) minmax(280px,.75fr)}
@@ -1052,8 +1054,8 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
         html[data-theme="dark"] .sidebar-footer strong{color:var(--ink)}
         html[data-theme="dark"] .top-sidebar-toggle{background:var(--surface);border-color:var(--line-strong);color:var(--ink-soft)}
         @media(max-width:1050px){
-            .app-shell,body.sidebar-collapsed .app-shell{grid-template-columns:minmax(0,1fr)!important}
-            .sidebar{position:sticky;top:60px;height:auto;max-height:none;overflow-x:auto;overflow-y:hidden;padding:7px 10px;border-right:0!important;border-bottom:1px solid var(--line)!important;box-shadow:none}
+            .app-shell,body.sidebar-collapsed .app-shell{grid-template-columns:minmax(0,1fr)!important;grid-template-rows:auto 1fr}
+            .sidebar{position:relative!important;top:auto!important;left:auto!important;right:auto!important;bottom:auto!important;grid-column:1;width:100%;height:auto!important;max-height:none;overflow-x:auto;overflow-y:hidden;padding:7px 10px;border-right:0!important;border-bottom:1px solid var(--sidebar-border,var(--line))!important;box-shadow:none}
             .sidebar-inner{display:block!important;width:max-content;min-width:100%;min-height:0}
             .sidebar-toolbar,.sidebar-footer{display:none!important}
             .sidebar-nav{display:flex!important;align-items:center;gap:5px;min-width:max-content;overflow:visible!important}
@@ -1063,7 +1065,7 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
             body.sidebar-collapsed .sidebar .nav-link{justify-content:center;padding:8px 10px}
             body.sidebar-collapsed .sidebar .nav-link span{display:inline!important}
             body.sidebar-hidden .sidebar{display:none!important}
-            .main{padding:12px clamp(14px,2vw,22px) 22px!important}
+            .main{grid-column:1;padding:12px clamp(14px,2vw,22px) 22px!important}
         }
         @media(max-width:720px){
             .topbar{height:54px;padding:0 10px}
@@ -1135,9 +1137,57 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
             .app-shell{margin-top:54px}
         }
 
+
+        /* Paletas independientes del color de botones: solo modifican el sidebar. */
+        body[data-sidebar-color="blue"]{--sidebar-tint:#3f82b5}
+        body[data-sidebar-color="green"]{--sidebar-tint:#398761}
+        body[data-sidebar-color="violet"]{--sidebar-tint:#8065ad}
+        body[data-sidebar-color="amber"]{--sidebar-tint:#b7832f}
+        body[data-sidebar-color="graphite"]{--sidebar-tint:#526476}
+        body[data-sidebar-color]{--sidebar-bg:color-mix(in srgb,var(--sidebar-tint) 8%,var(--surface));--sidebar-border:color-mix(in srgb,var(--sidebar-tint) 24%,var(--line));--sidebar-text:color-mix(in srgb,var(--sidebar-tint) 38%,var(--ink-soft));--sidebar-icon:color-mix(in srgb,var(--sidebar-tint) 65%,var(--muted));--sidebar-hover:color-mix(in srgb,var(--sidebar-tint) 13%,var(--surface));--sidebar-active:color-mix(in srgb,var(--sidebar-tint) 20%,var(--surface));--sidebar-active-text:color-mix(in srgb,var(--sidebar-tint) 62%,var(--ink))}
+        .sidebar{background:var(--sidebar-bg,var(--surface))!important;border-right-color:var(--sidebar-border,var(--line))!important}
+        .sidebar-toolbar{border-bottom-color:var(--sidebar-border,var(--line))}
+        .sidebar .nav-link{color:var(--sidebar-text,var(--ink-soft))!important}
+        .sidebar .nav-link .icon{color:var(--sidebar-icon,var(--muted))}
+        .sidebar .nav-link:hover{background:var(--sidebar-hover,var(--surface-soft))!important;border-color:var(--sidebar-border,var(--line));color:var(--sidebar-active-text,var(--ink))!important}
+        .sidebar .nav-link.active{background:var(--sidebar-active,var(--accent-soft))!important;border-color:color-mix(in srgb,var(--sidebar-tint,var(--accent)) 38%,var(--sidebar-border,var(--line)))!important;color:var(--sidebar-active-text,var(--accent))!important}
+        .sidebar .nav-link.active .icon{color:var(--sidebar-tint,var(--accent))!important}
+        .sidebar-footer{border-top-color:var(--sidebar-border,var(--line))}
+        .sidebar-footer-mark{border-color:color-mix(in srgb,var(--sidebar-tint,var(--accent)) 30%,var(--sidebar-border,var(--line)));background:var(--sidebar-active,var(--accent-soft));color:var(--sidebar-active-text,var(--accent))}
+        html[data-theme="dark"] .sidebar{background:var(--sidebar-bg,var(--surface))!important;border-right-color:var(--sidebar-border,var(--line))!important}
+        html[data-theme="dark"] .sidebar .nav-link{color:var(--sidebar-text,var(--ink-soft))!important}
+        html[data-theme="dark"] .sidebar .nav-link:hover{background:var(--sidebar-hover,var(--surface-soft))!important;border-color:var(--sidebar-border,var(--line))!important;color:var(--sidebar-active-text,var(--ink))!important}
+        html[data-theme="dark"] .sidebar .nav-link.active{background:var(--sidebar-active,var(--accent-soft))!important;border-color:color-mix(in srgb,var(--sidebar-tint,var(--accent)) 45%,var(--sidebar-border,var(--line)))!important;color:var(--sidebar-active-text,var(--ink))!important}
+        html[data-theme="dark"] .sidebar .nav-link.active .icon{color:var(--sidebar-tint,var(--accent))!important}
+        html[data-theme="dark"] .sidebar-footer{border-top-color:var(--sidebar-border,var(--line))}
+        .top-account-menu{position:relative;flex:none}
+        .top-account-trigger{display:flex;align-items:center;gap:8px;min-height:36px;margin:0;padding:4px 9px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink-soft);cursor:pointer;list-style:none;transition:border-color .14s ease,background .14s ease}
+        .top-account-trigger::-webkit-details-marker{display:none}
+        .top-account-trigger:hover,.top-account-menu[open]>.top-account-trigger{border-color:var(--accent);background:var(--accent-soft)}
+        .top-account-avatar{display:grid;place-items:center;width:27px;height:27px;flex:none;border-radius:8px;background:var(--sidebar-active,var(--accent-soft));color:var(--sidebar-active-text,var(--accent));font-size:10px;font-weight:850}
+        .top-account-copy{display:grid;gap:1px;min-width:0;text-align:left}
+        .top-account-copy strong{max-width:150px;overflow:hidden;color:var(--ink);font-size:10px;font-weight:750;text-overflow:ellipsis;white-space:nowrap}
+        .top-account-copy small{color:var(--muted);font-size:8px}
+        .top-account-caret{color:var(--muted);font-size:11px}
+        .top-account-dropdown{position:absolute;top:calc(100% + 8px);right:0;z-index:100;display:grid;gap:2px;width:220px;padding:7px;border:1px solid var(--line-strong);border-radius:10px;background:var(--surface);box-shadow:0 16px 40px rgba(20,38,50,.16)}
+        .top-account-item{display:flex;align-items:center;gap:9px;width:100%;min-height:37px;margin:0;padding:8px 9px;border:1px solid transparent;border-radius:7px;background:transparent;color:var(--ink-soft);font-size:10px;font-weight:650;text-align:left;text-decoration:none;cursor:pointer}
+        .top-account-item:hover{border-color:var(--line);background:var(--surface-soft);color:var(--accent);text-decoration:none}
+        .top-account-item .icon{color:var(--muted)}
+        .top-account-divider{height:1px;margin:5px 2px;background:var(--line)}
+        .top-account-dropdown form{margin:0}
+        .top-account-logout{color:var(--danger)}
+        .top-account-logout:hover{border-color:var(--danger-bg);background:var(--danger-bg);color:var(--danger)}
+        html[data-theme="dark"] .top-account-trigger,html[data-theme="dark"] .top-account-dropdown{background:var(--surface);border-color:var(--line-strong)}
+        @media(max-width:720px){
+            .top-account-trigger{width:34px;min-width:34px;height:34px;min-height:34px;justify-content:center;padding:3px}
+            .top-account-copy,.top-account-caret{display:none}
+            .top-account-avatar{width:25px;height:25px}
+            .top-account-dropdown{right:0;width:210px}
+        }
+
 </style>
 </head>
-<body class="{{ ($appAppearance['sidebar_visible'] ?? true) ? '' : 'sidebar-hidden' }}" data-sidebar-visible="{{ ($appAppearance['sidebar_visible'] ?? true) ? '1' : '0' }}">
+<body class="{{ ($appAppearance['sidebar_visible'] ?? true) ? '' : 'sidebar-hidden' }}" data-sidebar-visible="{{ ($appAppearance['sidebar_visible'] ?? true) ? '1' : '0' }}" data-sidebar-color="{{ $appAppearance['sidebar_color'] ?? 'blue' }}">
 
 <svg class="icon-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
  <symbol id="icon-layout-dashboard" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="5" rx="1.5"/><rect x="13" y="10" width="8" height="11" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/></symbol>
@@ -1199,9 +1249,26 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
     <div class="top-actions">
         <button class="top-sidebar-toggle" type="button" id="sidebar-visibility-toggle" aria-controls="app-sidebar" aria-expanded="{{ ($appAppearance['sidebar_visible'] ?? true) ? 'true' : 'false' }}" aria-label="Mostrar u ocultar menú lateral" title="Mostrar u ocultar menú lateral"><x-icon name="panel-left" size="16" /><span>Menú</span></button>
         <button class="top-theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema" title="Cambiar tema"><x-icon name="moon" size="16" /><span>Modo oscuro</span></button>
-        <a class="top-user" href="{{ route('profile.edit') }}">{{ auth()->user()->name ?? '' }} · Mi perfil</a>
-        <button class="top-help" type="button" data-modal-open="workflow-help-dialog"><x-icon name="circle-help" size="15" /> Ayuda</button>
-        <form method="POST" action="{{ route('logout') }}">@csrf<button class="logout" type="submit"><x-icon name="log-out" size="15" />Cerrar sesión</button></form>
+        <details class="top-account-menu">
+            <summary class="top-account-trigger" aria-label="Abrir opciones de cuenta" title="Opciones de cuenta">
+                <span class="top-account-avatar">{{ mb_strtoupper(mb_substr(trim(auth()->user()->name ?? 'U'), 0, 1)) }}</span>
+                <span class="top-account-copy"><strong>{{ auth()->user()->name ?? 'Mi cuenta' }}</strong><small>Mi cuenta</small></span>
+                <span class="top-account-caret" aria-hidden="true">▾</span>
+            </summary>
+            <div class="top-account-dropdown">
+                <a class="top-account-item" href="{{ route('profile.edit') }}"><x-icon name="user-round" size="16" /> Mi perfil</a>
+                <a class="top-account-item" href="{{ route('admin.settings.edit') }}"><x-icon name="settings" size="16" /> Ajustes de interfaz</a>
+                @if(auth()->user()->isAdmin())
+                    <a class="top-account-item" href="{{ route('admin.professors.index') }}"><x-icon name="users-round" size="16" /> Gestión de cuentas</a>
+                @endif
+                <button class="top-account-item" type="button" data-modal-open="workflow-help-dialog"><x-icon name="circle-help" size="16" /> Ayuda rápida</button>
+                <div class="top-account-divider"></div>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button class="top-account-item top-account-logout" type="submit"><x-icon name="log-out" size="16" /> Cerrar sesión</button>
+                </form>
+            </div>
+        </details>
     </div>
 </header>
 <div class="app-shell">
@@ -1384,6 +1451,12 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
     };
     setTheme(storage.get('gd-theme', root.dataset.theme || 'light') === 'dark');
     themeButtons.forEach(button => button.addEventListener('click', () => setTheme(root.dataset.theme !== 'dark')));
+
+    const accountMenu = document.querySelector('.top-account-menu');
+    document.addEventListener('click', event => {
+        if (accountMenu && !accountMenu.contains(event.target)) accountMenu.open = false;
+        if (accountMenu && event.target.closest('.top-account-item')) accountMenu.open = false;
+    });
 
     let pendingForm = null;
     let lastModalTrigger = null;
