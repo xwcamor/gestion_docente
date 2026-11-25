@@ -172,6 +172,7 @@ CREATE TABLE modality_schedules (
   end_time TIME NOT NULL,
   classroom VARCHAR(255) NULL,
   block_type VARCHAR(255) NOT NULL DEFAULT 'CLASS',
+  repeat_interval_weeks TINYINT UNSIGNED NOT NULL DEFAULT 1,
   created_at TIMESTAMP NULL,
   updated_at TIMESTAMP NULL,
   INDEX modality_schedules_modality_idx (course_modality_id),
