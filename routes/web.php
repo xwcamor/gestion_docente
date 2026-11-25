@@ -20,6 +20,7 @@ use App\Http\Controllers\CurriculumController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SystemSettingController;
 use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\WorkloadTreeController;
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1')->name('login.store');
@@ -31,6 +32,9 @@ Route::middleware(['auth', 'professor'])->group(function () {
 
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
+    Route::get('/arbol/ciclos/{cycle}/grupos', [WorkloadTreeController::class, 'groups'])->name('workload-tree.groups');
+    Route::get('/arbol/grupos/{group}/cursos', [WorkloadTreeController::class, 'courses'])->name('workload-tree.courses');
+    Route::get('/arbol/asignaciones/{assignment}/modalidades', [WorkloadTreeController::class, 'modalities'])->name('workload-tree.modalities');
     // Importación de distribución académica desde Excel.
     Route::get('/distribucion/importar', [CourseDistributionImportController::class, 'create'])->name('distribution.create');
     Route::get('/distribucion/plantilla.xlsx', [CourseDistributionImportController::class, 'downloadTemplate'])->name('distribution.template');
