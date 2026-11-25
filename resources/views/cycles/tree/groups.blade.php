@@ -79,11 +79,11 @@
                 </section>
 
                 <div class="tree-delete-confirm tree-group-delete-confirm" data-group-delete-confirm hidden>
-                    <p><strong>¿Eliminar Grupo {{ $group->name }}?</strong> Se retirarán sus cursos, modalidades, horarios y documentos asociados.</p>
+                    <p><strong>¿Eliminar este grupo?</strong> También se quitarán sus cursos, horarios y documentos.</p>
                     <form method="POST" action="{{ route('groups.destroy', $group) }}" data-tree-delete-group>
                         @csrf
                         @method('DELETE')
-                        <button class="btn btn-danger btn-sm" type="submit" @disabled($cycleGroupCount <= 1)>Confirmar eliminación</button>
+                        <button class="btn btn-danger btn-sm" type="submit" @disabled($cycleGroupCount <= 1)>Eliminar grupo</button>
                         <button class="btn btn-ghost btn-sm" type="button" data-inline-cancel>Cancelar</button>
                     </form>
                 </div>
