@@ -115,8 +115,8 @@ class CurriculumImportService
         $assignment->loadMissing(['course', 'group.cycle']);
         $course = $assignment->course;
         $cycle = $assignment->group?->cycle;
-        $career = $cycle?->career ?: ($course->career ?: 'No registrada');
-        $semester = $cycle?->semester ?: 'No registrado';
+        $career = $assignment->group?->career ?: ($cycle?->career ?: ($course->career ?: 'No registrada'));
+        $semester = $assignment->group?->semester ?: ($cycle?->semester ?: 'No registrado');
         $generatedAt = $generatedAt ?: now()->toIso8601String();
         $sectionSource = '';
         foreach ([
@@ -403,10 +403,10 @@ JSON;
                 'module_code' => $meta['module_code'] ?? null,
                 'module_name' => $meta['module_name'] ?? null,
                 'course_name' => $meta['course_name'] ?? $course->name,
-                'career' => $meta['career'] ?? ($assignment->group->cycle->career ?? $course->career),
+                'career' => $meta['career'] ?? ($assignment->group->career ?: ($assignment->group->cycle->career ?? $course->career)),
                 'professional_school' => $meta['professional_school'] ?? null,
                 'occupational_module' => $meta['occupational_module'] ?? null,
-                'semester' => $meta['semester'] ?? ($assignment->group->cycle->semester ?? null),
+                'semester' => $meta['semester'] ?? ($assignment->group->semester ?: ($assignment->group->cycle->semester ?? null)),
                 'general_objective' => $meta['general_objective'] ?? null,
                 'source_filename' => $source['filename'] ?? 'Importación JSON de malla curricular',
                 'source_path' => $source['path'] ?? null,
