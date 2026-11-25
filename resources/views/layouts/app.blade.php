@@ -1185,6 +1185,89 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
             .top-account-dropdown{right:0;width:210px}
         }
 
+        /* Alinea el sidebar fijo con la columna real del contenido.
+           box-sizing evita que el padding se sume al ancho de la columna y tape el main. */
+        .app-shell{
+            display:grid!important;
+            grid-template-columns:var(--sidebar-width) minmax(0,1fr)!important;
+            width:100%;
+            min-width:0;
+        }
+        .sidebar{
+            box-sizing:border-box!important;
+            width:var(--sidebar-width)!important;
+            min-width:0;
+            margin:0!important;
+        }
+        .main{
+            grid-column:2!important;
+            grid-row:1;
+            min-width:0!important;
+            box-sizing:border-box!important;
+        }
+        body.sidebar-collapsed .app-shell{
+            grid-template-columns:84px minmax(0,1fr)!important;
+        }
+        body.sidebar-collapsed .sidebar{
+            width:84px!important;
+            box-sizing:border-box!important;
+        }
+        body.sidebar-hidden .app-shell{grid-template-columns:minmax(0,1fr)!important}
+        body.sidebar-hidden .main{grid-column:1!important}
+
+        @media(max-width:1050px){
+            .app-shell,body.sidebar-collapsed .app-shell{
+                grid-template-columns:minmax(0,1fr)!important;
+                grid-template-rows:auto minmax(0,1fr);
+            }
+            .sidebar{
+                position:relative!important;
+                inset:auto!important;
+                grid-column:1!important;
+                grid-row:1!important;
+                width:100%!important;
+                height:auto!important;
+                max-height:none!important;
+                box-sizing:border-box!important;
+                overflow-x:auto!important;
+                overflow-y:hidden!important;
+            }
+            .sidebar-inner{
+                display:block!important;
+                width:max-content!important;
+                min-width:100%!important;
+                min-height:0!important;
+            }
+            .sidebar-toolbar,.sidebar-footer{display:none!important}
+            .sidebar-nav{
+                display:flex!important;
+                align-items:center;
+                gap:5px;
+                width:max-content;
+                min-width:100%;
+            }
+            .sidebar .nav-label{display:none!important}
+            .sidebar .nav-link{
+                display:inline-flex!important;
+                justify-content:center;
+                min-height:38px;
+                padding:8px 10px;
+                white-space:nowrap;
+            }
+            .sidebar .nav-link span{display:inline!important}
+            body.sidebar-collapsed .sidebar .nav-link{justify-content:center;padding:8px 10px}
+            body.sidebar-collapsed .sidebar .nav-link span{display:inline!important}
+            .main{grid-column:1!important;grid-row:2!important;min-width:0!important}
+            body.sidebar-hidden .main{grid-row:1!important}
+        }
+        @media(max-width:720px){
+            .sidebar{position:relative!important;top:auto!important;left:auto!important;bottom:auto!important}
+            .main{padding:10px 10px 24px!important}
+        }
+        @media(prefers-reduced-motion:reduce){
+            .app-shell{transition:none!important}
+        }
+
 </style>
 </head>
 <body class="{{ ($appAppearance['sidebar_visible'] ?? true) ? '' : 'sidebar-hidden' }}" data-sidebar-visible="{{ ($appAppearance['sidebar_visible'] ?? true) ? '1' : '0' }}" data-sidebar-color="{{ $appAppearance['sidebar_color'] ?? 'blue' }}">
