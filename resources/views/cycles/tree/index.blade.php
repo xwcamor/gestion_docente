@@ -914,7 +914,7 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
             }),
             editorField('Código institucional (opcional)', course.dataset.courseCode, {
                 editable: true, url: course.dataset.courseCodeUrl, field: 'code', maxLength: 80,
-                hint: 'Puedes dejarlo sin código.'
+                hint: 'Opcional. Si el curso se comparte con otros grupos, el cambio también se reflejará allí.'
             })
         );
         editorFields.append(identity);
@@ -1108,7 +1108,7 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
             } finally {
                 if (submit) {
                     submit.disabled = false;
-                    submit.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#icon-plus"></use></svg> Crear curso';
+                    submit.textContent = 'Crear curso';
                 }
             }
             return;
@@ -1141,6 +1141,9 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
                     button.disabled = remainingTotal <= 1;
                     const label = button.querySelector('[data-group-delete-label]');
                     if (label) label.textContent = button.disabled ? 'Único grupo' : 'Eliminar grupo';
+                });
+                document.querySelectorAll('[data-group-delete-confirm] button[type="submit"]').forEach(button => {
+                    button.disabled = remainingTotal <= 1;
                 });
                 showFeedback(payload.message || 'Grupo eliminado.');
             } catch (error) {
