@@ -1185,38 +1185,55 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
             .top-account-dropdown{right:0;width:210px}
         }
 
-        /* Layout definitivo: el sidebar ocupa su columna y nunca cubre el contenido. */
+        /* Sidebar de escritorio: fijo a la izquierda y con espacio reservado para el contenido. */
         .app-shell{
             display:grid!important;
             grid-template-columns:var(--sidebar-width) minmax(0,1fr)!important;
             grid-template-areas:"sidebar main";
-            align-items:stretch!important;
+            align-items:start!important;
             width:100%;
             min-width:0;
             min-height:calc(100dvh - 60px);
         }
+        body.sidebar-collapsed .app-shell{
+            grid-template-columns:84px minmax(0,1fr)!important;
+            grid-template-areas:"sidebar main";
+        }
+        body.sidebar-hidden .app-shell{
+            grid-template-columns:minmax(0,1fr)!important;
+            grid-template-areas:"main";
+        }
         .app-shell>.sidebar{
             grid-area:sidebar!important;
-            position:sticky!important;
-            inset:auto!important;
+            position:fixed!important;
             top:60px!important;
-            align-self:start!important;
+            right:auto!important;
+            bottom:0!important;
+            left:0!important;
+            z-index:70!important;
             box-sizing:border-box!important;
-            width:100%!important;
+            width:var(--sidebar-width)!important;
             min-width:0!important;
-            max-width:100%!important;
-            height:calc(100dvh - 60px)!important;
-            max-height:calc(100dvh - 60px)!important;
+            max-width:var(--sidebar-width)!important;
+            height:auto!important;
+            max-height:none!important;
             margin:0!important;
+            padding:16px 12px!important;
             overflow-x:hidden!important;
             overflow-y:auto!important;
-            padding:16px 12px!important;
-            z-index:20!important;
+            overscroll-behavior:contain;
         }
+        body.sidebar-collapsed .app-shell>.sidebar{
+            width:84px!important;
+            max-width:84px!important;
+            padding-right:8px!important;
+            padding-left:8px!important;
+        }
+        body.sidebar-hidden .app-shell>.sidebar{display:none!important}
         .app-shell>.main{
             grid-area:main!important;
-            grid-column:auto!important;
-            grid-row:auto!important;
+            grid-column:2!important;
+            grid-row:1!important;
             position:relative!important;
             width:100%!important;
             min-width:0!important;
@@ -1224,104 +1241,138 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
             margin:0!important;
             box-sizing:border-box!important;
         }
-        body.sidebar-collapsed .app-shell{
-            grid-template-columns:84px minmax(0,1fr)!important;
-            grid-template-areas:"sidebar main";
-        }
-        body.sidebar-collapsed .app-shell>.sidebar{
-            width:100%!important;
-            padding-right:8px!important;
-            padding-left:8px!important;
-        }
-        body.sidebar-hidden .app-shell{
-            grid-template-columns:minmax(0,1fr)!important;
-            grid-template-areas:"main";
-        }
-        body.sidebar-hidden .app-shell>.sidebar{display:none!important}
-        body.sidebar-hidden .app-shell>.main{grid-area:main!important}
+        body.sidebar-hidden .app-shell>.main{grid-column:1!important}
 
-        @media(max-width:1050px){
-            .app-shell,
-            body.sidebar-collapsed .app-shell{
-                grid-template-columns:minmax(0,1fr)!important;
-                grid-template-areas:"sidebar" "main";
-                grid-template-rows:auto minmax(0,1fr);
-                align-items:start!important;
-            }
-            .app-shell>.sidebar,
-            body.sidebar-collapsed .app-shell>.sidebar{
-                grid-area:sidebar!important;
-                position:relative!important;
-                inset:auto!important;
-                top:auto!important;
-                left:auto!important;
-                right:auto!important;
-                bottom:auto!important;
-                width:100%!important;
-                height:auto!important;
-                min-height:0!important;
-                max-height:none!important;
-                margin:0!important;
-                padding:7px 10px!important;
-                box-sizing:border-box!important;
-                overflow-x:auto!important;
-                overflow-y:hidden!important;
-                border-right:0!important;
-                border-bottom:1px solid var(--sidebar-border,var(--line))!important;
-                box-shadow:none!important;
-            }
-            .app-shell>.sidebar .sidebar-inner{
+        .sidebar-mobile-backdrop{display:none}
+
+        /* En móvil, el menú es un cajón superpuesto: no ocupa espacio bajo el topbar. */
+        @media(max-width:720px){
+            .topbar{z-index:120!important}
+            .app-shell{
                 display:block!important;
-                width:max-content!important;
-                min-width:100%!important;
-                min-height:0!important;
-            }
-            .app-shell>.sidebar .sidebar-toolbar,
-            .app-shell>.sidebar .sidebar-footer{display:none!important}
-            .app-shell>.sidebar .sidebar-nav{
-                display:flex!important;
-                align-items:center!important;
-                gap:5px!important;
-                width:max-content!important;
-                min-width:100%!important;
-                overflow:visible!important;
-            }
-            .app-shell>.sidebar .nav-label{display:none!important}
-            .app-shell>.sidebar .nav-link{
-                display:inline-flex!important;
-                justify-content:center!important;
-                min-height:38px!important;
-                padding:8px 10px!important;
-                white-space:nowrap!important;
-            }
-            .app-shell>.sidebar .nav-link span{display:inline!important}
-            body.sidebar-collapsed .app-shell>.sidebar .nav-link{
-                justify-content:center!important;
-                padding:8px 10px!important;
-            }
-            body.sidebar-collapsed .app-shell>.sidebar .nav-link span{display:inline!important}
-            .app-shell>.main{
-                grid-area:main!important;
-                grid-column:auto!important;
-                grid-row:auto!important;
                 width:100%!important;
                 min-width:0!important;
-                padding:12px clamp(14px,2vw,22px) 22px!important;
+                min-height:calc(100dvh - 54px);
+                margin-top:54px!important;
             }
-        }
-        @media(max-width:720px){
+            .app-shell>.main{
+                display:block!important;
+                width:100%!important;
+                min-width:0!important;
+                padding:10px 10px 24px!important;
+            }
             .app-shell>.sidebar,
-            body.sidebar-collapsed .app-shell>.sidebar{
-                position:relative!important;
-                top:auto!important;
-                padding:6px 8px!important;
+            body.sidebar-collapsed .app-shell>.sidebar,
+            body.sidebar-hidden .app-shell>.sidebar{
+                display:flex!important;
+                position:fixed!important;
+                top:54px!important;
+                right:auto!important;
+                bottom:0!important;
+                left:0!important;
+                z-index:110!important;
+                width:min(var(--sidebar-width),86vw)!important;
+                max-width:86vw!important;
+                height:auto!important;
+                max-height:none!important;
+                margin:0!important;
+                padding:14px 11px!important;
+                box-sizing:border-box!important;
+                overflow-x:hidden!important;
+                overflow-y:auto!important;
+                border-right:1px solid var(--sidebar-border,var(--line))!important;
+                border-bottom:0!important;
+                box-shadow:12px 0 35px rgba(18,36,48,.16)!important;
+                transform:translateX(-105%);
+                visibility:hidden;
+                pointer-events:none;
+                transition:transform .22s ease,visibility .22s ease;
             }
-            .app-shell>.sidebar .nav-link{min-height:36px!important;padding:7px 8px!important;font-size:10px!important}
-            .app-shell>.sidebar .nav-link .icon{width:16px!important;height:16px!important}
-            .app-shell>.main{padding:10px 10px 24px!important}
+            body.sidebar-mobile-open .app-shell>.sidebar{
+                display:flex!important;
+                transform:translateX(0);
+                visibility:visible;
+                pointer-events:auto;
+            }
+            .app-shell>.sidebar .sidebar-inner,
+            body.sidebar-collapsed .app-shell>.sidebar .sidebar-inner{
+                display:flex!important;
+                flex:1 0 auto!important;
+                flex-direction:column!important;
+                align-items:stretch!important;
+                gap:12px!important;
+                width:100%!important;
+                min-width:0!important;
+                min-height:100%!important;
+            }
+            .app-shell>.sidebar .sidebar-toolbar,
+            .app-shell>.sidebar .sidebar-footer{
+                display:flex!important;
+            }
+            .app-shell>.sidebar .sidebar-toolbar{
+                justify-content:space-between!important;
+                padding:0 4px 10px!important;
+                border-bottom:1px solid var(--sidebar-border,var(--line))!important;
+            }
+            .app-shell>.sidebar .sidebar-toolbar-label,
+            body.sidebar-collapsed .app-shell>.sidebar .sidebar-toolbar-label{
+                display:inline!important;
+            }
+            .app-shell>.sidebar .sidebar-nav{
+                display:grid!important;
+                grid-template-columns:minmax(0,1fr)!important;
+                align-content:start!important;
+                gap:4px!important;
+                width:100%!important;
+                min-width:0!important;
+                overflow:visible!important;
+            }
+            .app-shell>.sidebar .nav-label,
+            body.sidebar-collapsed .app-shell>.sidebar .nav-label{
+                display:block!important;
+            }
+            .app-shell>.sidebar .nav-link,
+            body.sidebar-collapsed .app-shell>.sidebar .nav-link{
+                display:flex!important;
+                align-items:center!important;
+                justify-content:flex-start!important;
+                gap:11px!important;
+                width:100%!important;
+                min-height:42px!important;
+                padding:9px 10px!important;
+                white-space:normal!important;
+                font-size:12px!important;
+            }
+            .app-shell>.sidebar .nav-link span,
+            body.sidebar-collapsed .app-shell>.sidebar .nav-link span{
+                display:inline!important;
+            }
+            .app-shell>.sidebar .nav-link .icon{width:18px!important;height:18px!important}
+            .app-shell>.sidebar .sidebar-preferences,
+            body.sidebar-collapsed .app-shell>.sidebar .sidebar-preferences{
+                display:grid!important;
+                margin-top:auto!important;
+            }
+            body.sidebar-mobile-open .sidebar-mobile-backdrop{
+                display:block!important;
+                position:fixed!important;
+                inset:54px 0 0!important;
+                z-index:100!important;
+                background:rgba(12,25,35,.48)!important;
+                border:0!important;
+                opacity:1;
+                cursor:pointer;
+                -webkit-tap-highlight-color:transparent;
+            }
+            body.sidebar-mobile-open .app-shell>.main{
+                visibility:hidden!important;
+                pointer-events:none!important;
+                user-select:none!important;
+            }
+            body.sidebar-mobile-open{overflow:hidden!important}
         }
         @media(prefers-reduced-motion:reduce){
-            .app-shell{transition:none!important}
+            .app-shell>.sidebar{transition:none!important}
         }
 </style>
 </head>
@@ -1411,6 +1462,7 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
     </div>
 </header>
 <div class="app-shell">
+    <button class="sidebar-mobile-backdrop" type="button" id="sidebar-mobile-backdrop" aria-label="Cerrar menú" tabindex="-1"></button>
     <aside class="sidebar" id="app-sidebar" aria-label="Navegación principal">
         <div class="sidebar-inner">
             <div class="sidebar-toolbar">
@@ -1542,6 +1594,9 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
     const body = document.body;
     const collapseButton = document.getElementById('sidebar-collapse');
     const visibilityButton = document.getElementById('sidebar-visibility-toggle');
+    const mobileBackdrop = document.getElementById('sidebar-mobile-backdrop');
+    const sidebar = document.getElementById('app-sidebar');
+    const mobileSidebarQuery = window.matchMedia('(max-width: 720px)');
     const themeButtons = [...document.querySelectorAll('[data-theme-toggle]')];
 
     const storage = {
@@ -1559,7 +1614,21 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
         storage.set('gd-sidebar-collapsed', collapsed ? '1' : '0');
     };
     setCollapsed(storage.get('gd-sidebar-collapsed', '0') === '1');
-    collapseButton?.addEventListener('click', () => setCollapsed(!body.classList.contains('sidebar-collapsed')));
+
+    const isMobileSidebar = () => mobileSidebarQuery.matches;
+    const setMobileSidebarOpen = open => {
+        body.classList.toggle('sidebar-mobile-open', open);
+        if (visibilityButton) {
+            visibilityButton.setAttribute('aria-expanded', open ? 'true' : 'false');
+            visibilityButton.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú');
+            visibilityButton.title = open ? 'Cerrar menú' : 'Abrir menú';
+        }
+        if (open) {
+            body.style.overflow = 'hidden';
+        } else {
+            body.style.removeProperty('overflow');
+        }
+    };
 
     const setSidebarVisible = visible => {
         body.classList.toggle('sidebar-hidden', !visible);
@@ -1569,8 +1638,53 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
             visibilityButton.title = visible ? 'Ocultar menú lateral' : 'Mostrar menú lateral';
         }
     };
+
+    if (isMobileSidebar()) {
+        setMobileSidebarOpen(false);
+    } else {
+        setSidebarVisible(!body.classList.contains('sidebar-hidden'));
+    }
+
     visibilityButton?.addEventListener('click', () => {
+        if (isMobileSidebar()) {
+            setMobileSidebarOpen(!body.classList.contains('sidebar-mobile-open'));
+            return;
+        }
         setSidebarVisible(body.classList.contains('sidebar-hidden'));
+    });
+
+    const closeMobileSidebar = () => {
+        if (body.classList.contains('sidebar-mobile-open')) {
+            setMobileSidebarOpen(false);
+            visibilityButton?.focus({ preventScroll: true });
+        }
+    };
+
+    mobileBackdrop?.addEventListener('click', closeMobileSidebar);
+    collapseButton?.addEventListener('click', () => {
+        if (isMobileSidebar()) {
+            closeMobileSidebar();
+            return;
+        }
+        setCollapsed(!body.classList.contains('sidebar-collapsed'));
+    });
+
+    sidebar?.addEventListener('click', event => {
+        if (isMobileSidebar() && event.target.closest('a.nav-link')) closeMobileSidebar();
+    });
+
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && isMobileSidebar()) closeMobileSidebar();
+    });
+
+    mobileSidebarQuery.addEventListener('change', event => {
+        if (event.matches) {
+            setMobileSidebarOpen(false);
+        } else {
+            body.classList.remove('sidebar-mobile-open');
+            body.style.removeProperty('overflow');
+            setSidebarVisible(!body.classList.contains('sidebar-hidden'));
+        }
     });
 
     const setTheme = dark => {
