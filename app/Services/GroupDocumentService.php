@@ -303,6 +303,8 @@ class GroupDocumentService
         }
 
         foreach ($source->getAllSheets() as $sheet) {
+            // Importa hojas de otro Spreadsheet con sus estilos; addSheet()
+            // no copia correctamente los estilos entre libros distintos.
             $copy = clone $sheet;
             $copy->setTitle($sheetMap[$sheet->getTitle()]);
             $copy->setSheetState($sheet->getSheetState());
@@ -326,7 +328,7 @@ class GroupDocumentService
                 $cell->setValue($value);
             }
 
-            $target->addSheet($copy);
+            $target->addExternalSheet($copy);
         }
 
         $source->disconnectWorksheets();
