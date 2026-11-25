@@ -13,7 +13,7 @@ class TeachingGroup extends Model
     use HasSlugRouteKey;
 
     protected $fillable = [
-        'cycle_id', 'professor_id', 'name', 'assigned_at', 'notes',
+        'cycle_id', 'professor_id', 'name', 'code', 'assigned_at', 'notes',
         'workload_type', 'workload_start_date', 'workload_end_date', 'workload_days',
         'workload_start_time', 'workload_end_time', 'supervisor_theory_hours', 'supervisor_lab_hours',
     ];
