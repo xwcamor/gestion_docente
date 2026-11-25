@@ -784,6 +784,17 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
  .tree-draft-footer .btn,.tree-course-draft-form .tree-course-create-footer .btn{width:100%}
 }
 
+
+/* La acción para retirar un curso siempre está visible en su fila */
+.tree-structure-card .workload-tree-course{position:relative}
+.tree-structure-card .tree-course-summary{padding-right:54px}
+.tree-course-delete-trigger{position:absolute;z-index:3;top:12px;right:12px;width:32px;height:32px;border-radius:8px}
+.tree-course-delete-trigger:hover:not(:disabled){border-color:var(--danger);background:var(--danger-bg);color:var(--danger)}
+.tree-course-delete-trigger:disabled{opacity:.3;cursor:not-allowed}
+.tree-course-delete-confirm{position:relative;z-index:2;margin:0 12px 10px;padding:12px;border:1px solid color-mix(in srgb,var(--danger) 40%,var(--line));border-radius:9px;background:var(--danger-bg)}
+.tree-course-delete-confirm p{margin:0 0 9px;color:var(--ink-soft);font-size:11px;line-height:1.5}
+.tree-course-delete-confirm form{display:flex;gap:7px;flex-wrap:wrap}
+
 </style>
 @endpush
 
