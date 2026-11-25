@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cycle;
+use App\Models\CourseAssignment;
+use App\Models\Curriculum;
 use App\Models\TeachingGroup;
 use App\Models\Student;
 use App\Models\CourseModality;
@@ -465,6 +467,13 @@ class GroupController extends Controller
         $this->authorizeGroup($group);
         $cycle = $group->cycle;
 
+        $courseIds = CourseAssignment::query()
+            ->where('teaching_group_id', $group->id)
+            ->pluck('course_id')
+            ->unique()
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
         $modalityIds = CourseModality::query()
             ->whereHas('assignment', fn ($query) => $query->where('teaching_group_id', $group->id))
             ->pluck('id')
@@ -486,7 +495,7 @@ class GroupController extends Controller
         $importPaths = $importQuery->pluck('stored_path');
 
         // Serializa las eliminaciones del mismo ciclo para proteger al último grupo.
-        $deleted = DB::transaction(function () use ($cycle, $group) {
+        $deleted = DB::transaction(function () use ($cycle, $group, $courseIds) {
             Cycle::query()->whereKey($cycle->id)->lockForUpdate()->firstOrFail();
 
             if ($cycle->groups()->count() <= 1) {
@@ -494,6 +503,19 @@ class GroupController extends Controller
             }
 
             $group->delete();
+
+            foreach ($courseIds as $courseId) {
+                $hasOtherAssignments = CourseAssignment::query()
+                    ->where('course_id', $courseId)
+                    ->exists();
+
+                if (!$hasOtherAssignments) {
+                    Curriculum::query()
+                        ->where('course_id', $courseId)
+                        ->where('is_active', true)
+                        ->update(['is_active' => false]);
+                }
+            }
 
             return true;
         });
