@@ -26,7 +26,7 @@
     </div>
 
     <form method="GET" action="{{ route('cycles.index') }}" class="filter-bar">
-        <input class="filter-input" type="search" name="q" value="{{ request('q') }}" placeholder="Buscar ciclo, grupo, curso o código…" aria-label="Buscar en la carga laboral">
+        <input class="filter-input" type="search" name="q" value="{{ request('q') }}" placeholder="Buscar ciclo, grupo, curso, código, NRC o bloque…" aria-label="Buscar en la carga laboral">
         <select class="filter-input" name="year" aria-label="Filtrar por año">
             <option value="">Todos los años</option>
             @foreach($years as $year)
