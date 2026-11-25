@@ -114,6 +114,8 @@ Route::middleware(['auth', 'professor'])->group(function () {
 
     Route::get('/feriados', [HolidayController::class, 'index'])->name('holidays.index');
     Route::post('/feriados', [HolidayController::class, 'store'])->name('holidays.store');
+    Route::patch('/feriados/{holiday}', [HolidayController::class, 'update'])->name('holidays.update');
+    Route::delete('/feriados/{holiday}', [HolidayController::class, 'destroy'])->name('holidays.destroy');
 
     Route::prefix('administracion')->name('admin.')->middleware('admin')->group(function () {
         Route::get('/profesores', [AdminProfessorController::class, 'index'])->name('professors.index');
