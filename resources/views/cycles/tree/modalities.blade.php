@@ -34,14 +34,14 @@
                        @endif>
                     Inicio:
                     @if($modality->active)
-                        <span class="tree-inline-date" data-inline-date="start_date">{{ $modality->start_date?->format('d/m/Y') ?: 'Sin fecha' }}</span>
+                        <span class="tree-inline-date" data-inline-date="start_date" title="Clic para editar la fecha">{{ $modality->start_date?->format('d/m/Y') ?: 'Sin fecha' }}</span>
                     @else
                         <span class="tree-disabled-value">{{ $modality->start_date?->format('d/m/Y') ?: 'Sin fecha' }}</span>
                     @endif
                     <span class="tree-date-separator">·</span>
                     Fin:
                     @if($modality->active)
-                        <span class="tree-inline-date" data-inline-date="end_date">{{ $modality->end_date?->format('d/m/Y') ?: 'Sin fecha' }}</span>
+                        <span class="tree-inline-date" data-inline-date="end_date" title="Clic para editar la fecha">{{ $modality->end_date?->format('d/m/Y') ?: 'Sin fecha' }}</span>
                     @else
                         <span class="tree-disabled-value">{{ $modality->end_date?->format('d/m/Y') ?: 'Sin fecha' }}</span>
                     @endif
