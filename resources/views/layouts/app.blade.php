@@ -1334,8 +1334,8 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
             body.sidebar-collapsed .app-shell>.sidebar .nav-link{justify-content:center!important;padding:11px 4px!important}
         }
 
-        /* En móvil el sidebar es un cajón superpuesto que oculta toda la página al abrirse. */
-        .sidebar-mobile-backdrop{display:none}
+        /* Móvil: cerrado = fuera del flujo. Abierto = panel fijo superpuesto. */
+        .sidebar-mobile-backdrop{display:none!important}
         @media(max-width:720px){
             .topbar{z-index:120!important}
             .app-shell{
@@ -1354,10 +1354,12 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
                 padding:10px 10px 24px!important;
                 box-sizing:border-box!important;
             }
+
+            /* Fundamental: el aside no existe en el flujo mientras está cerrado. */
             .app-shell>.sidebar,
             body.sidebar-collapsed .app-shell>.sidebar,
             body.sidebar-hidden .app-shell>.sidebar{
-                display:flex!important;
+                display:none!important;
                 position:fixed!important;
                 top:54px!important;
                 right:auto!important;
@@ -1376,20 +1378,26 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
                 overflow-y:auto!important;
                 border-right:1px solid var(--sidebar-border,var(--line))!important;
                 border-bottom:0!important;
+                background:var(--sidebar-bg,var(--surface))!important;
                 box-shadow:12px 0 35px rgba(18,36,48,.16)!important;
-                transform:translateX(-105%);
+                transform:translateX(-100%);
                 visibility:hidden;
                 pointer-events:none;
-                transition:transform .22s ease,visibility .22s ease;
             }
             body.sidebar-mobile-open .app-shell>.sidebar{
                 display:flex!important;
+                flex-direction:column!important;
                 transform:translateX(0)!important;
                 visibility:visible!important;
                 pointer-events:auto!important;
+                animation:gd-mobile-sidebar-in .18s ease-out both;
             }
-            .app-shell>.sidebar .sidebar-inner,
-            body.sidebar-collapsed .app-shell>.sidebar .sidebar-inner{
+            @keyframes gd-mobile-sidebar-in{
+                from{opacity:.92;transform:translateX(-12px)}
+                to{opacity:1;transform:translateX(0)}
+            }
+
+            .app-shell>.sidebar .sidebar-inner{
                 display:flex!important;
                 flex:1 0 auto!important;
                 flex-direction:column!important;
@@ -1435,7 +1443,11 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
             body.sidebar-collapsed .app-shell>.sidebar .nav-link span{display:inline!important}
             .app-shell>.sidebar .nav-link .icon{width:18px!important;height:18px!important}
             .app-shell>.sidebar .sidebar-preferences,
-            body.sidebar-collapsed .app-shell>.sidebar .sidebar-preferences{display:grid!important;margin-top:auto!important}
+            body.sidebar-collapsed .app-shell>.sidebar .sidebar-preferences{
+                display:grid!important;
+                margin-top:auto!important;
+            }
+
             body.sidebar-mobile-open .sidebar-mobile-backdrop{
                 display:block!important;
                 position:fixed!important;
