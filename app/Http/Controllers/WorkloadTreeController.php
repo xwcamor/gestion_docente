@@ -81,7 +81,7 @@ class WorkloadTreeController extends Controller
 
         $term = trim((string) $request->query('q', ''));
         $query = $group->assignments()
-            ->with(['course', 'curriculum.weeks', 'modalities:id,course_assignment_id,modality,nrc'])
+            ->with(['course', 'modalities:id,course_assignment_id,modality,nrc'])
             ->withCount('modalities')
             ->orderBy('id');
 
@@ -249,6 +249,26 @@ class WorkloadTreeController extends Controller
             'course_name' => $result['course']->name,
             'created_modalities' => $result['created_modalities'],
             'warnings' => $calendarWarnings,
+        ]);
+    }
+
+    public function updateCourseName(Request $request, CourseAssignment $assignment)
+    {
+        $assignment->loadMissing(['group', 'course']);
+        $this->authorizeGroup($assignment->group);
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+        ], [
+            'name.required' => 'Escribe el nombre del curso.',
+            'name.max' => 'El nombre del curso no puede superar los 255 caracteres.',
+        ]);
+
+        $assignment->course->update(['name' => trim($data['name'])]);
+
+        return response()->json([
+            'message' => 'Nombre del curso actualizado.',
+            'name' => $assignment->course->fresh()->name,
         ]);
     }
 
