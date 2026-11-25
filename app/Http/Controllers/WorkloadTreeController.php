@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CourseAssignment;
+use App\Models\Course;
 use App\Models\Cycle;
 use App\Models\TeachingGroup;
 use Illuminate\Http\Request;
@@ -252,6 +253,39 @@ class WorkloadTreeController extends Controller
             'course_name' => $result['course']->name,
             'created_modalities' => $result['created_modalities'],
             'warnings' => $calendarWarnings,
+        ]);
+    }
+
+    public function updateCourseCode(Request $request, CourseAssignment $assignment)
+    {
+        $assignment->loadMissing(['group', 'course']);
+        $this->authorizeGroup($assignment->group);
+
+        $data = $request->validate([
+            'code' => ['required', 'string', 'max:80', 'regex:/^(20\d{4}-)?[A-Z][A-Z0-9]{1,9}-[A-Z0-9]{1,12}$/i'],
+        ], [
+            'code.required' => 'Escribe el código institucional del curso.',
+            'code.regex' => 'Usa el formato institucional, por ejemplo 202620-PIAD-222.',
+        ]);
+
+        $code = strtoupper(trim($data['code']));
+        $duplicate = Course::query()
+            ->where('professor_id', $assignment->group->professor_id)
+            ->where('code', $code)
+            ->whereKeyNot($assignment->course_id)
+            ->exists();
+
+        if ($duplicate) {
+            throw ValidationException::withMessages([
+                'code' => 'Ese código ya pertenece a otro curso del catálogo.',
+            ]);
+        }
+
+        $assignment->course->update(['code' => $code]);
+
+        return response()->json([
+            'message' => 'Código institucional actualizado en todos los grupos donde se utiliza este curso.',
+            'code' => $assignment->course->fresh()->code,
         ]);
     }
 
