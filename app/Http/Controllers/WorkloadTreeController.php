@@ -126,133 +126,93 @@ class WorkloadTreeController extends Controller
         Request $request,
         TeachingGroup $group,
         CourseRegistrationService $registration,
-        StudentImportService $students,
-        CalendarService $calendar
+        StudentImportService $students
     ) {
         $this->authorizeGroup($group);
-        $group->loadMissing('cycle');
 
         $data = $request->validate([
-            'course_code' => ['required', 'string', 'max:80', 'regex:/^(20\d{4}-)?[A-Z][A-Z0-9]{1,9}-[A-Z0-9]{1,12}$/i'],
             'course_name' => ['required', 'string', 'max:255'],
+            'course_code' => ['nullable', 'string', 'max:80', 'regex:/^(20\d{4}-)?[A-Z][A-Z0-9]{1,9}-[A-Z0-9]{1,12}$/i'],
             'components' => ['required', 'array', 'min:1'],
             'components.*' => ['required', 'distinct', 'in:TEC,TALL'],
-            'tec_nrc' => ['nullable', 'digits_between:3,12'],
-            'tall_nrc' => ['nullable', 'digits_between:3,12'],
-            'tec_start_date' => ['nullable', 'date'],
-            'tec_end_date' => ['nullable', 'date'],
-            'tall_start_date' => ['nullable', 'date'],
-            'tall_end_date' => ['nullable', 'date'],
-            'tec_days' => ['nullable', 'array'],
-            'tec_days.*' => ['integer', 'between:1,7'],
-            'tall_days' => ['nullable', 'array'],
-            'tall_days.*' => ['integer', 'between:1,7'],
-            'tec_start_time' => ['nullable', 'date_format:H:i'],
-            'tec_end_time' => ['nullable', 'date_format:H:i'],
-            'tall_start_time' => ['nullable', 'date_format:H:i'],
-            'tall_end_time' => ['nullable', 'date_format:H:i'],
-            'tec_classroom' => ['nullable', 'string', 'max:100'],
-            'tall_classroom' => ['nullable', 'string', 'max:100'],
         ], [
-            'course_code.regex' => 'Usa el código base institucional, por ejemplo 202620-PIAD-224.',
-            'components.required' => 'Selecciona al menos una modalidad: TEC o TAL.',
-            'components.min' => 'Selecciona al menos una modalidad: TEC o TAL.',
+            'course_name.required' => 'Escribe el nombre del curso.',
+            'course_code.regex' => 'El código opcional debe tener el formato institucional, por ejemplo 202620-PIAD-222.',
+            'components.required' => 'Deja al menos una modalidad activa: TEC o TAL.',
+            'components.min' => 'Deja al menos una modalidad activa: TEC o TAL.',
         ]);
 
-        $codes = [];
-        $modalityDates = [];
-        $modalitySchedules = [];
-
-        foreach (['TEC' => 'tec', 'TALL' => 'tall'] as $type => $prefix) {
-            if (!in_array($type, $data['components'], true)) {
-                continue;
-            }
-
-            $nrc = trim((string) ($data[$prefix.'_nrc'] ?? ''));
-            $codes[] = strtoupper(trim($data['course_code'])).'-'.$type
-                .($nrc !== '' ? '-NRC_'.$nrc : '');
-
-            $startDate = $data[$prefix.'_start_date'] ?? null;
-            $endDate = $data[$prefix.'_end_date'] ?? null;
-
-            if (filled($startDate) xor filled($endDate)) {
-                throw ValidationException::withMessages([
-                    $prefix.'_start_date' => 'Completa tanto la fecha de inicio como la fecha de fin.',
-                    $prefix.'_end_date' => 'Completa tanto la fecha de inicio como la fecha de fin.',
-                ]);
-            }
-
-            if (filled($startDate) && filled($endDate) && $endDate < $startDate) {
-                throw ValidationException::withMessages([
-                    $prefix.'_end_date' => 'La fecha de fin debe ser igual o posterior al inicio.',
-                ]);
-            }
-
-            $modalityDates[$type] = [
-                'start_date' => $startDate ?: null,
-                'end_date' => $endDate ?: null,
-            ];
-
-            $days = array_values(array_unique(array_map('intval', $data[$prefix.'_days'] ?? [])));
-            $startTime = $data[$prefix.'_start_time'] ?? null;
-            $endTime = $data[$prefix.'_end_time'] ?? null;
-            $hasScheduleInput = $days !== [] || filled($startTime) || filled($endTime);
-
-            if ($hasScheduleInput) {
-                if (!$days || !$startTime || !$endTime || $endTime <= $startTime) {
-                    throw ValidationException::withMessages([
-                        $prefix.'_days' => 'Para crear el horario selecciona días y una hora de inicio y fin válida.',
-                    ]);
-                }
-
-                $modalitySchedules[$type] = [[
-                    'days' => $days,
-                    'start_time' => $startTime,
-                    'end_time' => $endTime,
-                    'repeat_interval_weeks' => 1,
-                    'instruction_type' => $type === 'TEC' ? 'THEORY' : 'LAB',
-                    'classroom' => trim((string) ($data[$prefix.'_classroom'] ?? '')),
-                ]];
-            } else {
-                $modalitySchedules[$type] = [];
-            }
+        $sourceCode = '';
+        $baseCode = trim((string) ($data['course_code'] ?? ''));
+        if ($baseCode !== '') {
+            $sourceCode = implode('; ', array_map(
+                fn ($type) => strtoupper($baseCode).'-'.$type,
+                $data['components']
+            ));
         }
 
         $component = count($data['components']) === 2 ? 'BOTH' : $data['components'][0];
         $result = $registration->register(
             $group,
-            $data['course_name'],
-            implode('; ', $codes),
+            trim($data['course_name']),
+            $sourceCode,
             $component,
-            $students,
-            $modalityDates,
-            $modalitySchedules
+            $students
         );
 
-        $calendarWarnings = [];
-        if ($result['schedule_count'] > 0) {
-            foreach ($result['assignment']->modalities->whereIn('modality', $result['created_modalities']) as $createdModality) {
-                if (!$createdModality->start_date || !$createdModality->end_date) {
-                    continue;
-                }
-
-                try {
-                    $calendar->rebuild($createdModality);
-                } catch (\Throwable $exception) {
-                    report($exception);
-                    $calendarWarnings[] = 'El curso se guardó, pero no se pudo generar uno de sus calendarios. Revisa ese horario.';
-                }
-            }
-        }
-
         return response()->json([
-            'message' => 'Curso agregado al grupo.',
+            'message' => 'Curso agregado a la estructura. Puedes completar NRC, fechas y horario desde Edición rápida.',
             'group_id' => $group->id,
             'assignment_id' => $result['assignment']->id,
             'assignments_count' => $group->assignments()->count(),
+            'course_id' => $result['course']->id,
             'course_name' => $result['course']->name,
+            'course_code' => $result['course']->code,
             'created_modalities' => $result['created_modalities'],
-            'warnings' => $calendarWarnings,
+            'warnings' => [],
+        ]);
+    }
+
+    public function storeModality(
+        Request $request,
+        CourseAssignment $assignment,
+        string $type,
+        StudentImportService $students
+    ) {
+        $assignment->loadMissing(['group.cycle']);
+        $this->authorizeGroup($assignment->group);
+
+        abort_unless(in_array($type, ['TEC', 'TALL'], true), 404);
+
+        $modality = DB::transaction(function () use ($assignment, $type, $students) {
+            $lockedAssignment = CourseAssignment::query()
+                ->whereKey($assignment->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $existing = $lockedAssignment->modalities()->where('modality', $type)->first();
+            if ($existing) {
+                throw ValidationException::withMessages([
+                    'modality' => 'Este componente ya existe. Actívalo desde Edición rápida.',
+                ]);
+            }
+
+            $modality = $lockedAssignment->modalities()->create([
+                'modality' => $type,
+                'active' => true,
+                'curriculum_start_week' => 1,
+                'period_label' => $assignment->group->cycle->academic_year.'-'.$assignment->group->cycle->cycle_code.'-'.$type,
+            ]);
+
+            $students->syncGroupRosterToModality($modality);
+
+            return $modality;
+        });
+
+        return response()->json([
+            'message' => ($type === 'TEC' ? 'Teoría' : 'Taller').' agregado y activado.',
+            'modality_id' => $modality->id,
+            'active' => true,
         ]);
     }
 
