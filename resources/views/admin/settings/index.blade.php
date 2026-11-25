@@ -303,6 +303,8 @@ html[data-theme="dark"] .branding-info-card>strong{color:#dce7ec}
     const previewSmallLogo = byId('brand-preview-logo-small');
     const previewMainMark = byId('brand-preview-mark');
     const previewSmallMark = byId('brand-preview-mark-small');
+    const previewButton = byId('brand-preview-button');
+    if (!previewButton) return;
     let previewObjectUrl = null;
 
     const syncPreview = () => {
@@ -316,9 +318,9 @@ html[data-theme="dark"] .branding-info-card>strong{color:#dce7ec}
         previewSmallMark.textContent = shortValue;
         previewMainMark.style.background = primaryValue;
         previewSmallMark.style.background = primaryValue;
-        byId('brand-preview-button').style.background = primaryValue;
-        byId('brand-preview-button').style.borderColor = primaryValue;
-        byId('brand-preview-button').dataset.hoverColor = hoverValue;
+        previewButton.style.background = primaryValue;
+        previewButton.style.borderColor = primaryValue;
+        previewButton.dataset.hoverColor = hoverValue;
         byId('primary-color-value').value = primaryValue.toUpperCase();
         byId('primary-hover-value').value = hoverValue.toUpperCase();
     };
@@ -342,11 +344,11 @@ html[data-theme="dark"] .branding-info-card>strong{color:#dce7ec}
     };
 
     [name, shortName, subtitle, primary, hover].forEach(field => field?.addEventListener('input', syncPreview));
-    byId('brand-preview-button').addEventListener('pointerenter', event => {
+    previewButton.addEventListener('pointerenter', event => {
         event.currentTarget.style.background = hover.value;
         event.currentTarget.style.borderColor = hover.value;
     });
-    byId('brand-preview-button').addEventListener('pointerleave', syncPreview);
+    previewButton.addEventListener('pointerleave', syncPreview);
 
     logoInput?.addEventListener('change', () => {
         const file = logoInput.files?.[0];
