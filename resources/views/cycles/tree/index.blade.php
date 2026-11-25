@@ -789,6 +789,441 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
 .tree-course-delete-confirm p{margin:0 0 9px;color:var(--ink-soft);font-size:11px;line-height:1.5}
 .tree-course-delete-confirm form{display:flex;gap:7px;flex-wrap:wrap}
 
+/* Pulido visual y responsive del árbol académico */
+.workload-tree-page{
+    display:grid;
+    gap:clamp(12px,1.45vw,18px);
+    min-width:0;
+}
+.workload-tree-page>.breadcrumbs{margin:0 0 -2px}
+.workload-tree-hero{
+    position:relative;
+    isolation:isolate;
+    overflow:hidden;
+    margin:0;
+    padding:clamp(18px,2.3vw,30px);
+    border-color:color-mix(in srgb,var(--accent) 25%,var(--line));
+    background:
+        radial-gradient(circle at 92% 5%,color-mix(in srgb,var(--accent) 10%,transparent),transparent 30%),
+        linear-gradient(125deg,var(--accent-soft),var(--surface) 68%);
+    box-shadow:0 8px 26px rgba(25,56,78,.045);
+}
+.workload-tree-hero:after{
+    position:absolute;
+    z-index:-1;
+    right:-50px;
+    bottom:-105px;
+    width:230px;
+    height:230px;
+    border:1px solid color-mix(in srgb,var(--accent) 12%,transparent);
+    border-radius:50%;
+    content:"";
+    pointer-events:none;
+}
+.workload-tree-hero-copy{min-width:0}
+.workload-tree-hero .eyebrow{display:flex;align-items:center;gap:7px}
+.workload-tree-hero h1{font-size:clamp(27px,3vw,40px);line-height:1.08}
+.workload-tree-context{gap:8px 16px;margin-top:12px}
+.workload-tree-context>span{min-width:0}
+.tree-context-hint{color:var(--muted);font-size:10px}
+.workload-tree-hero-actions{align-items:center}
+.tree-structure-card{
+    min-width:0;
+    padding:clamp(14px,2vw,26px);
+    border-color:var(--line);
+    border-radius:14px;
+    box-shadow:0 8px 28px rgba(30,65,85,.045);
+}
+.tree-structure-card .tree-panel-heading{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom:17px;
+}
+.tree-structure-card .tree-panel-heading>div{min-width:0}
+.tree-structure-card .tree-panel-heading h2{
+    margin:0;
+    font-size:clamp(20px,2vw,27px);
+    line-height:1.2;
+    letter-spacing:-.035em;
+}
+.tree-structure-card .tree-panel-heading p:not(.eyebrow){
+    max-width:76ch;
+    margin:7px 0 0;
+    color:var(--muted);
+    font-size:12px;
+    line-height:1.55;
+}
+.tree-structure-card .workload-tree-total{
+    flex:none;
+    border-color:color-mix(in srgb,var(--accent) 18%,var(--line));
+    background:var(--accent-soft);
+    color:var(--accent);
+    font-size:11px;
+    font-weight:800;
+}
+.tree-structure-card .workload-tree-search{
+    align-items:stretch;
+    gap:8px;
+    margin-bottom:14px;
+}
+.tree-structure-card .workload-tree-search-field{
+    min-width:0;
+    height:45px;
+    border-radius:10px;
+    background:var(--surface-soft);
+}
+.tree-structure-card .workload-tree-search-field:focus-within{
+    background:var(--surface);
+    box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 12%,transparent);
+}
+.tree-structure-card .workload-tree-search-field input{font-size:13px}
+.tree-structure-card .workload-tree-search .btn{
+    min-width:78px;
+    min-height:45px;
+    border-radius:9px;
+}
+.tree-structure-card .workload-tree-root{
+    border-color:var(--line);
+    border-radius:11px;
+    box-shadow:0 2px 8px rgba(25,56,78,.025);
+}
+.tree-structure-card .workload-tree-group-shell{
+    transition:background .18s ease,border-color .18s ease;
+}
+.tree-structure-card .workload-group-summary{
+    display:grid;
+    grid-template-columns:26px 42px minmax(0,1fr) 34px;
+    align-items:center;
+    gap:11px;
+    min-height:76px;
+    padding:13px 15px;
+    transition:background .18s ease;
+}
+.tree-structure-card .workload-tree-group[open]>.workload-group-summary{
+    background:linear-gradient(100deg,var(--accent-soft),var(--surface) 82%);
+}
+.tree-expand-symbol{
+    width:26px;
+    height:26px;
+    border-radius:7px;
+    transition:transform .2s ease,color .2s ease,background .2s ease;
+}
+.tree-node-icon,.tree-course-node{
+    width:42px;
+    height:42px;
+    border-radius:11px;
+    transition:transform .18s ease,background .18s ease,color .18s ease;
+}
+.tree-node-copy{
+    grid-column:3;
+    grid-row:1;
+    min-width:0;
+    gap:5px;
+    padding-right:3px;
+}
+.tree-node-copy strong{font-size:16px;letter-spacing:-.015em}
+.tree-node-copy small{
+    gap:5px 7px;
+    font-size:11px;
+    line-height:1.55;
+}
+.tree-meta-separator{opacity:.75}
+.tree-inline-editable{
+    display:inline-flex;
+    align-items:center;
+    max-width:100%;
+    min-height:24px;
+    padding:2px 5px;
+    border:1px dashed transparent;
+    border-radius:6px;
+    color:var(--ink-soft);
+    cursor:pointer;
+    overflow-wrap:anywhere;
+    transition:background .15s ease,border-color .15s ease,color .15s ease;
+}
+.tree-group-row-actions{
+    grid-column:4;
+    grid-row:1;
+    align-self:start;
+    margin:0;
+}
+.tree-group-row-actions .tree-icon-action{
+    width:32px;
+    height:32px;
+    border-radius:8px;
+}
+.tree-structure-card .workload-tree-children{
+    padding:12px 14px 14px 36px;
+    background:color-mix(in srgb,var(--surface-soft) 72%,var(--surface));
+}
+.tree-structure-card .tree-course-summary{
+    min-height:60px;
+    transition:background .16s ease;
+}
+.tree-course-summary .tree-node-copy strong{font-size:14px}
+.tree-course-components{gap:5px}
+.tree-component-chip{
+    min-width:36px;
+    padding:5px 8px;
+    font-size:10px;
+    transition:transform .15s ease,background .15s ease;
+}
+.tree-structure-card .tree-course-children{
+    background:var(--surface);
+}
+.tree-structure-card .workload-tree-modality{
+    border-top-color:color-mix(in srgb,var(--line) 75%,transparent);
+    transition:background .16s ease;
+}
+.tree-modality-tag{flex-basis:54px}
+.tree-live-feedback{
+    position:relative;
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    margin:12px 0 0;
+    padding:12px 14px;
+    border-radius:10px;
+    box-shadow:0 5px 16px rgba(20,60,40,.06);
+    animation:tree-feedback-in .24s ease-out both;
+}
+.tree-live-feedback:not(.is-error):before{
+    display:grid;
+    place-items:center;
+    flex:none;
+    width:20px;
+    height:20px;
+    border-radius:50%;
+    background:color-mix(in srgb,var(--success) 12%,transparent);
+    content:"✓";
+    font-size:12px;
+    font-weight:900;
+}
+.tree-live-feedback.is-error:before{
+    display:grid;
+    place-items:center;
+    flex:none;
+    width:20px;
+    height:20px;
+    border-radius:50%;
+    background:color-mix(in srgb,var(--danger) 12%,transparent);
+    content:"!";
+    font-size:12px;
+    font-weight:900;
+}
+.tree-live-feedback.is-leaving{animation:tree-feedback-out .22s ease-in both}
+.tree-loading-state{
+    position:relative;
+    overflow:hidden;
+    min-height:52px;
+    padding:16px 14px 16px 38px;
+    border-radius:8px;
+    background:var(--surface-soft);
+    color:var(--muted);
+}
+.tree-loading-state:before{
+    position:absolute;
+    top:50%;
+    left:14px;
+    width:12px;
+    height:12px;
+    margin-top:-6px;
+    border:2px solid var(--line-strong);
+    border-top-color:var(--accent);
+    border-radius:50%;
+    content:"";
+    animation:tree-spinner .75s linear infinite;
+}
+.tree-group-draft-form,.tree-course-draft-form{
+    border-radius:11px;
+    box-shadow:0 4px 14px rgba(25,56,78,.04);
+    animation:tree-reveal .2s ease-out both;
+}
+.tree-draft-fields .field,.tree-course-name-input .field{
+    min-height:43px;
+    border-radius:9px;
+}
+.tree-draft-footer .btn{border-radius:9px}
+.tree-add-row{
+    padding:10px;
+    background:transparent;
+}
+.tree-add-row>button{
+    min-height:39px;
+    border-radius:9px;
+    transition:background .16s ease,border-color .16s ease,transform .16s ease,box-shadow .16s ease;
+}
+.tree-empty-child{min-height:170px}
+.tree-inline-editor{max-width:min(360px,70vw);min-height:40px;border-radius:8px}
+.tree-course-delete-trigger,.tree-group-delete-trigger{touch-action:manipulation}
+.tree-structure-card button,.tree-structure-card a,.tree-structure-card summary{touch-action:manipulation}
+.tree-structure-card :focus-visible,.workload-tree-hero :focus-visible{
+    outline:2px solid var(--accent);
+    outline-offset:3px;
+}
+@keyframes tree-reveal{
+    from{opacity:0;transform:translateY(7px)}
+    to{opacity:1;transform:translateY(0)}
+}
+@keyframes tree-feedback-in{
+    from{opacity:0;transform:translateY(7px) scale(.99)}
+    to{opacity:1;transform:translateY(0) scale(1)}
+}
+@keyframes tree-feedback-out{
+    to{opacity:0;transform:translateY(-4px)}
+}
+@keyframes tree-spinner{to{transform:rotate(360deg)}}
+@media(hover:hover) and (pointer:fine){
+    .tree-structure-card .workload-tree-group-shell:hover{background:color-mix(in srgb,var(--accent-soft) 28%,transparent)}
+    .tree-structure-card .workload-group-summary:hover .tree-node-icon{transform:translateY(-1px)}
+    .tree-structure-card .tree-course-summary:hover .tree-course-node{transform:scale(1.04)}
+    .tree-inline-editable:hover{
+        border-color:color-mix(in srgb,var(--accent) 38%,var(--line));
+        background:var(--accent-soft);
+        color:var(--accent);
+    }
+    .tree-component-chip:hover{transform:translateY(-1px)}
+    .tree-add-row>button:hover{
+        box-shadow:0 4px 12px color-mix(in srgb,var(--accent) 10%,transparent);
+        transform:translateY(-1px);
+    }
+}
+@media(max-width:760px){
+    .workload-tree-page{gap:12px}
+    .workload-tree-hero{align-items:flex-start;padding:17px}
+    .workload-tree-hero-actions>.btn{min-height:38px}
+    .tree-structure-card{padding:13px}
+    .tree-structure-card .tree-panel-heading{
+        align-items:flex-start;
+        gap:10px;
+        margin-bottom:13px;
+    }
+    .tree-structure-card .tree-panel-heading h2{font-size:21px}
+    .tree-structure-card .tree-panel-heading p:not(.eyebrow){font-size:11px}
+    .tree-structure-card .workload-tree-total{padding:6px 8px;font-size:10px}
+    .tree-structure-card .workload-tree-search{margin-bottom:11px}
+    .tree-structure-card .workload-tree-search-field{height:43px}
+    .tree-structure-card .workload-tree-search .btn{min-height:43px}
+    .tree-structure-card .workload-group-summary{
+        grid-template-columns:22px 38px minmax(0,1fr) 32px;
+        gap:8px;
+        min-height:68px;
+        padding:11px 10px;
+    }
+    .tree-node-icon,.tree-course-node{width:38px;height:38px;border-radius:10px}
+    .tree-node-copy strong{font-size:15px}
+    .tree-node-copy small{font-size:10px}
+    .tree-group-row-actions .tree-icon-action{width:30px;height:30px}
+    .tree-structure-card .workload-tree-children{padding:9px 8px 11px 18px}
+    .tree-structure-card .tree-course-summary{
+        display:grid;
+        grid-template-columns:22px 34px minmax(0,1fr);
+        gap:7px;
+        padding:9px 8px;
+    }
+    .tree-course-summary .tree-expand-symbol{grid-column:1;grid-row:1}
+    .tree-course-summary .tree-course-node{grid-column:2;grid-row:1}
+    .tree-course-summary .tree-node-copy{grid-column:3;grid-row:1;padding-right:30px}
+    .tree-structure-card .tree-course-summary .tree-course-components{
+        grid-column:3;
+        grid-row:2;
+        margin:0;
+        padding:0;
+    }
+    .tree-structure-card .tree-course-delete-trigger{top:9px;right:8px;width:29px;height:29px}
+    .tree-structure-card .tree-course-children{padding:7px 6px 10px 12px}
+    .tree-structure-card .workload-tree-modality{
+        display:grid;
+        grid-template-columns:50px minmax(0,1fr);
+        align-items:start;
+        gap:8px;
+        padding:10px 3px;
+    }
+    .tree-modality-copy{grid-column:2}
+    .tree-course-status,.tree-modality-toggle,.tree-open-modality,.tree-add-modality{grid-column:2;justify-self:start}
+    .tree-structure-card .tree-course-entry-form{grid-template-columns:minmax(0,1fr)}
+    .tree-draft-footer{align-items:stretch;flex-direction:column}
+    .tree-draft-footer>div{display:grid;grid-template-columns:1fr 1fr;width:100%}
+    .tree-draft-footer .btn{width:100%}
+}
+@media(max-width:520px){
+    .workload-tree-hero{display:grid;gap:12px;padding:15px}
+    .workload-tree-hero h1{font-size:29px}
+    .workload-tree-context{display:grid;gap:7px}
+    .workload-tree-hero-actions{width:100%}
+    .workload-tree-hero-actions>.btn{width:100%}
+    .tree-structure-card{padding:11px;border-radius:11px}
+    .tree-structure-card .tree-panel-heading{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start}
+    .tree-structure-card .tree-panel-heading h2{font-size:19px;gap:7px}
+    .tree-structure-card .tree-panel-heading h2 .icon{width:19px;height:19px}
+    .tree-structure-card .tree-panel-heading p:not(.eyebrow){font-size:10px}
+    .tree-structure-card .workload-tree-search{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px}
+    .tree-structure-card .workload-tree-search-field{grid-column:1/-1;width:100%}
+    .tree-structure-card .workload-tree-search .btn{grid-column:1/-1;width:100%}
+    .tree-structure-card .workload-group-summary{
+        grid-template-columns:19px 34px minmax(0,1fr) 29px;
+        gap:6px;
+        padding:10px 8px;
+    }
+    .tree-node-icon,.tree-course-node{width:34px;height:34px}
+    .tree-node-copy strong{font-size:14px}
+    .tree-node-copy small{font-size:9px;gap:3px 5px}
+    .tree-meta-separator{display:none}
+    .tree-group-row-actions .tree-icon-action{width:28px;height:28px}
+    .tree-structure-card .workload-tree-children{padding:8px 5px 9px 12px}
+    .tree-structure-card .tree-course-summary{
+        grid-template-columns:19px 31px minmax(0,1fr);
+        gap:5px;
+        padding:8px 5px;
+    }
+    .tree-course-summary .tree-node-copy strong{font-size:12px}
+    .tree-course-summary .tree-node-copy small{font-size:9px}
+    .tree-course-components{gap:4px}
+    .tree-component-chip{min-width:31px;padding:4px 6px;font-size:9px}
+    .tree-structure-card .tree-course-children{padding:6px 4px 8px 9px}
+    .tree-structure-card .workload-tree-modality{grid-template-columns:42px minmax(0,1fr);gap:7px}
+    .tree-structure-card .tree-modality-tag{height:30px;flex-basis:42px;font-size:9px}
+    .tree-modality-copy strong{font-size:11px}
+    .tree-modality-copy small{font-size:10px}
+    .tree-structure-card .tree-modality-toggle,.tree-structure-card .tree-open-modality,.tree-structure-card .tree-add-modality{
+        max-width:100%;
+        min-height:34px;
+        padding:6px 8px;
+        font-size:10px;
+    }
+    .tree-delete-confirm form{grid-template-columns:minmax(0,1fr)}
+    .tree-draft-heading strong{font-size:12px}
+    .tree-draft-note{font-size:10px}
+    .tree-draft-footer>div{grid-template-columns:1fr}
+    .tree-live-feedback{padding:10px 11px;font-size:11px}
+    .tree-inline-editor{width:100%;max-width:100%;min-width:0}
+}
+@media(max-width:360px){
+    .tree-structure-card .tree-panel-heading{grid-template-columns:minmax(0,1fr)}
+    .tree-structure-card .workload-tree-total{justify-self:start}
+    .tree-structure-card .workload-group-summary{
+        grid-template-columns:18px 30px minmax(0,1fr) 27px;
+        gap:4px;
+        padding:9px 5px;
+    }
+    .tree-node-icon,.tree-course-node{width:30px;height:30px}
+    .tree-node-copy{padding-right:0}
+    .tree-structure-card .tree-course-delete-trigger{top:7px;right:5px;width:26px;height:26px}
+}
+@media(prefers-reduced-motion:reduce){
+    .workload-tree-page *,
+    .tree-live-feedback,
+    .tree-group-draft-form,
+    .tree-course-draft-form{
+        scroll-behavior:auto!important;
+        animation:none!important;
+        transition:none!important;
+    }
+    .tree-loading-state:before{animation:none!important}
+}
+
 </style>
 @endpush
 
@@ -801,12 +1236,28 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
     const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
     const feedback = root.querySelector('#tree-live-feedback');
     const groupSearch = root.querySelector('.workload-tree-search [name="q"]');
+    let feedbackTimer = null;
+    let feedbackExitTimer = null;
 
     const showFeedback = (message, error = false) => {
         if (!feedback || !message) return;
-        feedback.textContent = message;
+
+        window.clearTimeout(feedbackTimer);
+        window.clearTimeout(feedbackExitTimer);
+        feedback.classList.remove('is-leaving');
         feedback.classList.toggle('is-error', error);
+        feedback.textContent = message;
         feedback.hidden = false;
+
+        feedbackTimer = window.setTimeout(() => {
+            feedback.classList.add('is-leaving');
+            feedbackExitTimer = window.setTimeout(() => {
+                feedback.hidden = true;
+                feedback.classList.remove('is-leaving');
+                feedbackTimer = null;
+                feedbackExitTimer = null;
+            }, 240);
+        }, error ? 8500 : 5200);
     };
 
     const responsePayload = async response => {
