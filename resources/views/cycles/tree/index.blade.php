@@ -43,7 +43,7 @@
                 <h2>Grupos y cursos</h2>
                 <p class="card-description">Despliega un grupo para administrar sus cursos y modalidades. Doble clic en NRC o fechas para modificarlos.</p>
             </div>
-            <span class="workload-tree-total">{{ $groups->count() }} grupos</span>
+            <span class="workload-tree-total" data-tree-group-total>{{ $groups->count() }} grupos</span>
         </div>
 
         <form method="GET" action="{{ route('cycles.tree', $cycle) }}" class="workload-tree-search">
@@ -247,7 +247,29 @@ html[data-theme="dark"] .workload-tree-hero{background:linear-gradient(115deg,co
  .tree-course-action-inline[open]{width:100%}
 }
 @media(prefers-reduced-motion:reduce){.workload-tree-summary,.tree-inline-create-group>summary,.workload-tree-add-course-inline>summary,.workload-tree-group-shell,.workload-tree-course{transition:none!important;animation:none!important}}
-</style>
+
+.tree-group-action-inline{position:relative}
+.tree-group-action-inline>summary{display:inline-flex;align-items:center;gap:5px;min-height:32px;padding:6px 9px;border:1px solid var(--line);border-radius:7px;background:var(--surface);color:var(--ink-soft);font-size:10px;font-weight:750;cursor:pointer;list-style:none}
+.tree-group-action-inline>summary::-webkit-details-marker{display:none}
+.tree-group-action-inline>summary:hover{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.tree-group-action-inline[open]{padding:10px;border:1px solid var(--line);border-radius:9px;background:var(--surface-soft)}
+.tree-group-action-inline[open]>summary{margin-bottom:9px;border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.tree-group-action-inline form{display:grid;gap:9px;min-width:min(320px,calc(100vw - 70px))}
+.tree-group-remove[open]{border-color:var(--danger)}
+.tree-group-remove[open]>summary{border-color:var(--danger);background:var(--danger-bg);color:var(--danger)}
+.tree-group-remove-confirm{max-width:440px}
+.tree-group-remove-confirm p{margin:0 0 10px;color:var(--muted);font-size:10px;line-height:1.55}
+.tree-group-remove-confirm p strong{color:var(--ink)}
+.tree-group-remove-confirm form{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.tree-group-delete-disabled{opacity:.6;cursor:not-allowed}
+@media(max-width:700px){
+ .tree-group-action-inline form{min-width:0}
+ .tree-group-action-inline[open]{width:100%}
+ .workload-tree-group-actions{align-items:stretch}
+ .workload-tree-group-actions>.btn,.workload-tree-group-actions>.tree-group-action-inline{flex:1 1 auto}
+ .tree-group-remove-confirm form{display:grid;grid-template-columns:1fr}
+ .tree-group-remove-confirm .btn{width:100%}
+}</style>
 @endpush
 
 @push('scripts')
@@ -339,6 +361,95 @@ html[data-theme="dark"] .workload-tree-hero{background:linear-gradient(115deg,co
     };
 
     document.addEventListener('submit', async event => {
+        const groupEditForm = event.target.closest('[data-tree-group-name-form]');
+        if (groupEditForm) {
+            event.preventDefault();
+            const submit = groupEditForm.querySelector('button[type="submit"]');
+            if (submit) {
+                submit.disabled = true;
+                submit.textContent = 'Guardando…';
+            }
+
+            try {
+                const response = await fetch(groupEditForm.action, {
+                    method: 'POST',
+                    body: new FormData(groupEditForm),
+                    credentials: 'same-origin',
+                    headers: {'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf}
+                });
+                const payload = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    const messages = Object.values(payload.errors || {}).flat();
+                    throw new Error(messages.join(' ') || payload.message || 'No se pudo actualizar el grupo.');
+                }
+
+                const shell = groupEditForm.closest('.workload-tree-group-shell');
+                const groupNode = shell?.querySelector('[data-tree-group-id]');
+                const title = groupNode?.querySelector('.workload-group-summary .tree-node-copy strong');
+                if (title) title.textContent = 'Grupo ' + payload.name;
+                if (groupNode) groupNode.dataset.groupLabel = 'Grupo ' + payload.name;
+                const input = groupEditForm.querySelector('input[name="name"]');
+                if (input) input.value = payload.name;
+                groupEditForm.closest('details')?.removeAttribute('open');
+                showFeedback(payload.message || 'Grupo actualizado.');
+            } catch (error) {
+                showFeedback(error.message, true);
+            } finally {
+                if (submit) {
+                    submit.disabled = false;
+                    submit.textContent = 'Guardar';
+                }
+            }
+            return;
+        }
+
+        const deleteGroupForm = event.target.closest('[data-tree-delete-group]');
+        if (deleteGroupForm) {
+            event.preventDefault();
+            const submit = deleteGroupForm.querySelector('button[type="submit"]');
+            const shell = deleteGroupForm.closest('.workload-tree-group-shell');
+            if (submit) {
+                submit.disabled = true;
+                submit.textContent = 'Eliminando…';
+            }
+
+            try {
+                const response = await fetch(deleteGroupForm.action, {
+                    method: 'POST',
+                    body: new FormData(deleteGroupForm),
+                    credentials: 'same-origin',
+                    headers: {'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf}
+                });
+                const payload = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(payload.message || 'No se pudo eliminar el grupo.');
+
+                shell?.remove();
+                const total = document.querySelector('[data-tree-group-total]');
+                const visibleCount = document.querySelectorAll('.workload-tree-group-shell').length;
+                if (total) total.textContent = visibleCount + ' grupos';
+
+                const root = document.querySelector('.workload-tree-root');
+                if (root && visibleCount === 0) {
+                    root.innerHTML = '<div class="tree-empty-child">No quedan grupos visibles en este ciclo.</div>';
+                }
+
+                if (Number(payload.remaining_groups || 0) <= 1) {
+                    document.querySelectorAll('.workload-tree-group-actions .tree-group-remove').forEach(details => {
+                        details.outerHTML = '<button class="btn btn-ghost btn-sm tree-group-delete-disabled" type="button" disabled title="Cada ciclo debe conservar al menos un grupo"><svg class="icon" aria-hidden="true"><use href="#icon-x"></use></svg> No se puede eliminar el único grupo</button>';
+                    });
+                }
+
+                showFeedback(payload.message || 'Grupo eliminado.');
+            } catch (error) {
+                showFeedback(error.message, true);
+                if (submit) {
+                    submit.disabled = false;
+                    submit.textContent = 'Sí, eliminar grupo';
+                }
+            }
+            return;
+        }
+
         const courseForm = event.target.closest('[data-tree-course-form]');
         if (courseForm) {
             event.preventDefault();
