@@ -69,7 +69,7 @@
             </div>
 
             <div class="tree-editor-empty" id="tree-editor-empty">
-                <span class="tree-editor-empty-icon"><x-icon name="mouse-pointer-click" size="22" /></span>
+                <span class="tree-editor-empty-icon"><x-icon name="info" size="22" /></span>
                 <strong>¿Qué deseas editar?</strong>
                 <p>Selecciona un grupo para cambiar su nombre o un curso para editar su nombre, código, TEC, TAL, NRC y fechas.</p>
             </div>
@@ -549,6 +549,17 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
         return wrapper;
     };
 
+    document.addEventListener('change', event => {
+        if (!event.target.matches('[data-course-component]')) return;
+        const form = event.target.closest('[data-tree-course-form]');
+        if (!form) return;
+        const selected = [...form.querySelectorAll('[data-course-component]')].some(input => input.checked);
+        if (!selected) {
+            event.target.checked = true;
+            showFeedback('Cada curso debe tener al menos un componente: TEC o TAL.', true);
+        }
+    });
+
     const sendInlineUpdate = async (url, values) => {
         const body = new FormData();
         Object.entries(values).forEach(([key, value]) => body.append(key, value ?? ''));
@@ -671,6 +682,8 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
                 const payload = await sendInlineUpdate(cell.dataset.nrcUrl, {nrc: value});
                 cell.dataset.nrc = payload.nrc || '';
                 cell.textContent = payload.nrc || 'Sin NRC';
+                const source = selectedCourseNode()?.querySelector('[data-editor-modality][data-modality-id="' + cell.dataset.modalityId + '"]');
+                if (source) source.dataset.nrc = payload.nrc || '';
                 updateSelectedTreeData();
                 showFeedback(payload.message || 'NRC actualizado.');
             } catch (error) {
@@ -727,6 +740,11 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
                 const payload = await sendInlineUpdate(wrapper.dataset.datesUrl, values);
                 wrapper.dataset.startDate = payload.start_date || '';
                 wrapper.dataset.endDate = payload.end_date || '';
+                const source = selectedCourseNode()?.querySelector('[data-editor-modality][data-modality-id="' + wrapper.dataset.modalityId + '"]');
+                if (source) {
+                    source.dataset.startDate = payload.start_date || '';
+                    source.dataset.endDate = payload.end_date || '';
+                }
                 wrapper.querySelectorAll('[data-inline-date]').forEach(dateNode => {
                     dateNode.textContent = payload[dateNode.dataset.inlineDate]
                         ? displayDate(payload[dateNode.dataset.inlineDate])
@@ -828,6 +846,7 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
             nrcValue.dataset.inlineNrc = '1';
             nrcValue.dataset.nrc = source.dataset.nrc || '';
             nrcValue.dataset.nrcUrl = source.dataset.nrcUrl;
+            nrcValue.dataset.modalityId = source.dataset.modalityId || '';
             nrcValue.title = 'Doble clic para editar NRC';
             nrc.append(nrcValue);
             fields.append(nrc);
@@ -837,6 +856,7 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
             const dateValues = element('div', 'tree-editor-date-values');
             dateValues.dataset.modalityDates = '1';
             dateValues.dataset.datesUrl = source.dataset.datesUrl;
+            dateValues.dataset.modalityId = source.dataset.modalityId || '';
             dateValues.dataset.startDate = source.dataset.startDate || '';
             dateValues.dataset.endDate = source.dataset.endDate || '';
             const start = element('span', 'tree-editor-value' + (source.dataset.startDate ? '' : ' is-empty'), displayDate(source.dataset.startDate));
