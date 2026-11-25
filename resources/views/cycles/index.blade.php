@@ -122,7 +122,12 @@
                 </div>
                 <div>
                     <label for="semester">Semestre predeterminado para grupos nuevos <span class="muted">*</span></label>
-                    <input class="field" id="semester" name="semester" value="{{ old('semester') }}" maxlength="60" required placeholder="Ej. IV semestre">
+                    <select class="field" id="semester" name="semester" required>
+                        <option value="">Seleccionar semestre</option>
+                        @foreach(['I', 'II', 'III', 'IV', 'V', 'VI'] as $semesterOption)
+                            <option value="{{ $semesterOption }}" @selected(old('semester') === $semesterOption)>{{ $semesterOption }}</option>
+                        @endforeach
+                    </select>
                     @error('semester')<p class="field-error">{{ $message }}</p>@enderror
                 </div>
             </div>
