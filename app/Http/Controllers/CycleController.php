@@ -48,6 +48,11 @@ class CycleController extends Controller
                             ->orWhereHas('assignments.course', function ($courses) use ($like) {
                                 $courses->where('name', 'like', $like)
                                     ->orWhere('code', 'like', $like);
+                            })
+                            ->orWhereHas('assignments.modalities', function ($modalities) use ($like) {
+                                $modalities->where('nrc', 'like', $like)
+                                    ->orWhere('block_code', 'like', $like)
+                                    ->orWhere('block_reference', 'like', $like);
                             });
                     });
             });
