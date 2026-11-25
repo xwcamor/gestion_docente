@@ -530,7 +530,7 @@ class GroupController extends Controller
         );
 
         return redirect()->route('cycles.show', $cycle)
-            ->with('success', 'Grupo eliminado. Los cursos del catálogo y los alumnos que se usan en otros grupos se conservaron.');
+            ->with('success', 'Grupo eliminado. Los cursos del catálogo y alumnos reutilizados se conservaron; las mallas de cursos sin otras asignaciones pasaron al historial.');
     }
 
     public function storeStudent(Request $request, TeachingGroup $group, AuditLogger $audit)
