@@ -68,6 +68,7 @@ class GroupDocumentService
                 'assignment.group.cycle',
                 'schedules',
             ])
+            ->where('active', true)
             ->whereHas('assignment', fn ($query) => $query->where('teaching_group_id', $group->id))
             ->orderBy('course_assignment_id')
             ->orderBy('modality')
