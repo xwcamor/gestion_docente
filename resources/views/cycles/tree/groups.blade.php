@@ -20,6 +20,41 @@
                     <a class="btn btn-ghost btn-sm" href="{{ route('groups.show', ['group' => $group, 'panel' => 'courses']) }}#group-courses">
                         <x-icon name="graduation-cap" /> Gestión académica
                     </a>
+
+                    <details class="tree-group-action-inline">
+                        <summary><x-icon name="pencil" size="13" /> Editar grupo</summary>
+                        <form method="POST" action="{{ route('groups.update', $group) }}" data-tree-group-name-form>
+                            @csrf
+                            @method('PATCH')
+                            <label class="tree-entry-field">
+                                <span>Nombre del grupo</span>
+                                <input class="field" name="name" value="{{ $group->name }}" maxlength="100" required>
+                            </label>
+                            <div class="tree-inline-form-actions">
+                                <button class="btn btn-sm" type="submit"><x-icon name="check" /> Guardar</button>
+                                <button class="btn btn-ghost btn-sm" type="button" data-inline-cancel>Cancelar</button>
+                            </div>
+                        </form>
+                    </details>
+
+                    @if($cycleGroupCount > 1)
+                        <details class="tree-group-action-inline tree-group-remove">
+                            <summary><x-icon name="x" size="13" /> Eliminar grupo</summary>
+                            <div class="tree-group-remove-confirm">
+                                <p><strong>Se eliminará Grupo {{ $group->name }}.</strong> También se retirarán sus cursos asignados, modalidades, horarios y documentos generados. Los cursos y alumnos del catálogo compartido se conservarán cuando tengan otras asignaciones.</p>
+                                <form method="POST" action="{{ route('groups.destroy', $group) }}" data-tree-delete-group>
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn btn-danger btn-sm" type="submit"><x-icon name="x" /> Sí, eliminar grupo</button>
+                                    <button class="btn btn-ghost btn-sm" type="button" data-inline-cancel>Cancelar</button>
+                                </form>
+                            </div>
+                        </details>
+                    @else
+                        <button class="btn btn-ghost btn-sm tree-group-delete-disabled" type="button" disabled title="Cada ciclo debe conservar al menos un grupo">
+                            <x-icon name="x" size="13" /> No se puede eliminar el único grupo
+                        </button>
+                    @endif
                 </div>
                 <div data-tree-content>
                     <div class="tree-loading-state">Despliega el grupo para consultar sus cursos.</div>
