@@ -30,7 +30,7 @@
                 <h2><x-icon name="git-branch" size="23" /> Grupos, cursos y componentes</h2>
                 <p>Abre un grupo y luego un curso. Solo queda uno abierto por nivel. Clic para editar carrera, semestre, códigos, NRC y fechas; doble clic en nombres.</p>
             </div>
-            <span class="workload-tree-total" data-tree-group-total>{{ $cycleGroupCount }} grupos</span>
+            <span class="workload-tree-total" data-tree-group-total>{{ $cycleGroupCount }} {{ (int) $cycleGroupCount === 1 ? 'grupo' : 'grupos' }}</span>
         </div>
 
         <form method="GET" action="{{ route('cycles.tree', $cycle) }}" class="workload-tree-search">
@@ -880,6 +880,8 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
         if (!groupNode) return;
         const countNode = groupNode.querySelector('[data-group-course-count]');
         if (countNode && Number.isFinite(Number(count))) countNode.textContent = String(count);
+        const countLabel = groupNode.querySelector('[data-group-course-label]');
+        if (countLabel && Number.isFinite(Number(count))) countLabel.textContent = Number(count) === 1 ? 'curso' : 'cursos';
         const mustKeepOne = Number(count) <= 1;
         groupNode.querySelectorAll('[data-toggle-course-delete], [data-tree-delete-course] button[type="submit"]').forEach(button => {
             button.disabled = mustKeepOne;
