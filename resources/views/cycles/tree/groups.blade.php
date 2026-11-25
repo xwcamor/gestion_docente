@@ -23,9 +23,9 @@
                     <small>
                         <span class="tree-meta-item">Código: <span class="tree-inline-editable" data-inline-text data-edit-on-click data-edit-field="code" data-edit-kind="group-code" data-edit-label="Código del grupo" data-edit-url="{{ route('groups.update', $group) }}" data-edit-value="{{ $group->code }}" title="Clic para editar código">{{ $group->code ?: 'Código pendiente (clic para agregar)' }}</span></span>
                         <span class="tree-meta-separator">·</span>
-                        <span><span data-group-course-count>{{ $group->assignments_count }}</span> cursos</span>
+                        <span><span data-group-course-count>{{ $group->assignments_count }}</span> <span data-group-course-label>{{ (int) $group->assignments_count === 1 ? 'curso' : 'cursos' }}</span></span>
                         <span class="tree-meta-separator">·</span>
-                        <span>{{ $group->students_count }} alumnos</span>
+                        <span>{{ $group->students_count }} {{ (int) $group->students_count === 1 ? 'alumno' : 'alumnos' }}</span>
                     </small>
                     <small>
                         <x-icon name="graduation-cap" size="13" />
