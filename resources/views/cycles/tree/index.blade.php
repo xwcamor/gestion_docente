@@ -228,6 +228,8 @@ html[data-theme="dark"] .workload-tree-hero{background:linear-gradient(115deg,co
 html[data-theme="dark"] .tree-focus-strip{background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 19%,#141f28),#141f28)}
 @media(max-width:980px){.workload-tree-hero{align-items:flex-start;flex-direction:column}.workload-tree-hero-actions{width:100%}}
 @media(max-width:700px){
+ .tree-group-create-form{grid-template-columns:1fr}
+ .tree-group-create-form .btn{width:100%}
  .workload-tree-children{margin-left:12px;padding-left:8px;padding-right:7px}
  .workload-group-children,.workload-course-children{margin-left:8px;padding-left:8px}
  .workload-group-summary{padding-right:52px}
