@@ -75,6 +75,43 @@ class WorkloadTreeController extends Controller
         ]);
     }
 
+    public function updateGroupContext(Request $request, TeachingGroup $group)
+    {
+        $this->authorizeGroup($group);
+
+        foreach (['career', 'semester'] as $field) {
+            if ($request->exists($field)) {
+                $request->merge([$field => trim((string) $request->input($field))]);
+            }
+        }
+
+        $data = $request->validate([
+            'career' => ['sometimes', 'required', 'string', 'max:255'],
+            'semester' => ['sometimes', 'required', 'string', 'max:60'],
+        ], [
+            'career.required' => 'Escribe la carrera de este grupo.',
+            'career.max' => 'La carrera no puede superar los 255 caracteres.',
+            'semester.required' => 'Escribe el semestre de este grupo.',
+            'semester.max' => 'El semestre no puede superar los 60 caracteres.',
+        ]);
+
+        if (!$data) {
+            return response()->json([
+                'message' => 'Indica la carrera o el semestre que deseas actualizar.',
+            ], 422);
+        }
+
+        $group->update($data);
+        $group->refresh();
+
+        return response()->json([
+            'message' => 'Datos académicos del grupo actualizados.',
+            'group_id' => $group->id,
+            'career' => $group->career,
+            'semester' => $group->semester,
+        ]);
+    }
+
     public function groups(Cycle $cycle, Request $request)
     {
         $this->authorizeCycle($cycle);
