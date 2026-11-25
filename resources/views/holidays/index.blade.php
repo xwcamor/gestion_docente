@@ -5,14 +5,10 @@
     $monthNames = [1 => 'enero', 2 => 'febrero', 3 => 'marzo', 4 => 'abril', 5 => 'mayo', 6 => 'junio', 7 => 'julio', 8 => 'agosto', 9 => 'septiembre', 10 => 'octubre', 11 => 'noviembre', 12 => 'diciembre'];
     $monthLabels = [1 => 'ENE', 2 => 'FEB', 3 => 'MAR', 4 => 'ABR', 5 => 'MAY', 6 => 'JUN', 7 => 'JUL', 8 => 'AGO', 9 => 'SEP', 10 => 'OCT', 11 => 'NOV', 12 => 'DIC'];
     $weekdays = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-    $scopeLabels = [
-        'NATIONAL' => 'Nacional',
-        'REGIONAL' => 'Regional',
-        'INSTITUTIONAL' => 'Institucional',
-        'SECTOR' => 'Sector',
-    ];
+    $scopeLabels = ['NATIONAL' => 'Nacional', 'REGIONAL' => 'Regional', 'INSTITUTIONAL' => 'Institucional', 'SECTOR' => 'Sector'];
     $monthEventCount = collect($calendarDays)->sum(fn ($day) => $day['holidays']->count());
     $isCalendarView = $presentation === 'calendar';
+    $isAdmin = auth()->user()->isAdmin();
     $listViewUrl = route('holidays.index', array_merge(request()->except('page', 'presentation', 'calendar_month', 'calendar_year'), ['presentation' => 'list']));
     $calendarViewUrl = route('holidays.index', array_merge(request()->only('calendar_month', 'calendar_year'), ['presentation' => 'calendar']));
 @endphp
@@ -21,66 +17,59 @@
     <div>
         <p class="eyebrow">Calendario académico</p>
         <h1>Feriados y cierres</h1>
-        <p class="subhead">Consulta las fechas que afectan tus clases y el calendario de cada modalidad.</p>
+        <p class="subhead">Organiza las fechas que suspenden clases o solo deben quedar registradas.</p>
     </div>
     <div class="actions">
         <button class="btn" type="button" data-modal-open="holiday-create-dialog"><x-icon name="plus" /> Registrar fecha</button>
     </div>
 </div>
 
+<section class="holiday-stats" aria-label="Resumen de feriados">
+    <article class="holiday-stat stat-total"><span>Fechas visibles</span><strong>{{ number_format($generalCount + $personalCount) }}</strong><small>General y personales</small></article>
+    <article class="holiday-stat stat-global"><span>Calendario general</span><strong>{{ number_format($generalCount) }}</strong><small>Compartidas</small></article>
+    <article class="holiday-stat stat-personal"><span>Mi calendario</span><strong>{{ number_format($personalCount) }}</strong><small>Solo para tus grupos</small></article>
+    <article class="holiday-stat stat-blocking"><span>Próximas</span><strong>{{ number_format($upcomingCount) }}</strong><small>Desde hoy en adelante</small></article>
+</section>
+
 <nav class="holiday-view-switch" aria-label="Presentación de feriados">
     <a class="holiday-view-option {{ $isCalendarView ? 'active' : '' }}" href="{{ $calendarViewUrl }}" @if($isCalendarView) aria-current="page" @endif>
-        <x-icon name="calendar-days" size="15" />
-        <span>Calendario</span>
+        <x-icon name="calendar-days" size="15" /><span>Calendario</span>
     </a>
     <a class="holiday-view-option {{ !$isCalendarView ? 'active' : '' }}" href="{{ $listViewUrl }}" @if(!$isCalendarView) aria-current="page" @endif>
-        <x-icon name="file-text" size="15" />
-        <span>Listado</span>
+        <x-icon name="list" size="15" /><span>Listado</span>
     </a>
 </nav>
 
 @if($isCalendarView)
 <section class="holiday-summary">
-    <div>
-        <span class="holiday-summary-label">Fechas en {{ $monthNames[$calendarMonth] }}</span>
-        <strong>{{ $monthEventCount }}</strong>
-    </div>
-    <div class="holiday-summary-note">Los feriados generales y tus cierres personales aparecen juntos. Los cierres personales solo afectan tus calendarios.</div>
+    <div><span class="holiday-summary-label">Fechas en {{ $monthNames[$calendarMonth] }}</span><strong>{{ $monthEventCount }}</strong></div>
+    <p>Los feriados generales y tus cierres personales se muestran juntos. Una fecha personal no modifica los calendarios de otros docentes.</p>
 </section>
 
 <section class="card calendar-card">
     <div class="calendar-heading">
-        <div>
-            <p class="eyebrow">Vista mensual</p>
-            <h2>{{ ucfirst($monthNames[$calendarMonth]) }} {{ $calendarYear }}</h2>
-        </div>
+        <div><p class="eyebrow">Vista mensual</p><h2>{{ ucfirst($monthNames[$calendarMonth]) }} {{ $calendarYear }}</h2></div>
         <div class="calendar-controls">
-            <a class="calendar-nav" href="{{ $previousMonthUrl }}" aria-label="Mes anterior" title="Mes anterior"><x-icon name="arrow-left" size="14" /></a>
+            <a class="calendar-nav" href="{{ $previousMonthUrl }}" aria-label="Mes anterior" title="Mes anterior"><x-icon name="chevron-left" size="15" /></a>
             <a class="calendar-today" href="{{ route('holidays.index', array_merge(request()->except('page', 'year', 'calendar_month', 'calendar_year'), ['calendar_month' => now()->month, 'calendar_year' => now()->year])) }}">Hoy</a>
-            <a class="calendar-nav" href="{{ $nextMonthUrl }}" aria-label="Mes siguiente" title="Mes siguiente"><x-icon name="arrow-right" size="14" /></a>
+            <a class="calendar-nav" href="{{ $nextMonthUrl }}" aria-label="Mes siguiente" title="Mes siguiente"><x-icon name="chevron-right" size="15" /></a>
         </div>
     </div>
-
     <div class="calendar-legend">
         <span><i class="legend-dot legend-block"></i> Suspende clases</span>
         <span><i class="legend-dot legend-info"></i> Informativo</span>
         <span class="calendar-month-count">{{ $monthEventCount }} {{ $monthEventCount === 1 ? 'fecha' : 'fechas' }}</span>
     </div>
-
     <div class="calendar-grid" role="grid" aria-label="Calendario de feriados de {{ $monthNames[$calendarMonth] }} {{ $calendarYear }}">
-        @foreach($weekdays as $weekday)
-            <div class="calendar-weekday" role="columnheader">{{ $weekday }}</div>
-        @endforeach
-
+        @foreach($weekdays as $weekday)<div class="calendar-weekday" role="columnheader">{{ $weekday }}</div>@endforeach
         @foreach($calendarDays as $day)
-            <div class="calendar-day {{ $day['inMonth'] ? '' : 'is-outside' }} {{ $day['holidays']->isNotEmpty() ? 'has-holiday' : '' }}" role="gridcell">
+            <div class="calendar-day {{ $day['inMonth'] ? '' : 'is-outside' }} {{ $day['isToday'] ? 'is-today' : '' }} {{ $day['holidays']->isNotEmpty() ? 'has-holiday' : '' }}" role="gridcell">
                 <span class="calendar-day-number">{{ $day['date']->format('j') }}</span>
                 @if($day['holidays']->isNotEmpty())
                     <div class="calendar-day-events">
-                        @foreach($day['holidays']->take(2) as $holiday)
-                            <button
-                                class="calendar-event {{ $holiday->blocks_classes ? 'event-blocking' : 'event-info' }}"
-                                type="button"
+                        @foreach($day['holidays']->take(3) as $holiday)
+                            @php($canManage = ($holiday->professor_id !== null && (int) $holiday->professor_id === (int) auth()->user()->professor->id) || ($holiday->professor_id === null && $isAdmin))
+                            <button class="calendar-event {{ $holiday->blocks_classes ? 'event-blocking' : 'event-info' }}" type="button"
                                 data-calendar-detail
                                 aria-label="Ver {{ $holiday->name }} del {{ $day['date']->format('d/m/Y') }}"
                                 data-date="{{ $day['date']->format('d/m/Y') }}"
@@ -89,62 +78,59 @@
                                 data-blocking="{{ $holiday->blocks_classes ? '1' : '0' }}"
                                 data-verified="{{ $holiday->verified ? '1' : '0' }}"
                                 data-source="{{ $holiday->source_url }}"
-                                title="{{ $holiday->name }}"
-                            >
+                                data-source-note="{{ $holiday->source_note }}"
+                                data-calendar-type="{{ $holiday->professor_id ? 'Personal' : 'General' }}"
+                                data-editable="{{ $canManage ? '1' : '0' }}"
+                                data-update-url="{{ $canManage ? route('holidays.update', $holiday) : '' }}"
+                                data-delete-url="{{ $canManage ? route('holidays.destroy', $holiday) : '' }}"
+                                title="{{ $holiday->name }}">
                                 <span class="calendar-event-dot" aria-hidden="true"></span>
                                 <span class="calendar-event-name">{{ $holiday->name }}</span>
                             </button>
                         @endforeach
-                        @if($day['holidays']->count() > 2)
-                            <span class="calendar-more">+{{ $day['holidays']->count() - 2 }} más</span>
-                        @endif
+                        @if($day['holidays']->count() > 3)<span class="calendar-more">+{{ $day['holidays']->count() - 3 }} más</span>@endif
                     </div>
                 @endif
             </div>
         @endforeach
     </div>
-
-    @if($monthEventCount === 0)
-        <p class="calendar-empty-note">No hay feriados ni cierres registrados para este mes.</p>
-    @endif
+    @if($monthEventCount === 0)<p class="calendar-empty-note">No hay feriados ni cierres registrados para este mes.</p>@endif
 </section>
 @endif
 
 @unless($isCalendarView)
 <section class="card holiday-card">
     <div class="card-head">
-        <div>
-            <h2>Detalle de fechas</h2>
-            <p class="card-description">Consulta el estado o filtra los registros por año, ámbito o nombre.</p>
-        </div>
+        <div><h2>Fechas registradas</h2><p class="card-description">Filtra, consulta y administra los registros que te corresponden.</p></div>
         <span class="badge">{{ $holidays->total() }} registros</span>
     </div>
-
-    <form method="GET" action="{{ route('holidays.index') }}" class="filter-bar holiday-filters">
+    <form method="GET" action="{{ route('holidays.index') }}" class="holiday-filters">
         <input type="hidden" name="presentation" value="list">
         <input type="hidden" name="calendar_month" value="{{ $calendarMonth }}">
         <input type="hidden" name="calendar_year" value="{{ $calendarYear }}">
-        <input class="filter-input" type="search" name="q" value="{{ request('q') }}" placeholder="Buscar por nombre…" aria-label="Buscar por nombre">
-        <select class="filter-input" name="year" aria-label="Filtrar por año">
+        <label class="holiday-search"><x-icon name="search" size="15" /><input type="search" name="q" value="{{ request('q') }}" placeholder="Buscar nombre o fuente…" aria-label="Buscar feriados"></label>
+        <select class="field" name="year" aria-label="Año">
             <option value="">Todos los años</option>
-            @foreach($years as $year)
-                <option value="{{ $year }}" @selected((string)request('year') === (string)$year)>{{ $year }}</option>
-            @endforeach
+            @foreach($years as $year)<option value="{{ $year }}" @selected((string)request('year') === (string)$year)>{{ $year }}</option>@endforeach
         </select>
-        <select class="filter-input" name="scope" aria-label="Filtrar por ámbito">
+        <select class="field" name="scope" aria-label="Ámbito">
             <option value="">Todos los ámbitos</option>
-            @foreach($scopeLabels as $value => $label)
-                <option value="{{ $value }}" @selected(request('scope') === $value)>{{ $label }}</option>
-            @endforeach
+            @foreach($scopeLabels as $value => $label)<option value="{{ $value }}" @selected(request('scope') === $value)>{{ $label }}</option>@endforeach
         </select>
-        <button class="btn btn-secondary btn-sm" type="submit"><x-icon name="filter" /> Aplicar</button>
-        @if(request()->hasAny(['q','year','scope']))
-            <a class="btn btn-ghost btn-sm" href="{{ route('holidays.index', ['calendar_month' => $calendarMonth, 'calendar_year' => $calendarYear]) }}"><x-icon name="x" /> Limpiar</a>
+        <select class="field" name="impact" aria-label="Efecto en las clases">
+            <option value="">Cualquier efecto</option>
+            <option value="blocking" @selected(request('impact') === 'blocking')>Suspende clases</option>
+            <option value="informative" @selected(request('impact') === 'informative')>Solo informativo</option>
+        </select>
+        <button class="btn btn-secondary" type="submit"><x-icon name="filter" size="14" /> Filtrar</button>
+        @if(request()->hasAny(['q','year','scope','impact']))
+            <a class="btn btn-ghost" href="{{ route('holidays.index', ['presentation'=>'list','calendar_month'=>$calendarMonth,'calendar_year'=>$calendarYear]) }}">Limpiar</a>
         @endif
     </form>
 
     <div class="holiday-list">
         @forelse($holidays as $holiday)
+            @php($canManage = ($holiday->professor_id !== null && (int) $holiday->professor_id === (int) auth()->user()->professor->id) || ($holiday->professor_id === null && $isAdmin))
             <article class="holiday-row">
                 <div class="holiday-date" aria-label="{{ $holiday->holiday_date->format('d/m/Y') }}">
                     <span>{{ $monthLabels[$holiday->holiday_date->month] }}</span>
@@ -155,272 +141,421 @@
                     <div class="holiday-title-line">
                         <h3>{{ $holiday->name }}</h3>
                         <span class="badge">{{ $scopeLabels[$holiday->scope] ?? $holiday->scope }}</span>
+                        <span class="holiday-calendar-tag {{ $holiday->professor_id ? 'is-personal' : 'is-general' }}">{{ $holiday->professor_id ? 'Personal' : 'General' }}</span>
                     </div>
-                    <p class="holiday-meta">{{ $holiday->holiday_date->format('d/m/Y') }} · {{ $holiday->professor_id ? 'Tu calendario' : 'Registro general' }}</p>
+                    <p class="holiday-meta">
+                        {{ $holiday->holiday_date->format('d/m/Y') }}
+                        @if($holiday->source_note) · {{ $holiday->source_note }}@endif
+                    </p>
+                    @if($holiday->source_url)<a class="holiday-source" href="{{ $holiday->source_url }}" target="_blank" rel="noopener noreferrer"><x-icon name="external-link" size="12" /> Ver fuente</a>@endif
                 </div>
                 <div class="holiday-status">
-                    @if($holiday->blocks_classes)
-                        <span class="badge badge-orange">No hay clases</span>
-                    @else
-                        <span class="badge">Solo informativo</span>
-                    @endif
-                    @if($holiday->verified)
-                        <span class="badge badge-green">Verificado</span>
-                    @else
-                        <span class="badge">Pendiente</span>
-                    @endif
-                    @if($holiday->source_url)
-                        <a class="holiday-source" href="{{ $holiday->source_url }}" target="_blank" rel="noopener noreferrer"><x-icon name="arrow-up-right" /> Ver fuente</a>
-                    @endif
+                    <span class="holiday-impact {{ $holiday->blocks_classes ? 'is-blocking' : 'is-informative' }}">{{ $holiday->blocks_classes ? 'Suspende clases' : 'Informativo' }}</span>
+                    @if($holiday->verified)<span class="badge badge-green">Verificado</span>@else<span class="badge">Pendiente de verificar</span>@endif
                 </div>
+                @if($canManage)
+                    <div class="holiday-actions">
+                        <button class="btn btn-secondary btn-sm" type="button" data-holiday-edit
+                            data-update-url="{{ route('holidays.update', $holiday) }}"
+                            data-holiday-date="{{ $holiday->holiday_date->toDateString() }}"
+                            data-name="{{ $holiday->name }}"
+                            data-scope="{{ $holiday->scope }}"
+                            data-blocks="{{ $holiday->blocks_classes ? '1' : '0' }}"
+                            data-source="{{ $holiday->source_url }}"
+                            data-source-note="{{ $holiday->source_note }}"
+                            data-verified="{{ $holiday->verified ? '1' : '0' }}">
+                            <x-icon name="pencil" size="13" /> Editar
+                        </button>
+                        <form method="POST" action="{{ route('holidays.destroy', $holiday) }}" data-confirm="Se quitará esta fecha y se recalcularán las sesiones que correspondan. Los documentos generados podrían quedar pendientes de regeneración. ¿Continuar?">
+                            @csrf
+                            @method('DELETE')
+                            <button class="btn btn-danger btn-sm" type="submit"><x-icon name="trash-2" size="13" /> Eliminar</button>
+                        </form>
+                    </div>
+                @endif
             </article>
         @empty
-            <div class="empty holiday-empty">
-                <strong>{{ request()->hasAny(['q','year','scope']) ? 'No hay fechas con esos filtros.' : 'Todavía no registras feriados o cierres.' }}</strong>
-                <span>{{ request()->hasAny(['q','year','scope']) ? 'Prueba con otro nombre, año o ámbito.' : 'Registra la primera fecha para que el calendario pueda excluirla.' }}</span>
-                @if(!request()->hasAny(['q','year','scope']))
-                    <div class="mt-16"><button class="btn btn-secondary btn-sm" type="button" data-modal-open="holiday-create-dialog">Registrar fecha</button></div>
+            <div class="holiday-empty">
+                <span><x-icon name="calendar-search" size="26" /></span>
+                <strong>{{ request()->hasAny(['q','year','scope','impact']) ? 'No hay fechas con esos filtros' : 'Todavía no hay feriados o cierres' }}</strong>
+                <p>{{ request()->hasAny(['q','year','scope','impact']) ? 'Prueba con otro nombre, año o ámbito.' : 'Registra una fecha para mantener actualizados tus calendarios.' }}</p>
+                @if(request()->hasAny(['q','year','scope','impact']))
+                    <a class="btn btn-secondary btn-sm" href="{{ route('holidays.index', ['presentation'=>'list']) }}">Limpiar filtros</a>
+                @else
+                    <button class="btn btn-secondary btn-sm" type="button" data-modal-open="holiday-create-dialog">Registrar fecha</button>
                 @endif
             </div>
         @endforelse
     </div>
-
-    @if($holidays->hasPages())
-        <div class="holiday-pagination"><x-pagination :paginator="$holidays" /></div>
-    @endif
+    @if($holidays->hasPages())<div class="holiday-pagination"><x-pagination :paginator="$holidays" /></div>@endif
 </section>
 @endunless
 
 @if($isCalendarView)
 <dialog class="ui-dialog sheet-dialog" id="calendar-day-dialog" aria-labelledby="calendar-day-title">
     <div class="dialog-head">
-        <div>
-            <h2 id="calendar-day-title">Detalle de la fecha</h2>
-            <p id="calendar-day-date"></p>
-        </div>
+        <div><p class="eyebrow">Detalle de fecha</p><h2 id="calendar-day-title">Feriado o cierre</h2><p id="calendar-day-date"></p></div>
         <button class="dialog-close" type="button" data-modal-close aria-label="Cerrar"><x-icon name="x" /></button>
     </div>
     <div class="dialog-body">
         <div class="calendar-detail-name" id="calendar-day-name"></div>
         <div class="calendar-detail-meta">
-            <span id="calendar-day-scope"></span>
-            <span id="calendar-day-status"></span>
-            <span id="calendar-day-verification"></span>
+            <span id="calendar-day-scope"></span><span id="calendar-day-calendar"></span><span id="calendar-day-status"></span><span id="calendar-day-verification"></span>
         </div>
-        <a id="calendar-day-source" class="calendar-day-source" href="#" target="_blank" rel="noopener noreferrer" hidden><x-icon name="arrow-up-right" /> Consultar fuente</a>
+        <p id="calendar-day-note" class="calendar-detail-note" hidden></p>
+        <a id="calendar-day-source" class="calendar-day-source" href="#" target="_blank" rel="noopener noreferrer" hidden><x-icon name="external-link" /> Consultar fuente</a>
     </div>
-    <div class="dialog-footer">
-        <button class="btn btn-secondary" type="button" data-modal-close>Cerrar</button>
+    <div class="dialog-footer calendar-detail-actions">
+        <button class="btn btn-secondary" type="button" data-calendar-edit hidden><x-icon name="pencil" /> Editar</button>
+        <form method="POST" action="#" id="calendar-day-delete-form" data-confirm="Se quitará esta fecha y se recalcularán los calendarios afectados. ¿Continuar?" hidden>
+            @csrf
+            @method('DELETE')
+            <button class="btn btn-danger" type="submit"><x-icon name="trash-2" /> Eliminar</button>
+        </form>
+        <button class="btn btn-ghost" type="button" data-modal-close>Cerrar</button>
     </div>
 </dialog>
 @endif
 
-<dialog class="ui-dialog sheet-dialog" id="holiday-create-dialog" aria-labelledby="holiday-create-title" @if($errors->any()) data-auto-open @endif>
+<dialog class="ui-dialog sheet-dialog" id="holiday-create-dialog" aria-labelledby="holiday-create-title" @if($errors->any() && request('dialog') !== 'edit-holiday') data-auto-open @endif>
     <div class="dialog-head">
-        <div>
-            <h2 id="holiday-create-title">Registrar feriado o cierre</h2>
-            <p>Completa los datos de la fecha que deseas excluir del calendario.</p>
-        </div>
+        <div><p class="eyebrow">Nuevo registro</p><h2 id="holiday-create-title">Registrar feriado o cierre</h2><p>Define la fecha y si se suspenden las clases.</p></div>
         <button class="dialog-close" type="button" data-modal-close aria-label="Cerrar"><x-icon name="x" /></button>
     </div>
     <form method="POST" action="{{ route('holidays.store') }}">
         @csrf
         <div class="dialog-body">
-            @if($errors->any())
-                <div class="dialog-error" role="alert">
-                    <strong>Revisa estos campos:</strong>
-                    <ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
-                </div>
+            @if($errors->any() && request('dialog') !== 'edit-holiday')
+                <div class="dialog-error" role="alert"><strong>Revisa los datos ingresados:</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
+            @endif
+            @if($isAdmin)
+                <label for="holiday_calendar_scope">Dónde se registrará</label>
+                <select class="field" id="holiday_calendar_scope" name="calendar_scope">
+                    <option value="PERSONAL" @selected(old('calendar_scope','PERSONAL') === 'PERSONAL')>Mi calendario</option>
+                    <option value="GLOBAL" @selected(old('calendar_scope') === 'GLOBAL')>Calendario general (todos los docentes)</option>
+                </select>
+                <p class="help">Los registros generales afectan a todas las cuentas. Usa esta opción solo cuando la fecha sea oficial y compartida.</p>
             @endif
             <div class="form-row">
                 <div>
                     <label for="holiday_date">Fecha</label>
                     <input class="field" id="holiday_date" type="date" name="holiday_date" value="{{ old('holiday_date') }}" required>
-                    @error('holiday_date')<p class="help" style="color:#914d45">{{ $message }}</p>@enderror
+                    @error('holiday_date')<p class="help holiday-field-error">{{ $message }}</p>@enderror
                 </div>
                 <div>
                     <label for="scope">Ámbito</label>
                     <select class="field" id="scope" name="scope" required>
-                        @foreach($scopeLabels as $value => $label)
-                            <option value="{{ $value }}" @selected(old('scope', 'NATIONAL') === $value)>{{ $label }}</option>
-                        @endforeach
+                        @foreach($scopeLabels as $value => $label)<option value="{{ $value }}" @selected(old('scope','NATIONAL') === $value)>{{ $label }}</option>@endforeach
                     </select>
-                    @error('scope')<p class="help" style="color:#914d45">{{ $message }}</p>@enderror
+                    @error('scope')<p class="help holiday-field-error">{{ $message }}</p>@enderror
                 </div>
             </div>
             <label for="name">Nombre de la fecha</label>
             <input class="field" id="name" name="name" value="{{ old('name') }}" maxlength="255" required placeholder="Ej. Feriado nacional o cierre institucional">
-            @error('name')<p class="help" style="color:#914d45">{{ $message }}</p>@enderror
-
-            <label for="blocks_classes">¿Se suspenden las clases?</label>
+            @error('name')<p class="help holiday-field-error">{{ $message }}</p>@enderror
+            <label for="blocks_classes">Efecto en las clases</label>
             <select class="field" id="blocks_classes" name="blocks_classes" required>
-                <option value="1" @selected(old('blocks_classes', '1') === '1')>Sí, bloquear las sesiones</option>
-                <option value="0" @selected(old('blocks_classes') === '0')>No, solo dejar constancia</option>
+                <option value="1" @selected(old('blocks_classes','1') === '1')>Suspende las clases y recalcula las sesiones</option>
+                <option value="0" @selected(old('blocks_classes') === '0')>Solo informativo, no cambia las sesiones</option>
             </select>
-            <p class="help">Al bloquear clases, se recalcularán las modalidades que tengan sesión en esa fecha.</p>
-
             <label for="source_url">Fuente o norma (opcional)</label>
-            <input class="field" id="source_url" type="url" name="source_url" value="{{ old('source_url') }}" maxlength="500" placeholder="https://…">
-            @error('source_url')<p class="help" style="color:#914d45">{{ $message }}</p>@enderror
+            <input class="field" id="source_url" type="url" name="source_url" value="{{ old('source_url') }}" maxlength="255" placeholder="https://…">
+            @error('source_url')<p class="help holiday-field-error">{{ $message }}</p>@enderror
+            <label for="source_note">Nota de referencia (opcional)</label>
+            <textarea class="field" id="source_note" name="source_note" rows="2" maxlength="2000" placeholder="Número de norma, observación o detalle">{{ old('source_note') }}</textarea>
+            @error('source_note')<p class="help holiday-field-error">{{ $message }}</p>@enderror
+            @if($isAdmin)
+                <label class="holiday-verified-option"><input type="checkbox" name="verified" value="1" @checked(old('verified'))> Confirmado con fuente oficial</label>
+            @endif
         </div>
-        <div class="dialog-footer">
-            <button class="btn btn-secondary" type="button" data-modal-close>Cancelar</button>
-            <button class="btn" type="submit"><x-icon name="check" /> Guardar fecha</button>
+        <div class="dialog-footer"><button class="btn btn-secondary" type="button" data-modal-close>Cancelar</button><button class="btn" type="submit"><x-icon name="check" /> Guardar fecha</button></div>
+    </form>
+</dialog>
+
+<dialog class="ui-dialog sheet-dialog" id="holiday-edit-dialog" aria-labelledby="holiday-edit-title" @if(request('dialog') === 'edit-holiday' && $errors->any()) data-auto-open @endif>
+    <div class="dialog-head">
+        <div><p class="eyebrow">Editar registro</p><h2 id="holiday-edit-title">Actualizar feriado o cierre</h2><p>Los cambios pueden recalcular calendarios si la fecha suspende clases.</p></div>
+        <button class="dialog-close" type="button" data-modal-close aria-label="Cerrar"><x-icon name="x" /></button>
+    </div>
+    <form method="POST" action="#" id="holiday-edit-form">
+        @csrf
+        @method('PATCH')
+        <div class="dialog-body">
+            <div class="form-row">
+                <div><label for="edit_holiday_date">Fecha</label><input class="field" id="edit_holiday_date" type="date" name="holiday_date" value="{{ old('holiday_date') }}" required></div>
+                <div>
+                    <label for="edit_scope">Ámbito</label>
+                    <select class="field" id="edit_scope" name="scope" required>
+                        @foreach($scopeLabels as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
+                    </select>
+                </div>
+            </div>
+            <label for="edit_holiday_name">Nombre de la fecha</label>
+            <input class="field" id="edit_holiday_name" name="name" value="{{ old('name') }}" maxlength="255" required>
+            <label for="edit_blocks_classes">Efecto en las clases</label>
+            <select class="field" id="edit_blocks_classes" name="blocks_classes" required>
+                <option value="1">Suspende las clases y recalcula las sesiones</option>
+                <option value="0">Solo informativo, no cambia las sesiones</option>
+            </select>
+            <label for="edit_source_url">Fuente o norma (opcional)</label>
+            <input class="field" id="edit_source_url" type="url" name="source_url" value="{{ old('source_url') }}" maxlength="255">
+            <label for="edit_source_note">Nota de referencia (opcional)</label>
+            <textarea class="field" id="edit_source_note" name="source_note" rows="2" maxlength="2000">{{ old('source_note') }}</textarea>
+            @if($isAdmin)
+                <label class="holiday-verified-option"><input id="edit_verified" type="checkbox" name="verified" value="1" @checked(old('verified'))> Confirmado con fuente oficial</label>
+            @endif
+            @if($errors->any() && request('dialog') === 'edit-holiday')
+                <div class="dialog-error" role="alert"><strong>Revisa estos datos:</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
+            @endif
         </div>
+        <div class="dialog-footer"><button class="btn btn-secondary" type="button" data-modal-close>Cancelar</button><button class="btn" type="submit"><x-icon name="check" /> Guardar cambios</button></div>
     </form>
 </dialog>
 @endsection
 
 @push('styles')
 <style>
-.holiday-view-switch{display:inline-flex;align-items:center;gap:3px;margin:0 0 14px;padding:4px;border:1px solid #e2e7e0;border-radius:9px;background:#eef1ed}
-.holiday-view-option{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:36px;padding:8px 14px;border:1px solid transparent;border-radius:6px;color:#657166;font-size:11px;font-weight:650;transition:background .14s ease,color .14s ease,border-color .14s ease,box-shadow .14s ease}
-.holiday-view-option:hover{color:#344a3e;text-decoration:none}
-.holiday-view-option.active{border-color:#dce5da;background:#fff;color:#3c5843;box-shadow:0 1px 2px rgba(26,40,28,.04)}
-.holiday-summary{display:flex;align-items:center;gap:18px;margin:0 0 13px;padding:13px 16px;border:1px solid #e2e6e0;border-radius:8px;background:#fbfcfa}
-.holiday-summary>div:first-child{display:flex;align-items:baseline;gap:10px;flex:none}
-.holiday-summary-label{color:#79847b;font-size:10px}
-.holiday-summary strong{color:#40584a;font-size:20px;font-weight:680}
-.holiday-summary-note{padding-left:17px;border-left:1px solid #e0e5de;color:#7b857c;font-size:10px;line-height:1.5}
-.calendar-card{padding:17px}
-.calendar-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px}
-.calendar-heading h2{margin:0;font-size:18px;text-transform:capitalize}
-.calendar-controls{display:flex;align-items:center;gap:6px}
-.calendar-nav,.calendar-today{height:32px;min-width:32px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #dfe5dd;border-radius:6px;background:#fff;color:#566358;font-size:15px;font-weight:650}
-.calendar-nav:hover,.calendar-today:hover{border-color:#bdcbbb;background:#f5f8f4;text-decoration:none}
-.calendar-today{padding:0 10px;font-size:10px}
-.calendar-legend{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:0 0 10px;color:#7c877e;font-size:9px}
-.calendar-legend>span{display:inline-flex;align-items:center;gap:6px}
-.legend-dot{width:7px;height:7px;display:inline-block;border-radius:50%}
-.legend-block{background:#8b6b43}
-.legend-info{background:#788b80}
+.holiday-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.holiday-stat{display:grid;gap:3px;min-width:0;padding:11px 13px;border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:9px;background:var(--surface)}
+.holiday-stat span{color:var(--muted);font-size:9px;font-weight:750}
+.holiday-stat strong{color:var(--ink);font-size:21px;font-weight:850;font-variant-numeric:tabular-nums}
+.holiday-stat small{color:var(--muted);font-size:8px}
+.stat-total{border-top-color:#4b87a7}.stat-global{border-top-color:#8875b1}.stat-personal{border-top-color:#419a8c}.stat-blocking{border-top-color:#c19343}
+.holiday-view-switch{display:inline-flex;align-items:center;gap:3px;margin:0 0 12px;padding:3px;border:1px solid var(--line);border-radius:8px;background:var(--surface-soft)}
+.holiday-view-option{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:34px;padding:7px 13px;border:1px solid transparent;border-radius:6px;color:var(--muted);font-size:10px;font-weight:700;text-decoration:none}
+.holiday-view-option.active{border-color:var(--line);background:var(--surface);color:var(--accent);box-shadow:0 1px 2px rgba(20,40,50,.04)}
+.holiday-summary{display:flex;align-items:center;gap:17px;margin:0 0 12px;padding:11px 14px;border:1px solid #d7e6ed;border-radius:9px;background:#f2f8fb}
+.holiday-summary>div{display:flex;align-items:baseline;gap:9px;flex:none}
+.holiday-summary-label{color:#668493;font-size:9px;font-weight:700}
+.holiday-summary strong{color:#28677d;font-size:21px}
+.holiday-summary p{margin:0;padding-left:15px;border-left:1px solid #d5e4e9;color:#617e8b;font-size:9px;line-height:1.45}
+.calendar-card,.holiday-card{padding:15px}
+.calendar-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.calendar-heading h2{margin:0;color:var(--ink);font-size:17px;text-transform:capitalize}
+.calendar-controls{display:flex;align-items:center;gap:5px}
+.calendar-nav,.calendar-today{display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:32px;padding:0 7px;border:1px solid var(--line-strong);border-radius:7px;background:var(--surface);color:var(--ink-soft);font-size:10px;text-decoration:none}
+.calendar-today{padding:0 10px;font-weight:700}
+.calendar-legend{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:9px;color:var(--muted);font-size:9px}
+.calendar-legend>span{display:inline-flex;align-items:center;gap:5px}
 .calendar-month-count{margin-left:auto}
-.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border-top:1px solid #e5e9e3;border-left:1px solid #e5e9e3;border-radius:7px;overflow:hidden}
-.calendar-weekday{padding:9px 5px;border-right:1px solid #e5e9e3;border-bottom:1px solid #e5e9e3;background:#f8faf7;color:#788279;font-size:9px;font-weight:720;text-align:center}
-.calendar-day{position:relative;min-width:0;min-height:108px;padding:8px;border-right:1px solid #e5e9e3;border-bottom:1px solid #e5e9e3;background:#fff}
-.calendar-day.is-outside{background:#fafbf9}
-.calendar-day.is-outside .calendar-day-number{color:#c0c7bf}
-.calendar-day.has-holiday{background:#fffefb}
-.calendar-day-number{width:23px;height:23px;display:grid;place-items:center;border-radius:50%;color:#536056;font-size:10px;font-weight:620}
-.calendar-day-events{display:grid;gap:4px;margin-top:4px}
-.calendar-event{display:flex;align-items:flex-start;gap:5px;width:100%;min-width:0;padding:3px 4px;border:0;border-radius:4px;background:#f4f0e8;color:#806338;text-align:left;font-size:9px;font-weight:620;line-height:1.3;cursor:pointer;transition:background .12s ease}
-.calendar-event:hover{background:#ece3d4}
-.calendar-event.event-info{background:#eff3ef;color:#586d5d}
-.calendar-event.event-info:hover{background:#e5ece5}
-.calendar-event-dot{width:6px;height:6px;flex:none;margin-top:2px;border-radius:50%;background:#94764d}
-.event-info .calendar-event-dot{background:#718778}
-.calendar-event-name{min-width:0;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
-.calendar-more{padding-left:4px;color:#8a938b;font-size:8px}
-.calendar-empty-note{margin:12px 0 0;color:#8b958c;font-size:10px;text-align:center}
-.calendar-detail-name{color:#344239;font-size:15px;font-weight:680;line-height:1.4;overflow-wrap:anywhere}
-.calendar-detail-meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
-.calendar-detail-meta span{padding:5px 7px;border:1px solid #e3e8e1;border-radius:5px;background:#f8faf7;color:#69756b;font-size:9px}
-.calendar-day-source{display:inline-block;margin-top:13px;color:#526b59;font-size:10px;font-weight:650}
-.holiday-card{padding:17px}
-.holiday-filters .filter-input{flex:1 1 135px;min-width:120px}
-.holiday-list{display:grid;gap:0}
-.holiday-row{display:grid;grid-template-columns:58px minmax(0,1fr) minmax(130px,auto);align-items:center;gap:13px;padding:13px 2px;border-bottom:1px solid #edf0eb}
+.legend-dot{width:7px;height:7px;display:inline-block;border-radius:50%}
+.legend-block{background:#c18b38}.legend-info{background:#4f8da5}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));overflow:hidden;border-top:1px solid var(--line);border-left:1px solid var(--line);border-radius:8px}
+.calendar-weekday{padding:8px 3px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--surface-soft);color:var(--muted);font-size:9px;font-weight:750;text-align:center}
+.calendar-day{position:relative;min-width:0;min-height:90px;padding:6px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--surface)}
+.calendar-day.is-outside{background:var(--surface-soft)}
+.calendar-day.is-outside .calendar-day-number{color:var(--muted);opacity:.45}
+.calendar-day.is-today .calendar-day-number{background:var(--accent);color:#fff}
+.calendar-day.has-holiday{background:#fffdf8}
+.calendar-day-number{display:grid;place-items:center;width:23px;height:23px;border-radius:50%;color:var(--ink-soft);font-size:10px;font-weight:700}
+.calendar-day-events{display:grid;gap:3px;margin-top:4px}
+.calendar-event{display:flex;align-items:flex-start;gap:4px;width:100%;min-width:0;padding:3px 4px;border:0;border-radius:4px;background:#fff1dd;color:#865f29;text-align:left;font-size:8px;font-weight:700;line-height:1.3;cursor:pointer}
+.calendar-event.event-info{background:#edf5f8;color:#3d758b}
+.calendar-event-dot{width:6px;height:6px;flex:none;margin-top:2px;border-radius:50%;background:#c08b40}
+.event-info .calendar-event-dot{background:#4b8ca5}
+.calendar-event-name{display:-webkit-box;min-width:0;overflow:hidden;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
+.calendar-more{padding-left:4px;color:var(--muted);font-size:8px}
+.calendar-empty-note{margin:11px 0 0;color:var(--muted);font-size:10px;text-align:center}
+.holiday-filters{display:grid;grid-template-columns:minmax(190px,1.5fr) repeat(3,minmax(100px,.7fr)) auto auto;align-items:center;gap:7px;margin:0 0 11px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--surface-soft)}
+.holiday-search{display:flex;align-items:center;gap:7px;min-width:0;min-height:38px;padding:0 9px;border:1px solid var(--line-strong);border-radius:7px;background:var(--surface);color:var(--muted)}
+.holiday-search input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:var(--ink);font-size:10px}
+.holiday-filters .field{min-width:0;min-height:38px;padding:6px 8px;font-size:9px}
+.holiday-filters .btn{min-height:38px;padding:7px 10px;font-size:9px;white-space:nowrap}
+.holiday-list{display:grid}
+.holiday-row{display:grid;grid-template-columns:48px minmax(0,1fr) minmax(105px,auto) auto;align-items:center;gap:11px;min-width:0;padding:11px 2px;border-bottom:1px solid var(--line)}
 .holiday-row:last-child{border-bottom:0}
-.holiday-date{width:52px;min-height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid #e3e8e1;border-radius:7px;background:#f8faf7}
-.holiday-date span{color:#718075;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
-.holiday-date strong{margin:1px 0;color:#354b3d;font-size:20px;line-height:1.1;font-weight:700}
-.holiday-date small{color:#929b92;font-size:9px}
-.holiday-info{min-width:0}
-.holiday-title-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}
-.holiday-title-line h3{margin:0;color:#354239;font-size:12px;font-weight:680;overflow-wrap:anywhere}
-.holiday-meta{margin:5px 0 0;color:#8a938b;font-size:10px;line-height:1.4;text-transform:capitalize;overflow-wrap:anywhere}
-.holiday-status{display:flex;align-items:flex-end;justify-content:center;flex-direction:column;gap:5px;min-width:0}
-.holiday-source{color:#526b59;font-size:10px;font-weight:640}
-.holiday-empty{margin:4px 0}
-.holiday-pagination{margin-top:13px;padding-top:12px;border-top:1px solid #edf0eb}
-@media(max-width:760px){
- .holiday-view-switch{display:flex;width:100%}.holiday-view-option{flex:1}
- .holiday-summary{align-items:flex-start;flex-direction:column;gap:7px;padding:11px 12px}
- .holiday-summary-note{padding:0;border:0}
- .calendar-card{padding:11px}
- .calendar-day{min-height:75px;padding:5px}
- .calendar-weekday{padding:8px 2px;font-size:8px}
- .calendar-event{justify-content:center;width:19px;height:19px;padding:0;border-radius:50%;background:transparent}
- .calendar-event:hover{background:#f0f2ed}
- .calendar-event-dot{width:8px;height:8px;margin:0}
- .calendar-event-name{display:none}
- .calendar-more{padding:0;text-align:center;font-size:8px}
- .calendar-day-events{display:flex;justify-content:center;gap:3px;flex-wrap:wrap}
- .holiday-filters{grid-template-columns:repeat(2,minmax(0,1fr))}
- .holiday-row{grid-template-columns:48px minmax(0,1fr);gap:9px;padding:12px 0}
- .holiday-date{width:44px;min-height:52px}
- .holiday-date strong{font-size:18px}
- .holiday-status{grid-column:2;align-items:flex-start;justify-content:flex-start;flex-direction:row;flex-wrap:wrap;gap:5px}
- .holiday-title-line{gap:5px}
- .holiday-title-line h3{flex:1 1 100%}
- .holiday-meta{font-size:9px}
+.holiday-date{display:flex;flex-direction:column;align-items:center;justify-content:center;width:44px;min-height:49px;border:1px solid #dbe8ed;border-radius:8px;background:#f1f7fa}
+.holiday-date span{color:#597f90;font-size:8px;font-weight:800;letter-spacing:.04em}
+.holiday-date strong{color:#2d6c84;font-size:18px;line-height:1.1}
+.holiday-date small{color:#75909c;font-size:8px}
+.holiday-info{display:grid;gap:3px;min-width:0}
+.holiday-title-line{display:flex;align-items:center;gap:5px;flex-wrap:wrap;min-width:0}
+.holiday-title-line h3{margin:0;color:var(--ink);font-size:11px;font-weight:750;line-height:1.35;overflow-wrap:anywhere}
+.holiday-calendar-tag{padding:3px 5px;border-radius:5px;background:#f1f4f5;color:#687d87;font-size:8px;font-weight:750}
+.holiday-calendar-tag.is-personal{background:#eaf5f2;color:#347e71}
+.holiday-calendar-tag.is-general{background:#eef3fa;color:#547b9c}
+.holiday-meta{margin:0;color:var(--muted);font-size:8px;line-height:1.4;overflow-wrap:anywhere}
+.holiday-source{display:inline-flex;align-items:center;gap:4px;width:max-content;max-width:100%;color:var(--accent);font-size:8px;font-weight:700;overflow-wrap:anywhere}
+.holiday-status{display:grid;justify-items:start;gap:4px;min-width:0}
+.holiday-impact{display:inline-flex;align-items:center;max-width:100%;padding:4px 6px;border-radius:5px;font-size:8px;font-weight:750;line-height:1.25}
+.holiday-impact.is-blocking{background:#fff2e0;color:#95651e}
+.holiday-impact.is-informative{background:#edf4f7;color:#47788c}
+.holiday-actions{display:flex;align-items:center;gap:5px;min-width:0}
+.holiday-actions form{margin:0}
+.holiday-actions .btn{min-height:31px;padding:5px 7px;border-radius:6px;font-size:8px;white-space:nowrap}
+.holiday-empty{display:grid;justify-items:center;gap:6px;padding:28px 12px;border:1px dashed var(--line-strong);border-radius:8px;text-align:center}
+.holiday-empty>span{display:grid;place-items:center;width:39px;height:39px;border-radius:9px;background:var(--surface-soft);color:var(--muted)}
+.holiday-empty strong{color:var(--ink);font-size:11px}
+.holiday-empty p{margin:0;color:var(--muted);font-size:9px}
+.holiday-pagination{margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+.calendar-detail-name{color:var(--ink);font-size:14px;font-weight:750;line-height:1.4;overflow-wrap:anywhere}
+.calendar-detail-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.calendar-detail-meta span{padding:5px 7px;border:1px solid var(--line);border-radius:5px;background:var(--surface-soft);color:var(--ink-soft);font-size:9px}
+.calendar-detail-note{margin:10px 0 0;color:var(--muted);font-size:10px;line-height:1.5}
+.calendar-day-source{display:inline-flex;align-items:center;gap:5px;margin-top:11px;color:var(--accent);font-size:10px;font-weight:700}
+.calendar-detail-actions{align-items:center}
+.calendar-detail-actions form{margin:0}
+.holiday-field-error{color:var(--danger)}
+.holiday-verified-option{display:flex;align-items:center;gap:8px;margin-top:12px;color:var(--ink-soft);font-size:10px}
+.holiday-verified-option input{width:16px;height:16px;accent-color:var(--accent)}
+@media(max-width:1000px){
+ .holiday-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .holiday-filters{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .holiday-search{grid-column:1/-1}
+ .holiday-row{grid-template-columns:45px minmax(0,1fr) 110px}
+ .holiday-actions{grid-column:2/-1;justify-content:flex-start;padding-top:7px;border-top:1px solid var(--line)}
 }
-@media(max-width:390px){
- .calendar-day{min-height:58px;padding:3px}
+@media(max-width:700px){
+ .holidays-head{align-items:stretch}
+ .holidays-head .actions .btn{width:100%}
+ .holiday-view-switch{display:flex;width:100%}
+ .holiday-view-option{flex:1}
+ .holiday-summary{align-items:flex-start;flex-direction:column;gap:6px}
+ .holiday-summary p{padding:0;border:0}
+ .calendar-card,.holiday-card{padding:10px}
+ .calendar-day{min-height:66px;padding:4px}
+ .calendar-weekday{padding:7px 1px;font-size:8px}
+ .calendar-event{justify-content:center;width:17px;height:17px;padding:0;border-radius:50%;background:transparent}
+ .calendar-event-name{display:none}
+ .calendar-event-dot{width:7px;height:7px;margin:0}
+ .calendar-day-events{display:flex;justify-content:center;gap:2px;flex-wrap:wrap}
+ .calendar-more{padding:0;text-align:center}
+ .holiday-row{grid-template-columns:42px minmax(0,1fr);gap:8px;padding:10px 0}
+ .holiday-date{width:39px;min-height:44px}
+ .holiday-date strong{font-size:17px}
+ .holiday-status{grid-column:2;display:flex;align-items:center;flex-wrap:wrap;gap:4px}
+ .holiday-actions{grid-column:2/-1;padding-top:7px}
+ .holiday-filters{grid-template-columns:repeat(2,minmax(0,1fr));padding:8px}
+ .holiday-search{grid-column:1/-1}
+}
+@media(max-width:420px){
+ .holiday-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+ .holiday-stat{padding:9px}
+ .holiday-stat strong{font-size:19px}
+ .calendar-heading h2{font-size:15px}
+ .calendar-day{min-height:54px;padding:3px}
  .calendar-day-number{width:20px;height:20px;font-size:9px}
  .calendar-weekday{font-size:7px}
- .calendar-heading h2{font-size:15px}
- .calendar-nav{min-width:29px;height:29px}
- .calendar-today{height:29px;padding:0 7px}
+ .calendar-controls{gap:3px}
+ .calendar-nav{min-width:27px;height:28px;padding:0 5px}
+ .calendar-today{height:28px;padding:0 7px}
+ .holiday-filters{grid-template-columns:minmax(0,1fr)}
+ .holiday-search{grid-column:1}
+ .holiday-filters>*{width:100%}
+ .holiday-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ .holiday-actions .btn{width:100%;justify-content:center;font-size:9px}
+ .holiday-title-line h3{font-size:10px}
 }
-
-/* Feriados: calendario con señales de color claras */
-.holiday-view-switch{border-color:#d3e2e9;background:#edf4f7}
-.holiday-view-option{color:#56788a}
-.holiday-view-option.active{border-color:#bdd6e1;color:#28677d}
-.holiday-summary{border-color:#d7e6ec;background:linear-gradient(100deg,#eff7fa,#f5faf8)}
-.holiday-summary strong{color:#28677d}
-.holiday-summary-note{color:#5e7d8b;border-left-color:#d5e4e9}
-.calendar-nav,.calendar-today{border-color:#cbdde6;color:#3c748b}
-.calendar-nav:hover,.calendar-today:hover{border-color:#92bdcc;background:#eef7fa}
-.calendar-weekday{background:#eaf3f7;color:#4b7284;border-color:#d6e4eb}
-.calendar-grid{border-color:#d6e4eb}
-.calendar-day{border-color:#dce8ed}
-.calendar-day.has-holiday{background:#fffbf3}
-.calendar-day-number{color:#3c6173}
-.calendar-day-number.today{background:#28677d;color:#fff}
-.calendar-event{background:#fff0d9;color:#8e6024}
-.calendar-event.event-info{background:#eaf4f8;color:#3d7187}
-.calendar-event-dot{background:#d0923e}
-.event-info .calendar-event-dot{background:#4e91aa}
-.calendar-detail-meta span{border-color:#dce8ed;background:#f3f8fa;color:#4a7181}
-.holiday-date{border-color:#d6e5eb;background:#eff6f8}
-.holiday-date strong{color:#28677d}
-.holiday-title-line h3{color:#315a6d}
-
 </style>
 @endpush
 
 @push('scripts')
 <script>
 (() => {
-    const dialog = document.getElementById('calendar-day-dialog');
-    if (!dialog) return;
-    const date = document.getElementById('calendar-day-date');
-    const name = document.getElementById('calendar-day-name');
-    const scope = document.getElementById('calendar-day-scope');
-    const status = document.getElementById('calendar-day-status');
-    const verification = document.getElementById('calendar-day-verification');
-    const source = document.getElementById('calendar-day-source');
+    const editDialog = document.getElementById('holiday-edit-dialog');
+    const editForm = document.getElementById('holiday-edit-form');
+    const detailDialog = document.getElementById('calendar-day-dialog');
+
+    const fields = {
+        date: document.getElementById('edit_holiday_date'),
+        name: document.getElementById('edit_holiday_name'),
+        scope: document.getElementById('edit_scope'),
+        blocks: document.getElementById('edit_blocks_classes'),
+        source: document.getElementById('edit_source_url'),
+        note: document.getElementById('edit_source_note'),
+        verified: document.getElementById('edit_verified'),
+    };
+
+    const populateEdit = data => {
+        if (!editDialog || !editForm) return;
+        editForm.action = data.updateUrl || data.updateUrl === '' ? data.updateUrl : (data.updateUrl || '#');
+        fields.date.value = data.date || '';
+        fields.name.value = data.name || '';
+        fields.scope.value = data.scopeCode || 'NATIONAL';
+        fields.blocks.value = data.blocks || '1';
+        fields.source.value = data.source || '';
+        fields.note.value = data.sourceNote || '';
+        if (fields.verified) fields.verified.checked = data.verified === '1';
+        if (!editDialog.open) editDialog.showModal();
+        fields.date.focus();
+    };
 
     document.addEventListener('click', event => {
-        const button = event.target.closest('[data-calendar-detail]');
-        if (!button) return;
-        date.textContent = button.dataset.date || '';
-        name.textContent = button.dataset.name || 'Fecha académica';
-        scope.textContent = button.dataset.scope || '';
-        status.textContent = button.dataset.blocking === '1' ? 'Suspende clases' : 'Solo informativo';
-        verification.textContent = button.dataset.verified === '1' ? 'Verificado' : 'Pendiente de verificación';
-        const url = button.dataset.source || '';
-        if (url) {
-            source.href = url;
-            source.hidden = false;
-        } else {
-            source.removeAttribute('href');
-            source.hidden = true;
+        const editButton = event.target.closest('[data-holiday-edit]');
+        if (editButton) {
+            event.preventDefault();
+            populateEdit({
+                updateUrl: editButton.dataset.updateUrl,
+                date: editButton.dataset.holidayDate,
+                name: editButton.dataset.name,
+                scopeCode: editButton.dataset.scope,
+                blocks: editButton.dataset.blocks,
+                source: editButton.dataset.source,
+                sourceNote: editButton.dataset.sourceNote,
+                verified: editButton.dataset.verified,
+            });
+            return;
         }
-        if (typeof dialog.showModal === 'function') dialog.showModal();
+
+        const detailButton = event.target.closest('[data-calendar-detail]');
+        if (detailButton && detailDialog) {
+            document.getElementById('calendar-day-date').textContent = detailButton.dataset.date || '';
+            document.getElementById('calendar-day-name').textContent = detailButton.dataset.name || '';
+            document.getElementById('calendar-day-scope').textContent = detailButton.dataset.scope || '';
+            document.getElementById('calendar-day-calendar').textContent = detailButton.dataset.calendarType || '';
+            document.getElementById('calendar-day-status').textContent = detailButton.dataset.blocking === '1' ? 'Suspende clases' : 'Informativo';
+            document.getElementById('calendar-day-verification').textContent = detailButton.dataset.verified === '1' ? 'Verificado' : 'Pendiente';
+            const note = document.getElementById('calendar-day-note');
+            note.textContent = detailButton.dataset.sourceNote || '';
+            note.hidden = !note.textContent.trim();
+
+            const source = document.getElementById('calendar-day-source');
+            if (detailButton.dataset.source) {
+                source.href = detailButton.dataset.source;
+                source.hidden = false;
+            } else {
+                source.removeAttribute('href');
+                source.hidden = true;
+            }
+
+            const canEdit = detailButton.dataset.editable === '1';
+            const edit = detailDialog.querySelector('[data-calendar-edit]');
+            const removeForm = document.getElementById('calendar-day-delete-form');
+            edit.hidden = !canEdit;
+            removeForm.hidden = !canEdit;
+            removeForm.action = canEdit ? detailButton.dataset.deleteUrl : '#';
+            edit.onclick = () => {
+                detailDialog.close();
+                populateEdit({
+                    updateUrl: detailButton.dataset.updateUrl,
+                    date: detailButton.dataset.date ? detailButton.dataset.date.split('/').reverse().join('-') : '',
+                    name: detailButton.dataset.name,
+                    scopeCode: ({Nacional:'NATIONAL',Regional:'REGIONAL,Institucional:'INSTITUTIONAL',Sector:'SECTOR'})[detailButton.dataset.scope] || 'NATIONAL',
+                    blocks: detailButton.dataset.blocking,
+                    source: detailButton.dataset.source,
+                    sourceNote: detailButton.dataset.sourceNote,
+                    verified: detailButton.dataset.verified,
+                });
+            };
+            if (!detailDialog.open) detailDialog.showModal();
+        }
     });
+
+    @if(request('dialog') === 'edit-holiday' && $errors->any())
+        const editFormOpen = document.getElementById('holiday-edit-form');
+        if (editFormOpen) {
+            editFormOpen.action = @json(route('holidays.update', ['holiday' => (int) request('holiday_id')]));
+            fields.date.value = @json(old('holiday_date', ''));
+            fields.name.value = @json(old('name', ''));
+            fields.scope.value = @json(old('scope', 'NATIONAL'));
+            fields.blocks.value = @json(old('blocks_classes', '1'));
+            fields.source.value = @json(old('source_url', ''));
+            fields.note.value = @json(old('source_note', ''));
+            if (fields.verified) fields.verified.checked = @json((bool) old('verified', false));
+            if (!editDialog.open) editDialog.showModal();
+            fields.date.focus();
+        }
+    @endif
 })();
 </script>
 @endpush
