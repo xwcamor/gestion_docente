@@ -50,9 +50,6 @@
             </summary>
 
             <div class="tree-course-children">
-                <div class="tree-course-tools">
-                    <span><x-icon name="git-branch" size="15" /> Componentes del curso</span>
-                </div>
                 @include('cycles.tree.modalities', ['assignment' => $assignment, 'modalities' => $assignment->modalities])
             </div>
         </details>
