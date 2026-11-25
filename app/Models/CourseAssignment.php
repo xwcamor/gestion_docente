@@ -11,11 +11,15 @@ class CourseAssignment extends Model
 {
     use HasSlugRouteKey;
 
-    protected $fillable = ['teaching_group_id', 'course_id', 'curriculum_id', 'assigned_at', 'notes'];
+    protected $fillable = ['teaching_group_id', 'course_id', 'curriculum_id', 'assigned_at', 'course_start_date', 'course_end_date', 'notes'];
 
     protected function casts(): array
     {
-        return ['assigned_at' => 'date'];
+        return [
+            'assigned_at' => 'date',
+            'course_start_date' => 'date',
+            'course_end_date' => 'date',
+        ];
     }
 
     protected function slugSource(): string
