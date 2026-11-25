@@ -37,6 +37,9 @@ Route::middleware(['auth', 'professor'])->group(function () {
     Route::get('/arbol/ciclos/{cycle}/grupos', [WorkloadTreeController::class, 'groups'])->name('workload-tree.groups');
     Route::get('/arbol/grupos/{group}/cursos', [WorkloadTreeController::class, 'courses'])->name('workload-tree.courses');
     Route::get('/arbol/asignaciones/{assignment}/modalidades', [WorkloadTreeController::class, 'modalities'])->name('workload-tree.modalities');
+    Route::post('/arbol/grupos/{group}/cursos', [WorkloadTreeController::class, 'storeCourse'])->name('workload-tree.courses.store');
+    Route::patch('/arbol/modalidades/{modality}/fechas', [WorkloadTreeController::class, 'updateModalityDates'])->name('workload-tree.modalities.dates');
+    Route::patch('/arbol/modalidades/{modality}/nrc', [WorkloadTreeController::class, 'updateModalityNrc'])->name('workload-tree.modalities.nrc');
     // Importación de distribución académica desde Excel.
     Route::get('/distribucion/importar', [CourseDistributionImportController::class, 'create'])->name('distribution.create');
     Route::get('/distribucion/plantilla.xlsx', [CourseDistributionImportController::class, 'downloadTemplate'])->name('distribution.template');
