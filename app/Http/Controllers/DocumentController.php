@@ -8,6 +8,7 @@ use App\Models\TeachingGroup;
 use App\Models\GeneratedDocument;
 use App\Services\ExcelDocumentService;
 use App\Services\FiveMinuteTalkService;
+use App\Services\GroupDocumentService;
 use Illuminate\Support\Facades\Storage;
 
 class DocumentController extends Controller
@@ -37,6 +38,25 @@ class DocumentController extends Controller
         abort_unless($cycle->professor_id === auth()->user()->professor->id, 404);
 
         $document = $service->generateLoadDistribution($cycle, auth()->id());
+
+        return Storage::disk('local')->download($document->stored_path, $document->filename);
+    }
+
+    public function generateGroup(
+        TeachingGroup $group,
+        string $type,
+        GroupDocumentService $service,
+        FiveMinuteTalkService $talkService
+    ) {
+        abort_unless($group->professor_id === auth()->user()->professor->id, 404);
+
+        if ($type === 'charla') {
+            abort_if($group->students()->count() === 0, 422, 'Registra primero los alumnos del grupo.');
+            $summary = $talkService->ensureScheduled($group);
+            abort_if(empty($summary['dates']), 422, 'No existen fechas de dictado calculadas. Revisa las fechas y horarios de los cursos.');
+        }
+
+        $document = $service->generate($group, $type, auth()->id());
 
         return Storage::disk('local')->download($document->stored_path, $document->filename);
     }
