@@ -1038,7 +1038,7 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
         body.sidebar-collapsed .sidebar-footer{justify-content:center;padding:12px 0 0}
         body.sidebar-hidden .app-shell{grid-template-columns:minmax(0,1fr)!important}
         body.sidebar-hidden .sidebar{display:none!important}
-        .main{width:100%!important;max-width:none!important;margin:0!important;padding:clamp(14px,1.6vw,28px)!important}
+        .main{width:100%!important;max-width:none!important;margin:0!important;padding:12px clamp(14px,1.6vw,28px) 24px!important}
         .main .settings-page-head,.main .branding-layout,.main .profile-layout,.main .profile-page-head,.main .workload-tree-page{max-width:none!important;width:100%!important}
         .main .branding-layout{grid-template-columns:minmax(0,1.65fr) minmax(280px,.75fr)}
         .main .profile-layout{grid-template-columns:minmax(0,1.65fr) minmax(280px,.75fr)}
@@ -1063,7 +1063,7 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
             body.sidebar-collapsed .sidebar .nav-link{justify-content:center;padding:8px 10px}
             body.sidebar-collapsed .sidebar .nav-link span{display:inline!important}
             body.sidebar-hidden .sidebar{display:none!important}
-            .main{padding:clamp(14px,2vw,22px)!important}
+            .main{padding:12px clamp(14px,2vw,22px) 22px!important}
         }
         @media(max-width:720px){
             .topbar{height:54px;padding:0 10px}
@@ -1074,7 +1074,7 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
             .sidebar-nav{width:max-content}
             .sidebar .nav-link{min-height:36px;padding:7px 8px;font-size:10px}
             .sidebar .nav-link .icon{width:16px;height:16px}
-            .main{padding:13px 10px 25px!important}
+            .main{padding:10px 10px 24px!important}
         }
         @media(prefers-reduced-motion:reduce){
             .sidebar .nav-link,.top-sidebar-toggle,.sidebar-icon-button{transition:none!important}
