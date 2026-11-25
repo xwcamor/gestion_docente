@@ -289,9 +289,10 @@ class QuickCourseEntryController extends Controller
                     foreach ($blocks as $block) {
                         $interval = max(1, (int) ($block['repeat_interval_weeks'] ?? 1));
                         $duration = max(0, (int) ((strtotime($block['end_time']) - strtotime($block['start_time'])) / 60));
-                        $weeklyMinutes += $duration / $interval;
+                        $days = array_unique(array_map('intval', $block['days']));
+                        $weeklyMinutes += ($duration * count($days)) / $interval;
 
-                        foreach ($block['days'] as $day) {
+                        foreach ($days as $day) {
                             $modality->schedules()->create([
                                 'day_of_week' => $day,
                                 'start_time' => $block['start_time'],
