@@ -1081,6 +1081,20 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
             .sidebar .nav-link:hover{transform:none}
         }
 
+        /* La barra global permanece anclada al borde superior en todas las vistas. */
+        .topbar{
+            position:fixed!important;
+            top:0!important;
+            right:0!important;
+            left:0!important;
+            bottom:auto!important;
+            z-index:80!important;
+        }
+        .app-shell{margin-top:60px}
+        @media(max-width:720px){
+            .app-shell{margin-top:54px}
+        }
+
 </style>
 </head>
 <body class="{{ ($appAppearance['sidebar_visible'] ?? true) ? '' : 'sidebar-hidden' }}" data-sidebar-visible="{{ ($appAppearance['sidebar_visible'] ?? true) ? '1' : '0' }}">
