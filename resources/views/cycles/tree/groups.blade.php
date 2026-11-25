@@ -63,7 +63,7 @@
                                 <span class="tree-group-inline-days">{{ $daysLabel }}</span>
                             @endif
                             <span class="tree-group-inline-time">
-                                <span class="tree-group-inline-sub-label">Desde</span>
+                                <span class="tree-group-inline-sub-label">Del</span>
                                 <span class="tree-inline-editable"
                                       data-inline-text data-edit-on-click
                                       data-edit-field="workload_start_time" data-edit-kind="group-time"
