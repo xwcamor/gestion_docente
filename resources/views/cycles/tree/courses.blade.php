@@ -12,7 +12,7 @@
              data-course-name-url="{{ route('workload-tree.courses.name', $assignment) }}"
              data-course-code-url="{{ route('workload-tree.courses.code', $assignment) }}"
              data-group-id="{{ $group->id }}">
-        <details class="tree-course-branch" name="workload-courses-{{ $group->id }}" data-course-branch>
+        <details class="tree-course-branch" data-course-branch>
             <summary class="tree-course-summary" data-select-course>
                 <span class="tree-expand-symbol" aria-hidden="true"><x-icon name="chevron-right" size="16" /></span>
                 <span class="tree-course-node"><x-icon name="book-open" size="21" /></span>
