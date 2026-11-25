@@ -15,17 +15,18 @@
         <details class="tree-course-branch" name="workload-courses-{{ $group->id }}" data-course-branch>
             <summary class="tree-course-summary" data-select-course>
                 <span class="tree-expand-symbol" aria-hidden="true"><x-icon name="chevron-right" size="16" /></span>
-                <span class="tree-course-node"><x-icon name="book-open" size="24" /></span>
+                <span class="tree-course-node"><x-icon name="book-open" size="21" /></span>
                 <span class="tree-node-copy">
                     <strong><span data-inline-text data-edit-field="name" data-edit-label="Nombre del curso" data-edit-url="{{ route('workload-tree.courses.name', $assignment) }}" data-edit-value="{{ $assignment->course->name }}" data-edit-kind="course-name">{{ $assignment->course->name }}</span></strong>
-                    <small>
-                        <span class="tree-inline-editable" data-inline-text data-edit-on-click data-edit-field="code" data-edit-kind="course-code" data-edit-label="Código institucional" data-edit-url="{{ route('workload-tree.courses.code', $assignment) }}" data-edit-value="{{ $assignment->course->code }}" title="Clic para editar código">{{ $assignment->course->code ?: 'Código pendiente (clic para agregar)' }}</span>
-                    </small>
-                    <small data-course-period>{{ $periodLabel }}</small>
+                    <span class="tree-course-code-row">
+                        <span class="tree-meta-label">Código</span>
+                        <span class="tree-inline-editable" data-inline-text data-edit-on-click data-edit-field="code" data-edit-kind="course-code" data-edit-label="Código institucional" data-edit-url="{{ route('workload-tree.courses.code', $assignment) }}" data-edit-value="{{ $assignment->course->code }}" title="Clic para editar código">{{ $assignment->course->code ?: 'Agregar código' }}</span>
+                    </span>
+                    <small class="tree-course-period" data-course-period>{{ $periodLabel }}</small>
                 </span>
                 <span class="tree-course-components" aria-label="Componentes">
-                    <span class="tree-component-chip {{ !$tecModality ? 'is-missing' : ($tecModality->active ? 'is-present' : 'is-disabled') }}">TEC</span>
-                    <span class="tree-component-chip {{ !$tallModality ? 'is-missing' : ($tallModality->active ? 'is-present' : 'is-disabled') }}">TAL</span>
+                    <span class="tree-component-chip {{ !$tecModality ? 'is-missing' : ($tecModality->active ? 'is-present' : 'is-disabled') }}" title="{{ !$tecModality ? 'TEC no agregado' : ($tecModality->active ? 'TEC activo' : 'TEC desactivado') }}">TEC</span>
+                    <span class="tree-component-chip {{ !$tallModality ? 'is-missing' : ($tallModality->active ? 'is-present' : 'is-disabled') }}" title="{{ !$tallModality ? 'TAL no agregado' : ($tallModality->active ? 'TAL activo' : 'TAL desactivado') }}">TAL</span>
                 </span>
             </summary>
 
@@ -42,14 +43,14 @@
                 @disabled($group->assignments_count <= 1)
                 aria-label="Retirar curso del grupo"
                 title="{{ $group->assignments_count <= 1 ? 'El grupo debe conservar al menos un curso' : 'Retirar curso de este grupo' }}">
-            <x-icon name="trash-2" size="16" />
+            <x-icon name="trash-2" size="15" />
         </button>
         <div class="tree-delete-confirm tree-course-delete-confirm" data-course-delete-confirm hidden>
-            <p><strong>¿Retirar {{ $assignment->course->name }} de este grupo?</strong> Se retirarán sus modalidades y horarios del grupo. El historial curricular se conserva.</p>
+            <p><strong>¿Quitar este curso del grupo?</strong> Se quitarán sus horarios y modalidades. La malla curricular se conserva.</p>
             <form method="POST" action="{{ route('assignments.destroy', $assignment) }}" data-tree-delete-course>
                 @csrf
                 @method('DELETE')
-                <button class="btn btn-danger btn-sm" type="submit" @disabled($group->assignments_count <= 1)>Confirmar eliminación</button>
+                <button class="btn btn-danger btn-sm" type="submit" @disabled($group->assignments_count <= 1)>Quitar curso</button>
                 <button class="btn btn-ghost btn-sm" type="button" data-inline-cancel>Cancelar</button>
             </form>
         </div>
