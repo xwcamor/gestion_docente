@@ -2,13 +2,14 @@
 @section('title', ($editingAssignment ?? null) ? 'Editar curso y horario' : 'Crear cursos y horarios')
 @section('content')
 @php($isEditing = ($editingAssignment ?? null) !== null)
+@php($returnToTree = (bool) ($returnToTree ?? false))
 @php($rows = old('rows', $rows ?? [[]]))
 @php($weekdayLabels = [1 => 'L', 2 => 'M', 3 => 'X', 4 => 'J', 5 => 'V', 6 => 'S', 7 => 'D'])
 
 <div class="breadcrumbs">
     <a href="{{ route('cycles.index') }}">Cargas laborales</a><x-icon name="chevron-right" size="12" />
-    <a href="{{ route('cycles.show', $group->cycle) }}">{{ $group->cycle->academic_year }} · {{ $group->cycle->cycle_code }}</a><x-icon name="chevron-right" size="12" />
-    <a href="{{ route('groups.show', $group) }}">{{ $group->name }}</a><x-icon name="chevron-right" size="12" />
+    <a href="{{ $returnToTree ? route('cycles.tree', $group->cycle) : route('cycles.show', $group->cycle) }}">{{ $group->cycle->academic_year }} · {{ $group->cycle->cycle_code }}</a><x-icon name="chevron-right" size="12" />
+    <a href="{{ $returnToTree ? route('cycles.tree', $group->cycle) : route('groups.show', $group) }}">{{ $group->name }}</a><x-icon name="chevron-right" size="12" />
     <span class="current">{{ $isEditing ? 'Editar curso' : 'Cursos y horarios' }}</span>
 </div>
 
@@ -18,7 +19,7 @@
         <h1>{{ $isEditing ? 'Editar curso y horario' : 'Crear cursos y horarios' }}</h1>
         <p class="subhead">Pega el alias institucional. El sistema detecta el nombre, la modalidad y el NRC; después configura fechas y repetición semanal.</p>
     </div>
-    <a class="btn btn-secondary" href="{{ route('groups.show', $group) }}"><x-icon name="arrow-left" /> Volver al grupo</a>
+    <a class="btn btn-secondary" href="{{ $returnToTree ? route('cycles.tree', $group->cycle) : route('groups.show', $group) }}"><x-icon name="arrow-left" /> {{ $returnToTree ? 'Volver al árbol' : 'Volver al grupo' }}</a>
 </div>
 
 @if($errors->any())
@@ -33,6 +34,9 @@
       id="quick-course-form"
       data-loading-form="1">
     @csrf
+    @if($returnToTree)
+        <input type="hidden" name="return_to_tree" value="1">
+    @endif
     @if($isEditing)
         @method('PATCH')
     @endif
