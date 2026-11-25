@@ -1203,14 +1203,21 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
                     const course = selectedCourseNode();
 
                     if (selectedAssignmentId && course) {
-                        if (field === 'name') {
-                            course.dataset.courseName = payload.name;
-                            course.querySelector('[data-select-course] .tree-node-copy strong').textContent = payload.name;
-                            editorTitle.textContent = payload.name;
-                        } else {
-                            course.dataset.courseCode = payload.code || '';
-                            course.querySelector('[data-select-course] .tree-node-copy small').textContent = payload.code || 'Código opcional';
-                        }
+                        const sharedCourses = document.querySelectorAll('[data-course-id="' + course.dataset.courseId + '"]');
+                        sharedCourses.forEach(sharedCourse => {
+                            if (field === 'name') {
+                                sharedCourse.dataset.courseName = payload.name;
+                                const nameNode = sharedCourse.querySelector('[data-select-course] .tree-node-copy strong');
+                                if (nameNode) nameNode.textContent = payload.name;
+                                const confirmName = sharedCourse.querySelector('.tree-course-delete-confirm p strong');
+                                if (confirmName) confirmName.textContent = '¿Retirar ' + payload.name + ' de este grupo?';
+                            } else {
+                                sharedCourse.dataset.courseCode = payload.code || '';
+                                const codeNode = sharedCourse.querySelector('[data-select-course] .tree-node-copy small');
+                                if (codeNode) codeNode.textContent = payload.code || 'Código opcional';
+                            }
+                        });
+                        if (field === 'name') editorTitle.textContent = payload.name;
                     } else if (groupNode && field === 'name') {
                         groupNode.dataset.groupName = payload.name;
                         groupNode.dataset.groupLabel = 'Grupo ' + payload.name;
