@@ -91,7 +91,11 @@ class GroupController extends Controller
 
         $count = $groups->count();
 
-        return redirect()->route('cycles.show', $cycle)
+        $destination = $request->boolean('return_to_tree')
+            ? route('cycles.tree', $cycle)
+            : route('cycles.show', $cycle);
+
+        return redirect()->to($destination)
             ->with('success', $count.' '.($count === 1 ? 'grupo creado' : 'grupos creados').' correctamente.');
     }
 
