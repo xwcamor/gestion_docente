@@ -16,7 +16,7 @@
             <summary class="tree-course-summary" data-select-course>
                 <span class="tree-expand-symbol" aria-hidden="true">
                     <span data-tree-collapsed><x-icon name="plus" size="16" /></span>
-                    <span data-tree-expanded>−</span>
+                    <span data-tree-expanded><x-icon name="minus" size="16" /></span>
                 </span>
                 <span class="tree-course-node"><x-icon name="book-open" size="24" /></span>
                 <span class="tree-node-copy">
