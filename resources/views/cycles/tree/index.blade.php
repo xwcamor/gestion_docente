@@ -41,7 +41,7 @@
             <div>
                 <p class="eyebrow">ESTRUCTURA ACADÉMICA</p>
                 <h2>Grupos y cursos</h2>
-                <p class="card-description">Despliega un grupo para ver todos sus cursos y modalidades. Doble clic en nombres, NRC o fechas para editar; activa o desactiva TEC/TAL desde su fila.</p>
+                <p class="card-description">Despliega un grupo para ver todos sus cursos y modalidades. Doble clic en nombre, código, NRC o fechas para editar. Usa Activar/Desactivar en TEC y TAL; siempre debe quedar uno activo.</p>
             </div>
             <span class="workload-tree-total" data-tree-group-total>{{ $groups->count() }} grupos</span>
         </div>
@@ -295,7 +295,8 @@ html[data-theme="dark"] .workload-tree-hero{background:linear-gradient(115deg,co
 .workload-tree-course:focus-within{border-color:color-mix(in srgb,var(--accent) 60%,var(--line));box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 9%,transparent)}
 .tree-course-head .tree-node-copy{flex:1}
 .tree-course-head .tree-node-copy strong{display:inline-flex;align-items:center;min-height:27px;padding:2px 4px;border-radius:5px;cursor:text}
-.tree-inline-name:hover{background:var(--accent-soft);color:var(--accent)}
+.tree-inline-name:hover,.tree-inline-code:hover{background:var(--accent-soft);color:var(--accent)}
+.tree-inline-code{display:inline-flex;min-height:22px;align-items:center;padding:1px 4px;border-radius:5px;cursor:text}
 .tree-course-components{display:flex;align-items:center;gap:5px;flex:none}
 .tree-component-chip{display:inline-flex;align-items:center;justify-content:center;min-width:36px;padding:5px 7px;border:1px solid transparent;border-radius:7px;font-size:9px;font-weight:900;letter-spacing:.04em}
 .tree-component-chip.is-present{background:var(--success-bg);color:var(--success)}
