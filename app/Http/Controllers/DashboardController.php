@@ -6,15 +6,6 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $professor = auth()->user()->professor;
-
-        $groups = $professor->groups()
-            ->with('cycle')
-            ->withCount('assignments')
-            ->latest()
-            ->take(10)
-            ->get();
-
-        return view('dashboard', compact('groups'));
+        return redirect()->route('cycles.index');
     }
 }
