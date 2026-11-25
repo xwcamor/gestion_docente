@@ -63,6 +63,7 @@
                         <span class="tree-inline-editable"
                               data-inline-text data-edit-on-click
                               data-edit-field="semester" data-edit-kind="group-semester"
+                              data-edit-options="I|II|III|IV|V|VI"
                               data-edit-label="Semestre del grupo"
                               data-edit-url="{{ route('workload-tree.groups.context', $group) }}"
                               data-edit-value="{{ $group->semester }}"
