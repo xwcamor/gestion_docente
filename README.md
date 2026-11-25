@@ -174,6 +174,17 @@ El trabajo se organiza alrededor de la carga laboral recibida. El ciclo y sus gr
 4. **Preparar los Excel con IA:** organizar por separado Plan de sesión y Control de avance para teoría y taller/práctica.
 5. **Registrar las charlas de 5 minutos:** completar la charla correspondiente a cada fecha del grupo cuando ya exista su padrón de alumnos.
 
+### Navegación en árbol
+
+La entrada principal del sistema es un árbol desplegable con esta jerarquía:
+
+- **Ciclo:** carrera, semestre y periodo; permite abrir la administración del ciclo.
+- **Grupo:** acceso al grupo, padrón de alumnos, calendario, cursos y charla de 5 minutos (esta última solo se muestra si ya hay alumnos).
+- **Curso:** permite editar el nombre, alias y datos de sus modalidades, y subir o actualizar la malla curricular.
+- **Modalidad TEC/TALL:** muestra NRC, bloque, referencia, fechas, días, horas, ambiente y documentos generados; abre la pantalla de configuración y exportación de esa modalidad.
+
+Los niveles del árbol comienzan contraídos y se despliegan bajo demanda. En la vista individual del ciclo se conserva la visualización directa de sus grupos. La malla se muestra bajo el curso porque pertenece al catálogo del curso y puede reutilizarse en varios grupos; NRC, fechas, horario y documentos se mantienen por modalidad.
+
 **Plantilla de carga laboral:** se descarga desde la pantalla Importar carga laboral y contiene tres hojas. `Cursos` registra curso, código institucional, bloques, NRC y fechas independientes TEC/TALL; `Horarios` registra una fila por día y bloque con CODIGO, modalidad TEC/TALL, NRC opcional, día, horas, tipo, ambiente e INTERVALO SEMANAS opcional (vacío equivale a 1); `Instrucciones` explica el llenado. El importador valida la correspondencia curso/modalidad, cruces de horario e intervalos de 15 minutos. Al confirmar, guarda la repetición semanal, calcula horas promedio por semana y reconstruye las sesiones excluyendo feriados bloqueados. Si una modalidad ya tenía horarios configurados manualmente, se conservan para no sobrescribirlos al reimportar.
 
 ## Funcionalidades principales
