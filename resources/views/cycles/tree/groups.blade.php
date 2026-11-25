@@ -27,7 +27,7 @@
                     </span>
                     <span class="tree-group-code-row">
                         <span class="tree-meta-label">Código</span>
-                        <span class="tree-inline-editable" data-inline-text data-edit-on-click data-edit-field="code" data-edit-kind="group-code" data-edit-label="Código del grupo" data-edit-url="{{ route('groups.update', $group) }}" data-edit-value="{{ $group->code }}" title="Clic para editar código">{{ $group->code ?: 'Agregar código' }}</span>
+                        <span class="tree-inline-editable" data-inline-text data-edit-on-click data-edit-field="code" data-edit-kind="group-code" data-edit-label="Código del grupo" data-edit-url="{{ route('groups.update', $group) }}" data-edit-value="{{ $group->code }}" title="Clic para editar código">{{ $group->code ?: 'Falta' }}</span>
                     </span>
                     <span class="tree-group-inline-details" aria-label="Carrera, semestre y horario">
                         <span class="tree-group-inline-field">
@@ -39,9 +39,9 @@
                                   data-edit-url="{{ route('workload-tree.groups.context', $group) }}"
                                   data-edit-value="{{ $group->career }}"
                                   data-edit-response="career"
-                                  data-edit-empty-label="Agregar"
+                                  data-edit-empty-label="Falta"
                                   data-group-career-display
-                                  title="Clic para editar carrera">{{ $group->career ?: 'Agregar' }}</span>
+                                  title="Clic para editar carrera">{{ $group->career ?: 'Falta' }}</span>
                         </span>
                         <span class="tree-group-inline-field">
                             <span class="tree-group-inline-label">Semestre</span>
@@ -53,9 +53,9 @@
                                   data-edit-url="{{ route('workload-tree.groups.context', $group) }}"
                                   data-edit-value="{{ $group->semester }}"
                                   data-edit-response="semester"
-                                  data-edit-empty-label="Elegir"
+                                  data-edit-empty-label="Falta"
                                   data-group-semester-display
-                                  title="Clic para editar semestre">{{ $group->semester ?: 'Elegir' }}</span>
+                                  title="Clic para editar semestre">{{ $group->semester ?: 'Falta' }}</span>
                         </span>
                         <span class="tree-group-inline-field tree-group-inline-schedule">
                             <span class="tree-group-inline-label">Horario</span>
@@ -72,7 +72,7 @@
                                       data-edit-value="{{ $startTime }}"
                                       data-edit-response="workload_start_time"
                                       data-edit-empty-label="Agregar"
-                                      title="Clic para editar hora de inicio">{{ $startTime ?: 'Agregar' }}</span>
+                                      title="Clic para editar hora de inicio">{{ $startTime ?: 'Falta' }}</span>
                             </span>
                             <span class="tree-group-inline-time">
                                 <span class="tree-group-inline-sub-label">Hasta</span>
@@ -84,7 +84,7 @@
                                       data-edit-value="{{ $endTime }}"
                                       data-edit-response="workload_end_time"
                                       data-edit-empty-label="Agregar"
-                                      title="Clic para editar hora de fin">{{ $endTime ?: 'Agregar' }}</span>
+                                      title="Clic para editar hora de fin">{{ $endTime ?: 'Falta' }}</span>
                             </span>
                         </span>
                     </span>
