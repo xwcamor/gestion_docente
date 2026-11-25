@@ -73,6 +73,69 @@
 
 @push('styles')
 <style>
+.workload-tree-summary{display:flex;align-items:center;gap:10px;min-width:0;list-style:none;cursor:pointer}
+.workload-tree-summary::-webkit-details-marker{display:none}
+.workload-tree-summary:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:7px}
+.workload-tree-children{position:relative;margin-left:28px;padding:6px 12px 12px 18px;border-left:1px solid var(--line-strong)}
+.workload-tree-group{margin:7px 0;border:1px solid var(--line);border-radius:9px;background:var(--surface);overflow:hidden}
+.workload-group-summary{min-height:58px;padding:10px 12px;background:var(--surface)}
+.workload-group-children{margin-left:18px;padding:9px 10px 11px 14px}
+.workload-tree-course{margin:7px 0;border:1px solid var(--line);border-radius:8px;background:var(--surface);overflow:hidden}
+.workload-course-summary{min-height:51px;padding:9px 11px}
+.workload-course-children{margin-left:18px;padding:9px 10px 12px 14px}
+.tree-node-icon{display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px;border-radius:9px}
+.tree-group-icon{background:var(--info-bg);color:var(--info)}
+.tree-course-icon{background:var(--accent-soft);color:var(--accent)}
+.tree-node-copy{display:grid;gap:3px;min-width:0;flex:1}
+.tree-node-copy strong{color:var(--ink);font-size:13px;font-weight:750;line-height:1.35;overflow-wrap:anywhere}
+.tree-node-copy small{color:var(--muted);font-size:10px;line-height:1.45;overflow-wrap:anywhere}
+.tree-branch-mark{position:relative;flex:0 0 11px;width:11px;height:1px;background:var(--line-strong)}
+.workload-tree-group>.workload-tree-summary .tree-branch-mark:before,
+.workload-tree-course>.workload-tree-summary .tree-branch-mark:before,
+.workload-tree-modality>.tree-branch-mark:before{content:"";position:absolute;left:0;top:0;width:1px;height:15px;background:var(--line-strong)}
+.tree-chevron{display:grid;place-items:center;flex:none;color:var(--muted);transition:transform .14s ease}
+.workload-tree-group[open]>.workload-tree-summary .tree-chevron,
+.workload-tree-course[open]>.workload-tree-summary .tree-chevron{transform:rotate(90deg)}
+.tree-course-status{display:inline-flex;align-items:center;gap:4px;flex:none;padding:5px 8px;border-radius:6px;font-size:9px;font-weight:750;white-space:nowrap}
+.tree-course-status.is-ready{background:var(--success-bg);color:var(--success)}
+.tree-course-status.is-pending{background:var(--warning-bg);color:var(--warning)}
+.workload-tree-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 9px}
+.workload-tree-actions form{margin:0}
+.workload-tree-actions .btn{min-height:32px;padding:6px 9px;font-size:10px}
+.tree-curriculum-note{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:0 0 8px;padding:8px 10px;border:1px solid var(--line);border-radius:7px;background:var(--surface-soft);color:var(--success);font-size:10px}
+.tree-curriculum-note strong{color:var(--ink)}
+.tree-curriculum-note span{color:var(--muted)}
+.workload-tree-modality{position:relative;display:flex;align-items:center;gap:10px;min-width:0;padding:11px 3px;border-top:1px solid var(--line)}
+.tree-modality-tag{display:grid;place-items:center;flex:0 0 42px;height:30px;border-radius:7px;font-size:10px;font-weight:850}
+.tree-modality-tag.is-tec{background:var(--info-bg);color:var(--info)}
+.tree-modality-tag.is-tall{background:var(--accent-soft);color:var(--accent)}
+.tree-modality-copy{display:grid;gap:4px;flex:1;min-width:0}
+.tree-modality-copy strong{color:var(--ink);font-size:11px;font-weight:750;line-height:1.4;overflow-wrap:anywhere}
+.tree-modality-copy small{color:var(--muted);font-size:10px;line-height:1.45;overflow-wrap:anywhere}
+.tree-open-modality{flex:none}
+.tree-empty-child{padding:11px 12px;color:var(--muted);font-size:11px;line-height:1.5}
+.tree-empty-child a{display:inline-flex;align-items:center;gap:4px;margin-left:5px;color:var(--accent);font-weight:700}
+.tree-loading-state,.tree-load-error{padding:12px 14px;color:var(--muted);font-size:11px;line-height:1.5}
+.tree-load-error{color:var(--danger);background:var(--danger-bg);border-radius:8px}
+html[data-theme="dark"] .tree-course-status.is-ready{color:#b9e9ca}
+html[data-theme="dark"] .tree-course-status.is-pending{color:#f1d49a}
+@media(max-width:700px){
+ .workload-tree-children{margin-left:14px;padding-left:9px;padding-right:7px}
+ .workload-group-children,.workload-course-children{margin-left:8px;padding-left:8px}
+ .workload-tree-actions .btn{flex:1 1 auto}
+ .workload-tree-modality{align-items:flex-start;flex-wrap:wrap}
+ .tree-modality-copy{flex:1 1 calc(100% - 100px)}
+ .tree-open-modality{margin-left:52px}
+}
+@media(max-width:420px){
+ .workload-tree-summary{gap:7px}
+ .tree-node-icon{width:29px;height:29px;flex-basis:29px}
+ .tree-node-copy strong{font-size:11px}
+ .tree-node-copy small{font-size:9px}
+ .tree-course-status{font-size:8px;padding:4px 5px}
+ .workload-tree-modality{gap:7px}
+ .tree-open-modality{margin-left:49px}
+}
 .workload-tree-page{width:100%;max-width:none}
 .workload-tree-hero{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin:0 0 18px;padding:clamp(20px,2.4vw,34px);border:1px solid color-mix(in srgb,var(--accent) 20%,var(--line));border-radius:16px;background:linear-gradient(115deg,var(--accent-soft),var(--surface) 74%);box-shadow:0 3px 18px rgba(26,48,36,.035)}
 .workload-tree-hero-copy{min-width:0}
