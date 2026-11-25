@@ -15,8 +15,8 @@
         <p class="eyebrow"><x-icon name="calendar-days" size="12" /> Ciclo académico</p>
         <h1>{{ $cycle->academic_year }} · Ciclo {{ $cycle->cycle_code }}</h1>
         <div class="cycle-item-meta">
-            <span><x-icon name="graduation-cap" size="12" /> {{ $cycle->career ?: 'Carrera pendiente' }}</span>
-            <span>Semestre {{ $cycle->semester ?: '—' }}</span>
+            <span><x-icon name="graduation-cap" size="12" /> Carrera inicial: {{ $cycle->career ?: 'Pendiente' }}</span>
+            <span>Semestre inicial: {{ $cycle->semester ?: '—' }}</span>
             <span><x-icon name="calendar-range" size="12" /> {{ $cycle->start_date?->format('d/m/Y') }} – {{ $cycle->end_date?->format('d/m/Y') }}</span>
             <span class="badge badge-green">{{ $cycle->status === 'active' ? 'Activo' : 'Registrado' }}</span>
         </div>
@@ -191,12 +191,12 @@
             </div>
             <div class="form-row">
                 <div>
-                    <label for="edit_cycle_career">Nombre de la carrera <span class="muted">*</span></label>
+                    <label for="edit_cycle_career">Carrera predeterminada para grupos nuevos <span class="muted">*</span></label>
                     <input class="field" id="edit_cycle_career" name="career" maxlength="255" value="{{ old('career', $cycle->career) }}" required placeholder="Ej. Desarrollo de Software">
                     @error('career')<p class="field-error">{{ $message }}</p>@enderror
                 </div>
                 <div>
-                    <label for="edit_cycle_semester">Semestre académico <span class="muted">*</span></label>
+                    <label for="edit_cycle_semester">Semestre predeterminado para grupos nuevos <span class="muted">*</span></label>
                     <input class="field" id="edit_cycle_semester" name="semester" maxlength="60" value="{{ old('semester', $cycle->semester) }}" required placeholder="Ej. IV semestre">
                     @error('semester')<p class="field-error">{{ $message }}</p>@enderror
                 </div>
@@ -213,7 +213,8 @@
                     @error('end_date')<p class="field-error">{{ $message }}</p>@enderror
                 </div>
             </div>
-            <p class="help mt-16"><x-icon name="calendar-range" size="12" /> La fecha de fin debe ser igual o posterior al inicio.</p>
+            <p class="help mt-16"><x-icon name="info" size="12" /> Carrera y semestre se copian a los grupos nuevos. Cada grupo puede modificarlos por separado sin alterar a los demás.</p>
+            <p class="help"><x-icon name="calendar-range" size="12" /> La fecha de fin debe ser igual o posterior al inicio.</p>
         </div>
         <div class="dialog-footer"><button class="btn btn-secondary" type="button" data-modal-close><x-icon name="x" /> Cancelar</button><button class="btn" type="submit"><x-icon name="check" /> Guardar cambios</button></div>
     </form>
