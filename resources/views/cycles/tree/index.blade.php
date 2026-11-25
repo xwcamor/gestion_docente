@@ -200,6 +200,7 @@
 .tree-course-status{display:inline-flex;align-items:center;gap:4px;flex:none;padding:5px 8px;border-radius:6px;font-size:9px;font-weight:800;white-space:nowrap}
 .tree-course-status.is-ready{background:var(--success-bg);color:var(--success)}
 .tree-course-status.is-pending{background:var(--warning-bg);color:var(--warning)}
+.tree-inline-editable{display:inline-flex;align-items:center;min-height:20px;padding:1px 4px;border-radius:4px;border-bottom:1px dashed var(--line-strong);cursor:pointer}.tree-inline-editable:hover{background:var(--accent-soft);border-bottom-color:var(--accent);color:var(--accent)}
 .tree-cycle-inline{display:inline-flex;align-items:center;min-height:22px;padding:1px 4px;border-radius:4px;border-bottom:1px dashed var(--line-strong);cursor:text}.tree-cycle-inline:hover{background:var(--accent-soft);border-bottom-color:var(--accent);color:var(--accent)}
 .tree-inline-date,.tree-inline-nrc{display:inline-flex;align-items:center;min-height:23px;padding:2px 5px;border-radius:5px;border-bottom:1px dashed var(--line-strong);color:var(--ink-soft);cursor:text}
 .tree-inline-date:hover,.tree-inline-nrc:hover{background:var(--accent-soft);border-bottom-color:var(--accent);color:var(--accent)}
