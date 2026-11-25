@@ -129,9 +129,10 @@ class CourseRegistrationService
                 foreach (($modalitySchedules[$type] ?? []) as $scheduleBlock) {
                     $interval = max(1, (int) ($scheduleBlock['repeat_interval_weeks'] ?? 1));
                     $duration = max(0, (int) ((strtotime($scheduleBlock['end_time']) - strtotime($scheduleBlock['start_time'])) / 60));
-                    $weeklyMinutes += $duration / $interval;
+                    $days = array_unique(array_map('intval', $scheduleBlock['days'] ?? []));
+                    $weeklyMinutes += ($duration * count($days)) / $interval;
 
-                    foreach (array_unique(array_map('intval', $scheduleBlock['days'] ?? [])) as $day) {
+                    foreach ($days as $day) {
                         $modality->schedules()->create([
                             'day_of_week' => $day,
                             'start_time' => $scheduleBlock['start_time'],
