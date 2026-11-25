@@ -21,12 +21,12 @@
     <div class="card-head">
         <div>
             <h2>Árbol de carga laboral</h2>
-            <p class="card-description">Despliega cada nivel para llegar al grupo, curso, malla, horario o documento que necesitas.</p>
+            <p class="card-description">Abre cada nivel para consultar sus datos. Los grupos, cursos y horarios se cargan al desplegarlos para evitar consultas pesadas.</p>
         </div>
     </div>
 
     <form method="GET" action="{{ route('cycles.index') }}" class="filter-bar">
-        <input class="filter-input" type="search" name="q" value="{{ request('q') }}" placeholder="Buscar por año o código…" aria-label="Buscar ciclo">
+        <input class="filter-input" type="search" name="q" value="{{ request('q') }}" placeholder="Buscar ciclo, grupo, curso o código…" aria-label="Buscar en la carga laboral">
         <select class="filter-input" name="year" aria-label="Filtrar por año">
             <option value="">Todos los años</option>
             @foreach($years as $year)
@@ -40,15 +40,14 @@
     </form>
 
     @forelse($cycles as $cycle)
-        @php($cycleCourseCount = $cycle->groups->sum('assignments_count'))
-        <details class="workload-tree-cycle">
+        <details class="workload-tree-cycle" data-tree-load="{{ route('workload-tree.groups', $cycle) }}">
             <summary class="workload-tree-summary workload-cycle-summary">
                 <span class="tree-node-icon tree-cycle-icon"><x-icon name="calendar-days" size="17" /></span>
                 <span class="tree-node-copy">
                     <strong>{{ $cycle->academic_year }} · Ciclo {{ $cycle->cycle_code }}</strong>
                     <small>{{ $cycle->career ?: 'Carrera pendiente' }} · Semestre {{ $cycle->semester ?: '—' }} · {{ $cycle->start_date?->format('d/m/Y') }} – {{ $cycle->end_date?->format('d/m/Y') }}</small>
                 </span>
-                <span class="tree-node-count">{{ $cycle->groups_count }} grupos · {{ $cycleCourseCount }} cursos</span>
+                <span class="tree-node-count">{{ $cycle->groups_count }} grupos · {{ $cycle->courses_count }} cursos</span>
                 <span class="tree-chevron"><x-icon name="chevron-right" size="15" /></span>
             </summary>
 
@@ -62,105 +61,9 @@
                         <button class="btn btn-ghost btn-sm tree-danger-action" type="submit"><x-icon name="trash-2" /> Eliminar ciclo</button>
                     </form>
                 </div>
-
-                @forelse($cycle->groups as $group)
-                    <details class="workload-tree-group">
-                        <summary class="workload-tree-summary workload-group-summary">
-                            <span class="tree-branch-mark"></span>
-                            <span class="tree-node-icon tree-group-icon"><x-icon name="users" size="15" /></span>
-                            <span class="tree-node-copy">
-                                <strong>{{ $group->name }}</strong>
-                                <small>{{ $group->assignments_count }} cursos · {{ $group->students_count }} alumnos</small>
-                            </span>
-                            <span class="tree-chevron"><x-icon name="chevron-right" size="14" /></span>
-                        </summary>
-
-                        <div class="workload-tree-children workload-group-children">
-                            <div class="workload-tree-actions">
-                                <a class="btn btn-ghost btn-sm" href="{{ route('groups.show', $group) }}"><x-icon name="folder-open" /> Abrir grupo</a>
-                                <a class="btn btn-ghost btn-sm" href="{{ route('assignments.quick', $group) }}"><x-icon name="plus" /> Agregar cursos</a>
-                                <a class="btn btn-ghost btn-sm" href="{{ route('groups.calendar', $group) }}"><x-icon name="calendar-days" /> Calendario</a>
-                                <a class="btn btn-ghost btn-sm" href="{{ route('groups.show', $group) }}#group-roster"><x-icon name="users" /> Alumnos</a>
-                                @if($group->students_count > 0)
-                                    <a class="btn btn-ghost btn-sm" href="{{ route('groups.show', $group) }}?talks=1#group-talks"><x-icon name="message-circle" /> Charla 5 min</a>
-                                @endif
-                            </div>
-
-                            @forelse($group->assignments as $assignment)
-                                @php($courseModalities = $assignment->modalities)
-                                @php($curriculum = $assignment->curriculum)
-                                <details class="workload-tree-course">
-                                    <summary class="workload-tree-summary workload-course-summary">
-                                        <span class="tree-branch-mark"></span>
-                                        <span class="tree-node-icon tree-course-icon"><x-icon name="book-open" size="14" /></span>
-                                        <span class="tree-node-copy">
-                                            <strong>{{ $assignment->course->name }}</strong>
-                                            <small>{{ $assignment->course->code ?: 'Sin código' }} · {{ $courseModalities->count() }} modalidades</small>
-                                        </span>
-                                        <span class="tree-course-status {{ $curriculum && $curriculum->is_active ? 'is-ready' : 'is-pending' }}">
-                                            <x-icon name="{{ $curriculum && $curriculum->is_active ? 'book-check' : 'book-x' }}" size="12" />
-                                            {{ $curriculum && $curriculum->is_active ? 'Malla activa' : 'Malla pendiente' }}
-                                        </span>
-                                        <span class="tree-chevron"><x-icon name="chevron-right" size="13" /></span>
-                                    </summary>
-
-                                    <div class="workload-tree-children workload-course-children">
-                                        <div class="workload-tree-actions">
-                                            <a class="btn btn-ghost btn-sm" href="{{ route('assignments.quick.edit', [$group, $assignment]) }}"><x-icon name="pencil" /> Editar curso y horario</a>
-                                            <a class="btn btn-ghost btn-sm" href="{{ route('curricula.show', $assignment) }}"><x-icon name="file-up" /> {{ $curriculum && $curriculum->is_active ? 'Actualizar malla' : 'Subir malla PDF' }}</a>
-                                        </div>
-
-                                        @if($curriculum && $curriculum->is_active)
-                                            <div class="tree-curriculum-note">
-                                                <x-icon name="book-check" size="13" />
-                                                <strong>{{ $curriculum->course_name ?: $assignment->course->name }}</strong>
-                                                <span>{{ $curriculum->weeks->count() }} semanas · Versión {{ $curriculum->version }}</span>
-                                            </div>
-                                        @endif
-
-                                        @forelse($courseModalities as $modality)
-                                            @php($classSchedules = $modality->schedules->where('block_type', 'CLASS'))
-                                            @php($daysLabel = $classSchedules->pluck('day_of_week')->unique()->sort()->map(fn ($day) => [1 => 'Lun', 2 => 'Mar', 3 => 'Mié', 4 => 'Jue', 5 => 'Vie', 6 => 'Sáb', 7 => 'Dom'][(int) $day] ?? '')->filter()->implode(' · '))
-                                            @php($scheduleLabel = $classSchedules->map(fn ($item) => substr((string) $item->start_time, 0, 5).'–'.substr((string) $item->end_time, 0, 5))->unique()->implode(', '))
-                                            @php($modalityReady = $modality->start_date && $modality->end_date && $classSchedules->isNotEmpty())
-                                            <div class="workload-tree-modality">
-                                                <span class="tree-branch-mark"></span>
-                                                <span class="tree-modality-tag {{ $modality->modality === 'TEC' ? 'is-tec' : 'is-tall' }}">{{ $modality->modality }}</span>
-                                                <div class="tree-modality-copy">
-                                                    <strong>{{ $modality->modality === 'TEC' ? 'Teoría' : 'Taller / práctica' }} · NRC {{ $modality->nrc ?: 'pendiente' }}</strong>
-                                                    <small>{{ $modality->start_date?->format('d/m/Y') ?: 'Sin inicio' }} – {{ $modality->end_date?->format('d/m/Y') ?: 'Sin fin' }}</small>
-                                                    <small>
-                                                        @if($classSchedules->isNotEmpty())
-                                                            {{ $daysLabel }} · {{ $scheduleLabel }} · {{ number_format((float) $modality->total_hours, 2) }} h/sem.
-                                                        @else
-                                                            Horario pendiente
-                                                        @endif
-                                                        @if($modality->block_code) · Bloque {{ $modality->block_code }}@endif
-                                                        @if($modality->block_reference) · Ref. {{ $modality->block_reference }}@endif
-                                                    </small>
-                                                    @if($modality->documents->isNotEmpty())
-                                                        <small>{{ $modality->documents->count() }} documentos generados</small>
-                                                    @endif
-                                                </div>
-                                                <span class="tree-course-status {{ $modalityReady ? 'is-ready' : 'is-pending' }}">{{ $modalityReady ? 'Configurada' : 'Pendiente' }}</span>
-                                                <a class="btn btn-secondary btn-sm tree-open-modality" href="{{ route('modalities.show', $modality) }}"><x-icon name="arrow-up-right" /> Abrir</a>
-                                            </div>
-                                        @empty
-                                            <div class="tree-empty-child">Aún no hay modalidades. Edita el curso para agregar TEC o TALL.</div>
-                                        @endforelse
-                                    </div>
-                                </details>
-                            @empty
-                                <div class="tree-empty-child">
-                                    Este grupo todavía no tiene cursos.
-                                    <a href="{{ route('assignments.quick', $group) }}">Agregar el primer curso <x-icon name="arrow-right" size="12" /></a>
-                                </div>
-                            @endforelse
-                        </div>
-                    </details>
-                @empty
-                    <div class="tree-empty-child">Este ciclo todavía no tiene grupos. <a href="{{ route('cycles.show', $cycle) }}">Abrir ciclo para crear el primer grupo <x-icon name="arrow-right" size="12" /></a></div>
-                @endforelse
+                <div data-tree-content>
+                    <div class="tree-loading-state">Despliega este ciclo para cargar sus grupos.</div>
+                </div>
             </div>
         </details>
     @empty
@@ -270,6 +173,55 @@
     syncDates();
 })();
 </script>
+<script>
+(() => {
+    const bindTreeNodes = (scope) => {
+        scope.querySelectorAll('[data-tree-load]').forEach((node) => {
+            if (node.dataset.treeBound === 'true') return;
+            node.dataset.treeBound = 'true';
+
+            node.addEventListener('toggle', async () => {
+                if (!node.open || node.dataset.treeLoaded === 'true' || node.dataset.treeLoading === 'true') return;
+
+                const content = node.querySelector('[data-tree-content]');
+                if (!content) return;
+
+                node.dataset.treeLoading = 'true';
+                content.innerHTML = '<div class="tree-loading-state" role="status">Cargando información…</div>';
+
+                const url = new URL(node.dataset.treeLoad, window.location.href);
+                const search = document.querySelector('[name="q"]');
+                if (search && search.value.trim()) url.searchParams.set('q', search.value.trim());
+
+                try {
+                    const response = await fetch(url.toString(), {
+                        credentials: 'same-origin',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'text/html'
+                        }
+                    });
+
+                    if (!response.ok || response.redirected) {
+                        throw new Error('La solicitud no pudo completarse.');
+                    }
+
+                    content.innerHTML = await response.text();
+                    node.dataset.treeLoaded = 'true';
+                    bindTreeNodes(content);
+                } catch (error) {
+                    content.innerHTML = '<div class="tree-load-error" role="alert">No se pudo cargar este nivel. Cierra y vuelve a abrirlo para intentar nuevamente.</div>';
+                    node.dataset.treeLoaded = 'false';
+                } finally {
+                    node.dataset.treeLoading = 'false';
+                }
+            });
+        });
+    };
+
+    bindTreeNodes(document);
+})();
+</script>
 @endpush
 @push('styles')
 <style>
@@ -322,6 +274,8 @@
 .tree-modality-copy small{color:var(--muted);font-size:9px;line-height:1.4;overflow-wrap:anywhere}
 .tree-open-modality{flex:none}
 .tree-empty-child{padding:9px 10px;color:var(--muted);font-size:10px;line-height:1.5}
+.tree-loading-state,.tree-load-error{padding:11px 12px;color:var(--muted);font-size:10px;line-height:1.5}
+.tree-load-error{color:var(--danger);background:var(--danger-bg);border-radius:7px}
 .tree-empty-child a{display:inline-flex;align-items:center;gap:4px;margin-left:5px;color:var(--accent);font-weight:680}
 @media(max-width:700px){
     .workload-cycle-summary{align-items:flex-start}
