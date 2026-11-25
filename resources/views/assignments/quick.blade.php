@@ -470,7 +470,12 @@
             const list = editor.querySelector('[data-schedule-list]');
             const rowIndex = addSchedule.dataset.rowIndex;
             const prefix = addSchedule.dataset.prefix;
-            const scheduleIndex = list.querySelectorAll('[data-schedule-row]').length;
+            const existingIndices = [...list.querySelectorAll('[name]')].map(input => {
+                const pattern = new RegExp('^rows\\\\['+rowIndex+'\\\\]\\\\['+prefix+'_schedules\\\\]\\\\[(\\\\d+)\\\\]');
+                const match = input.name.match(pattern);
+                return match ? Number(match[1]) : -1;
+            });
+            const scheduleIndex = Math.max(-1, ...existingIndices) + 1;
             const defaultInstruction = prefix === 'tec' ? 'THEORY' : 'LAB';
             const html = scheduleTemplate.innerHTML
                 .replaceAll('__ROW_INDEX__', rowIndex)
