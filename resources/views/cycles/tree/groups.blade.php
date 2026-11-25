@@ -12,6 +12,8 @@
                  data-group-label="Grupo {{ $group->name }}"
                  data-group-name="{{ $group->name }}"
                  data-group-code="{{ $group->code }}"
+                 data-group-career="{{ $group->career }}"
+                 data-group-semester="{{ $group->semester }}"
                  data-group-name-url="{{ route('groups.update', $group) }}"
                  data-tree-load="{{ route('workload-tree.courses', $group) }}"
                  data-tree-loaded="0">
