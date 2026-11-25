@@ -10,6 +10,8 @@
 </div>
 
 @php($useSystemColor = (bool) old('use_system_color', !$user->accent_color))
+@php($sidebarColor = old('sidebar_color', $user->sidebar_color ?: 'blue'))
+@php($sidebarPalettes = ['blue' => 'Azul', 'green' => 'Verde', 'violet' => 'Violeta', 'amber' => 'Ámbar', 'graphite' => 'Grafito'])
 <form class="interface-preferences-card card" method="POST" action="{{ route('admin.settings.update') }}" data-loading-form="1">
     @csrf
     @method('PATCH')
@@ -54,6 +56,23 @@
                 </label>
             </div>
             @error('accent_color')<p class="field-error">{{ $message }}</p>@enderror
+        </div>
+
+        <div class="interface-preference-option sidebar-palette-panel">
+            <div class="interface-preference-copy">
+                <strong>Color del menú lateral</strong>
+                <p>Selecciona uno de los cinco tonos. El cambio solo afecta al menú de tu cuenta.</p>
+            </div>
+            <div class="sidebar-palette" role="radiogroup" aria-label="Color del menú lateral">
+                @foreach($sidebarPalettes as $value => $label)
+                    <label class="sidebar-palette-option">
+                        <input type="radio" name="sidebar_color" value="{{ $value }}" @checked($sidebarColor === $value)>
+                        <span class="sidebar-palette-swatch swatch-{{ $value }}" aria-hidden="true"></span>
+                        <span class="sidebar-palette-label">{{ $label }}</span>
+                    </label>
+                @endforeach
+            </div>
+            @error('sidebar_color')<p class="field-error">{{ $message }}</p>@enderror
         </div>
     </div>
 
@@ -202,7 +221,20 @@
 .interface-preferences-icon{display:grid;place-items:center;width:42px;height:42px;flex:none;border-radius:11px;background:var(--accent-soft);color:var(--accent)}
 .interface-preferences-head h2{margin:0;font-size:20px;font-weight:780;letter-spacing:-.025em}
 .interface-preferences-head .eyebrow{margin-bottom:4px}
-.interface-preferences-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:15px}
+.interface-preferences-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:15px}
+.sidebar-palette{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.sidebar-palette-option{position:relative;display:grid;justify-items:center;gap:6px;min-width:0;margin:0;padding:9px 5px;border:1px solid var(--line);border-radius:8px;background:var(--surface);cursor:pointer;transition:border-color .14s ease,background .14s ease,box-shadow .14s ease}
+.sidebar-palette-option:has(input:checked){border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 12%,transparent)}
+.sidebar-palette-option input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.sidebar-palette-option:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+.sidebar-palette-swatch{display:block;width:100%;height:25px;border:1px solid rgba(35,50,65,.12);border-radius:5px;background:#eaf3fb}
+.sidebar-palette-swatch.swatch-blue{background:linear-gradient(90deg,#dcecf8 0 74%,#3f82b5 74%)}
+.sidebar-palette-swatch.swatch-green{background:linear-gradient(90deg,#e2f1e7 0 74%,#398761 74%)}
+.sidebar-palette-swatch.swatch-violet{background:linear-gradient(90deg,#eee7f8 0 74%,#8065ad 74%)}
+.sidebar-palette-swatch.swatch-amber{background:linear-gradient(90deg,#f8efd9 0 74%,#b7832f 74%)}
+.sidebar-palette-swatch.swatch-graphite{background:linear-gradient(90deg,#354656 0 74%,#243341 74%)}
+.sidebar-palette-label{color:var(--muted);font-size:9px;font-weight:700}
+.sidebar-palette-option:has(input:checked) .sidebar-palette-label{color:var(--accent)}
 .interface-preference-option{display:grid;align-content:start;gap:10px;min-width:0;padding:15px;border:1px solid var(--line);border-radius:10px;background:var(--surface-soft)}
 .interface-preference-copy strong{display:block;color:var(--ink);font-size:13px;font-weight:750}
 .interface-preference-copy p{margin:5px 0 0;color:var(--muted);font-size:11px;line-height:1.5}
@@ -216,8 +248,9 @@
 .interface-system-color input{width:15px;height:15px;accent-color:var(--accent)}
 .interface-preferences-footer{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
 .interface-preferences-footer p{margin:0;color:var(--muted);font-size:10px}
+@media(max-width:950px){.interface-preferences-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sidebar-palette-panel{grid-column:1/-1}}
 @media(max-width:700px){
- .interface-preferences-grid{grid-template-columns:1fr}
+ .interface-preferences-grid{grid-template-columns:1fr}.sidebar-palette-panel{grid-column:auto}
  .interface-preferences-footer{align-items:stretch;flex-direction:column}
  .interface-preferences-footer .btn{width:100%}
  .interface-select{max-width:none}
