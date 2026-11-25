@@ -269,7 +269,93 @@ html[data-theme="dark"] .workload-tree-hero{background:linear-gradient(115deg,co
  .workload-tree-group-actions>.btn,.workload-tree-group-actions>.tree-group-action-inline{flex:1 1 auto}
  .tree-group-remove-confirm form{display:grid;grid-template-columns:1fr}
  .tree-group-remove-confirm .btn{width:100%}
-}</style>
+}
+/* Tree v2: un solo nivel desplegable, cursos y modalidades siempre visibles */
+.workload-tree-group-actions{align-items:center;gap:8px;padding-bottom:9px;border-bottom:1px solid var(--line)}
+.workload-tree-group-actions .btn{min-height:34px}
+.tree-group-delete-trigger,.tree-course-delete-trigger{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:32px;padding:6px 9px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--muted);font-size:10px;font-weight:750;cursor:pointer;transition:background .15s ease,border-color .15s ease,color .15s ease}
+.tree-group-delete-trigger:hover,.tree-course-delete-trigger:hover{border-color:var(--danger);background:var(--danger-bg);color:var(--danger)}
+.tree-last-group-note{color:var(--muted);font-size:9px}
+.tree-delete-confirm{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0;padding:11px 12px;border:1px solid color-mix(in srgb,var(--danger) 35%,var(--line));border-radius:9px;background:var(--danger-bg);animation:tree-reveal .16s ease-out}
+.tree-delete-confirm[hidden]{display:none!important}
+.tree-delete-confirm p{margin:0;color:var(--ink-soft);font-size:10px;line-height:1.55}
+.tree-delete-confirm p strong{color:var(--danger)}
+.tree-delete-confirm form{display:flex;align-items:center;gap:7px;flex:none}
+.tree-course-entry-area{margin-top:8px}
+.workload-tree-add-course{position:static;display:inline-flex;align-items:center;gap:7px;min-height:36px;padding:8px 11px;border:1px solid color-mix(in srgb,var(--accent) 34%,var(--line));border-radius:9px;background:var(--accent-soft);color:var(--accent);font-size:10px;font-weight:850;cursor:pointer;transition:transform .15s ease,background .15s ease,border-color .15s ease}
+.workload-tree-add-course:hover,.workload-tree-add-course[aria-expanded="true"]{transform:translateY(-1px);border-color:var(--accent);background:var(--accent);color:#fff}
+.tree-course-entry-form[hidden]{display:none!important}
+.tree-course-entry-form{margin-top:9px;padding:15px;border:1px solid color-mix(in srgb,var(--accent) 38%,var(--line));border-left:4px solid var(--accent);border-radius:12px;background:linear-gradient(120deg,var(--accent-soft),var(--surface) 78%);box-shadow:0 5px 18px rgba(25,56,78,.05);animation:tree-reveal .18s ease-out}
+.tree-course-entry-heading{margin-bottom:3px}
+.tree-entry-components{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 5%,transparent)}
+.tree-course-entry-footer>div{display:flex;align-items:center;gap:7px}
+.tree-course-head{display:flex;align-items:center;gap:10px;min-width:0;padding:12px 13px;background:var(--surface)}
+.workload-tree-course{display:block;margin:8px 0;border:1px solid var(--line-strong);border-radius:11px;background:var(--surface);overflow:visible;transition:border-color .15s ease,box-shadow .15s ease}
+.workload-tree-course:hover{border-color:color-mix(in srgb,var(--accent) 42%,var(--line))}
+.workload-tree-course:focus-within{border-color:color-mix(in srgb,var(--accent) 60%,var(--line));box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 9%,transparent)}
+.tree-course-head .tree-node-copy{flex:1}
+.tree-course-head .tree-node-copy strong{display:inline-flex;align-items:center;min-height:27px;padding:2px 4px;border-radius:5px;cursor:text}
+.tree-inline-name:hover{background:var(--accent-soft);color:var(--accent)}
+.tree-course-components{display:flex;align-items:center;gap:5px;flex:none}
+.tree-component-chip{display:inline-flex;align-items:center;justify-content:center;min-width:36px;padding:5px 7px;border:1px solid transparent;border-radius:7px;font-size:9px;font-weight:900;letter-spacing:.04em}
+.tree-component-chip.is-present{background:var(--success-bg);color:var(--success)}
+.tree-component-chip.is-disabled{border-color:var(--line-strong);background:var(--surface-soft);color:var(--muted);text-decoration:line-through}
+.tree-component-chip.is-missing{border:1px dashed var(--line-strong);background:var(--surface-soft);color:var(--faint)}
+.tree-course-delete-trigger{margin-left:5px}
+.tree-course-delete-confirm{margin:0 12px 10px}
+.tree-course-modalities{padding:0 12px 9px}
+.tree-course-modalities .workload-tree-modality:first-child{border-top:1px solid var(--line)}
+.workload-tree-modality{display:grid;grid-template-columns:11px 42px minmax(0,1fr) auto auto auto;align-items:center;gap:10px;min-height:76px;padding:11px 5px;border-top:1px solid var(--line);transition:background .15s ease,opacity .15s ease}
+.workload-tree-modality:hover{background:var(--surface-soft)}
+.workload-tree-modality.is-disabled{background:color-mix(in srgb,var(--surface-soft) 70%,var(--surface));}
+.workload-tree-modality.is-disabled .tree-modality-copy{opacity:.72}
+.tree-modality-copy{min-width:0}
+.tree-modality-copy strong{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.tree-modality-copy small{display:block}
+.tree-modality-tag.is-tec{background:var(--info-bg);color:var(--info)}
+.tree-modality-tag.is-tall{background:var(--accent-soft);color:var(--accent)}
+.tree-modality-toggle{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-width:105px;min-height:34px;padding:6px 9px;border:1px solid var(--line-strong);border-radius:8px;background:var(--surface);color:var(--ink-soft);font-size:9px;font-weight:800;cursor:pointer;transition:background .15s ease,border-color .15s ease,color .15s ease}
+.tree-modality-toggle.is-on{border-color:color-mix(in srgb,var(--success) 35%,var(--line));background:var(--success-bg);color:var(--success)}
+.tree-modality-toggle.is-off{border-color:color-mix(in srgb,var(--accent) 35%,var(--line));background:var(--accent-soft);color:var(--accent)}
+.tree-modality-toggle:hover:not(:disabled){filter:brightness(.97);transform:translateY(-1px)}
+.tree-modality-toggle:disabled{opacity:.75;cursor:not-allowed;filter:none}
+.tree-toggle-dot{width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 0 3px color-mix(in srgb,currentColor 14%,transparent)}
+.tree-course-status.is-disabled{background:var(--surface-soft);color:var(--muted)}
+.tree-disabled-value{display:inline-flex;align-items:center;min-height:22px;padding:1px 4px;color:var(--muted)}
+.tree-inline-editor{width:auto;min-width:105px;max-width:min(220px,60vw);min-height:30px;padding:4px 7px;border:1px solid var(--accent);border-radius:6px;background:var(--surface);color:var(--ink);font:inherit;font-size:11px;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 12%,transparent);outline:none}
+.tree-inline-name .tree-inline-editor{min-width:min(220px,60vw);font-size:12px;font-weight:750}
+.tree-inline-saving{opacity:.6;pointer-events:none}
+.tree-inline-name:focus-visible,.tree-inline-date:focus-visible,.tree-inline-nrc:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+html[data-theme="dark"] .workload-tree-group[open]>.workload-group-summary{background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 16%,var(--surface)),var(--surface))}
+html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120deg,color-mix(in srgb,var(--accent) 14%,var(--surface)),var(--surface) 78%)}
+@media(max-width:850px){
+ .workload-tree-modality{grid-template-columns:10px 38px minmax(0,1fr) auto;gap:8px}
+ .workload-tree-modality .tree-course-status{display:none}
+ .workload-tree-modality .tree-open-modality{grid-column:3;margin:0;justify-self:start}
+ .tree-modality-toggle{grid-column:4;grid-row:1/3;min-width:88px}
+}
+@media(max-width:600px){
+ .tree-course-head{align-items:flex-start;flex-wrap:wrap;padding:10px}
+ .tree-course-head .tree-node-copy{flex:1 1 calc(100% - 60px)}
+ .tree-course-components{order:4;margin-left:43px}
+ .tree-course-delete-trigger{order:5;margin-left:auto}
+ .tree-course-modalities{padding:0 8px 8px}
+ .workload-tree-modality{grid-template-columns:32px minmax(0,1fr) auto;gap:7px;padding:11px 2px}
+ .workload-tree-modality .tree-branch-mark{display:none}
+ .workload-tree-modality .tree-modality-tag{grid-column:1;grid-row:1;flex-basis:32px;width:32px;height:29px}
+ .workload-tree-modality .tree-modality-copy{grid-column:2;grid-row:1;min-width:0}
+ .workload-tree-modality .tree-modality-toggle{grid-column:3;grid-row:1;min-width:82px;padding:6px 7px}
+ .workload-tree-modality .tree-open-modality{grid-column:2/4;grid-row:2;margin:0}
+ .tree-delete-confirm{align-items:stretch;flex-direction:column}
+ .tree-delete-confirm form{display:grid;grid-template-columns:1fr 1fr}
+ .tree-delete-confirm form .btn{width:100%}
+ .tree-course-entry-form{padding:12px}
+ .tree-course-entry-footer>div{display:grid;grid-template-columns:1fr 1fr;width:100%}
+ .tree-course-entry-footer>div .btn{width:100%}
+ .workload-tree-group-actions{align-items:stretch}
+ .workload-tree-group-actions>.btn{flex:1}
+}
+</style>
 @endpush
 
 @push('scripts')
@@ -285,15 +371,48 @@ html[data-theme="dark"] .workload-tree-hero{background:linear-gradient(115deg,co
         liveFeedback.hidden = false;
     };
 
-    const bindTreeNodes = (scope) => {
+    const sendInlineUpdate = async (url, values) => {
+        const body = new FormData();
+        Object.entries(values).forEach(([key, value]) => body.append(key, value ?? ''));
+        const response = await fetch(url, {
+            method: 'PATCH',
+            body,
+            credentials: 'same-origin',
+            headers: {'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf}
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            const errors = Object.values(payload.errors || {}).flat();
+            throw new Error(errors.join(' ') || payload.message || 'No se pudo guardar el cambio.');
+        }
+        return payload;
+    };
+
+    const syncCourseForm = form => {
+        ['TEC', 'TALL'].forEach(type => {
+            const selected = [...form.querySelectorAll('[data-course-component]')]
+                .some(input => input.value === type && input.checked);
+            const panel = form.querySelector('[data-course-config="' + type + '"]');
+            if (panel) panel.hidden = !selected;
+            panel?.querySelectorAll('input').forEach(input => input.disabled = !selected);
+        });
+    };
+
+    document.querySelectorAll('[data-tree-course-form]').forEach(syncCourseForm);
+
+    document.addEventListener('change', event => {
+        if (!event.target.matches('[data-course-component]')) return;
+        const form = event.target.closest('[data-tree-course-form]');
+        if (form) syncCourseForm(form);
+    });
+
+    const bindTreeNodes = scope => {
         scope.querySelectorAll('[data-tree-load]').forEach(node => {
             if (node.dataset.treeBound === 'true') return;
             node.dataset.treeBound = 'true';
             node.addEventListener('toggle', () => {
                 node.classList.toggle('is-focused', node.open);
-                if (node.matches('.workload-tree-group')) {
-                    node.closest('.workload-tree-group-shell')?.classList.toggle('is-focused', node.open);
-                }
+                node.closest('.workload-tree-group-shell')?.classList.toggle('is-focused', node.open);
                 if (node.open) loadTreeNode(node);
             });
         });
@@ -305,7 +424,7 @@ html[data-theme="dark"] .workload-tree-hero{background:linear-gradient(115deg,co
         if (!content) return;
 
         node.dataset.treeLoading = 'true';
-        content.innerHTML = '<div class="tree-loading-state" role="status">Cargando…</div>';
+        content.innerHTML = '<div class="tree-loading-state" role="status">Cargando cursos y modalidades…</div>';
         const url = new URL(node.dataset.treeLoad, window.location.href);
         const search = document.querySelector('.workload-tree-search [name="q"]');
         if (search?.value.trim()) url.searchParams.set('q', search.value.trim());
@@ -315,10 +434,9 @@ html[data-theme="dark"] .workload-tree-hero{background:linear-gradient(115deg,co
                 credentials: 'same-origin',
                 headers: {'X-Requested-With': 'XMLHttpRequest', 'Accept': 'text/html'}
             });
-            if (!response.ok || response.redirected) throw new Error('No se pudo cargar este nivel.');
+            if (!response.ok || response.redirected) throw new Error('No se pudo cargar este grupo.');
             content.innerHTML = await response.text();
             node.dataset.treeLoaded = 'true';
-            bindTreeNodes(content);
         } catch (error) {
             content.innerHTML = '<div class="tree-load-error" role="alert">No se pudo cargar. Cierra y vuelve a abrir para intentar otra vez.</div>';
             node.dataset.treeLoaded = 'false';
@@ -326,28 +444,6 @@ html[data-theme="dark"] .workload-tree-hero{background:linear-gradient(115deg,co
             node.dataset.treeLoading = 'false';
         }
     };
-
-    const syncCourseForm = form => {
-        ['TEC', 'TALL'].forEach(type => {
-            const selected = [...form.querySelectorAll('[data-course-component]')].some(input => input.value === type && input.checked);
-            const panel = form.querySelector('[data-course-config="' + type + '"]');
-            if (panel) panel.hidden = !selected;
-            panel?.querySelectorAll('input').forEach(input => input.disabled = !selected);
-        });
-    };
-
-    document.querySelectorAll('[data-tree-course-form]').forEach(syncCourseForm);
-    document.querySelectorAll('.workload-tree-add-course-inline').forEach(details => {
-        details.addEventListener('toggle', () => {
-            if (details.open) details.querySelector('[name="course_code"]')?.focus();
-        });
-    });
-
-    document.addEventListener('change', event => {
-        if (!event.target.matches('[data-course-component]')) return;
-        const form = event.target.closest('[data-tree-course-form]');
-        if (form) syncCourseForm(form);
-    });
 
     const refreshGroup = async (groupNode, count) => {
         if (!groupNode) return;
@@ -360,96 +456,189 @@ html[data-theme="dark"] .workload-tree-hero{background:linear-gradient(115deg,co
         await loadTreeNode(groupNode, true);
     };
 
+    const openCourseEntry = (shell, preset = null) => {
+        const groupNode = shell?.querySelector('[data-tree-group-id]');
+        const form = shell?.querySelector('[data-tree-course-form]');
+        const button = shell?.querySelector('[data-toggle-course-entry]');
+        if (!form) return;
+
+        if (preset) {
+            form.reset();
+            form.querySelector('[name="course_code"]').value = preset.courseCode || '';
+            form.querySelector('[name="course_name"]').value = preset.courseName || '';
+            form.querySelectorAll('[data-course-component]').forEach(input => {
+                input.checked = input.value === preset.component;
+            });
+            syncCourseForm(form);
+        }
+
+        form.hidden = false;
+        button?.setAttribute('aria-expanded', 'true');
+        groupNode && (groupNode.open = true);
+        const fieldName = preset?.component === 'TALL' ? 'tall_nrc' : 'tec_nrc';
+        const focusTarget = preset ? form.querySelector('[name="' + fieldName + '"]') : form.querySelector('[name="course_code"]');
+        setTimeout(() => focusTarget?.focus(), 60);
+        form.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+    };
+
+    const closeCourseEntry = form => {
+        if (!form) return;
+        form.hidden = true;
+        form.reset();
+        syncCourseForm(form);
+        form.closest('.tree-course-entry-area')?.querySelector('[data-toggle-course-entry]')?.setAttribute('aria-expanded', 'false');
+    };
+
+    const displayDate = value => {
+        if (!value) return 'Sin fecha';
+        const [year, month, day] = value.split('-');
+        return day + '/' + month + '/' + year;
+    };
+
+    const updateCourseComponentChips = course => {
+        if (!course) return;
+        ['TEC', 'TALL'].forEach(type => {
+            const chip = course.querySelector('[data-component-chip="' + type + '"]');
+            const row = course.querySelector('[data-modality-row][data-modality-type="' + type + '"]');
+            if (!chip) return;
+            chip.classList.toggle('is-missing', !row);
+            chip.classList.toggle('is-disabled', Boolean(row && row.dataset.active !== '1'));
+            chip.classList.toggle('is-present', Boolean(row && row.dataset.active === '1'));
+        });
+    };
+
+    const syncModalitySwitches = course => {
+        if (!course) return;
+        const buttons = [...course.querySelectorAll('[data-toggle-modality]')];
+        const activeCount = buttons.filter(button => button.dataset.active === '1').length;
+
+        buttons.forEach(button => {
+            const isActive = button.dataset.active === '1';
+            const label = button.querySelector('[data-toggle-label]');
+            button.disabled = isActive && activeCount <= 1;
+            button.classList.toggle('is-on', isActive);
+            button.classList.toggle('is-off', !isActive);
+            button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+            button.title = isActive && activeCount <= 1
+                ? 'Debes mantener al menos una modalidad activa'
+                : (isActive ? 'Desactivar esta modalidad' : 'Activar esta modalidad');
+            if (label) label.textContent = isActive && activeCount <= 1
+                ? 'Obligatoria'
+                : (isActive ? 'Desactivar' : 'Activar');
+        });
+        updateCourseComponentChips(course);
+    };
+
+    const refreshGroupLastDeleteGuard = remaining => {
+        const shouldDisable = Number(remaining) <= 1;
+        document.querySelectorAll('[data-toggle-group-delete]').forEach(button => {
+            button.disabled = shouldDisable;
+            button.textContent = shouldDisable ? 'Único grupo' : 'Eliminar grupo';
+            button.title = shouldDisable ? 'Cada ciclo debe conservar al menos un grupo' : 'Eliminar este grupo';
+        });
+        document.querySelectorAll('[data-group-delete-confirm] button[type="submit"]').forEach(button => {
+            button.disabled = shouldDisable;
+        });
+    };
+
+    document.addEventListener('click', event => {
+        const groupName = event.target.closest('[data-inline-group-name]');
+        if (groupName) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+        }
+
+        const toggleEntry = event.target.closest('[data-toggle-course-entry]');
+        if (toggleEntry) {
+            const shell = toggleEntry.closest('.workload-tree-group-shell');
+            const form = shell?.querySelector('[data-tree-course-form]');
+            if (!form) return;
+            if (form.hidden) openCourseEntry(shell);
+            else closeCourseEntry(form);
+            return;
+        }
+
+        const missingModality = event.target.closest('[data-open-inline-course-entry]');
+        if (missingModality) {
+            const shell = document.querySelector('[data-group-shell="' + missingModality.dataset.groupId + '"]');
+            openCourseEntry(shell, {
+                courseCode: missingModality.dataset.courseCode,
+                courseName: missingModality.dataset.courseName,
+                component: missingModality.dataset.component
+            });
+            return;
+        }
+
+        const toggleGroupDelete = event.target.closest('[data-toggle-group-delete]');
+        if (toggleGroupDelete) {
+            const confirm = toggleGroupDelete.closest('.workload-tree-group-children')?.querySelector('[data-group-delete-confirm]');
+            if (confirm) confirm.hidden = !confirm.hidden;
+            return;
+        }
+
+        const toggleCourseDelete = event.target.closest('[data-toggle-course-delete]');
+        if (toggleCourseDelete) {
+            const confirm = toggleCourseDelete.closest('[data-tree-course-item]')?.querySelector('[data-course-delete-confirm]');
+            if (confirm) confirm.hidden = !confirm.hidden;
+            return;
+        }
+
+        const closeEntry = event.target.closest('[data-close-course-entry]');
+        if (closeEntry) {
+            closeCourseEntry(closeEntry.closest('[data-tree-course-form]'));
+            return;
+        }
+
+        const cancel = event.target.closest('[data-inline-cancel]');
+        if (cancel) {
+            const confirm = cancel.closest('.tree-delete-confirm');
+            if (confirm) confirm.hidden = true;
+            return;
+        }
+
+        const toggleModality = event.target.closest('[data-toggle-modality]');
+        if (toggleModality) {
+            event.preventDefault();
+            const course = toggleModality.closest('[data-tree-course-item]');
+            const row = toggleModality.closest('[data-modality-row]');
+            const currentlyActive = toggleModality.dataset.active === '1';
+            toggleModality.disabled = true;
+            const label = toggleModality.querySelector('[data-toggle-label]');
+            if (label) label.textContent = 'Guardando…';
+
+            sendInlineUpdate(toggleModality.dataset.modalityUrl, {active: currentlyActive ? 0 : 1})
+                .then(payload => {
+                    toggleModality.dataset.active = payload.active ? '1' : '0';
+                    row.dataset.active = payload.active ? '1' : '0';
+                    row.classList.toggle('is-active', payload.active);
+                    row.classList.toggle('is-disabled', !payload.active);
+
+                    const status = row.querySelector('[data-modality-status]');
+                    if (status) {
+                        status.className = 'tree-course-status ' + (!payload.active ? 'is-disabled' : 'is-pending');
+                        status.textContent = payload.active ? 'Activa' : 'Desactivada';
+                    }
+
+                    const description = row.querySelector('[data-modality-description]');
+                    if (description && !payload.active) {
+                        description.textContent = 'Modalidad desactivada · Horarios e historial conservados';
+                    }
+                    const link = row.querySelector('.tree-open-modality');
+                    if (link) link.hidden = !payload.active;
+
+                    syncModalitySwitches(course);
+                    showFeedback(payload.message || 'Modalidad actualizada.', Boolean(payload.warning));
+                })
+                .catch(error => {
+                    syncModalitySwitches(course);
+                    showFeedback(error.message, true);
+                });
+            return;
+        }
+    });
+
     document.addEventListener('submit', async event => {
-        const groupEditForm = event.target.closest('[data-tree-group-name-form]');
-        if (groupEditForm) {
-            event.preventDefault();
-            const submit = groupEditForm.querySelector('button[type="submit"]');
-            if (submit) {
-                submit.disabled = true;
-                submit.textContent = 'Guardando…';
-            }
-
-            try {
-                const response = await fetch(groupEditForm.action, {
-                    method: 'POST',
-                    body: new FormData(groupEditForm),
-                    credentials: 'same-origin',
-                    headers: {'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf}
-                });
-                const payload = await response.json().catch(() => ({}));
-                if (!response.ok) {
-                    const messages = Object.values(payload.errors || {}).flat();
-                    throw new Error(messages.join(' ') || payload.message || 'No se pudo actualizar el grupo.');
-                }
-
-                const shell = groupEditForm.closest('.workload-tree-group-shell');
-                const groupNode = shell?.querySelector('[data-tree-group-id]');
-                const title = groupNode?.querySelector('.workload-group-summary .tree-node-copy strong');
-                if (title) title.textContent = 'Grupo ' + payload.name;
-                if (groupNode) groupNode.dataset.groupLabel = 'Grupo ' + payload.name;
-                const input = groupEditForm.querySelector('input[name="name"]');
-                if (input) input.value = payload.name;
-                groupEditForm.closest('details')?.removeAttribute('open');
-                showFeedback(payload.message || 'Grupo actualizado.');
-            } catch (error) {
-                showFeedback(error.message, true);
-            } finally {
-                if (submit) {
-                    submit.disabled = false;
-                    submit.textContent = 'Guardar';
-                }
-            }
-            return;
-        }
-
-        const deleteGroupForm = event.target.closest('[data-tree-delete-group]');
-        if (deleteGroupForm) {
-            event.preventDefault();
-            const submit = deleteGroupForm.querySelector('button[type="submit"]');
-            const shell = deleteGroupForm.closest('.workload-tree-group-shell');
-            if (submit) {
-                submit.disabled = true;
-                submit.textContent = 'Eliminando…';
-            }
-
-            try {
-                const response = await fetch(deleteGroupForm.action, {
-                    method: 'POST',
-                    body: new FormData(deleteGroupForm),
-                    credentials: 'same-origin',
-                    headers: {'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf}
-                });
-                const payload = await response.json().catch(() => ({}));
-                if (!response.ok) throw new Error(payload.message || 'No se pudo eliminar el grupo.');
-
-                shell?.remove();
-                const total = document.querySelector('[data-tree-group-total]');
-                const visibleCount = document.querySelectorAll('.workload-tree-group-shell').length;
-                if (total) total.textContent = visibleCount + ' grupos';
-
-                const root = document.querySelector('.workload-tree-root');
-                if (root && visibleCount === 0) {
-                    root.innerHTML = '<div class="tree-empty-child">No quedan grupos visibles en este ciclo.</div>';
-                }
-
-                if (Number(payload.remaining_groups || 0) <= 1) {
-                    document.querySelectorAll('.workload-tree-group-actions .tree-group-remove').forEach(details => {
-                        details.outerHTML = '<button class="btn btn-ghost btn-sm tree-group-delete-disabled" type="button" disabled title="Cada ciclo debe conservar al menos un grupo"><svg class="icon" aria-hidden="true"><use href="#icon-x"></use></svg> No se puede eliminar el único grupo</button>';
-                    });
-                }
-
-                showFeedback(payload.message || 'Grupo eliminado.');
-            } catch (error) {
-                showFeedback(error.message, true);
-                if (submit) {
-                    submit.disabled = false;
-                    submit.textContent = 'Sí, eliminar grupo';
-                }
-            }
-            return;
-        }
-
         const courseForm = event.target.closest('[data-tree-course-form]');
         if (courseForm) {
             event.preventDefault();
@@ -477,17 +666,13 @@ html[data-theme="dark"] .workload-tree-hero{background:linear-gradient(115deg,co
                     throw new Error(messages.join(' ') || payload.message || 'No se pudo guardar el curso.');
                 }
 
-                const groupId = courseForm.dataset.groupId;
                 const shell = courseForm.closest('.workload-tree-group-shell');
                 const groupNode = shell?.querySelector('[data-tree-group-id]');
-                const addDetails = courseForm.closest('.workload-tree-add-course-inline');
-                courseForm.reset();
-                syncCourseForm(courseForm);
-                addDetails?.removeAttribute('open');
+                closeCourseEntry(courseForm);
                 await refreshGroup(groupNode, payload.assignments_count);
                 showFeedback(payload.warnings?.length ? payload.message + ' ' + payload.warnings.join(' ') : payload.message);
             } catch (error) {
-                if (error && courseForm.querySelector('[data-course-form-error]')) {
+                if (courseForm.querySelector('[data-course-form-error]')) {
                     const box = courseForm.querySelector('[data-course-form-error]');
                     box.textContent = error.message || 'No se pudo guardar el curso.';
                     box.hidden = false;
@@ -501,203 +686,206 @@ html[data-theme="dark"] .workload-tree-hero{background:linear-gradient(115deg,co
             return;
         }
 
-        const editForm = event.target.closest('[data-tree-course-name-form]');
-        if (editForm) {
+        const deleteGroupForm = event.target.closest('[data-tree-delete-group]');
+        if (deleteGroupForm) {
             event.preventDefault();
-            const button = editForm.querySelector('button[type="submit"]');
-            if (button) {
-                button.disabled = true;
-                button.textContent = 'Guardando…';
+            const submit = deleteGroupForm.querySelector('button[type="submit"]');
+            const shell = deleteGroupForm.closest('.workload-tree-group-shell');
+            if (submit) {
+                submit.disabled = true;
+                submit.textContent = 'Eliminando…';
             }
+
             try {
-                const response = await fetch(editForm.action, {
-                    method: 'PATCH',
-                    body: new FormData(editForm),
+                const response = await fetch(deleteGroupForm.action, {
+                    method: 'POST',
+                    body: new FormData(deleteGroupForm),
                     credentials: 'same-origin',
                     headers: {'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf}
                 });
                 const payload = await response.json().catch(() => ({}));
-                if (!response.ok) {
-                    const messages = Object.values(payload.errors || {}).flat();
-                    throw new Error(messages.join(' ') || payload.message || 'No se pudo actualizar el nombre.');
-                }
-                const course = editForm.closest('[data-tree-course-item]');
-                const name = course?.querySelector('[data-course-name]');
-                const summary = course?.querySelector('[data-course-label]');
-                if (name) name.textContent = payload.name;
-                if (summary) summary.dataset.courseLabel = payload.name;
-                editForm.closest('details')?.removeAttribute('open');
-                showFeedback(payload.message);
-                        } catch (error) {
+                if (!response.ok) throw new Error(payload.message || 'No se pudo eliminar el grupo.');
+                shell?.remove();
+
+                const total = document.querySelector('[data-tree-group-total]');
+                const visibleCount = document.querySelectorAll('.workload-tree-group-shell').length;
+                if (total) total.textContent = visibleCount + ' grupos';
+                const root = document.querySelector('.workload-tree-root');
+                if (root && visibleCount === 0) root.innerHTML = '<div class="tree-empty-child">No quedan grupos en este ciclo.</div>';
+                refreshGroupLastDeleteGuard(payload.remaining_groups);
+                showFeedback(payload.message || 'Grupo eliminado.');
+            } catch (error) {
                 showFeedback(error.message, true);
-            } finally {
-                if (button) {
-                    button.disabled = false;
-                    button.textContent = 'Guardar';
+                if (submit) {
+                    submit.disabled = false;
+                    submit.textContent = 'Confirmar eliminación';
                 }
             }
             return;
         }
 
-        const deleteForm = event.target.closest('[data-tree-delete-course]');
-        if (deleteForm) {
+        const deleteCourseForm = event.target.closest('[data-tree-delete-course]');
+        if (deleteCourseForm) {
             event.preventDefault();
-            const button = deleteForm.querySelector('button[type="submit"]');
-            if (button) {
-                button.disabled = true;
-                button.textContent = 'Retirando…';
+            const submit = deleteCourseForm.querySelector('button[type="submit"]');
+            const course = deleteCourseForm.closest('[data-tree-course-item]');
+            const groupNode = deleteCourseForm.closest('.workload-tree-group-shell')?.querySelector('[data-tree-group-id]');
+            if (submit) {
+                submit.disabled = true;
+                submit.textContent = 'Retirando…';
             }
+
             try {
-                const response = await fetch(deleteForm.action, {
+                const response = await fetch(deleteCourseForm.action, {
                     method: 'DELETE',
                     credentials: 'same-origin',
                     headers: {'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf}
                 });
                 const payload = await response.json().catch(() => ({}));
                 if (!response.ok) throw new Error(payload.message || 'No se pudo retirar el curso.');
-                const course = deleteForm.closest('[data-tree-course-item]');
-                const groupNode = deleteForm.closest('.workload-tree-group-shell')?.querySelector('[data-tree-group-id]');
                 course?.remove();
+
                 const countNode = groupNode?.querySelector('[data-group-course-count]');
                 if (countNode) countNode.textContent = payload.assignments_count ?? Math.max(0, Number(countNode.textContent) - 1);
-                const remaining = groupNode?.querySelectorAll('[data-tree-course-item]').length || 0;
                 const content = groupNode?.querySelector('[data-tree-content]');
-                if (content && remaining === 0) {
+                if (content && content.querySelectorAll('[data-tree-course-item]').length === 0) {
                     content.innerHTML = '<div class="tree-empty-child">Este grupo todavía no tiene cursos. Usa «Agregar curso» para comenzar.</div>';
                 }
-                showFeedback(payload.message);
+                showFeedback(payload.message || 'Curso retirado.');
             } catch (error) {
                 showFeedback(error.message, true);
-                if (button) {
-                    button.disabled = false;
-                    button.textContent = 'Confirmar retiro';
+                if (submit) {
+                    submit.disabled = false;
+                    submit.textContent = 'Confirmar retiro';
                 }
             }
             return;
         }
     });
 
-    document.addEventListener('click', event => {
-        const cancel = event.target.closest('[data-inline-cancel]');
-        if (cancel) {
-            cancel.closest('details')?.removeAttribute('open');
-            return;
-        }
+    const startTextEditor = (target, config) => {
+        if (target.querySelector('input')) return;
+        const original = config.value;
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.maxLength = config.maxLength || 255;
+        input.className = 'tree-inline-editor';
+        input.value = original;
+        input.setAttribute('aria-label', config.label);
+        target.replaceChildren(input);
+        target.classList.add('tree-inline-saving');
+        input.focus();
+        input.select();
 
-        const addMissing = event.target.closest('[data-open-inline-course-entry]');
-        if (!addMissing) return;
-        const groupId = addMissing.dataset.groupId;
-        const shell = document.querySelector('[data-group-shell="' + groupId + '"]');
-        const groupNode = shell?.querySelector('[data-tree-group-id]');
-        const addDetails = shell?.querySelector('.workload-tree-add-course-inline');
-        const form = addDetails?.querySelector('[data-tree-course-form]');
-        if (!form) return;
+        let settled = false;
+        const restore = () => {
+            if (settled) return;
+            settled = true;
+            config.restore(original);
+            target.classList.remove('tree-inline-saving');
+        };
+        const save = async () => {
+            if (settled) return;
+            const value = input.value.trim();
+            if (!value || value === original) {
+                restore();
+                return;
+            }
 
-        form.reset();
-        syncCourseForm(form);
-        form.querySelector('[name="course_code"]').value = addMissing.dataset.courseCode || '';
-        form.querySelector('[name="course_name"]').value = addMissing.dataset.courseName || '';
-        form.querySelectorAll('[data-course-component]').forEach(input => input.checked = input.value === addMissing.dataset.component);
-        syncCourseForm(form);
-        addDetails.open = true;
-        groupNode && (groupNode.open = true);
-        setTimeout(() => form.querySelector('[name="' + (addMissing.dataset.component === 'TALL' ? 'tall_nrc' : 'tec_nrc') + '"]')?.focus(), 80);
-        addDetails.scrollIntoView({behavior: 'smooth', block: 'center'});
-    });
+            settled = true;
+            target.classList.remove('tree-inline-saving');
+            target.classList.add('tree-inline-saving');
+            try {
+                const payload = await sendInlineUpdate(config.url, {[config.field]: value});
+                config.success(payload);
+                showFeedback(payload.message || 'Cambio guardado.');
+            } catch (error) {
+                config.restore(original);
+                showFeedback(error.message, true);
+            } finally {
+                target.classList.remove('tree-inline-saving');
+            }
+        };
 
-    const displayDate = value => {
-        if (!value) return 'Sin fecha';
-        const [year, month, day] = value.split('-');
-        return day + '/' + month + '/' + year;
-    };
-
-    const sendInlineUpdate = async (url, data) => {
-        const body = new FormData();
-        Object.entries(data).forEach(([key, value]) => body.append(key, value ?? ''));
-        const response = await fetch(url, {
-            method: 'PATCH',
-            body,
-            credentials: 'same-origin',
-            headers: {'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf}
+        input.addEventListener('keydown', keyEvent => {
+            if (keyEvent.key === 'Escape') {
+                keyEvent.preventDefault();
+                restore();
+            }
+            if (keyEvent.key === 'Enter') {
+                keyEvent.preventDefault();
+                save();
+            }
         });
-        const payload = await response.json().catch(() => ({}));
-        if (!response.ok) {
-            const errors = Object.values(payload.errors || {}).flat();
-            throw new Error(errors.join(' ') || payload.message || 'No se pudo guardar el cambio.');
-        }
-        return payload;
+        input.addEventListener('blur', save, {once: true});
     };
 
-    document.addEventListener('dblclick', async event => {
-        const dateCell = event.target.closest('[data-inline-date]');
-        if (dateCell) {
-            if (dateCell.querySelector('input')) return;
-            const wrapper = dateCell.closest('[data-modality-dates]');
-            if (!wrapper) return;
-            const field = dateCell.dataset.inlineDate;
-            const original = wrapper.dataset[field] || '';
-            const input = document.createElement('input');
-            input.type = 'date';
-            input.className = 'tree-inline-editor';
-            input.value = original;
-            input.setAttribute('aria-label', field === 'start_date' ? 'Fecha de inicio' : 'Fecha de fin');
-            dateCell.replaceChildren(input);
-            input.focus();
-            input.showPicker?.();
+    const startDateEditor = (cell, wrapper) => {
+        if (cell.querySelector('input')) return;
+        const field = cell.dataset.inlineDate;
+        const original = wrapper.dataset[field === 'start_date' ? 'startDate' : 'endDate'] || '';
+        const input = document.createElement('input');
+        input.type = 'date';
+        input.className = 'tree-inline-editor';
+        input.value = original;
+        input.setAttribute('aria-label', field === 'start_date' ? 'Fecha de inicio' : 'Fecha de fin');
+        cell.replaceChildren(input);
+        input.focus();
+        input.showPicker?.();
 
-            let finished = false;
-            const restore = () => {
-                if (finished) return;
-                finished = true;
-                dateCell.textContent = original ? displayDate(original) : 'Sin fecha';
+        let settled = false;
+        const restore = () => {
+            if (settled) return;
+            settled = true;
+            cell.textContent = original ? displayDate(original) : 'Sin fecha';
+        };
+        const save = async () => {
+            if (settled) return;
+            const next = input.value;
+            if (next === original) {
+                restore();
+                return;
+            }
+            settled = true;
+            wrapper.classList.add('tree-inline-saving');
+            const values = {
+                start_date: field === 'start_date' ? next : wrapper.dataset.startDate,
+                end_date: field === 'end_date' ? next : wrapper.dataset.endDate
             };
-            input.addEventListener('keydown', keyEvent => {
-                if (keyEvent.key === 'Escape') {
-                    keyEvent.preventDefault();
-                    restore();
-                }
-                if (keyEvent.key === 'Enter') {
-                    keyEvent.preventDefault();
-                    input.blur();
-                }
-            });
-            input.addEventListener('change', async () => {
-                if (finished) return;
-                const next = input.value;
-                const values = {
-                    start_date: field === 'start_date' ? next : wrapper.dataset.startDate,
-                    end_date: field === 'end_date' ? next : wrapper.dataset.endDate
-                };
-                wrapper.classList.add('tree-inline-saving');
-                try {
-                    const payload = await sendInlineUpdate(wrapper.dataset.datesUrl, values);
-                    wrapper.dataset.startDate = payload.start_date || '';
-                    wrapper.dataset.endDate = payload.end_date || '';
-                    wrapper.querySelectorAll('[data-inline-date]').forEach(cell => {
-                        const value = payload[cell.dataset.inlineDate] || '';
-                        cell.textContent = value ? displayDate(value) : 'Sin fecha';
-                    });
-                    finished = true;
-                    wrapper.title = payload.message;
-                    showFeedback(payload.message);
-                } catch (error) {
-                    dateCell.textContent = original ? displayDate(original) : 'Sin fecha';
-                    dateCell.title = error.message;
-                    showFeedback(error.message, true);
-                    finished = true;
-                } finally {
-                    wrapper.classList.remove('tree-inline-saving');
-                }
-            });
-            input.addEventListener('blur', () => {
-                if (!finished) restore();
-            }, {once: true});
-            return;
-        }
+            try {
+                const payload = await sendInlineUpdate(wrapper.dataset.datesUrl, values);
+                wrapper.dataset.startDate = payload.start_date || '';
+                wrapper.dataset.endDate = payload.end_date || '';
+                wrapper.querySelectorAll('[data-inline-date]').forEach(date => {
+                    date.textContent = payload[date.dataset.inlineDate]
+                        ? displayDate(payload[date.dataset.inlineDate])
+                        : 'Sin fecha';
+                });
+                showFeedback(payload.message);
+            } catch (error) {
+                cell.textContent = original ? displayDate(original) : 'Sin fecha';
+                showFeedback(error.message, true);
+            } finally {
+                wrapper.classList.remove('tree-inline-saving');
+            }
+        };
 
-        const nrcCell = event.target.closest('[data-inline-nrc]');
-        if (!nrcCell || nrcCell.querySelector('input')) return;
-        const original = nrcCell.dataset.nrc || '';
+        input.addEventListener('keydown', keyEvent => {
+            if (keyEvent.key === 'Escape') {
+                keyEvent.preventDefault();
+                restore();
+            }
+            if (keyEvent.key === 'Enter') {
+                keyEvent.preventDefault();
+                save();
+            }
+        });
+        input.addEventListener('blur', save, {once: true});
+    };
+
+    const startNrcEditor = cell => {
+        if (cell.querySelector('input')) return;
+        const original = cell.dataset.nrc || '';
         const input = document.createElement('input');
         input.type = 'text';
         input.inputMode = 'numeric';
@@ -705,46 +893,102 @@ html[data-theme="dark"] .workload-tree-hero{background:linear-gradient(115deg,co
         input.className = 'tree-inline-editor';
         input.value = original;
         input.placeholder = 'NRC';
-        nrcCell.replaceChildren(input);
+        cell.replaceChildren(input);
         input.focus();
         input.select();
 
-        let finished = false;
-        const restoreNrc = () => {
-            if (finished) return;
-            finished = true;
-            nrcCell.textContent = original || 'NRC pendiente';
+        let settled = false;
+        const restore = () => {
+            if (settled) return;
+            settled = true;
+            cell.textContent = original || 'NRC pendiente';
+        };
+        const save = async () => {
+            if (settled) return;
+            const value = input.value.trim();
+            if (value === original) {
+                restore();
+                return;
+            }
+            settled = true;
+            cell.classList.add('tree-inline-saving');
+            try {
+                const payload = await sendInlineUpdate(cell.dataset.nrcUrl, {nrc: value});
+                cell.dataset.nrc = payload.nrc || '';
+                cell.textContent = payload.nrc || 'NRC pendiente';
+                showFeedback(payload.message);
+            } catch (error) {
+                cell.textContent = original || 'NRC pendiente';
+                showFeedback(error.message, true);
+            } finally {
+                cell.classList.remove('tree-inline-saving');
+            }
         };
         input.addEventListener('keydown', keyEvent => {
             if (keyEvent.key === 'Escape') {
                 keyEvent.preventDefault();
-                restoreNrc();
+                restore();
             }
             if (keyEvent.key === 'Enter') {
                 keyEvent.preventDefault();
-                input.blur();
+                save();
             }
         });
-        input.addEventListener('change', async () => {
-            if (finished) return;
-            nrcCell.classList.add('tree-inline-saving');
-            try {
-                const payload = await sendInlineUpdate(nrcCell.dataset.nrcUrl, {nrc: input.value.trim()});
-                nrcCell.dataset.nrc = payload.nrc || '';
-                nrcCell.textContent = payload.nrc || 'NRC pendiente';
-                nrcCell.title = payload.message;
-                showFeedback(payload.message);
-                finished = true;
-            } catch (error) {
-                nrcCell.textContent = original || 'NRC pendiente';
-                nrcCell.title = error.message;
-                showFeedback(error.message, true);
-                finished = true;
-            } finally {
-                nrcCell.classList.remove('tree-inline-saving');
-            }
-        });
-        input.addEventListener('blur', restoreNrc, {once: true});
+        input.addEventListener('blur', save, {once: true});
+    };
+
+    document.addEventListener('dblclick', event => {
+        const groupName = event.target.closest('[data-inline-group-name]');
+        if (groupName) {
+            startTextEditor(groupName, {
+                value: groupName.dataset.groupName || '',
+                url: groupName.dataset.groupNameUrl,
+                field: 'name',
+                label: 'Nombre del grupo',
+                maxLength: 100,
+                restore: value => {
+                    groupName.textContent = 'Grupo ' + value;
+                    groupName.dataset.groupName = value;
+                },
+                success: payload => {
+                    groupName.textContent = 'Grupo ' + payload.name;
+                    groupName.dataset.groupName = payload.name;
+                    groupName.closest('[data-tree-group-id]').dataset.groupLabel = 'Grupo ' + payload.name;
+                }
+            });
+            return;
+        }
+
+        const courseName = event.target.closest('[data-inline-course-name]');
+        if (courseName) {
+            startTextEditor(courseName, {
+                value: courseName.dataset.courseName || '',
+                url: courseName.dataset.courseNameUrl,
+                field: 'name',
+                label: 'Nombre del curso',
+                restore: value => {
+                    courseName.textContent = value;
+                    courseName.dataset.courseName = value;
+                },
+                success: payload => {
+                    courseName.textContent = payload.name;
+                    courseName.dataset.courseName = payload.name;
+                    const course = courseName.closest('[data-tree-course-item]');
+                    course?.querySelector('.tree-course-delete-confirm p strong')?.replaceChildren('¿Retirar ', payload.name, ' de este grupo?');
+                }
+            });
+            return;
+        }
+
+        const dateCell = event.target.closest('[data-inline-date]');
+        if (dateCell) {
+            const wrapper = dateCell.closest('[data-modality-dates]');
+            if (wrapper) startDateEditor(dateCell, wrapper);
+            return;
+        }
+
+        const nrcCell = event.target.closest('[data-inline-nrc]');
+        if (nrcCell) startNrcEditor(nrcCell);
     });
 
     bindTreeNodes(document);
