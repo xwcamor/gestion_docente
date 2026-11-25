@@ -6,9 +6,79 @@ use App\Models\CourseAssignment;
 use App\Models\Cycle;
 use App\Models\TeachingGroup;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class WorkloadTreeController extends Controller
 {
+    public function index(Cycle $cycle, Request $request)
+    {
+        $this->authorizeCycle($cycle);
+
+        $groupCount = $cycle->groups()->count();
+
+        $courses = DB::table('course_assignments as assignments')
+            ->join('teaching_groups as groups', 'groups.id', '=', 'assignments.teaching_group_id')
+            ->where('groups.cycle_id', $cycle->id);
+
+        $modalities = DB::table('course_modalities as modalities')
+            ->join('course_assignments as assignments', 'assignments.id', '=', 'modalities.course_assignment_id')
+            ->join('teaching_groups as groups', 'groups.id', '=', 'assignments.teaching_group_id')
+            ->where('groups.cycle_id', $cycle->id);
+
+        $courseCount = (clone $courses)->count('assignments.id');
+        $modalityCount = (clone $modalities)->count('modalities.id');
+        $scheduledModalityCount = (clone $modalities)
+            ->whereNotNull('modalities.start_date')
+            ->whereNotNull('modalities.end_date')
+            ->whereExists(function ($query) {
+                $query->selectRaw('1')
+                    ->from('modality_schedules')
+                    ->whereColumn('modality_schedules.course_modality_id', 'modalities.id')
+                    ->where('modality_schedules.block_type', 'CLASS');
+            })
+            ->count('modalities.id');
+
+        $studentCount = DB::table('teaching_group_students as roster')
+            ->join('teaching_groups as groups', 'groups.id', '=', 'roster.teaching_group_id')
+            ->where('groups.cycle_id', $cycle->id)
+            ->distinct()
+            ->count('roster.student_id');
+
+        $term = trim((string) $request->query('q', ''));
+        $groupsQuery = $cycle->groups()
+            ->withCount(['assignments', 'students'])
+            ->orderBy('name');
+
+        if ($term !== '' && !$this->cycleMatches($cycle, $term)) {
+            $like = '%'.$term.'%';
+            $groupsQuery->where(function ($groups) use ($like) {
+                $groups->where('name', 'like', $like)
+                    ->orWhereHas('assignments.course', function ($courses) use ($like) {
+                        $courses->where('name', 'like', $like)
+                            ->orWhere('code', 'like', $like);
+                    })
+                    ->orWhereHas('assignments.modalities', function ($modalities) use ($like) {
+                        $modalities->where('nrc', 'like', $like)
+                            ->orWhere('block_code', 'like', $like)
+                            ->orWhere('block_reference', 'like', $like);
+                    });
+            });
+        }
+
+        $groups = $groupsQuery->get();
+
+        return view('cycles.tree.index', compact(
+            'cycle',
+            'groups',
+            'groupCount',
+            'courseCount',
+            'modalityCount',
+            'scheduledModalityCount',
+            'studentCount',
+            'term'
+        ));
+    }
+
     public function groups(Cycle $cycle, Request $request)
     {
         $this->authorizeCycle($cycle);
