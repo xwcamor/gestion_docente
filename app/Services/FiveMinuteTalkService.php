@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\FiveMinuteTalkTopic;
 use App\Models\Holiday;
 use App\Models\TeachingGroup;
+use Carbon\CarbonPeriod;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -12,16 +13,18 @@ use RuntimeException;
 class FiveMinuteTalkService
 {
     /**
-     * Builds exactly one scheduled talk for each eligible group work date.
-     * The official catalogue is cyclic: after its last topic, it starts again
-     * from the first topic. Completed talks keep their original date and topic.
+     * Las charlas son una actividad del grupo, pero su calendario nace de
+     * los horarios reales de todos sus cursos. Solo se generan fechas hasta
+     * hoy y dentro del periodo de cada modalidad. Una fecha compartida por
+     * varios cursos representa una sola charla para el grupo.
      *
-     * Pending records without a usable date stay in storage for possible reuse,
-     * but they are not part of the scheduled list shown to the user.
+     * Las fechas históricas se consideran dictadas automáticamente. Si el
+     * docente modifica expresamente el estado, status_source=MANUAL protege
+     * esa decisión frente a los siguientes recálculos.
      */
     public function ensureScheduled(TeachingGroup $group): array
     {
-        $group->loadMissing('cycle');
+        $group->loadMissing(['cycle', 'professor']);
 
         $catalogue = $this->catalogue();
         $this->ensureProfessorCatalogue((int) $group->professor_id, $catalogue);
@@ -36,110 +39,87 @@ class FiveMinuteTalkService
             throw new RuntimeException('El catálogo institucional no contiene temas disponibles.');
         }
 
-        $rangeConfigured = $this->hasWorkloadWindow($group);
-        $eligibleDates = $rangeConfigured ? $this->assignedDates($group) : [];
+        $modalities = $group->assignments()
+            ->with(['modalities.schedules' => fn ($query) => $query->where('block_type', 'CLASS')])
+            ->get()
+            ->flatMap(fn ($assignment) => $assignment->modalities)
+            ->values();
+
+        $schedule = $this->assignedDates($group, $modalities);
+        $eligibleDates = $schedule['dates'];
         $eligibleDateLookup = array_fill_keys($eligibleDates, true);
         $participantCount = (int) $group->students()->count();
-        $existing = $group->fiveMinuteTalks()->orderBy('position')->get();
 
-        $completedByDate = [];
-        $pendingByDate = [];
-        $reusablePending = collect();
+        $existing = $group->fiveMinuteTalks()
+            ->orderBy('position')
+            ->lockForUpdate()
+            ->get();
 
-        foreach ($existing as $talk) {
-            $date = $talk->scheduled_date?->toDateString();
-
-            if ($talk->status === 'done') {
-                if ($date !== null) {
-                    $completedByDate[$date] = $talk;
-                }
-
-                continue;
-            }
-
-            if ($date !== null && isset($eligibleDateLookup[$date])) {
-                $pendingByDate[$date] = $talk;
-            } else {
-                $reusablePending->push($talk);
-            }
-        }
-
-        $completedEligibleCount = count(array_intersect(
-            array_keys($completedByDate),
-            $eligibleDates
-        ));
-        $pendingDateCount = max(0, count($eligibleDates) - $completedEligibleCount);
+        $byDate = $existing
+            ->filter(fn ($talk) => $talk->scheduled_date !== null)
+            ->keyBy(fn ($talk) => $talk->scheduled_date->toDateString());
 
         DB::transaction(function () use (
             $group,
             $existing,
-            $reusablePending,
-            $pendingByDate,
-            $completedByDate,
+            $byDate,
             $eligibleDates,
+            $eligibleDateLookup,
             $participantCount,
             $topics
         ) {
             $now = now();
+            $maxPosition = (int) $existing->max('position');
+            $newRows = [];
 
-            // Initialize legacy pending talks that were created before the roster
-            // existed. Preserve positive per-talk edits and completed execution records.
-            DB::table('group_five_minute_talks')
-                ->where('teaching_group_id', $group->id)
-                ->where(function ($query) {
-                    $query->whereNull('participant_count')
-                        ->orWhere(function ($query) {
-                            $query->where('status', 'pending')
-                                ->where('participant_count', 0);
-                        });
-                })
-                ->update([
-                    'participant_count' => $participantCount,
-                    'updated_at' => $now,
-                ]);
-
-            // Pending dates removed from the workload range become reusable,
-            // rather than remaining visible as stale or undated agenda entries.
-            $obsoleteIds = $reusablePending
-                ->whereNotNull('scheduled_date')
+            // Las charlas automáticas antiguas que ya no coinciden con los
+            // horarios vigentes se dejan sin fecha. Las ejecuciones manuales
+            // se conservan como historial.
+            $obsoleteAutoIds = $existing
+                ->filter(fn ($talk) =>
+                    $talk->scheduled_date !== null
+                    && !isset($eligibleDateLookup[$talk->scheduled_date->toDateString()])
+                    && ($talk->status_source ?? 'AUTO') !== 'MANUAL'
+                )
                 ->pluck('id')
                 ->all();
 
-            if ($obsoleteIds) {
+            if ($obsoleteAutoIds) {
                 DB::table('group_five_minute_talks')
-                    ->whereIn('id', $obsoleteIds)
+                    ->whereIn('id', $obsoleteAutoIds)
                     ->update([
                         'scheduled_date' => null,
                         'updated_at' => $now,
                     ]);
             }
 
-            $maxPosition = (int) $existing->max('position');
-            $newRows = [];
-
             foreach ($eligibleDates as $dateIndex => $date) {
-                // A completed talk owns its date and is never overwritten.
-                if (isset($completedByDate[$date])) {
-                    continue;
-                }
-
                 $topic = $topics[$dateIndex % count($topics)];
-                $talk = $pendingByDate[$date] ?? $reusablePending->shift();
+                $talk = $byDate->get($date);
 
                 if ($talk) {
                     $changes = [];
 
-                    if ($talk->topic !== $topic) {
-                        $changes['topic'] = $topic;
+                    if ((int) $talk->participant_count !== $participantCount) {
+                        $changes['participant_count'] = $participantCount;
                     }
 
-                    if ($talk->scheduled_date?->toDateString() !== $date) {
-                        $changes['scheduled_date'] = $date;
+                    // Solo los registros automáticos reciben estado y tema
+                    // derivados del calendario. Una edición manual se respeta.
+                    if (($talk->status_source ?? 'AUTO') !== 'MANUAL') {
+                        if ($talk->status !== 'done') {
+                            $changes['status'] = 'done';
+                        }
+                        if (($talk->status_source ?? 'AUTO') !== 'AUTO') {
+                            $changes['status_source'] = 'AUTO';
+                        }
+                        if ($talk->topic !== $topic) {
+                            $changes['topic'] = $topic;
+                        }
                     }
 
                     if ($changes) {
                         $changes['updated_at'] = $now;
-
                         DB::table('group_five_minute_talks')
                             ->where('id', $talk->id)
                             ->update($changes);
@@ -153,7 +133,8 @@ class FiveMinuteTalkService
                     'teaching_group_id' => $group->id,
                     'topic' => $topic,
                     'scheduled_date' => $date,
-                    'status' => 'pending',
+                    'status' => 'done',
+                    'status_source' => 'AUTO',
                     'participant_count' => $participantCount,
                     'observations' => null,
                     'position' => $maxPosition,
@@ -167,123 +148,155 @@ class FiveMinuteTalkService
             }
         });
 
-        $rangeStart = $group->workload_start_date && $group->workload_end_date
-            ? $group->workload_start_date
-            : $group->cycle->start_date;
-        $rangeEnd = $group->workload_start_date && $group->workload_end_date
-            ? $group->workload_end_date
-            : $group->cycle->end_date;
+        $talks = $group->fiveMinuteTalks()
+            ->whereIn('scheduled_date', $eligibleDates ?: ['1900-01-01'])
+            ->get();
+
+        $pendingCount = $talks->where('status', 'pending')->count();
+        $days = collect($eligibleDates)
+            ->map(fn ($date) => Carbon::parse($date)->dayOfWeekIso)
+            ->unique()
+            ->sort()
+            ->values();
 
         return [
-            'range_configured' => $rangeConfigured,
-            'range_start' => $rangeStart?->toDateString(),
-            'range_end' => $rangeEnd?->toDateString(),
-            'uses_cycle_range' => $group->workload_start_date === null || $group->workload_end_date === null,
-            'uses_default_weekdays' => empty($group->workload_days),
-            'weekdays' => empty($group->workload_days)
-                ? [1, 2, 3, 4, 5]
-                : collect($group->workload_days)->map(fn ($day) => (int) $day)->unique()->values()->all(),
-            'weekday_labels' => collect(empty($group->workload_days) ? [1, 2, 3, 4, 5] : $group->workload_days)
-                ->map(fn ($day) => [1 => 'Lun', 2 => 'Mar', 3 => 'Mié', 4 => 'Jue', 5 => 'Vie', 6 => 'Sáb', 7 => 'Dom'][(int) $day] ?? null)
-                ->filter()
-                ->values()
+            'range_configured' => $schedule['configured'],
+            'range_start' => $schedule['range_start'],
+            'range_end' => $schedule['range_end'],
+            'uses_cycle_range' => false,
+            'uses_default_weekdays' => false,
+            'weekdays' => $days->all(),
+            'weekday_labels' => $days
+                ->map(fn ($day) => [1 => 'Lun', 2 => 'Mar', 3 => 'Mié', 4 => 'Jue', 5 => 'Vie', 6 => 'Sáb', 7 => 'Dom'][(int) $day])
                 ->all(),
             'eligible_dates_count' => count($eligibleDates),
-            'available_dates_count' => $pendingDateCount,
-            'scheduled_pending_count' => $pendingDateCount,
+            'available_dates_count' => $pendingCount,
+            'scheduled_pending_count' => $pendingCount,
+            'completed_count' => $talks->where('status', 'done')->count(),
             'unassigned_count' => 0,
             'catalogue_topic_count' => count($topics),
-            'catalogue_cycles' => count($topics) > 0
+            'catalogue_cycles' => count($eligibleDates) > 0
                 ? (int) ceil(count($eligibleDates) / count($topics))
                 : 0,
+            'dates' => $eligibleDates,
         ];
     }
 
-    private function hasWorkloadWindow(TeachingGroup $group): bool
-    {
-        $hasGroupRange = $group->workload_start_date !== null
-            && $group->workload_end_date !== null;
-        $start = $hasGroupRange ? $group->workload_start_date : $group->cycle->start_date;
-        $end = $hasGroupRange ? $group->workload_end_date : $group->cycle->end_date;
-
-        return $start !== null && $end !== null && !$end->lt($start);
-    }
-
     /**
-     * Talk dates are derived from the group's supervisor workload window,
-     * not from the schedule state of an individual course modality.
-     * Each selected weekday inside the workload range is a candidate.
-     * Cycle boundaries and blocking holidays are always respected.
+     * Construye la unión de fechas reales de clase de todas las modalidades
+     * del grupo. Cada curso conserva su propia fecha de inicio, término,
+     * recurrencia semanal y feriados. Las fechas futuras nunca se exportan.
+     *
+     * @return array{configured: bool, range_start: ?string, range_end: ?string, dates: array<int, string>}
      */
-    private function assignedDates(TeachingGroup $group): array
+    private function assignedDates(TeachingGroup $group, $modalities): array
     {
-        $cycle = $group->cycle;
-        $usesGroupRange = $group->workload_start_date !== null && $group->workload_end_date !== null;
-        $start = ($usesGroupRange ? $group->workload_start_date : $cycle->start_date)?->copy()->startOfDay();
-        $end = ($usesGroupRange ? $group->workload_end_date : $cycle->end_date)?->copy()->startOfDay();
-
-        if (!$start || !$end) {
-            return [];
-        }
-
-        if ($cycle->start_date && $start->lt($cycle->start_date)) {
-            $start = $cycle->start_date->copy()->startOfDay();
-        }
-
-        if ($cycle->end_date && $end->gt($cycle->end_date)) {
-            $end = $cycle->end_date->copy()->startOfDay();
-        }
-
-        if ($start->gt($end)) {
-            return [];
-        }
-
-        // Prefer supervisor-selected weekdays. If none were specified, use
-        // Monday to Friday as the neutral automatic default, not modality blocks.
-        $workloadDays = empty($group->workload_days)
-            ? [1, 2, 3, 4, 5]
-            : collect($group->workload_days)
-                ->map(fn ($day) => (int) $day)
-                ->filter(fn ($day) => $day >= 1 && $day <= 7)
-                ->unique()
-                ->values()
-                ->all();
-
-        if (!$workloadDays) {
-            return [];
-        }
-
+        $today = Carbon::today();
         $dateKeys = [];
+        $starts = [];
+        $ends = [];
+        $configured = false;
 
-        for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
-            if (in_array($date->dayOfWeekIso, $workloadDays, true)) {
-                $dateKeys[] = $date->toDateString();
+        foreach ($modalities as $modality) {
+            if (
+                !$modality->start_date
+                || !$modality->end_date
+                || $modality->end_date->lt($modality->start_date)
+            ) {
+                continue;
+            }
+
+            $schedules = $modality->schedules
+                ->where('block_type', 'CLASS')
+                ->values();
+
+            if ($schedules->isEmpty()) {
+                continue;
+            }
+
+            $configured = true;
+            $start = $modality->start_date->copy()->startOfDay();
+            $end = $modality->end_date->copy()->startOfDay();
+
+            if ($group->cycle?->start_date && $start->lt($group->cycle->start_date)) {
+                $start = $group->cycle->start_date->copy()->startOfDay();
+            }
+
+            if ($group->cycle?->end_date && $end->gt($group->cycle->end_date)) {
+                $end = $group->cycle->end_date->copy()->startOfDay();
+            }
+
+            if ($end->gt($today)) {
+                $end = $today->copy();
+            }
+
+            if ($start->gt($end)) {
+                continue;
+            }
+
+            $starts[] = $start->toDateString();
+            $ends[] = $end->toDateString();
+
+            foreach ($schedules as $schedule) {
+                $weekday = (int) $schedule->day_of_week;
+                if ($weekday < 1 || $weekday > 7) {
+                    continue;
+                }
+
+                $firstOccurrence = $modality->start_date->copy()->startOfDay();
+                while ((int) $firstOccurrence->dayOfWeekIso !== $weekday) {
+                    $firstOccurrence->addDay();
+                }
+
+                $repeatEveryWeeks = max(1, (int) ($schedule->repeat_interval_weeks ?? 1));
+
+                foreach (CarbonPeriod::create($start, $end) as $day) {
+                    if ((int) $day->dayOfWeekIso !== $weekday) {
+                        continue;
+                    }
+
+                    $weeksSinceFirstOccurrence = intdiv(
+                        $firstOccurrence->diffInDays($day),
+                        7
+                    );
+
+                    if ($weeksSinceFirstOccurrence % $repeatEveryWeeks !== 0) {
+                        continue;
+                    }
+
+                    $dateKeys[$day->toDateString()] = true;
+                }
             }
         }
 
-        if (!$dateKeys) {
-            return [];
+        $dates = array_keys($dateKeys);
+        sort($dates);
+
+        if ($dates) {
+            $holidays = Holiday::query()
+                ->where('blocks_classes', true)
+                ->whereBetween('holiday_date', [$dates[0], $dates[count($dates) - 1]])
+                ->where(fn ($query) => $query
+                    ->whereNull('professor_id')
+                    ->orWhere('professor_id', $group->professor_id))
+                ->pluck('holiday_date')
+                ->map(fn ($date) => Carbon::parse($date)->toDateString())
+                ->all();
+
+            $dates = array_values(array_diff($dates, $holidays));
         }
 
-        $holidays = Holiday::query()
-            ->where('blocks_classes', true)
-            ->whereBetween('holiday_date', [$dateKeys[0], $dateKeys[count($dateKeys) - 1]])
-            ->where(fn ($query) => $query
-                ->whereNull('professor_id')
-                ->orWhere('professor_id', $group->professor_id))
-            ->pluck('holiday_date')
-            ->map(fn ($date) => Carbon::parse($date)->toDateString())
-            ->all();
-
-        return array_values(array_diff($dateKeys, $holidays));
+        return [
+            'configured' => $configured,
+            'range_start' => $starts ? min($starts) : null,
+            'range_end' => $ends ? max($ends) : null,
+            'dates' => $dates,
+        ];
     }
 
-
-
     /**
-     * Keeps the professor's topic catalogue synchronized with the official
-     * institutional source. Group execution records are stored separately, so
-     * refreshing this source catalogue does not alter historical group talks.
+     * Keeps the professor's institutional topic catalogue synchronized.
+     * Group execution history is stored separately and is not overwritten.
      */
     private function ensureProfessorCatalogue(int $professorId, array $catalogue): void
     {
@@ -319,7 +332,7 @@ class FiveMinuteTalkService
     }
 
     /**
-     * Reads and validates the official five-minute-talk topics catalog.
+     * Reads and validates the institutional five-minute-talk topic catalogue.
      *
      * @return array<int, string>
      */
@@ -355,5 +368,4 @@ class FiveMinuteTalkService
 
         return array_values(array_unique($topics));
     }
-
 }
