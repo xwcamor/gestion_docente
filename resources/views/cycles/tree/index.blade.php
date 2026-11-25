@@ -44,6 +44,7 @@
                 <a class="btn btn-ghost" href="{{ route('cycles.tree', $cycle) }}"><x-icon name="x" /> Limpiar</a>
             @endif
         </form>
+        <p class="tree-live-feedback" id="tree-live-feedback" role="status" hidden></p>
 
         <div class="workload-tree-root">
             @include('cycles.tree.groups', ['groups' => $groups, 'cycle' => $cycle])
@@ -199,6 +200,8 @@
 .tree-inline-editor{width:auto;min-width:112px;max-width:160px;min-height:30px;padding:4px 6px;border:1px solid var(--accent);border-radius:6px;background:var(--surface);color:var(--ink);font:inherit;font-size:11px;outline:none}
 .tree-inline-hint{margin-left:4px;color:var(--faint);font-size:9px}
 .tree-inline-saving{opacity:.55;pointer-events:none}
+.tree-live-feedback{margin:0 0 12px;padding:9px 11px;border:1px solid var(--success);border-radius:8px;background:var(--success-bg);color:var(--success);font-size:11px;line-height:1.45}
+.tree-live-feedback.is-error{border-color:var(--danger);background:var(--danger-bg);color:var(--danger)}
 @media(max-width:600px){
  .tree-dialog{width:calc(100vw - 16px);max-height:92dvh;border-radius:12px}
  .tree-dialog .dialog-body{padding:13px}
@@ -371,6 +374,14 @@ html[data-theme="dark"] .workload-tree-hero{background:linear-gradient(115deg,co
     const courseForm = document.getElementById('tree-course-form');
     const courseError = document.getElementById('tree-course-error');
     const courseSubmit = document.getElementById('tree-course-submit');
+    const liveFeedback = document.getElementById('tree-live-feedback');
+
+    const showLiveFeedback = (message, isError = false) => {
+        if (!liveFeedback || !message) return;
+        liveFeedback.textContent = message;
+        liveFeedback.classList.toggle('is-error', isError);
+        liveFeedback.hidden = false;
+    };
 
     const bindTreeNodes = (scope) => {
         scope.querySelectorAll('[data-tree-load]').forEach((node) => {
@@ -514,10 +525,17 @@ html[data-theme="dark"] .workload-tree-hero{background:linear-gradient(115deg,co
             const groupNode = [...document.querySelectorAll('[data-tree-group-id]')]
                 .find(node => node.dataset.treeGroupId === String(groupId));
             if (groupNode) {
+                const countNode = groupNode.querySelector('[data-group-course-count]');
+                if (countNode && payload.assignments_count !== undefined) {
+                    countNode.textContent = payload.assignments_count;
+                }
                 groupNode.open = true;
                 groupNode.dataset.treeLoaded = 'false';
                 await loadTreeNode(groupNode, true);
             }
+            showLiveFeedback(payload.warnings?.length
+                ? payload.message + ' ' + payload.warnings.join(' ')
+                : payload.message || 'Curso agregado al grupo.');
             window.dispatchEvent(new CustomEvent('tree-course-saved', {detail: payload}));
         } catch (error) {
             showCourseErrors({general: ['No se pudo conectar con el servidor. Revisa tu conexión e inténtalo nuevamente.']});
@@ -659,10 +677,12 @@ html[data-theme="dark"] .workload-tree-hero{background:linear-gradient(115deg,co
                 nrcCell.dataset.nrc = payload.nrc || '';
                 nrcCell.textContent = payload.nrc || 'NRC pendiente';
                 nrcCell.title = payload.message;
+                showLiveFeedback(payload.message);
                 finished = true;
             } catch (error) {
                 nrcCell.textContent = original || 'NRC pendiente';
                 nrcCell.title = error.message;
+                showLiveFeedback(error.message, true);
                 finished = true;
             } finally {
                 nrcCell.classList.remove('tree-inline-saving');
