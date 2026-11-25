@@ -348,7 +348,7 @@ class GroupDocumentService
     {
         return implode(' · ', array_filter([
             $group->cycle->academic_year.'-'.$group->cycle->cycle_code,
-            $group->cycle->career,
+            $group->career ?: $group->cycle->career,
             $group->name,
             $group->professor?->full_name,
         ]));
