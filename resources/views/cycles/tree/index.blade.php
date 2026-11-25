@@ -13,9 +13,8 @@
             <p class="eyebrow"><x-icon name="git-branch" size="16" /> ORGANIZACIÓN ACADÉMICA</p>
             <h1>{{ $cycle->academic_year }} <span>· Ciclo {{ $cycle->cycle_code }}</span></h1>
             <div class="workload-tree-context">
-                <span><x-icon name="graduation-cap" size="16" /> <span class="tree-cycle-inline" data-inline-cycle data-edit-on-click data-edit-field="career" data-edit-kind="cycle-career" data-edit-label="Nombre de la carrera" data-edit-url="{{ route('workload-tree.cycles.context', $cycle) }}" data-edit-value="{{ $cycle->career }}" data-edit-response="career" title="Clic para editar">{{ $cycle->career ?: 'Carrera pendiente' }}</span></span>
-                <span><x-icon name="layers" size="16" /> Semestre <span class="tree-cycle-inline" data-inline-cycle data-edit-on-click data-edit-field="semester" data-edit-kind="cycle-semester" data-edit-label="Semestre" data-edit-url="{{ route('workload-tree.cycles.context', $cycle) }}" data-edit-value="{{ $cycle->semester }}" data-edit-response="semester" title="Clic para editar">{{ $cycle->semester ?: '—' }}</span></span>
-                <span><x-icon name="calendar-range" size="16" /> {{ $cycle->start_date?->format('d/m/Y') ?: 'Sin inicio' }} – {{ $cycle->end_date?->format('d/m/Y') ?: 'Sin fin' }}</span>
+                <span><x-icon name="calendar-range" size="16" /> Periodo: {{ $cycle->start_date?->format('d/m/Y') ?: 'Sin inicio' }} – {{ $cycle->end_date?->format('d/m/Y') ?: 'Sin fin' }}</span>
+                <span class="tree-context-hint">Carrera y semestre se configuran en cada grupo</span>
             </div>
         </div>
         <div class="workload-tree-hero-actions">
@@ -28,7 +27,7 @@
             <div>
                 <p class="eyebrow">ÁRBOL DE TRABAJO</p>
                 <h2><x-icon name="git-branch" size="23" /> Grupos, cursos y componentes</h2>
-                <p>Abre un grupo y luego un curso. Solo queda uno abierto por nivel. Clic para editar carrera, semestre, códigos, NRC y fechas; doble clic en nombres.</p>
+                <p>Abre un grupo y luego un curso. Cada grupo tiene su propia carrera y semestre. Haz clic para editar esos datos, códigos, NRC y fechas; doble clic en los nombres.</p>
             </div>
             <span class="workload-tree-total" data-tree-group-total>{{ $cycleGroupCount }} {{ (int) $cycleGroupCount === 1 ? 'grupo' : 'grupos' }}</span>
         </div>
@@ -1423,7 +1422,11 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
             label: editable.dataset.editLabel,
             responseField: editable.dataset.editResponse || '',
             maxLength: field === 'code' ? 80 : 255,
-            emptyLabel: field === 'code' ? 'Código pendiente (clic para agregar)' : (field === 'career' ? 'Carrera pendiente' : ''),
+            emptyLabel: field === 'code'
+                ? 'Código pendiente (clic para agregar)'
+                : (field === 'career'
+                    ? 'Carrera pendiente (clic para agregar)'
+                    : (field === 'semester' ? 'Semestre pendiente (clic para agregar)' : '')),
             allowEmpty: kind === 'group-code' || kind === 'course-code',
             onSaved: saved => {
                 if (kind === 'group' || kind === 'group-code') {
@@ -1434,6 +1437,14 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
                         } else {
                             group.dataset.groupCode = saved || '';
                         }
+                    }
+                } else if (kind === 'group-career' || kind === 'group-semester') {
+                    if (group) {
+                        const isCareer = kind === 'group-career';
+                        const key = isCareer ? 'groupCareer' : 'groupSemester';
+                        const selector = isCareer ? '[data-group-career-display]' : '[data-group-semester-display]';
+                        group.dataset[key] = saved || '';
+                        group.querySelector(selector)?.setAttribute('data-edit-value', saved || '');
                     }
                 } else if (kind === 'cycle-career' || kind === 'cycle-semester') {
                     root.querySelectorAll(kind === 'cycle-career' ? '[data-cycle-career-display]' : '[data-cycle-semester-display]').forEach(node => {
