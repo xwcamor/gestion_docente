@@ -27,7 +27,7 @@
         <div class="tree-panel-heading">
             <div>
                 <p class="eyebrow">ÁRBOL DE TRABAJO</p>
-                <h2><x-icon name="network" size="23" /> Grupos, cursos y componentes</h2>
+                <h2><x-icon name="git-branch" size="23" /> Grupos, cursos y componentes</h2>
                 <p>Usa + y − para desplegar niveles. Haz doble clic en los nombres, códigos, NRC o fechas para editarlos.</p>
             </div>
             <span class="workload-tree-total" data-tree-group-total>{{ $cycleGroupCount }} grupos</span>
@@ -41,7 +41,7 @@
                 <input class="field" name="name" maxlength="100" required placeholder="Ej. Grupo 01">
             </label>
             <label>
-                <span><x-icon name="tag" size="19" /> Código (opcional)</span>
+                <span><x-icon name="file-text" size="19" /> Código (opcional)</span>
                 <input class="field" name="code" maxlength="80" placeholder="Ej. G01-2026">
             </label>
             <button class="btn" type="submit" aria-label="Agregar grupo"><x-icon name="plus" size="19" /> Agregar grupo</button>
