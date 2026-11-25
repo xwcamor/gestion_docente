@@ -34,6 +34,7 @@ Route::middleware(['auth', 'professor'])->group(function () {
 
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
+    Route::patch('/arbol/ciclos/{cycle}/contexto', [WorkloadTreeController::class, 'updateCycleContext'])->name('workload-tree.cycles.context');
     Route::get('/arbol/ciclos/{cycle}/grupos', [WorkloadTreeController::class, 'groups'])->name('workload-tree.groups');
     Route::get('/arbol/grupos/{group}/cursos', [WorkloadTreeController::class, 'courses'])->name('workload-tree.courses');
     Route::get('/arbol/asignaciones/{assignment}/modalidades', [WorkloadTreeController::class, 'modalities'])->name('workload-tree.modalities');
