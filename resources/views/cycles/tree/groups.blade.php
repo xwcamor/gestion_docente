@@ -6,7 +6,7 @@
                 <span class="tree-node-icon tree-group-icon"><x-icon name="users" size="16" /></span>
                 <span class="tree-node-copy">
                     <strong>Grupo {{ $group->name }}</strong>
-                    <small>{{ $group->assignments_count }} cursos · {{ $group->students_count }} alumnos</small>
+                    <small><span data-group-course-count>{{ $group->assignments_count }}</span> cursos · {{ $group->students_count }} alumnos</small>
                 </span>
                 <span class="tree-chevron"><x-icon name="chevron-right" size="14" /></span>
             </summary>
