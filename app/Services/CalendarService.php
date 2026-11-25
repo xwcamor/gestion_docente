@@ -13,6 +13,10 @@ class CalendarService
 {
     public function rebuild(CourseModality $modality): array
     {
+        if (!$modality->active) {
+            throw ValidationException::withMessages(['modality' => 'No se puede generar un calendario para una modalidad desactivada.']);
+        }
+
         if (!$modality->start_date || !$modality->end_date || $modality->end_date->lt($modality->start_date)) {
             throw ValidationException::withMessages(['start_date' => 'Indique un inicio y fin válidos para la modalidad.']);
         }
