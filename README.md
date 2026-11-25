@@ -183,7 +183,7 @@ La entrada principal del sistema es un árbol desplegable con esta jerarquía:
 - **Curso:** permite editar el nombre, alias y datos de sus modalidades, y subir o actualizar la malla curricular.
 - **Modalidad TEC/TALL:** muestra NRC, bloque, referencia, fechas, días, horas, ambiente y documentos generados; abre la pantalla de configuración y exportación de esa modalidad.
 
-Los niveles del árbol comienzan contraídos y se despliegan bajo demanda. En la vista individual del ciclo se conserva la visualización directa de sus grupos. La malla se muestra bajo el curso porque pertenece al catálogo del curso y puede reutilizarse en varios grupos; NRC, fechas, horario y documentos se mantienen por modalidad.
+Los niveles del árbol comienzan contraídos y se despliegan bajo demanda. En la vista individual del ciclo se conserva la visualización directa de sus grupos. La malla se muestra bajo el curso porque pertenece al catálogo del curso y puede reutilizarse en varios grupos; NRC, fechas, horario y documentos se mantienen por modalidad. Al crear un ciclo, el sistema crea su primer grupo y curso inicial y abre directamente el árbol de ese ciclo. El semestre se selecciona en valores romanos **I, II, III, IV, V o VI** tanto al crear/editar ciclos como al editar el semestre particular de un grupo.
 
 **Plantilla de carga laboral:** se descarga desde la pantalla Importar carga laboral y contiene tres hojas. `Cursos` registra curso, código institucional, bloques, NRC y fechas independientes TEC/TALL; `Horarios` registra una fila por día y bloque con CODIGO, modalidad TEC/TALL, NRC opcional, día, horas, tipo, ambiente e INTERVALO SEMANAS opcional (vacío equivale a 1); `Instrucciones` explica el llenado. El importador valida la correspondencia curso/modalidad, cruces de horario e intervalos de 15 minutos. Al confirmar, guarda la repetición semanal, calcula horas promedio por semana y reconstruye las sesiones excluyendo feriados bloqueados. Si una modalidad ya tenía horarios configurados manualmente, se conservan para no sobrescribirlos al reimportar.
 
@@ -268,6 +268,12 @@ Antes de diseñar o modificar pantallas, consulta:
 - **[Guía UI/UX para futuros sistemas](docs/GUIA_UI_UX_FUTUROS_SISTEMAS.md):** cuándo utilizar Anti UI Slop, Think UI, Taste Skill, Emil Design Engineering, Vercel Guidelines, Anthropic Frontend Design, Hallmark, Make Interfaces Feel Better, UI/UX Pro Max y Stageshow. Incluye checklist e instalación selectiva.
 
 Al reutilizar la guía en otro proyecto, copia `AGENTS.md`, `DESIGN.md` y la guía UI/UX. Actualiza los tokens de `DESIGN.md` según la marca y tecnología del nuevo sistema; no copies automáticamente los colores de Gestión Docente.
+
+### Layout del árbol y selector de semestre
+
+- El ancho real del sidebar coincide con el espacio reservado en la grilla; su relleno no aumenta el ancho visual ni tapa el contenido. En tablet y móvil el menú pasa a una fila horizontal.
+- Al guardar un ciclo nuevo, se abre directamente su árbol con el primer grupo y curso inicial creados.
+- El semestre es un selector cerrado con valores romanos I, II, III, IV, V y VI. Se aplica al crear/editar ciclos y al editar cada grupo desde el árbol.
 
 ### Navegación y apariencia personal
 
