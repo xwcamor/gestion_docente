@@ -174,6 +174,7 @@ class GroupController extends Controller
         $curriculumCount = $group->assignments()->whereNotNull('curriculum_id')->count();
 
         $modalityQuery = CourseModality::query()
+            ->where('active', true)
             ->whereHas('assignment', fn ($query) => $query->where('teaching_group_id', $group->id));
 
         $modalityCount = (clone $modalityQuery)->count();
@@ -185,6 +186,7 @@ class GroupController extends Controller
 
         $declaredWeeklyHours = (float) $group->assignments()
             ->join('course_modalities', 'course_modalities.course_assignment_id', '=', 'course_assignments.id')
+            ->where('course_modalities.active', true)
             ->sum('course_modalities.total_hours');
 
         // Sumar tiempo efectivo sin duplicar minutos cuando dos bloques del mismo tipo
@@ -193,6 +195,7 @@ class GroupController extends Controller
             ->join('course_modalities', 'course_modalities.id', '=', 'modality_schedules.course_modality_id')
             ->join('course_assignments', 'course_assignments.id', '=', 'course_modalities.course_assignment_id')
             ->where('course_assignments.teaching_group_id', $group->id)
+            ->where('course_modalities.active', true)
             ->where('modality_schedules.block_type', 'CLASS')
             ->get([
                 'modality_schedules.day_of_week',
