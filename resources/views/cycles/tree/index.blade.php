@@ -1117,16 +1117,6 @@
             content.innerHTML = await response.text();
             groupNode.dataset.treeLoaded = '1';
 
-            // Dentro de cada grupo, solo se despliega un curso a la vez.
-            content.querySelectorAll('[data-course-branch]').forEach(courseBranch => {
-                courseBranch.addEventListener('toggle', () => {
-                    if (!courseBranch.open) return;
-                    content.querySelectorAll('[data-course-branch]').forEach(otherCourse => {
-                        if (otherCourse !== courseBranch) otherCourse.open = false;
-                    });
-                });
-            });
-
             const count = groupNode.querySelector('[data-group-course-count]')?.textContent || 0;
             updateCourseDeleteGuards(groupNode, count);
         } catch (error) {
@@ -1157,9 +1147,6 @@
     root.querySelectorAll('[data-tree-load]').forEach(groupNode => {
         groupNode.addEventListener('toggle', () => {
             if (!groupNode.open) return;
-            root.querySelectorAll('[data-tree-load]').forEach(otherGroup => {
-                if (otherGroup !== groupNode) otherGroup.open = false;
-            });
             loadGroup(groupNode);
         });
     });
@@ -1241,7 +1228,7 @@
         if (dateCell) {
             event.preventDefault();
             event.stopPropagation();
-            const wrapper = dateCell.closest('[data-modality-dates]');
+            const wrapper = dateCell.closest('[data-modality-dates], [data-course-dates]');
             if (wrapper) startDateEditor(dateCell, wrapper);
             return;
         }
@@ -1576,28 +1563,22 @@
         input.addEventListener('blur', save, {once: true});
     };
 
-    const syncCoursePeriod = course => {
-        if (!course) return;
-        const wrappers = [...course.querySelectorAll('[data-modality-dates]')];
-        const starts = [...new Set(wrappers.map(item => item.dataset.startDate).filter(Boolean))];
-        const ends = [...new Set(wrappers.map(item => item.dataset.endDate).filter(Boolean))];
-        const label = starts.length === 1 && ends.length === 1
-            ? 'Inicio y fin: ' + displayDate(starts[0]) + ' – ' + displayDate(ends[0])
-            : (starts.length || ends.length ? 'Fechas diferentes por TEC/TAL' : 'Inicio y fin pendientes');
-        const summary = course.querySelector('[data-course-period]');
-        if (summary) summary.textContent = label;
-    };
-
     const startDateEditor = (cell, wrapper) => {
         if (cell.querySelector('input')) return;
+
         const field = cell.dataset.inlineDate;
-        const key = field === 'start_date' ? 'startDate' : 'endDate';
+        const startField = wrapper.dataset.startField || 'start_date';
+        const endField = wrapper.dataset.endField || 'end_date';
+        const isStart = field === startField;
+        const key = isStart ? 'startDate' : 'endDate';
         const original = wrapper.dataset[key] || '';
+        const emptyLabel = cell.dataset.emptyLabel || 'Sin fecha';
         const input = document.createElement('input');
+
         input.type = 'date';
         input.className = 'tree-inline-editor';
         input.value = original;
-        input.setAttribute('aria-label', field === 'start_date' ? 'Fecha de inicio' : 'Fecha de fin');
+        input.setAttribute('aria-label', isStart ? 'Fecha de inicio' : 'Fecha de fin');
         cell.replaceChildren(input);
         input.focus();
         input.showPicker?.();
@@ -1606,8 +1587,9 @@
         const restore = () => {
             if (finished) return;
             finished = true;
-            cell.textContent = displayDate(original);
+            cell.textContent = original ? displayDate(original) : emptyLabel;
         };
+
         const save = async () => {
             if (finished) return;
             const value = input.value;
@@ -1615,26 +1597,37 @@
                 restore();
                 return;
             }
+
             const values = {
-                start_date: field === 'start_date' ? value : (wrapper.dataset.startDate || ''),
-                end_date: field === 'end_date' ? value : (wrapper.dataset.endDate || '')
+                [startField]: isStart ? value : (wrapper.dataset.startDate || ''),
+                [endField]: isStart ? (wrapper.dataset.endDate || '') : value
             };
+
             finished = true;
+            cell.classList.add('tree-inline-saving');
             try {
                 const payload = await patch(wrapper.dataset.datesUrl, values);
-                wrapper.dataset.startDate = payload.start_date || '';
-                wrapper.dataset.endDate = payload.end_date || '';
+                const savedStart = payload[startField] || '';
+                const savedEnd = payload[endField] || '';
+                wrapper.dataset.startDate = savedStart;
+                wrapper.dataset.endDate = savedEnd;
+
                 wrapper.querySelectorAll('[data-inline-date]').forEach(dateNode => {
-                    const dateValue = payload[dateNode.dataset.inlineDate];
-                    dateNode.textContent = displayDate(dateValue || '');
+                    const dateValue = payload[dateNode.dataset.inlineDate] || '';
+                    const fallback = dateNode.dataset.emptyLabel || 'Sin fecha';
+                    dateNode.textContent = dateValue ? displayDate(dateValue) : fallback;
+                    dateNode.classList.toggle('is-empty', !dateValue);
                 });
-                syncCoursePeriod(wrapper.closest('[data-tree-course-item]'));
+
                 showFeedback(payload.message || 'Fechas actualizadas.');
             } catch (error) {
-                cell.textContent = displayDate(original);
+                cell.textContent = original ? displayDate(original) : emptyLabel;
                 showFeedback(error.message, true);
+            } finally {
+                cell.classList.remove('tree-inline-saving');
             }
         };
+
         input.addEventListener('keydown', event => {
             if (event.key === 'Escape') {
                 event.preventDefault();
