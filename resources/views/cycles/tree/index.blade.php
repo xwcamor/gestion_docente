@@ -444,29 +444,30 @@ html[data-theme="dark"] .workload-tree-hero{background:linear-gradient(115deg,co
         syncComponentFields();
     };
 
-    document.querySelectorAll('[data-open-course-dialog]').forEach(button => {
-        button.addEventListener('click', () => {
-            resetCourseForm();
-            courseForm.action = button.dataset.createUrl;
-            courseForm.dataset.groupId = button.dataset.groupId || '';
-            document.getElementById('tree-course-code').value = button.dataset.courseCode || '';
-            document.getElementById('tree-course-name').value = button.dataset.courseName || '';
-            if (button.dataset.component) {
-                componentChecks.forEach(input => input.checked = input.value === button.dataset.component);
-            }
-            syncComponentFields();
-            const title = document.getElementById('tree-course-dialog-title');
-            const subtitle = document.getElementById('tree-course-dialog-subtitle');
-            if (button.dataset.component) {
-                title.textContent = 'Agregar modalidad ' + (button.dataset.component === 'TALL' ? 'TAL' : 'TEC');
-                subtitle.textContent = 'Completa el NRC, las fechas y el horario de este componente.';
-            } else {
-                title.textContent = 'Agregar curso';
-                subtitle.textContent = 'Registra el curso y sus componentes sin salir del árbol.';
-            }
-            openDialog(courseDialog);
-            document.getElementById('tree-course-code')?.focus();
-        });
+    document.addEventListener('click', event => {
+        const button = event.target.closest('[data-open-course-dialog]');
+        if (!button) return;
+
+        resetCourseForm();
+        courseForm.action = button.dataset.createUrl;
+        courseForm.dataset.groupId = button.dataset.groupId || '';
+        document.getElementById('tree-course-code').value = button.dataset.courseCode || '';
+        document.getElementById('tree-course-name').value = button.dataset.courseName || '';
+        if (button.dataset.component) {
+            componentChecks.forEach(input => input.checked = input.value === button.dataset.component);
+        }
+        syncComponentFields();
+        const title = document.getElementById('tree-course-dialog-title');
+        const subtitle = document.getElementById('tree-course-dialog-subtitle');
+        if (button.dataset.component) {
+            title.textContent = 'Agregar modalidad ' + (button.dataset.component === 'TALL' ? 'TAL' : 'TEC');
+            subtitle.textContent = 'Completa el NRC, las fechas y el horario de este componente.';
+        } else {
+            title.textContent = 'Agregar curso';
+            subtitle.textContent = 'Registra el curso y sus componentes sin salir del árbol.';
+        }
+        openDialog(courseDialog);
+        document.getElementById('tree-course-code')?.focus();
     });
 
     const showCourseErrors = errors => {
