@@ -1,4 +1,5 @@
 @php($activeCount = $modalities->where('active', true)->count())
+@php($hasAlternativeModality = $modalities->count() > 1)
 @foreach(['TEC' => 'Teoría', 'TALL' => 'Taller'] as $type => $label)
     @php($modality = $modalities->firstWhere('modality', $type))
     @if($modality)
@@ -71,11 +72,13 @@
                     data-modality-url="{{ route('workload-tree.modalities.active', $modality) }}"
                     data-active="{{ $modality->active ? '1' : '0' }}"
                     aria-pressed="{{ $modality->active ? 'true' : 'false' }}"
-                    @disabled($modality->active && $activeCount <= 1)
-                    title="{{ $modality->active && $activeCount <= 1 ? 'Debes mantener al menos una modalidad activa' : ($modality->active ? 'Desactivar '.$type : 'Activar '.$type) }}">
+                    @disabled($modality->active && $activeCount <= 1 && !$hasAlternativeModality)
+                    title="{{ $modality->active && $activeCount <= 1 && $hasAlternativeModality ? 'Cambiar al otro componente sin dejar el curso vacío' : ($modality->active && $activeCount <= 1 ? 'El curso debe conservar un componente activo' : ($modality->active ? 'Desactivar '.$type : 'Activar '.$type)) }}">
                 <span class="tree-toggle-dot"></span>
                 <span data-toggle-label>
-                    @if($modality->active && $activeCount <= 1)
+                    @if($modality->active && $activeCount <= 1 && $hasAlternativeModality)
+                        Cambiar a {{ $type === 'TEC' ? 'TAL' : 'TEC' }}
+                    @elseif($modality->active && $activeCount <= 1)
                         Obligatoria
                     @else
                         {{ $modality->active ? 'Desactivar' : 'Activar' }}
