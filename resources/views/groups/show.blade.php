@@ -401,7 +401,7 @@
                             <div class="course-row-actions">
                                 <a class="btn btn-ghost btn-sm" href="{{ route('assignments.quick.edit', [$group, $assignment]) }}"><x-icon name="pencil" /> Editar curso y horario</a>
                                 <a class="btn btn-ghost btn-sm" href="{{ route('curricula.show', $assignment) }}"><x-icon name="book-open" /> Malla</a>
-                                <form method="POST" action="{{ route('assignments.destroy', $assignment) }}" data-confirm="Se retirará este curso de {{ $group->name }} junto con sus modalidades, matrículas, evaluaciones y documentos. El curso del catálogo general se conservará para usarlo en otros grupos. Esta acción no se puede deshacer.">
+                                <form method="POST" action="{{ route('assignments.destroy', $assignment) }}" data-confirm="Se retirará este curso de {{ $group->name }} junto con sus modalidades, matrículas, evaluaciones y documentos. Si es su última asignación, la malla pasará al historial y no se volverá a asociar automáticamente; si se usa en otro grupo, seguirá disponible allí. El curso del catálogo se conservará.">
                                     @csrf
                                     @method('DELETE')
                                     <button class="btn btn-danger btn-sm" type="submit"><x-icon name="x" /> Eliminar</button>
