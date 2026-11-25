@@ -9,7 +9,11 @@
                 <span class="tree-branch-mark"></span>
                 <span class="tree-node-icon tree-group-icon"><x-icon name="users" size="16" /></span>
                 <span class="tree-node-copy">
-                    <strong>Grupo {{ $group->name }}</strong>
+                    <strong class="tree-inline-name"
+                            data-inline-group-name
+                            data-group-name-url="{{ route('groups.update', $group) }}"
+                            data-group-name="{{ $group->name }}"
+                            title="Doble clic para cambiar el nombre">Grupo {{ $group->name }}</strong>
                     <small><span data-group-course-count>{{ $group->assignments_count }}</span> cursos · {{ $group->students_count }} alumnos</small>
                 </span>
                 <span class="tree-chevron"><x-icon name="chevron-right" size="14" /></span>
@@ -20,60 +24,45 @@
                     <a class="btn btn-ghost btn-sm" href="{{ route('groups.show', ['group' => $group, 'panel' => 'courses']) }}#group-courses">
                         <x-icon name="graduation-cap" /> Gestión académica
                     </a>
-
-                    <details class="tree-group-action-inline">
-                        <summary><x-icon name="pencil" size="13" /> Editar grupo</summary>
-                        <form method="POST" action="{{ route('groups.update', $group) }}" data-tree-group-name-form>
-                            @csrf
-                            @method('PATCH')
-                            <label class="tree-entry-field">
-                                <span>Nombre del grupo</span>
-                                <input class="field" name="name" value="{{ $group->name }}" maxlength="100" required>
-                            </label>
-                            <div class="tree-inline-form-actions">
-                                <button class="btn btn-sm" type="submit"><x-icon name="check" /> Guardar</button>
-                                <button class="btn btn-ghost btn-sm" type="button" data-inline-cancel>Cancelar</button>
-                            </div>
-                        </form>
-                    </details>
-
-                    @if($cycleGroupCount > 1)
-                        <details class="tree-group-action-inline tree-group-remove">
-                            <summary><x-icon name="x" size="13" /> Eliminar grupo</summary>
-                            <div class="tree-group-remove-confirm">
-                                <p><strong>Se eliminará Grupo {{ $group->name }}.</strong> También se retirarán sus cursos asignados, modalidades, horarios y documentos generados. Los cursos y alumnos del catálogo compartido se conservarán cuando tengan otras asignaciones.</p>
-                                <form method="POST" action="{{ route('groups.destroy', $group) }}" data-tree-delete-group>
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="btn btn-danger btn-sm" type="submit"><x-icon name="x" /> Sí, eliminar grupo</button>
-                                    <button class="btn btn-ghost btn-sm" type="button" data-inline-cancel>Cancelar</button>
-                                </form>
-                            </div>
-                        </details>
-                    @else
-                        <button class="btn btn-ghost btn-sm tree-group-delete-disabled" type="button" disabled title="Cada ciclo debe conservar al menos un grupo">
-                            <x-icon name="x" size="13" /> No se puede eliminar el único grupo
-                        </button>
+                    <button class="btn btn-ghost btn-sm tree-group-delete-trigger" type="button" data-toggle-group-delete>
+                        <x-icon name="x" size="13" /> Eliminar grupo
+                    </button>
+                    @if($cycleGroupCount <= 1)
+                        <span class="tree-last-group-note">Este ciclo debe conservar un grupo</span>
                     @endif
                 </div>
+
+                <div class="tree-delete-confirm tree-group-delete-confirm" data-group-delete-confirm hidden>
+                    <p><strong>¿Eliminar Grupo {{ $group->name }}?</strong> Se retirarán sus cursos, modalidades, horarios y documentos asociados. Los cursos y alumnos compartidos se conservan cuando tienen otras asignaciones.</p>
+                    <form method="POST" action="{{ route('groups.destroy', $group) }}" data-tree-delete-group>
+                        @csrf
+                        @method('DELETE')
+                        <button class="btn btn-danger btn-sm" type="submit" @disabled($cycleGroupCount <= 1)>
+                            <x-icon name="x" /> Confirmar eliminación
+                        </button>
+                        <button class="btn btn-ghost btn-sm" type="button" data-inline-cancel>Cancelar</button>
+                    </form>
+                </div>
+
                 <div data-tree-content>
                     <div class="tree-loading-state">Despliega el grupo para consultar sus cursos.</div>
                 </div>
             </div>
         </details>
 
-        <details class="workload-tree-add-course-inline" id="tree-course-entry-{{ $group->id }}">
-            <summary aria-label="Agregar curso al grupo {{ $group->name }}">
+        <div class="tree-course-entry-area">
+            <button class="workload-tree-add-course" type="button" data-toggle-course-entry aria-expanded="false">
                 <x-icon name="plus" size="13" /><span>Agregar curso</span>
-            </summary>
+            </button>
             <form class="tree-course-entry-form" method="POST"
                   action="{{ route('workload-tree.courses.store', $group) }}"
                   data-tree-course-form
-                  data-group-id="{{ $group->id }}">
+                  data-group-id="{{ $group->id }}"
+                  hidden>
                 @csrf
                 <div class="tree-course-entry-heading">
                     <div><strong>Nuevo curso</strong><small>Se agregará directamente a Grupo {{ $group->name }}</small></div>
-                    <span class="tree-inline-step">01 · CURSO</span>
+                    <span class="tree-inline-step">CURSO NUEVO</span>
                 </div>
                 <div class="tree-course-entry-error" data-course-form-error hidden role="alert"></div>
 
@@ -93,7 +82,7 @@
                     <legend>Componentes del curso</legend>
                     <label><input type="checkbox" name="components[]" value="TEC" data-course-component> <span class="tree-component-choice is-tec">TEC</span> Teoría</label>
                     <label><input type="checkbox" name="components[]" value="TALL" data-course-component> <span class="tree-component-choice is-tall">TAL</span> Taller / práctica</label>
-                    <small>Selecciona uno o ambos. Cada componente tendrá su propio NRC y periodo.</small>
+                    <small>Selecciona uno o ambos. Cada componente tendrá su propio NRC y periodo. Un curso debe conservar al menos uno activo.</small>
                 </fieldset>
 
                 <section class="tree-entry-component" data-course-config="TEC" hidden>
@@ -141,11 +130,14 @@
                 </section>
 
                 <div class="tree-course-entry-footer">
-                    <span>Los cursos se pueden configurar por completo y ajustar después desde el árbol.</span>
-                    <button class="btn" type="submit" data-course-submit><x-icon name="check" /> Guardar curso</button>
+                    <span>Al guardar, el curso aparecerá en esta lista sin recargar toda la página.</span>
+                    <div>
+                        <button class="btn btn-ghost" type="button" data-close-course-entry>Cancelar</button>
+                        <button class="btn" type="submit" data-course-submit><x-icon name="check" /> Guardar curso</button>
+                    </div>
                 </div>
             </form>
-        </details>
+        </div>
     </div>
 @empty
     <div class="tree-empty-child">No hay grupos que coincidan con esta búsqueda.</div>
