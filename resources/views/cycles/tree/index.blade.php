@@ -1110,6 +1110,16 @@
     border-radius:2px;
     background:color-mix(in srgb,var(--accent) 36%,var(--line-strong));
 }
+.tree-structure-card .workload-tree-children.workload-group-children::after{
+    content:"";
+    position:absolute;
+    top:0;
+    left:-18px;
+    width:26px;
+    height:2px;
+    border-radius:2px;
+    background:color-mix(in srgb,var(--accent) 36%,var(--line-strong));
+}
 .tree-structure-card .workload-tree-children.workload-group-children>[data-tree-content]{
     position:relative;
     min-width:0;
@@ -1171,6 +1181,16 @@
     border-radius:2px;
     background:color-mix(in srgb,var(--accent) 32%,var(--line-strong));
 }
+.tree-structure-card .tree-course-children::after{
+    content:"";
+    position:absolute;
+    top:0;
+    left:-22px;
+    width:33px;
+    height:2px;
+    border-radius:2px;
+    background:color-mix(in srgb,var(--accent) 32%,var(--line-strong));
+}
 .tree-structure-card .tree-course-tools{
     position:relative;
     z-index:1;
@@ -1198,8 +1218,8 @@
     content:"";
     position:absolute;
     top:26px;
-    left:-14px;
-    width:14px;
+    left:-29px;
+    width:29px;
     height:2px;
     border-radius:2px;
     background:color-mix(in srgb,var(--accent) 32%,var(--line-strong));
@@ -1219,8 +1239,9 @@
     .tree-structure-card .workload-tree-course::before{left:-10px;width:21px}
     .tree-structure-card .tree-course-children{margin-left:13px!important;padding-left:20px!important}
     .tree-structure-card .tree-course-children::before{left:8px}
+    .tree-structure-card .tree-course-children::after{left:-13px;width:21px}
     .tree-structure-card .workload-tree-modality{margin-left:10px!important}
-    .tree-structure-card .workload-tree-modality::before{left:-10px;width:10px}
+    .tree-structure-card .workload-tree-modality::before{left:-22px;width:22px}
     .tree-course-period{gap:3px 8px;font-size:9px}
     .tree-course-period .tree-date-label{font-size:8px}
 }
