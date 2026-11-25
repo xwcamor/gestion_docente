@@ -46,7 +46,18 @@ class AppServiceProvider extends ServiceProvider
         }
 
         View::composer('layouts.app', function ($view) {
-            $view->with('appBranding', SystemSetting::branding());
+            $branding = SystemSetting::branding();
+            $user = auth()->user();
+            $personalAccent = $user?->accent_color;
+
+            $view->with('appBranding', $branding);
+            $view->with('appAppearance', [
+                'accent_color' => $personalAccent ?: $branding['primary_color'],
+                'accent_hover' => $personalAccent
+                    ? 'color-mix(in srgb, var(--accent) 82%, #000)'
+                    : $branding['primary_hover'],
+                'sidebar_visible' => $user?->sidebar_visible ?? true,
+            ]);
         });
     }
 }
