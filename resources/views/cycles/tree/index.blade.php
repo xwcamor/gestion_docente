@@ -41,7 +41,7 @@
             <div>
                 <p class="eyebrow">ESTRUCTURA ACADÉMICA</p>
                 <h2>Grupos y cursos</h2>
-                <p class="card-description">Despliega un grupo para administrar sus cursos y modalidades. Doble clic en NRC o fechas para modificarlos.</p>
+                <p class="card-description">Despliega un grupo para ver todos sus cursos y modalidades. Doble clic en nombres, NRC o fechas para editar; activa o desactiva TEC/TAL desde su fila.</p>
             </div>
             <span class="workload-tree-total" data-tree-group-total>{{ $groups->count() }} grupos</span>
         </div>
