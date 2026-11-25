@@ -24,28 +24,31 @@
                         <span class="tree-disabled-value">{{ $modality->nrc ?: 'NRC pendiente' }}</span>
                     @endif
                 </strong>
-                <small class="tree-modality-dates"
-                       @if($modality->active)
-                           data-modality-dates
-                           data-dates-url="{{ route('workload-tree.modalities.dates', $modality) }}"
-                           data-start-date="{{ $modality->start_date?->toDateString() }}"
-                           data-end-date="{{ $modality->end_date?->toDateString() }}"
-                           data-modality-id="{{ $modality->id }}"
-                       @endif>
-                    Inicio:
-                    @if($modality->active)
-                        <span class="tree-inline-date" data-inline-date="start_date" title="Clic para editar la fecha">{{ $modality->start_date?->format('d/m/Y') ?: 'Sin fecha' }}</span>
-                    @else
-                        <span class="tree-disabled-value">{{ $modality->start_date?->format('d/m/Y') ?: 'Sin fecha' }}</span>
-                    @endif
-                    <span class="tree-date-separator">·</span>
-                    Fin:
-                    @if($modality->active)
-                        <span class="tree-inline-date" data-inline-date="end_date" title="Clic para editar la fecha">{{ $modality->end_date?->format('d/m/Y') ?: 'Sin fecha' }}</span>
-                    @else
-                        <span class="tree-disabled-value">{{ $modality->end_date?->format('d/m/Y') ?: 'Sin fecha' }}</span>
-                    @endif
-                </small>
+                <div class="tree-modality-dates"
+                     @if($modality->active)
+                         data-modality-dates
+                         data-dates-url="{{ route('workload-tree.modalities.dates', $modality) }}"
+                         data-start-date="{{ $modality->start_date?->toDateString() }}"
+                         data-end-date="{{ $modality->end_date?->toDateString() }}"
+                         data-modality-id="{{ $modality->id }}"
+                     @endif>
+                    <span class="tree-date-field">
+                        <span class="tree-date-label">Inicio</span>
+                        @if($modality->active)
+                            <span class="tree-inline-date" data-inline-date="start_date" title="Clic para editar la fecha">{{ $modality->start_date?->format('d/m/Y') ?: 'Sin fecha' }}</span>
+                        @else
+                            <span class="tree-disabled-value">{{ $modality->start_date?->format('d/m/Y') ?: 'Sin fecha' }}</span>
+                        @endif
+                    </span>
+                    <span class="tree-date-field">
+                        <span class="tree-date-label">Fin</span>
+                        @if($modality->active)
+                            <span class="tree-inline-date" data-inline-date="end_date" title="Clic para editar la fecha">{{ $modality->end_date?->format('d/m/Y') ?: 'Sin fecha' }}</span>
+                        @else
+                            <span class="tree-disabled-value">{{ $modality->end_date?->format('d/m/Y') ?: 'Sin fecha' }}</span>
+                        @endif
+                    </span>
+                </div>
                 <small data-modality-description data-active-description="{{ $enabledDescription }}">
                     @if(!$modality->active)
                         Modalidad desactivada · Horarios e historial conservados
@@ -62,33 +65,35 @@
                 @endif
             </div>
 
-            <span class="tree-course-status {{ !$modality->active ? 'is-disabled' : ($modalityReady ? 'is-ready' : 'is-pending') }}" data-modality-status>
-                {{ !$modality->active ? 'Desactivada' : ($modalityReady ? 'Configurada' : 'Pendiente') }}
-            </span>
-
-            <button class="tree-modality-toggle {{ $modality->active ? 'is-on' : 'is-off' }}"
-                    type="button"
-                    data-toggle-modality
-                    data-modality-url="{{ route('workload-tree.modalities.active', $modality) }}"
-                    data-active="{{ $modality->active ? '1' : '0' }}"
-                    aria-pressed="{{ $modality->active ? 'true' : 'false' }}"
-                    @disabled($modality->active && $activeCount <= 1 && !$hasAlternativeModality)
-                    title="{{ $modality->active && $activeCount <= 1 && $hasAlternativeModality ? 'Cambiar al otro componente sin dejar el curso vacío' : ($modality->active && $activeCount <= 1 ? 'El curso debe conservar un componente activo' : ($modality->active ? 'Desactivar '.$type : 'Activar '.$type)) }}">
-                <span class="tree-toggle-dot"></span>
-                <span data-toggle-label>
-                    @if($modality->active && $activeCount <= 1 && $hasAlternativeModality)
-                        Cambiar a {{ $type === 'TEC' ? 'TAL' : 'TEC' }}
-                    @elseif($modality->active && $activeCount <= 1)
-                        Obligatoria
-                    @else
-                        {{ $modality->active ? 'Desactivar' : 'Activar' }}
-                    @endif
+            <div class="tree-modality-actions">
+                <span class="tree-course-status {{ !$modality->active ? 'is-disabled' : ($modalityReady ? 'is-ready' : 'is-pending') }}" data-modality-status>
+                    {{ !$modality->active ? 'Desactivada' : ($modalityReady ? 'Configurada' : 'Pendiente') }}
                 </span>
-            </button>
-
-            @if($modality->active)
-                <a class="btn btn-secondary btn-sm tree-open-modality" href="{{ route('modalities.show', $modality) }}"><x-icon name="arrow-up-right" /> Horario</a>
-            @endif
+                <div class="tree-modality-buttons">
+                    <button class="tree-modality-toggle {{ $modality->active ? 'is-on' : 'is-off' }}"
+                            type="button"
+                            data-toggle-modality
+                            data-modality-url="{{ route('workload-tree.modalities.active', $modality) }}"
+                            data-active="{{ $modality->active ? '1' : '0' }}"
+                            aria-pressed="{{ $modality->active ? 'true' : 'false' }}"
+                            @disabled($modality->active && $activeCount <= 1 && !$hasAlternativeModality)
+                            title="{{ $modality->active && $activeCount <= 1 && $hasAlternativeModality ? 'Cambiar al otro componente sin dejar el curso vacío' : ($modality->active && $activeCount <= 1 ? 'El curso debe conservar un componente activo' : ($modality->active ? 'Desactivar '.$type : 'Activar '.$type)) }}">
+                        <span class="tree-toggle-dot"></span>
+                        <span data-toggle-label>
+                            @if($modality->active && $activeCount <= 1 && $hasAlternativeModality)
+                                Cambiar a {{ $type === 'TEC' ? 'TAL' : 'TEC' }}
+                            @elseif($modality->active && $activeCount <= 1)
+                                Requerida
+                            @else
+                                {{ $modality->active ? 'Desactivar' : 'Activar' }}
+                            @endif
+                        </span>
+                    </button>
+                    @if($modality->active)
+                        <a class="btn btn-secondary btn-sm tree-open-modality" href="{{ route('modalities.show', $modality) }}"><x-icon name="calendar-days" size="14" /> Horario</a>
+                    @endif
+                </div>
+            </div>
         </article>
     @else
         <div class="workload-tree-modality is-missing" data-modality-row data-modality-type="{{ $type }}">
@@ -98,16 +103,19 @@
                 <strong>{{ $label }} todavía no agregada</strong>
                 <small>Activa este componente agregándolo aquí mismo.</small>
             </div>
-            <button class="btn btn-secondary tree-add-modality"
-                    type="button"
-                    data-open-inline-course-entry
-                    data-group-id="{{ $assignment->group->id }}"
-                    data-course-code="{{ $assignment->course->code }}"
-                    data-course-name="{{ $assignment->course->name }}"
-                    data-component="{{ $type }}"
-                    data-store-url="{{ route('workload-tree.modalities.store', ['assignment' => $assignment, 'type' => $type]) }}">
-                <x-icon name="plus" size="13" /> Agregar {{ $type === 'TEC' ? 'TEC' : 'TAL' }}
-            </button>
+            <div class="tree-modality-actions is-missing-actions">
+                <span class="tree-course-status is-pending">No agregado</span>
+                <button class="btn btn-secondary tree-add-modality"
+                        type="button"
+                        data-open-inline-course-entry
+                        data-group-id="{{ $assignment->group->id }}"
+                        data-course-code="{{ $assignment->course->code }}"
+                        data-course-name="{{ $assignment->course->name }}"
+                        data-component="{{ $type }}"
+                        data-store-url="{{ route('workload-tree.modalities.store', ['assignment' => $assignment, 'type' => $type]) }}">
+                    <x-icon name="plus" size="13" /> Agregar {{ $type === 'TEC' ? 'TEC' : 'TAL' }}
+                </button>
+            </div>
         </div>
     @endif
 @endforeach
