@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es" style="--accent: {{ $appBranding['primary_color'] ?? '#28677d' }}; --accent-hover: {{ $appBranding['primary_hover'] ?? '#20566a' }};">
+<html lang="es" style="--accent: {{ $appAppearance['accent_color'] ?? $appBranding['primary_color'] ?? '#28677d' }}; --accent-hover: {{ $appAppearance['accent_hover'] ?? $appBranding['primary_hover'] ?? '#20566a' }};">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -998,9 +998,92 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
             .btn{transition:none!important}
             .btn:active:not(:disabled){transform:none}
         }
-    </style>
+    
+        /* Layout global: navegación clara, adaptable y con ancho completo */
+        :root{--sidebar-width:252px;--accent-soft:color-mix(in srgb,var(--accent) 11%,#fff)}
+        html[data-theme="dark"]{--accent-soft:color-mix(in srgb,var(--accent) 20%,#14222c)}
+        .topbar{background:var(--surface)!important;border-bottom:1px solid var(--line)!important;box-shadow:0 1px 8px rgba(25,43,33,.035)}
+        .brand{gap:11px;font-size:13px;font-weight:760}
+        .brand-mark{border-color:color-mix(in srgb,var(--accent) 25%,var(--line))!important;background:var(--accent-soft)!important;color:var(--accent)!important}
+        .top-actions{gap:8px}
+        .top-sidebar-toggle{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:35px;padding:7px 10px;border:1px solid var(--line-strong);border-radius:8px;background:var(--surface);color:var(--ink-soft);font-size:10px;font-weight:700;cursor:pointer;transition:border-color .14s ease,background .14s ease,color .14s ease}
+        .top-sidebar-toggle:hover{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+        .app-shell{grid-template-columns:var(--sidebar-width) minmax(0,1fr)!important;min-height:calc(100vh - 60px);min-height:calc(100dvh - 60px)}
+        .sidebar{position:sticky;top:60px;height:calc(100vh - 60px);height:calc(100dvh - 60px);padding:16px 12px;background:var(--surface)!important;border-right:1px solid var(--line)!important;box-shadow:1px 0 7px rgba(25,43,33,.025)}
+        .sidebar-inner{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:15px!important;width:100%;min-height:100%}
+        .sidebar-toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 4px 12px;border-bottom:1px solid var(--line)}
+        .sidebar-toolbar-label{color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.12em}
+        .sidebar-icon-button{width:34px;height:34px;display:grid;place-items:center;border:1px solid var(--line);border-radius:8px;background:var(--surface-soft);color:var(--muted);cursor:pointer;transition:border-color .14s ease,color .14s ease,background .14s ease}
+        .sidebar-icon-button:hover{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+        .sidebar-nav{display:grid!important;align-content:start!important;gap:4px!important;min-width:0;overflow:visible!important}
+        .sidebar .nav-label{padding:10px 10px 5px;color:var(--muted)!important;font-size:9px;font-weight:800;letter-spacing:.1em}
+        .sidebar .nav-section-label{margin-top:12px}
+        .sidebar .nav-link{display:flex;align-items:center;gap:11px;min-height:43px;margin:0;padding:10px 11px;border:1px solid transparent;border-radius:9px;color:var(--ink-soft)!important;font-size:12px;font-weight:620;line-height:1.3;transition:background .14s ease,border-color .14s ease,color .14s ease,transform .14s ease}
+        .sidebar .nav-link .icon{width:18px;height:18px;color:var(--muted);transition:color .14s ease}
+        .sidebar .nav-link:hover{background:var(--surface-soft)!important;border-color:var(--line);color:var(--ink)!important;text-decoration:none;transform:translateX(2px)}
+        .sidebar .nav-link.active{background:var(--accent-soft)!important;border-color:color-mix(in srgb,var(--accent) 28%,var(--line))!important;color:var(--accent)!important;font-weight:760}
+        .sidebar .nav-link.active .icon{color:var(--accent)!important}
+        .sidebar-footer{display:flex;align-items:center;gap:9px;margin-top:auto;padding:13px 7px 3px;border-top:1px solid var(--line);min-width:0}
+        .sidebar-footer-mark{display:grid;place-items:center;width:30px;height:30px;flex:none;border:1px solid color-mix(in srgb,var(--accent) 22%,var(--line));border-radius:8px;background:var(--accent-soft);color:var(--accent);font-size:9px;font-weight:850}
+        .sidebar-footer>span:last-child{display:grid;gap:2px;min-width:0}
+        .sidebar-footer strong{overflow:hidden;color:var(--ink-soft);font-size:10px;text-overflow:ellipsis;white-space:nowrap}
+        .sidebar-footer small{color:var(--muted);font-size:9px}
+        body.sidebar-collapsed .app-shell{grid-template-columns:68px minmax(0,1fr)!important}
+        body.sidebar-collapsed .sidebar{padding-right:8px;padding-left:8px}
+        body.sidebar-collapsed .sidebar-inner{gap:9px!important}
+        body.sidebar-collapsed .sidebar-toolbar{justify-content:center;padding:0 0 10px}
+        body.sidebar-collapsed .sidebar-toolbar-label,body.sidebar-collapsed .sidebar .nav-label,body.sidebar-collapsed .sidebar .nav-link span,body.sidebar-collapsed .sidebar-footer>span:last-child{display:none}
+        body.sidebar-collapsed .sidebar .nav-link{justify-content:center;padding:11px 4px}
+        body.sidebar-collapsed .sidebar .nav-link .icon{width:20px;height:20px}
+        body.sidebar-collapsed .sidebar-footer{justify-content:center;padding:12px 0 0}
+        body.sidebar-hidden .app-shell{grid-template-columns:minmax(0,1fr)!important}
+        body.sidebar-hidden .sidebar{display:none!important}
+        .main{width:100%!important;max-width:none!important;margin:0!important;padding:clamp(14px,1.6vw,28px)!important}
+        .main .settings-page-head,.main .branding-layout,.main .profile-layout,.main .profile-page-head,.main .workload-tree-page{max-width:none!important;width:100%!important}
+        .main .branding-layout{grid-template-columns:minmax(0,1.65fr) minmax(280px,.75fr)}
+        .main .profile-layout{grid-template-columns:minmax(0,1.65fr) minmax(280px,.75fr)}
+        html[data-theme="dark"] .topbar{background:var(--surface)!important;border-bottom-color:var(--line)!important}
+        html[data-theme="dark"] .sidebar{background:var(--surface)!important;border-right-color:var(--line)!important}
+        html[data-theme="dark"] .sidebar .nav-link{color:var(--ink-soft)!important}
+        html[data-theme="dark"] .sidebar .nav-link:hover{background:var(--surface-soft)!important;border-color:var(--line)!important;color:var(--ink)!important}
+        html[data-theme="dark"] .sidebar .nav-link.active{background:var(--accent-soft)!important;border-color:color-mix(in srgb,var(--accent) 35%,var(--line))!important;color:var(--ink)!important}
+        html[data-theme="dark"] .sidebar .nav-link.active .icon{color:var(--accent)!important}
+        html[data-theme="dark"] .sidebar-footer{border-top-color:var(--line)}
+        html[data-theme="dark"] .sidebar-footer strong{color:var(--ink)}
+        html[data-theme="dark"] .top-sidebar-toggle{background:var(--surface);border-color:var(--line-strong);color:var(--ink-soft)}
+        @media(max-width:1050px){
+            .app-shell,body.sidebar-collapsed .app-shell{grid-template-columns:minmax(0,1fr)!important}
+            .sidebar{position:sticky;top:60px;height:auto;max-height:none;overflow-x:auto;overflow-y:hidden;padding:7px 10px;border-right:0!important;border-bottom:1px solid var(--line)!important;box-shadow:none}
+            .sidebar-inner{display:block!important;width:max-content;min-width:100%;min-height:0}
+            .sidebar-toolbar,.sidebar-footer{display:none!important}
+            .sidebar-nav{display:flex!important;align-items:center;gap:5px;min-width:max-content;overflow:visible!important}
+            .sidebar .nav-label{display:none}
+            .sidebar .nav-link{justify-content:center;min-height:38px;padding:8px 10px;white-space:nowrap}
+            .sidebar .nav-link span{display:inline!important}
+            body.sidebar-collapsed .sidebar .nav-link{justify-content:center;padding:8px 10px}
+            body.sidebar-collapsed .sidebar .nav-link span{display:inline!important}
+            body.sidebar-hidden .sidebar{display:none!important}
+            .main{padding:clamp(14px,2vw,22px)!important}
+        }
+        @media(max-width:720px){
+            .topbar{height:54px;padding:0 10px}
+            .top-sidebar-toggle{width:33px;height:33px;min-height:33px;padding:6px}
+            .top-sidebar-toggle span{display:none}
+            .top-theme-toggle{min-height:33px}
+            .sidebar{top:54px;padding:6px 8px}
+            .sidebar-nav{width:max-content}
+            .sidebar .nav-link{min-height:36px;padding:7px 8px;font-size:10px}
+            .sidebar .nav-link .icon{width:16px;height:16px}
+            .main{padding:13px 10px 25px!important}
+        }
+        @media(prefers-reduced-motion:reduce){
+            .sidebar .nav-link,.top-sidebar-toggle,.sidebar-icon-button{transition:none!important}
+            .sidebar .nav-link:hover{transform:none}
+        }
+
+</style>
 </head>
-<body style="--accent: {{ $appBranding['primary_color'] ?? '#176B87' }}; --accent-hover: {{ $appBranding['primary_hover'] ?? '#10546B' }};">
+<body class="{{ ($appAppearance['sidebar_visible'] ?? true) ? '' : 'sidebar-hidden' }}" data-sidebar-visible="{{ ($appAppearance['sidebar_visible'] ?? true) ? '1' : '0' }}">
 
 <svg class="icon-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
  <symbol id="icon-layout-dashboard" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="5" rx="1.5"/><rect x="13" y="10" width="8" height="11" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/></symbol>
@@ -1050,6 +1133,7 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
         <span>{{ $appBranding['name'] ?? 'Gestión Docente' }}<small>{{ $appBranding['subtitle'] ?? 'Organización académica' }}</small></span>
     </a>
     <div class="top-actions">
+        <button class="top-sidebar-toggle" type="button" id="sidebar-visibility-toggle" aria-controls="app-sidebar" aria-expanded="{{ ($appAppearance['sidebar_visible'] ?? true) ? 'true' : 'false' }}" aria-label="Mostrar u ocultar menú lateral" title="Mostrar u ocultar menú lateral"><x-icon name="panel-left" size="16" /><span>Menú</span></button>
         <button class="top-theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema" title="Cambiar tema"><x-icon name="moon" size="16" /><span>Modo oscuro</span></button>
         <a class="top-user" href="{{ route('profile.edit') }}">{{ auth()->user()->name ?? '' }} · Mi perfil</a>
         <button class="top-help" type="button" data-modal-open="workflow-help-dialog"><x-icon name="circle-help" size="15" /> Ayuda</button>
@@ -1076,6 +1160,9 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
                 </a>
 
                 <div class="nav-label nav-section-label">Mi cuenta</div>
+                <a class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}" href="{{ route('admin.settings.edit') }}" title="Ajustes de interfaz">
+                    <x-icon name="settings" /><span>Ajustes</span>
+                </a>
                 <a class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}" href="{{ route('profile.edit') }}" title="Mi perfil">
                     <x-icon name="user-round" /><span>Mi perfil</span>
                 </a>
@@ -1088,24 +1175,12 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
                     <a class="nav-link {{ request()->routeIs('admin.audit.*') ? 'active' : '' }}" href="{{ route('admin.audit.index') }}" title="Auditoría">
                         <x-icon name="history" /><span>Auditoría</span>
                     </a>
-                    <a class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}" href="{{ route('admin.settings.edit') }}" title="Ajustes del sistema">
-                        <x-icon name="settings" /><span>Ajustes del sistema</span>
-                    </a>
                 @endif
             </nav>
 
-            <div class="sidebar-preferences">
-                <div class="sidebar-width-setting">
-                    <label for="sidebar-width">Ancho del menú</label>
-                    <div class="sidebar-width-row">
-                        <input type="range" id="sidebar-width" min="200" max="330" step="10" value="250" aria-label="Cambiar ancho del menú">
-                        <output id="sidebar-width-value" for="sidebar-width">250 px</output>
-                    </div>
-                </div>
-                <button class="sidebar-preference-button" type="button" id="theme-toggle" data-theme-toggle aria-pressed="false">
-                    <x-icon name="moon" size="16" /><span id="theme-toggle-label">Modo oscuro</span>
-                    <small id="theme-toggle-state">Desactivado</small>
-                </button>
+            <div class="sidebar-footer">
+                <span class="sidebar-footer-mark">{{ $appBranding['short_name'] ?? 'GD' }}</span>
+                <span><strong>{{ $appBranding['name'] ?? 'Gestión Docente' }}</strong><small>Espacio académico</small></span>
             </div>
         </div>
     </aside>
@@ -1193,25 +1268,13 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
     const root = document.documentElement;
     const body = document.body;
     const collapseButton = document.getElementById('sidebar-collapse');
-    const widthInput = document.getElementById('sidebar-width');
-    const widthOutput = document.getElementById('sidebar-width-value');
+    const visibilityButton = document.getElementById('sidebar-visibility-toggle');
     const themeButtons = [...document.querySelectorAll('[data-theme-toggle]')];
 
     const storage = {
         get(key, fallback) { try { return localStorage.getItem(key) ?? fallback; } catch (_) { return fallback; } },
         set(key, value) { try { localStorage.setItem(key, value); } catch (_) {} }
     };
-
-    const savedWidth = Math.min(330, Math.max(200, Number(storage.get('gd-sidebar-width', '250')) || 250));
-    root.style.setProperty('--sidebar-width', savedWidth + 'px');
-    if (widthInput) widthInput.value = String(savedWidth);
-    if (widthOutput) widthOutput.value = savedWidth + ' px';
-    widthInput?.addEventListener('input', () => {
-        const width = Math.min(330, Math.max(200, Number(widthInput.value) || 250));
-        root.style.setProperty('--sidebar-width', width + 'px');
-        if (widthOutput) widthOutput.value = width + ' px';
-        storage.set('gd-sidebar-width', String(width));
-    });
 
     const setCollapsed = collapsed => {
         body.classList.toggle('sidebar-collapsed', collapsed);
@@ -1224,6 +1287,18 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
     };
     setCollapsed(storage.get('gd-sidebar-collapsed', '0') === '1');
     collapseButton?.addEventListener('click', () => setCollapsed(!body.classList.contains('sidebar-collapsed')));
+
+    const setSidebarVisible = visible => {
+        body.classList.toggle('sidebar-hidden', !visible);
+        if (visibilityButton) {
+            visibilityButton.setAttribute('aria-expanded', visible ? 'true' : 'false');
+            visibilityButton.setAttribute('aria-label', visible ? 'Ocultar menú lateral' : 'Mostrar menú lateral');
+            visibilityButton.title = visible ? 'Ocultar menú lateral' : 'Mostrar menú lateral';
+        }
+    };
+    visibilityButton?.addEventListener('click', () => {
+        setSidebarVisible(body.classList.contains('sidebar-hidden'));
+    });
 
     const setTheme = dark => {
         root.dataset.theme = dark ? 'dark' : 'light';
