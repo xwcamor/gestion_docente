@@ -28,8 +28,8 @@
         <a class="btn btn-secondary" href="{{ route('cycles.tree', $group->cycle) }}"><x-icon name="git-branch" /> Árbol</a>
         <a class="btn btn-secondary" href="{{ route('groups.calendar', $group) }}"><x-icon name="calendar-days" /> Calendario</a>
         <button class="btn btn-secondary" type="button" data-modal-open="group-edit-dialog"><x-icon name="edit-3" /> Editar grupo</button>
-        <a class="btn btn-secondary" href="#group-courses"><x-icon name="book-open" /> Cursos y mallas</a>
-        <a class="btn" href="#group-roster"><x-icon name="users" /> Alumnos</a>
+        <a class="btn btn-secondary" href="{{ route('groups.show', ['group' => $group, 'panel' => 'courses']) }}#group-courses"><x-icon name="book-open" /> Cursos y mallas</a>
+        <a class="btn" href="{{ route('groups.show', ['group' => $group, 'panel' => 'students']) }}#group-roster"><x-icon name="users" /> Alumnos</a>
     </div>
 </div>
 
@@ -202,7 +202,7 @@
     </div>
 </details>
 
-<details class="card group-panel" id="group-roster" data-group-panel @if(request('edit_student') || request('dialog') === 'student-create') open @endif>
+<details class="card group-panel" id="group-roster" data-group-panel @if(request('edit_student') || request('dialog') === 'student-create' || request('panel') === 'students') open @endif>
     <summary class="group-panel-summary">
         <span class="group-panel-icon"><x-icon name="users" /></span>
         <span class="group-panel-title">
@@ -375,7 +375,7 @@
     </form>
 </dialog>
 
-<details class="card group-panel" id="group-courses" data-group-panel @if(request()->filled('edit_course') || old('course_id')) open @endif>
+<details class="card group-panel" id="group-courses" data-group-panel @if(request()->filled('edit_course') || old('course_id') || request('panel') === 'courses') open @endif>
     <summary class="group-panel-summary">
         <span class="group-panel-icon"><x-icon name="book-open" /></span>
         <span class="group-panel-title">
