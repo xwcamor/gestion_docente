@@ -18,6 +18,7 @@ class WorkloadTreeController extends Controller
     {
         $this->authorizeCycle($cycle);
 
+        $cycleGroupCount = $cycle->groups()->count();
         $term = trim((string) $request->query('q', ''));
         $groupsQuery = $cycle->groups()
             ->withCount(['assignments', 'students'])
@@ -41,13 +42,14 @@ class WorkloadTreeController extends Controller
 
         $groups = $groupsQuery->get();
 
-        return view('cycles.tree.index', compact('cycle', 'groups', 'term'));
+        return view('cycles.tree.index', compact('cycle', 'groups', 'term', 'cycleGroupCount'));
     }
 
     public function groups(Cycle $cycle, Request $request)
     {
         $this->authorizeCycle($cycle);
 
+        $cycleGroupCount = $cycle->groups()->count();
         $term = trim((string) $request->query('q', ''));
         $query = $cycle->groups()
             ->withCount(['assignments', 'students'])
@@ -71,7 +73,7 @@ class WorkloadTreeController extends Controller
 
         $groups = $query->get();
 
-        return view('cycles.tree.groups', compact('cycle', 'groups'));
+        return view('cycles.tree.groups', compact('cycle', 'groups', 'cycleGroupCount'));
     }
 
     public function courses(TeachingGroup $group, Request $request)
