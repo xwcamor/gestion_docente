@@ -19,19 +19,35 @@
                  data-tree-loaded="0">
             <summary class="workload-tree-summary workload-group-summary" data-select-group>
                 <span class="tree-expand-symbol" aria-hidden="true"><x-icon name="chevron-right" size="17" /></span>
-                <span class="tree-node-icon tree-group-icon"><x-icon name="folder-open" size="25" /></span>
+                <span class="tree-node-icon tree-group-icon"><x-icon name="folder-open" size="23" /></span>
                 <span class="tree-node-copy">
-                    <strong><span data-inline-text data-edit-field="name" data-edit-label="Nombre del grupo" data-edit-url="{{ route('groups.update', $group) }}" data-edit-value="{{ $group->name }}" data-edit-kind="group">{{ $group->name }}</span></strong>
-                    <small>
-                        <span class="tree-meta-item">Código: <span class="tree-inline-editable" data-inline-text data-edit-on-click data-edit-field="code" data-edit-kind="group-code" data-edit-label="Código del grupo" data-edit-url="{{ route('groups.update', $group) }}" data-edit-value="{{ $group->code }}" title="Clic para editar código">{{ $group->code ?: 'Código pendiente (clic para agregar)' }}</span></span>
-                        <span class="tree-meta-separator">·</span>
-                        <span><span data-group-course-count>{{ $group->assignments_count }}</span> <span data-group-course-label>{{ (int) $group->assignments_count === 1 ? 'curso' : 'cursos' }}</span></span>
-                        <span class="tree-meta-separator">·</span>
-                        <span>{{ $group->students_count }} {{ (int) $group->students_count === 1 ? 'alumno' : 'alumnos' }}</span>
-                    </small>
-                    <small>
-                        <x-icon name="graduation-cap" size="13" />
-                        Carrera:
+                    <span class="tree-group-title-row">
+                        <strong><span data-inline-text data-edit-field="name" data-edit-label="Nombre del grupo" data-edit-url="{{ route('groups.update', $group) }}" data-edit-value="{{ $group->name }}" data-edit-kind="group">{{ $group->name }}</span></strong>
+                        <span class="tree-group-counts">
+                            <span class="tree-meta-pill"><span data-group-course-count>{{ $group->assignments_count }}</span> <span data-group-course-label>{{ (int) $group->assignments_count === 1 ? 'curso' : 'cursos' }}</span></span>
+                            <span class="tree-meta-pill">{{ $group->students_count }} {{ (int) $group->students_count === 1 ? 'alumno' : 'alumnos' }}</span>
+                        </span>
+                    </span>
+                    <span class="tree-group-code-row">
+                        <span class="tree-meta-label">Código</span>
+                        <span class="tree-inline-editable" data-inline-text data-edit-on-click data-edit-field="code" data-edit-kind="group-code" data-edit-label="Código del grupo" data-edit-url="{{ route('groups.update', $group) }}" data-edit-value="{{ $group->code }}" title="Clic para editar código">{{ $group->code ?: 'Agregar código' }}</span>
+                    </span>
+                </span>
+                <span class="tree-group-row-actions">
+                    <button class="tree-icon-action tree-group-delete-trigger" type="button"
+                            data-toggle-group-delete
+                            @disabled($cycleGroupCount <= 1)
+                            aria-label="Eliminar grupo"
+                            title="{{ $cycleGroupCount <= 1 ? 'El ciclo debe conservar al menos un grupo' : 'Eliminar grupo' }}">
+                        <x-icon name="trash-2" size="16" />
+                    </button>
+                </span>
+            </summary>
+
+            <div class="workload-tree-children workload-group-children">
+                <section class="tree-group-context" aria-label="Datos académicos del grupo">
+                    <div class="tree-group-context-item">
+                        <span class="tree-group-context-label">Carrera</span>
                         <span class="tree-inline-editable"
                               data-inline-text data-edit-on-click
                               data-edit-field="career" data-edit-kind="group-career"
@@ -40,9 +56,10 @@
                               data-edit-value="{{ $group->career }}"
                               data-edit-response="career"
                               data-group-career-display
-                              title="Clic para editar carrera">{{ $group->career ?: 'Carrera pendiente (clic para agregar)' }}</span>
-                        <span class="tree-meta-separator">·</span>
-                        Semestre:
+                              title="Clic para editar carrera">{{ $group->career ?: 'Agregar carrera' }}</span>
+                    </div>
+                    <div class="tree-group-context-item">
+                        <span class="tree-group-context-label">Semestre</span>
                         <span class="tree-inline-editable"
                               data-inline-text data-edit-on-click
                               data-edit-field="semester" data-edit-kind="group-semester"
@@ -51,25 +68,16 @@
                               data-edit-value="{{ $group->semester }}"
                               data-edit-response="semester"
                               data-group-semester-display
-                              title="Clic para editar semestre">{{ $group->semester ?: 'Semestre pendiente (clic para agregar)' }}</span>
-                    </small>
-                    <small>
-                        <x-icon name="clock" size="13" />
-                        Horario: {{ $scheduleLabel ?: 'Pendiente de configurar' }}
-                    </small>
-                </span>
-                <span class="tree-group-row-actions">
-                    <button class="tree-icon-action tree-group-delete-trigger" type="button"
-                            data-toggle-group-delete
-                            @disabled($cycleGroupCount <= 1)
-                            aria-label="Eliminar grupo"
-                            title="{{ $cycleGroupCount <= 1 ? 'El ciclo debe conservar al menos un grupo' : 'Eliminar grupo' }}">
-                        <x-icon name="x" size="18" />
-                    </button>
-                </span>
-            </summary>
+                              title="Clic para editar semestre">{{ $group->semester ?: 'Agregar semestre' }}</span>
+                    </div>
+                    <div class="tree-group-context-item tree-group-schedule-item">
+                        <span class="tree-group-context-label">Horario del grupo</span>
+                        <span class="{{ $scheduleLabel ? 'tree-group-schedule-value' : 'tree-group-schedule-pending' }}">
+                            {{ $scheduleLabel ?: 'Todavía no configurado' }}
+                        </span>
+                    </div>
+                </section>
 
-            <div class="workload-tree-children workload-group-children">
                 <div class="tree-delete-confirm tree-group-delete-confirm" data-group-delete-confirm hidden>
                     <p><strong>¿Eliminar Grupo {{ $group->name }}?</strong> Se retirarán sus cursos, modalidades, horarios y documentos asociados.</p>
                     <form method="POST" action="{{ route('groups.destroy', $group) }}" data-tree-delete-group>
