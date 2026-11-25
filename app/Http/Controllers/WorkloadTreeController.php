@@ -84,7 +84,7 @@ class WorkloadTreeController extends Controller
 
         $term = trim((string) $request->query('q', ''));
         $query = $group->assignments()
-            ->with(['course', 'modalities' => fn ($modalities) => $modalities->with('schedules')->withCount('documents')])
+            ->with(['group', 'course', 'modalities' => fn ($modalities) => $modalities->with('schedules')->withCount('documents')])
             ->withCount('modalities')
             ->orderBy('id');
 
