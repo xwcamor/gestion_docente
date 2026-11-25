@@ -131,6 +131,7 @@ class CourseModalityController extends Controller
             'schedules.*.end_time' => 'nullable|date_format:H:i',
             'schedules.*.classroom' => 'nullable|string|max:100',
             'schedules.*.instruction_type' => 'nullable|in:THEORY,LAB',
+            'schedules.*.repeat_interval_weeks' => 'nullable|integer|min:1|max:52',
             // Compatibilidad temporal con el formulario anterior.
             'days' => 'nullable|array',
             'days.*' => 'integer|min:1|max:7',
@@ -184,6 +185,7 @@ class CourseModalityController extends Controller
                         'end_time' => $schedule['end_time'],
                         'classroom' => $schedule['classroom'] ?? null,
                         'instruction_type' => $schedule['instruction_type'] ?? 'THEORY',
+                        'repeat_interval_weeks' => (int) ($schedule['repeat_interval_weeks'] ?? 1),
                     ];
                 }
             }
@@ -195,6 +197,7 @@ class CourseModalityController extends Controller
                     'end_time' => $data['end_time'],
                     'classroom' => $data['classroom'] ?? null,
                     'instruction_type' => 'THEORY',
+                    'repeat_interval_weeks' => 1,
                 ];
             }
         }
@@ -213,6 +216,7 @@ class CourseModalityController extends Controller
 
         $weeklyMinutes = collect($normalizedSchedules)->sum(
             fn ($schedule) => max(0, (strtotime($schedule['end_time']) - strtotime($schedule['start_time'])) / 60)
+                / max(1, (int) ($schedule['repeat_interval_weeks'] ?? 1))
         );
         $weeklyHours = round($weeklyMinutes / 60, 2);
 
