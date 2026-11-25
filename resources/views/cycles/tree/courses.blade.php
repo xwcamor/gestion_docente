@@ -54,7 +54,8 @@
                      data-active-url="{{ $modality ? route('workload-tree.modalities.active', $modality) : '' }}"
                      data-schedule-label="{{ $classSchedules->isNotEmpty() ? $daysLabel.' · '.$scheduleLabel.' · '.number_format((float) $modality->total_hours, 2).' h/sem.' : 'Horario pendiente' }}"
                      data-has-schedule="{{ $classSchedules->isNotEmpty() ? '1' : '0' }}"
-                     data-modality-url="{{ $modality ? route('modalities.show', $modality) : '' }}">
+                     data-modality-url="{{ $modality ? route('modalities.show', $modality) : '' }}"
+                     data-store-url="{{ route('workload-tree.modalities.store', ['assignment' => $assignment, 'type' => $type]) }}">
                 </div>
             @endforeach
         </div>
