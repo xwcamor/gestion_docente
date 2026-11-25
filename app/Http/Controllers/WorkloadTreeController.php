@@ -245,6 +245,7 @@ class WorkloadTreeController extends Controller
             'message' => 'Curso agregado al grupo.',
             'group_id' => $group->id,
             'assignment_id' => $result['assignment']->id,
+            'assignments_count' => $group->assignments()->count(),
             'course_name' => $result['course']->name,
             'created_modalities' => $result['created_modalities'],
             'warnings' => $calendarWarnings,
@@ -289,18 +290,26 @@ class WorkloadTreeController extends Controller
         ]);
 
         $calendarUpdated = false;
+        $calendarWarning = null;
         if ($startDate && $endDate && $modality->schedules()->where('block_type', 'CLASS')->exists()) {
-            $calendar->rebuild($modality->fresh());
-            $calendarUpdated = true;
+            try {
+                $calendar->rebuild($modality->fresh());
+                $calendarUpdated = true;
+            } catch (\Throwable $exception) {
+                report($exception);
+                $calendarWarning = 'Las fechas se guardaron, pero el calendario no pudo recalcularse. Revisa el horario de esta modalidad.';
+            }
         }
 
         return response()->json([
-            'message' => $calendarUpdated
-                ? 'Fechas guardadas y calendario actualizado.'
-                : 'Fechas guardadas. El calendario se generará cuando exista un horario completo.',
+            'message' => $calendarWarning
+                ?: ($calendarUpdated
+                    ? 'Fechas guardadas y calendario actualizado.'
+                    : 'Fechas guardadas. El calendario se generará cuando exista un horario completo.'),
             'start_date' => $modality->start_date?->toDateString(),
             'end_date' => $modality->end_date?->toDateString(),
             'calendar_updated' => $calendarUpdated,
+            'warning' => $calendarWarning,
         ]);
     }
 
