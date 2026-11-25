@@ -104,8 +104,9 @@ html[data-theme="dark"] .tree-course-status.is-pending{color:#f1d49a}
  .workload-tree-children{margin-left:14px;padding-left:9px;padding-right:7px}
  .workload-group-children,.workload-course-children{margin-left:8px;padding-left:8px}
  .workload-tree-actions .btn{flex:1 1 auto}
- .workload-tree-add-course{position:static;display:inline-flex;align-items:center;justify-content:center;margin:8px 10px 9px;min-height:38px}
- .workload-tree-group-shell .workload-group-summary{padding-right:12px}
+ .workload-tree-add-course{position:absolute;top:8px;right:8px;display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;min-height:36px;padding:8px;margin:0}
+ .workload-tree-add-course span{display:none}
+ .workload-tree-group-shell .workload-group-summary{padding-right:54px}
  .tree-course-components{gap:3px}
  .tree-component-chip{padding:4px 5px;font-size:8px}
  .tree-add-modality{width:100%;margin:4px 0 0}
@@ -121,7 +122,8 @@ html[data-theme="dark"] .tree-course-status.is-pending{color:#f1d49a}
  .tree-node-copy strong{font-size:11px}
  .tree-node-copy small{font-size:9px}
  .tree-course-status{font-size:8px;padding:4px 5px}
- .tree-course-components{display:none}
+ .tree-course-components{display:flex}
+ .tree-course-status{display:none}
  .workload-tree-modality{gap:7px}
  .tree-open-modality{margin-left:49px}
 }
