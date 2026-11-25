@@ -115,6 +115,6 @@
     <div class="tree-empty-child">
         <x-icon name="folder-open" size="34" />
         <strong>Todavía no hay grupos</strong>
-        <span>Crea el primero desde el campo superior.</span>
+        <span>Usa la fila ＋ Agregar grupo que aparece debajo del árbol.</span>
     </div>
 @endforelse
