@@ -29,9 +29,27 @@
                     </small>
                     <small>
                         <x-icon name="graduation-cap" size="13" />
-                        Carrera: <span data-cycle-career-display>{{ $cycle->career ?: 'Pendiente' }}</span>
+                        Carrera:
+                        <span class="tree-inline-editable"
+                              data-inline-text data-edit-on-click
+                              data-edit-field="career" data-edit-kind="group-career"
+                              data-edit-label="Carrera del grupo"
+                              data-edit-url="{{ route('workload-tree.groups.context', $group) }}"
+                              data-edit-value="{{ $group->career }}"
+                              data-edit-response="career"
+                              data-group-career-display
+                              title="Clic para editar carrera">{{ $group->career ?: 'Carrera pendiente (clic para agregar)' }}</span>
                         <span class="tree-meta-separator">·</span>
-                        Semestre: <span data-cycle-semester-display>{{ $cycle->semester ?: '—' }}</span>
+                        Semestre:
+                        <span class="tree-inline-editable"
+                              data-inline-text data-edit-on-click
+                              data-edit-field="semester" data-edit-kind="group-semester"
+                              data-edit-label="Semestre del grupo"
+                              data-edit-url="{{ route('workload-tree.groups.context', $group) }}"
+                              data-edit-value="{{ $group->semester }}"
+                              data-edit-response="semester"
+                              data-group-semester-display
+                              title="Clic para editar semestre">{{ $group->semester ?: 'Semestre pendiente (clic para agregar)' }}</span>
                     </small>
                     <small>
                         <x-icon name="clock" size="13" />
