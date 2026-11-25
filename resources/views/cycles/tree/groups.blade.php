@@ -17,7 +17,7 @@
             <summary class="workload-tree-summary workload-group-summary" data-select-group>
                 <span class="tree-expand-symbol" aria-hidden="true">
                     <span data-tree-collapsed><x-icon name="plus" size="17" /></span>
-                    <span data-tree-expanded><x-icon name="minus" size="17" /></span>
+                    <span data-tree-expanded>−</span>
                 </span>
                 <span class="tree-node-icon tree-group-icon"><x-icon name="folder-open" size="25" /></span>
                 <span class="tree-node-copy">
@@ -46,7 +46,7 @@
                             @disabled($cycleGroupCount <= 1)
                             aria-label="Eliminar grupo"
                             title="{{ $cycleGroupCount <= 1 ? 'El ciclo debe conservar al menos un grupo' : 'Eliminar grupo' }}">
-                        <x-icon name="trash-2" size="18" />
+                        <x-icon name="x" size="18" />
                     </button>
                 </span>
             </summary>
@@ -68,7 +68,7 @@
                       data-group-id="{{ $group->id }}">
                     @csrf
                     <label class="tree-course-name-input">
-                        <span><x-icon name="plus-circle" size="17" /> Agregar curso al grupo</span>
+                        <span><x-icon name="plus" size="17" /> Agregar curso al grupo</span>
                         <input class="field" name="course_name" maxlength="255" required placeholder="Escribe el nombre del curso…">
                     </label>
                     <fieldset class="tree-entry-components">
@@ -97,7 +97,7 @@
     </div>
 @empty
     <div class="tree-empty-child">
-        <x-icon name="folder-plus" size="34" />
+        <x-icon name="folder-open" size="34" />
         <strong>Todavía no hay grupos</strong>
         <span>Crea el primero desde el campo superior.</span>
     </div>
