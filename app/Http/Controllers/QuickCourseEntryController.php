@@ -68,6 +68,7 @@ class QuickCourseEntryController extends Controller
         $created = 0;
         $createdModalities = 0;
         $scheduleBlocks = 0;
+        $calendarModalityIds = [];
         $missingNrc = [];
         $calendarWarnings = [];
 
@@ -79,6 +80,7 @@ class QuickCourseEntryController extends Controller
             &$created,
             &$createdModalities,
             &$scheduleBlocks,
+            &$calendarModalityIds,
             &$missingNrc
         ) {
             foreach ($rows as $index => $row) {
@@ -138,6 +140,15 @@ class QuickCourseEntryController extends Controller
                 $created++;
                 $createdModalities += count($result['created_modalities']);
                 $scheduleBlocks += (int) ($result['schedule_count'] ?? 0);
+                foreach ($result['assignment']->modalities->whereIn('modality', $result['created_modalities']) as $createdModality) {
+                    if (
+                        $createdModality->start_date
+                        && $createdModality->end_date
+                        && $createdModality->schedules->where('block_type', 'CLASS')->isNotEmpty()
+                    ) {
+                        $calendarModalityIds[] = $createdModality->id;
+                    }
+                }
 
                 foreach ($result['missing_nrc'] as $type) {
                     $missingNrc[] = $row['course_name'].' ('.$type.')';
@@ -145,15 +156,7 @@ class QuickCourseEntryController extends Controller
             }
         });
 
-        $calendarModalityIds = CourseModality::query()
-            ->whereHas('assignment', fn ($query) => $query->where('teaching_group_id', $group->id))
-            ->whereIn('modality', ['TEC', 'TALL'])
-            ->whereHas('schedules', fn ($query) => $query->where('block_type', 'CLASS'))
-            ->whereNotNull('start_date')
-            ->whereNotNull('end_date')
-            ->pluck('id');
-
-        foreach ($calendarModalityIds as $modalityId) {
+        foreach (array_unique($calendarModalityIds) as $modalityId) {
             try {
                 $calendar->rebuild(CourseModality::findOrFail($modalityId));
             } catch (\Throwable $exception) {
@@ -384,6 +387,8 @@ class QuickCourseEntryController extends Controller
             'rows.*.course_name' => ['nullable', 'string', 'max:255'],
             'rows.*.tec_code' => ['nullable', 'string', 'max:200'],
             'rows.*.tec_block_code' => ['nullable', 'string', 'max:100'],
+            'rows.*.tec_clear_schedules' => ['nullable', 'boolean'],
+            'rows.*.tall_clear_schedules' => ['nullable', 'boolean'],
             'rows.*.tec_start_date' => ['nullable', 'date'],
             'rows.*.tec_end_date' => ['nullable', 'date'],
             'rows.*.tall_code' => ['nullable', 'string', 'max:200'],
@@ -544,6 +549,17 @@ class QuickCourseEntryController extends Controller
                             $validator->errors()->add(
                                 "rows.{$index}.{$prefix}_schedules.{$scheduleIndex}.end_time",
                                 'La hora final debe ser posterior a la inicial.'
+                            );
+                            continue;
+                        }
+
+                        if (
+                            (int) substr($startTime, 3, 2) % 15 !== 0
+                            || (int) substr($endTime, 3, 2) % 15 !== 0
+                        ) {
+                            $validator->errors()->add(
+                                "rows.{$index}.{$prefix}_schedules.{$scheduleIndex}.start_time",
+                                'Usa intervalos de 15 minutos (por ejemplo, 09:00, 09:15 o 09:30).'
                             );
                             continue;
                         }
