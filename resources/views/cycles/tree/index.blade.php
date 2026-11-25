@@ -621,8 +621,10 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
                     }
 
                     const description = row.querySelector('[data-modality-description]');
-                    if (description && !payload.active) {
-                        description.textContent = 'Modalidad desactivada · Horarios e historial conservados';
+                    if (description) {
+                        description.textContent = payload.active
+                            ? (description.dataset.activeDescription || 'Modalidad activa.')
+                            : 'Modalidad desactivada · Horarios e historial conservados';
                     }
                     const link = row.querySelector('.tree-open-modality');
                     if (link) link.hidden = !payload.active;
