@@ -12,7 +12,11 @@
                         data-course-name="{{ $assignment->course->name }}"
                         data-course-name-url="{{ route('workload-tree.courses.name', $assignment) }}"
                         title="Doble clic para cambiar el nombre. Se actualizará en todos los grupos que usan este curso.">{{ $assignment->course->name }}</strong>
-                <small>{{ $assignment->course->code ?: 'Sin código' }}</small>
+                <small class="tree-inline-code"
+                       data-inline-course-code
+                       data-course-code="{{ $assignment->course->code }}"
+                       data-course-code-url="{{ route('workload-tree.courses.code', $assignment) }}"
+                       title="Doble clic para editar el código institucional. El cambio se comparte con los demás grupos.">{{ $assignment->course->code ?: 'Sin código' }}</small>
             </div>
             <div class="tree-course-components" aria-label="Estado de las modalidades">
                 <span class="tree-component-chip {{ !$tecModality ? 'is-missing' : ($tecModality->active ? 'is-present' : 'is-disabled') }}" data-component-chip="TEC">TEC</span>
