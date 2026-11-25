@@ -33,6 +33,7 @@
                         <strong>{{ $weekdayLabels[$schedule['day_of_week']] ?? '—' }}</strong>
                         {{ $schedule['start_time'] }}–{{ $schedule['end_time'] }}
                         <span>{{ $schedule['instruction_type'] === 'LAB' ? 'Taller' : 'Teoría' }}</span>
+                        @if(($schedule['repeat_interval_weeks'] ?? 1) > 1)<small>Cada {{ $schedule['repeat_interval_weeks'] }} semanas</small>@endif
                         @if($schedule['classroom'])<small>{{ $schedule['classroom'] }}</small>@endif
                     </div>
                 @empty
