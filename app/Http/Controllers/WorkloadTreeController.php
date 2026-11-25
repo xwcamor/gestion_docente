@@ -171,14 +171,10 @@ class WorkloadTreeController extends Controller
             'components.min' => 'Deja al menos una modalidad activa: TEC o TAL.',
         ]);
 
-        $sourceCode = '';
+        // El código escrito en el borrador se conserva tal cual como código base.
+        // El componente se registra por separado y no se concatena al código.
         $baseCode = mb_strtoupper(trim((string) ($data['course_code'] ?? '')));
-        if ($baseCode !== '') {
-            $sourceCode = implode('; ', array_map(
-                fn ($type) => strtoupper($baseCode).'-'.$type,
-                $data['components']
-            ));
-        }
+        $sourceCode = $baseCode;
 
         $component = count($data['components']) === 2 ? 'BOTH' : $data['components'][0];
         $result = $registration->register(
