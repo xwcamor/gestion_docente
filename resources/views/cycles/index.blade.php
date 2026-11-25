@@ -115,7 +115,7 @@
                                         @if($curriculum && $curriculum->is_active)
                                             <div class="tree-curriculum-note">
                                                 <x-icon name="book-check" size="13" />
-                                                **{{ $curriculum->course_name ?: $assignment->course->name }}**
+                                                <strong>{{ $curriculum->course_name ?: $assignment->course->name }}</strong>
                                                 <span>{{ $curriculum->weeks->count() }} semanas · Versión {{ $curriculum->version }}</span>
                                             </div>
                                         @endif
@@ -138,7 +138,11 @@
                                                             Horario pendiente
                                                         @endif
                                                         @if($modality->block_code) · Bloque {{ $modality->block_code }}@endif
+                                                        @if($modality->block_reference) · Ref. {{ $modality->block_reference }}@endif
                                                     </small>
+                                                    @if($modality->documents->isNotEmpty())
+                                                        <small>{{ $modality->documents->count() }} documentos generados</small>
+                                                    @endif
                                                 </div>
                                                 <span class="tree-course-status {{ $modalityReady ? 'is-ready' : 'is-pending' }}">{{ $modalityReady ? 'Configurada' : 'Pendiente' }}</span>
                                                 <a class="btn btn-secondary btn-sm tree-open-modality" href="{{ route('modalities.show', $modality) }}"><x-icon name="arrow-up-right" /> Abrir</a>
