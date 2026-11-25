@@ -148,12 +148,6 @@
 
         /* Escritorio y tablet conservan siempre el menú vertical. */
         @media(min-width:721px){
-            .app-shell,
-            body.sidebar-collapsed .app-shell{
-                display:grid;
-                grid-template-rows:minmax(0,1fr);
-                grid-template-areas:"sidebar main";
-            }
             .app-shell>.sidebar .sidebar-inner{
                 display:flex;
                 flex:1 0 auto;
@@ -192,9 +186,6 @@
                 text-align:left;
             }
             .app-shell>.sidebar .sidebar-footer{display:flex}
-            body.sidebar-collapsed .app-shell{
-                grid-template-columns:84px minmax(0,1fr);
-            }
         }
 
         /* Móvil: menú cerrado fuera del flujo; abierto como panel superpuesto. */
