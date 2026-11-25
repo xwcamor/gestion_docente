@@ -55,7 +55,7 @@
             <div>
                 <strong>Pega el alias completo</strong>
                 <p>Ejemplo: <code>202620-PIAD-224-TEC-NRC_11523: SISTEMAS OPERATIVOS Y COMUNICACIÓN DE DATOS</code></p>
-                <p>Se completarán automáticamente el nombre, el código base, TEC/TALL y el NRC. El bloque institucional, ambiente y horario se pueden añadir debajo.</p>
+                <p>Se completarán automáticamente el nombre, el código base, TEC/TALL y el NRC. Los códigos y referencias de bloque, fechas y horarios se configuran debajo.</p>
             </div>
         </div>
 
@@ -87,6 +87,7 @@
                             @foreach(['TEC' => 'tec', 'TALL' => 'tall'] as $type => $prefix)
                                 @php($codeField = $prefix.'_code')
                                 @php($blockField = $prefix.'_block_code')
+                                @php($blockReferenceField = $prefix.'_block_reference')
                                 @php($scheduleField = $prefix.'_schedules')
                                 @php($scheduleRows = $row[$scheduleField] ?? [])
                                 @php($defaultType = $type === 'TEC' ? 'THEORY' : 'LAB')
@@ -107,8 +108,12 @@
                                         </label>
 
                                         <label class="quick-field-label">
-                                            <span>Bloque institucional (opcional)</span>
+                                            <span>Código de bloque (opcional)</span>
                                             <input class="field" name="rows[{{ $index }}][{{ $blockField }}]" value="{{ $row[$blockField] ?? '' }}" maxlength="100" placeholder="Ej. {{ $type }}-01">
+                                        </label>
+                                        <label class="quick-field-label">
+                                            <span>Referencia de bloque (opcional)</span>
+                                            <input class="field" name="rows[{{ $index }}][{{ $blockReferenceField }}]" value="{{ $row[$blockReferenceField] ?? '' }}" maxlength="100" placeholder="Referencia adicional">
                                         </label>
 
                                         <div class="quick-date-fields">
@@ -189,8 +194,12 @@
                                 <small class="quick-code-preview" data-code-preview aria-live="polite"></small>
                             </label>
                             <label class="quick-field-label">
-                                <span>Bloque institucional (opcional)</span>
+                                <span>Código de bloque (opcional)</span>
                                 <input class="field" name="rows[__INDEX__][{{ $prefix }}_block_code]" maxlength="100" placeholder="Ej. {{ $type }}-01">
+                            </label>
+                            <label class="quick-field-label">
+                                <span>Referencia de bloque (opcional)</span>
+                                <input class="field" name="rows[__INDEX__][{{ $prefix }}_block_reference]" maxlength="100" placeholder="Referencia adicional">
                             </label>
                             <div class="quick-date-fields">
                                 <label class="quick-field-label"><span>Inicio</span><input class="field" type="date" name="rows[__INDEX__][{{ $prefix }}_start_date]"></label>
