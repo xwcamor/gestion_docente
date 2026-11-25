@@ -14,10 +14,6 @@
             <div class="workload-tree-children workload-group-children">
                 <div class="workload-tree-group-actions">
                     <a class="btn btn-ghost btn-sm" href="{{ route('groups.show', $group) }}"><x-icon name="graduation-cap" /> Gestión académica</a>
-                    <a class="btn btn-ghost btn-sm" href="{{ route('groups.calendar', $group) }}"><x-icon name="calendar-days" /> Calendario</a>
-                    @if($group->students_count > 0)
-                        <a class="btn btn-ghost btn-sm" href="{{ route('groups.show', $group) }}?talks=1#group-talks"><x-icon name="message-circle" /> Charla 5 min</a>
-                    @endif
                 </div>
                 <div data-tree-content>
                     <div class="tree-loading-state">Despliega el grupo para consultar sus cursos.</div>
