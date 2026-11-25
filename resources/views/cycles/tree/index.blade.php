@@ -37,7 +37,7 @@
             @csrf
             <input type="hidden" name="return_to_tree" value="1">
             <label>
-                <span><x-icon name="folder-plus" size="19" /> Nombre del grupo</span>
+                <span><x-icon name="folder-open" size="19" /> Nombre del grupo</span>
                 <input class="field" name="name" maxlength="100" required placeholder="Ej. Grupo 01">
             </label>
             <label>
