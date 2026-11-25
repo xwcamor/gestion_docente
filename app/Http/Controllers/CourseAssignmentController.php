@@ -8,6 +8,7 @@ use App\Models\CourseModality;
 use App\Models\TeachingGroup;
 use App\Models\GeneratedDocument;
 use App\Models\ImportBatch;
+use App\Models\Curriculum;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use App\Services\CalendarService;
@@ -100,14 +101,32 @@ class CourseAssignmentController extends Controller
             ->whereIn('course_modality_id', $modalityIds)
             ->pluck('stored_path');
 
-        DB::transaction(fn () => $assignment->delete());
+        $courseId = (int) $assignment->course_id;
+
+        DB::transaction(function () use ($assignment, $courseId) {
+            $assignment->delete();
+
+            // La malla pertenece al curso del catálogo y se conserva como historial.
+            // Si ya no queda ninguna asignación del curso en ningún grupo, se archiva
+            // para que una futura alta no la vincule automáticamente.
+            $hasOtherAssignments = CourseAssignment::query()
+                ->where('course_id', $courseId)
+                ->exists();
+
+            if (!$hasOtherAssignments) {
+                Curriculum::query()
+                    ->where('course_id', $courseId)
+                    ->where('is_active', true)
+                    ->update(['is_active' => false]);
+            }
+        });
 
         Storage::disk('local')->delete(
             $generatedPaths->merge($importPaths)->filter()->unique()->values()->all()
         );
 
         return redirect()->route('groups.show', $group)
-            ->with('success', 'Curso retirado de este grupo. El registro del catálogo se conserva para reutilizarlo en otros grupos o ciclos.');
+            ->with('success', 'Curso retirado del grupo. Si ya no está asignado en otros grupos, su malla pasa al historial y no se volverá a vincular automáticamente. Las versiones históricas se conservan.');
     }
 
     private function authorizeGroup(TeachingGroup $group): void
