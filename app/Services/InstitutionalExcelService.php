@@ -37,7 +37,8 @@ class InstitutionalExcelService
         $sessions = $modality->sessions()->with([
             'curriculumWeek.task.operations',
             'curriculumWeek.contentItems',
-        ])->orderBy('session_date')->orderBy('session_number')->get();
+        ])->whereNotIn('status', ['holiday', 'cancelled'])
+            ->orderBy('session_date')->orderBy('session_number')->get();
 
         if ($sessions->isEmpty()) {
             $sheet = $spreadsheet->getActiveSheet();
@@ -87,13 +88,12 @@ class InstitutionalExcelService
         }
 
         $assignment = $modality->assignment;
-        $curriculum = $assignment->curriculum
-            ?: $assignment->course->curricula->firstWhere('is_active', true);
+        $curriculum = $assignment->curriculum;
         $weeks = $curriculum
             ? $curriculum->weeks()->with(['task.operations', 'contentItems'])->orderBy('week_number')->get()
             : collect();
 
-        $sessions = $modality->sessions()->orderBy('session_date')->get();
+        $sessions = $modality->sessions()->whereNotIn('status', ['holiday', 'cancelled'])->orderBy('session_date')->get();
         $output = [];
 
         foreach ($weeks as $week) {
@@ -248,6 +248,7 @@ class InstitutionalExcelService
         $catalogue = json_decode((string) file_get_contents($cataloguePath), true);
         $group->loadMissing(['cycle', 'professor']);
         $talks = $group->fiveMinuteTalks()->whereNotNull('scheduled_date')->orderBy('scheduled_date')->orderBy('position')->get();
+        $participantCount = (int) $group->students()->count();
 
         $programs = $group->assignments()
             ->with('course')
@@ -267,15 +268,13 @@ class InstitutionalExcelService
         foreach ($talks as $talk) {
             $this->setText($sheet, 'C'.$row, implode(', ', $programs) ?: ($group->professor->career ?? ''));
             $this->setText($sheet, 'D'.$row, $group->name);
-            if ($talk->participant_count !== null) {
-                $sheet->setCellValue('E'.$row, $talk->participant_count);
-            }
+            $sheet->setCellValue('E'.$row, $participantCount);
             if ($talk->scheduled_date) {
                 $sheet->setCellValue('F'.$row, ExcelDate::PHPToExcel($talk->scheduled_date->copy()->startOfDay()));
                 $sheet->getStyle('F'.$row)->getNumberFormat()->setFormatCode('dd/mm/yyyy');
             }
             $this->setText($sheet, 'G'.$row, $talk->topic);
-            $observation = $talk->status === 'done' ? 'Realizado' : 'Pendiente';
+            $observation = $talk->status === 'done' ? 'Dictado' : 'Pendiente';
             if (filled($talk->observations)) {
                 $observation .= ' · '.$talk->observations;
             }
