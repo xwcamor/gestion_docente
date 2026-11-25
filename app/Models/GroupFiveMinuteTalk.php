@@ -12,6 +12,7 @@ class GroupFiveMinuteTalk extends Model
         'topic',
         'scheduled_date',
         'status',
+        'status_source',
         'participant_count',
         'observations',
         'position',
