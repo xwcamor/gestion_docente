@@ -10,14 +10,14 @@
         <article class="workload-tree-modality {{ $modality->active ? 'is-active' : 'is-disabled' }}"
                  data-modality-row data-modality-type="{{ $type }}" data-modality-id="{{ $modality->id }}" data-active="{{ $modality->active ? '1' : '0' }}" data-active-description="{{ $enabledDescription }}">
             <span class="tree-branch-mark"></span>
-            <span class="tree-modality-tag {{ $type === 'TEC' ? 'is-tec' : 'is-tall' }}">{{ $type === 'TEC' ? 'TEC' : 'TAL' }}</span>
+            <span class="tree-modality-tag {{ $type === 'TEC' ? 'is-tec' : 'is-tall' }}"><x-icon name="{{ $type === 'TEC' ? 'file-text' : 'flask-conical' }}" size="18" />{{ $type === 'TEC' ? 'TEC' : 'TAL' }}</span>
             <div class="tree-modality-copy">
                 <strong>{{ $label }} · NRC
                     @if($modality->active)
                         <span class="tree-inline-nrc"
                               data-inline-nrc
                               data-nrc-url="{{ route('workload-tree.modalities.nrc', $modality) }}"
-                              data-nrc="{{ $modality->nrc }}"
+                              data-nrc="{{ $modality->nrc }}" data-modality-id="{{ $modality->id }}"
                               title="Doble clic para editar">{{ $modality->nrc ?: 'NRC pendiente' }}</span>
                     @else
                         <span class="tree-disabled-value">{{ $modality->nrc ?: 'NRC pendiente' }}</span>
@@ -28,7 +28,7 @@
                            data-modality-dates
                            data-dates-url="{{ route('workload-tree.modalities.dates', $modality) }}"
                            data-start-date="{{ $modality->start_date?->toDateString() }}"
-                           data-end-date="{{ $modality->end_date?->toDateString() }}"
+                           data-end-date="{{ $modality->end_date?->toDateString() }}"\n                           data-modality-id="{{ $modality->id }}"
                        @endif>
                     Inicio:
                     @if($modality->active)
@@ -100,7 +100,7 @@
                     data-group-id="{{ $assignment->group->id }}"
                     data-course-code="{{ $assignment->course->code }}"
                     data-course-name="{{ $assignment->course->name }}"
-                    data-component="{{ $type }}">
+                    data-component="{{ $type }}"\n                    data-store-url="{{ route('workload-tree.modalities.store', ['assignment' => $assignment, 'type' => $type]) }}">
                 <x-icon name="plus" size="13" /> Agregar {{ $type === 'TEC' ? 'TEC' : 'TAL' }}
             </button>
         </div>
