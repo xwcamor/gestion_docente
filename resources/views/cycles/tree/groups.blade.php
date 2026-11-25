@@ -64,7 +64,7 @@
                     <div class="tree-loading-state">Despliega el grupo para cargar sus cursos.</div>
                 </div>
 
-                <form class="tree-course-entry-form tree-course-draft-form" method="POST"
+                <form class="tree-course-draft-form" method="POST"
                       action="{{ route('workload-tree.courses.store', $group) }}"
                       data-tree-course-form
                       data-group-id="{{ $group->id }}"
@@ -72,34 +72,21 @@
                     @csrf
                     <div class="tree-draft-heading">
                         <strong><x-icon name="book-open" size="16" /> Nuevo curso</strong>
-                        <span>Borrador · todavía no está guardado</span>
+                        <span>TEC + TAL activos por defecto</span>
                     </div>
                     <div class="tree-draft-fields">
                         <label class="tree-course-name-input">
                             <span>Nombre del curso</span>
                             <input class="field" name="course_name" maxlength="255" required placeholder="Ej. Desarrollo de Aplicaciones Web">
                         </label>
-                        <label class="tree-course-name-input">
-                            <span>Código (opcional)</span>
-                            <input class="field" name="course_code" maxlength="80" placeholder="Código institucional">
-                        </label>
                     </div>
-                    <fieldset class="tree-entry-components">
-                        <legend>Componentes</legend>
-                        <label class="tree-component-option is-tec">
-                            <input type="checkbox" name="components[]" value="TEC" data-course-component checked>
-                            <span>TEC</span><small>Teoría</small>
-                        </label>
-                        <label class="tree-component-option is-tall">
-                            <input type="checkbox" name="components[]" value="TALL" data-course-component>
-                            <span>TAL</span><small>Taller</small>
-                        </label>
-                    </fieldset>
-                    <div class="tree-course-create-footer">
-                        <small>Selecciona al menos un componente. NRC, fechas y horario se completan después.</small>
+                    <input type="hidden" name="components[]" value="TEC">
+                    <input type="hidden" name="components[]" value="TALL">
+                    <div class="tree-draft-footer">
+                        <span class="tree-draft-note">Se crearán ambos componentes activos. Puedes desactivar uno después.</span>
                         <div>
-                            <button class="btn btn-ghost tree-draft-cancel" type="button" data-cancel-course-draft>Cancelar</button>
-                            <button class="btn tree-course-create-button" type="submit" data-course-submit><x-icon name="check" size="16" /> Guardar curso</button>
+                            <button class="btn btn-ghost" type="button" data-cancel-course-draft>Cancelar</button>
+                            <button class="btn" type="submit" data-course-submit><x-icon name="check" size="16" /> Guardar curso</button>
                         </div>
                     </div>
                     <div class="tree-course-entry-error" data-course-form-error hidden role="alert"></div>
