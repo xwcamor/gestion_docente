@@ -13,8 +13,8 @@
             <p class="eyebrow"><x-icon name="git-branch" size="16" /> ORGANIZACIÓN ACADÉMICA</p>
             <h1>{{ $cycle->academic_year }} <span>· Ciclo {{ $cycle->cycle_code }}</span></h1>
             <div class="workload-tree-context">
-                <span><x-icon name="graduation-cap" size="16" /> {{ $cycle->career ?: 'Carrera pendiente' }}</span>
-                <span><x-icon name="layers" size="16" /> Semestre {{ $cycle->semester ?: '—' }}</span>
+                <span><x-icon name="graduation-cap" size="16" /> <span class="tree-cycle-inline" data-inline-cycle data-edit-on-click data-edit-field="career" data-edit-label="Nombre de la carrera" data-edit-url="{{ route('workload-tree.cycles.context', $cycle) }}" data-edit-value="{{ $cycle->career }}" data-edit-response="career" title="Clic para editar">{{ $cycle->career ?: 'Carrera pendiente' }}</span></span>
+                <span><x-icon name="layers" size="16" /> Semestre <span class="tree-cycle-inline" data-inline-cycle data-edit-on-click data-edit-field="semester" data-edit-label="Semestre" data-edit-url="{{ route('workload-tree.cycles.context', $cycle) }}" data-edit-value="{{ $cycle->semester }}" data-edit-response="semester" title="Clic para editar">{{ $cycle->semester ?: '—' }}</span></span>
                 <span><x-icon name="calendar-range" size="16" /> {{ $cycle->start_date?->format('d/m/Y') ?: 'Sin inicio' }} – {{ $cycle->end_date?->format('d/m/Y') ?: 'Sin fin' }}</span>
             </div>
         </div>
@@ -767,7 +767,7 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
 
     document.addEventListener('click', async event => {
         // Doble clic edita los datos y no debe abrir/cerrar el nodo padre.
-        if (event.target.closest('[data-inline-text], [data-inline-nrc], [data-inline-date]')) {
+        if (event.target.closest('[data-inline-text], [data-inline-cycle], [data-inline-nrc], [data-inline-date]')) {
             event.preventDefault();
             event.stopPropagation();
             return;
@@ -965,7 +965,7 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
             node.classList.add('tree-inline-saving');
             try {
                 const payload = await patch(config.url, {[config.field]: value});
-                const saved = config.field === 'name' ? payload.name : payload.code;
+                const saved = config.responseField ? payload[config.responseField] : (config.field === 'name' ? payload.name : payload.code);
                 node.dataset.editValue = saved || '';
                 node.textContent = saved || config.emptyLabel || '';
                 config.onSaved?.(saved, payload);
@@ -1114,42 +1114,68 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
         input.addEventListener('blur', save, {once: true});
     };
 
+    const editTextNode = editable => {
+        if (!editable) return;
+        const group = editable.closest('[data-tree-group-id]');
+        const course = editable.closest('[data-tree-course-item]');
+        const field = editable.dataset.editField;
+        const kind = editable.dataset.editKind || '';
+        startTextEditor(editable, {
+            value: editable.dataset.editValue || '',
+            url: editable.dataset.editUrl,
+            field,
+            label: editable.dataset.editLabel,
+            responseField: editable.dataset.editResponse || '',
+            maxLength: field === 'code' ? 80 : 255,
+            emptyLabel: field === 'code' ? 'Código pendiente (clic para agregar)' : (field === 'career' ? 'Carrera pendiente' : ''),
+            allowEmpty: kind === 'group-code' || kind === 'course-code',
+            onSaved: saved => {
+                if (kind === 'group' || kind === 'group-code') {
+                    if (group) {
+                        if (field === 'name') {
+                            group.dataset.groupName = saved;
+                            group.dataset.groupLabel = 'Grupo ' + saved;
+                        } else {
+                            group.dataset.groupCode = saved || '';
+                        }
+                    }
+                } else if (kind === 'cycle-career' || kind === 'cycle-semester') {
+                    root.querySelectorAll(kind === 'cycle-career' ? '[data-cycle-career-display]' : '[data-cycle-semester-display]').forEach(node => {
+                        node.textContent = saved || (kind === 'cycle-career' ? 'Pendiente' : '—');
+                    });
+                } else if (course) {
+                    course.dataset[field === 'name' ? 'courseName' : 'courseCode'] = saved || '';
+                    if (kind === 'course-name') {
+                        const title = course.querySelector('.tree-course-delete-confirm p strong');
+                        if (title) title.textContent = '¿Retirar ' + saved + ' de este grupo? Se retirarán sus modalidades y horarios del grupo. El historial curricular se conserva.';
+                    }
+                }
+            }
+        });
+    };
+
+    document.addEventListener('click', event => {
+        const quickEditable = event.target.closest('[data-edit-on-click]');
+        if (quickEditable) {
+            event.preventDefault();
+            event.stopPropagation();
+            editTextNode(quickEditable);
+        }
+    });
+
     document.addEventListener('dblclick', event => {
+        const cycleEditable = event.target.closest('[data-inline-cycle]');
+        if (cycleEditable) {
+            event.preventDefault();
+            event.stopPropagation();
+            editTextNode(cycleEditable);
+            return;
+        }
         const editable = event.target.closest('[data-inline-text]');
         if (editable) {
             event.preventDefault();
             event.stopPropagation();
-            const group = editable.closest('[data-tree-group-id]');
-            const course = editable.closest('[data-tree-course-item]');
-            const field = editable.dataset.editField;
-            const kind = editable.dataset.editKind;
-            startTextEditor(editable, {
-                value: editable.dataset.editValue || '',
-                url: editable.dataset.editUrl,
-                field,
-                label: editable.dataset.editLabel,
-                maxLength: field === 'code' ? 80 : 255,
-                emptyLabel: field === 'code' ? 'Código pendiente (doble clic para agregar)' : '',
-                allowEmpty: kind === 'group-code',
-                onSaved: (saved) => {
-                    if (kind === 'group' || kind === 'group-code') {
-                        if (group) {
-                            if (field === 'name') {
-                                group.dataset.groupName = saved;
-                                group.dataset.groupLabel = 'Grupo ' + saved;
-                            } else {
-                                group.dataset.groupCode = saved || '';
-                            }
-                        }
-                    } else if (course) {
-                        course.dataset[field === 'name' ? 'courseName' : 'courseCode'] = saved || '';
-                        if (kind === 'course-name') {
-                            const title = course.querySelector('.tree-course-delete-confirm p strong');
-                            if (title) title.textContent = '¿Retirar ' + saved + ' de este grupo? Se retirarán sus modalidades y horarios del grupo. El historial curricular se conserva.';
-                        }
-                    }
-                }
-            });
+            editTextNode(editable);
             return;
         }
 
