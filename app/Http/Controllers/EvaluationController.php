@@ -110,7 +110,7 @@ class EvaluationController extends Controller
     private function owned(CourseModality $modality): void
     {
         abort_unless(
-            $modality->assignment()->whereHas('group', fn ($query) => $query->where('professor_id', auth()->user()->professor->id))->exists(),
+            $modality->assignment()->where('active', true)->whereHas('group', fn ($query) => $query->where('professor_id', auth()->user()->professor->id))->exists(),
             404
         );
     }
