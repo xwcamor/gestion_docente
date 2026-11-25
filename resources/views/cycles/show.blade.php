@@ -197,7 +197,13 @@
                 </div>
                 <div>
                     <label for="edit_cycle_semester">Semestre predeterminado para grupos nuevos <span class="muted">*</span></label>
-                    <input class="field" id="edit_cycle_semester" name="semester" maxlength="60" value="{{ old('semester', $cycle->semester) }}" required placeholder="Ej. IV semestre">
+                    @php($selectedCycleSemester = strtoupper(trim(str_ireplace('semestre', '', (string) old('semester', $cycle->semester)))))
+                    <select class="field" id="edit_cycle_semester" name="semester" required>
+                        <option value="">Seleccionar semestre</option>
+                        @foreach(['I', 'II', 'III', 'IV', 'V', 'VI'] as $semesterOption)
+                            <option value="{{ $semesterOption }}" @selected($selectedCycleSemester === $semesterOption)>{{ $semesterOption }}</option>
+                        @endforeach
+                    </select>
                     @error('semester')<p class="field-error">{{ $message }}</p>@enderror
                 </div>
             </div>
