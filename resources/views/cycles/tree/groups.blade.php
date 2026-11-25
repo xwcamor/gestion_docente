@@ -55,6 +55,7 @@
                               data-edit-url="{{ route('workload-tree.groups.context', $group) }}"
                               data-edit-value="{{ $group->career }}"
                               data-edit-response="career"
+                              data-edit-empty-label="Agregar carrera"
                               data-group-career-display
                               title="Clic para editar carrera">{{ $group->career ?: 'Agregar carrera' }}</span>
                     </div>
@@ -68,14 +69,39 @@
                               data-edit-url="{{ route('workload-tree.groups.context', $group) }}"
                               data-edit-value="{{ $group->semester }}"
                               data-edit-response="semester"
+                              data-edit-empty-label="Seleccionar semestre"
                               data-group-semester-display
-                              title="Clic para editar semestre">{{ $group->semester ?: 'Agregar semestre' }}</span>
+                              title="Clic para editar semestre">{{ $group->semester ?: 'Seleccionar semestre' }}</span>
                     </div>
                     <div class="tree-group-context-item tree-group-schedule-item">
                         <span class="tree-group-context-label">Horario del grupo</span>
-                        <span class="{{ $scheduleLabel ? 'tree-group-schedule-value' : 'tree-group-schedule-pending' }}">
-                            {{ $scheduleLabel ?: 'Todavía no configurado' }}
-                        </span>
+                        <div class="tree-group-time-range">
+                            <span class="tree-group-time-unit">
+                                <span class="tree-group-time-label">Desde</span>
+                                <span class="tree-inline-editable"
+                                      data-inline-text data-edit-on-click
+                                      data-edit-field="workload_start_time" data-edit-kind="group-time"
+                                      data-edit-input-type="time" data-edit-label="Hora de inicio del grupo"
+                                      data-edit-url="{{ route('workload-tree.groups.context', $group) }}"
+                                      data-edit-value="{{ $startTime }}"
+                                      data-edit-response="workload_start_time"
+                                      data-edit-empty-label="Agregar hora"
+                                      title="Clic para editar hora de inicio">{{ $startTime ?: 'Agregar hora' }}</span>
+                            </span>
+                            <span class="tree-group-time-unit">
+                                <span class="tree-group-time-label">Hasta</span>
+                                <span class="tree-inline-editable"
+                                      data-inline-text data-edit-on-click
+                                      data-edit-field="workload_end_time" data-edit-kind="group-time"
+                                      data-edit-input-type="time" data-edit-label="Hora de fin del grupo"
+                                      data-edit-url="{{ route('workload-tree.groups.context', $group) }}"
+                                      data-edit-value="{{ $endTime }}"
+                                      data-edit-response="workload_end_time"
+                                      data-edit-empty-label="Agregar hora"
+                                      title="Clic para editar hora de fin">{{ $endTime ?: 'Agregar hora' }}</span>
+                            </span>
+                        </div>
+                        <span class="tree-group-time-help">Pulsa cada hora para configurarla</span>
                     </div>
                 </section>
 
