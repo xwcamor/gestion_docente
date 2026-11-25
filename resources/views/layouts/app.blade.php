@@ -1185,29 +1185,36 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
             .top-account-dropdown{right:0;width:210px}
         }
 
-        /* Layout compartido: el sidebar es fijo y el contenido reserva su ancho explícitamente. */
+        /* Layout definitivo con columnas reales: el sidebar participa en el flujo y el main nunca queda debajo. */
         .app-shell{
-            display:block!important;
-            position:relative!important;
+            display:grid!important;
+            grid-template-columns:var(--sidebar-width,252px) minmax(0,1fr)!important;
+            grid-template-areas:"sidebar main";
+            align-items:start!important;
             width:100%!important;
             min-width:0!important;
             min-height:calc(100vh - 60px);
             min-height:calc(100dvh - 60px);
             margin-top:60px!important;
+            overflow:visible!important;
         }
         .app-shell>.sidebar{
             display:flex!important;
-            position:fixed!important;
+            grid-area:sidebar!important;
+            grid-column:1!important;
+            grid-row:1!important;
+            position:sticky!important;
             top:60px!important;
-            right:auto!important;
-            bottom:0!important;
-            left:0!important;
-            z-index:70!important;
-            width:var(--sidebar-width,252px)!important;
+            inset:auto!important;
+            align-self:start!important;
+            z-index:20!important;
+            width:100%!important;
             min-width:0!important;
-            max-width:var(--sidebar-width,252px)!important;
-            height:auto!important;
-            max-height:none!important;
+            max-width:none!important;
+            height:calc(100vh - 60px)!important;
+            height:calc(100dvh - 60px)!important;
+            max-height:calc(100vh - 60px)!important;
+            max-height:calc(100dvh - 60px)!important;
             margin:0!important;
             padding:16px 12px!important;
             box-sizing:border-box!important;
@@ -1218,44 +1225,71 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
         }
         .app-shell>.main{
             display:block!important;
+            grid-area:main!important;
+            grid-column:2!important;
+            grid-row:1!important;
             position:relative!important;
-            grid-area:auto!important;
-            grid-column:auto!important;
-            grid-row:auto!important;
-            width:calc(100% - var(--sidebar-width,252px))!important;
+            width:100%!important;
             min-width:0!important;
             max-width:none!important;
-            margin:0 0 0 var(--sidebar-width,252px)!important;
+            margin:0!important;
             padding:12px clamp(14px,1.6vw,28px) 24px!important;
             box-sizing:border-box!important;
+            overflow:visible!important;
         }
         .app-shell>.main>.main-content{
-            display:block;
-            width:100%;
-            min-width:0;
-            max-width:none;
-            margin:0;
-            box-sizing:border-box;
+            display:block!important;
+            width:100%!important;
+            min-width:0!important;
+            max-width:none!important;
+            margin:0!important;
+            box-sizing:border-box!important;
+        }
+        body.sidebar-collapsed .app-shell{
+            grid-template-columns:84px minmax(0,1fr)!important;
+            grid-template-areas:"sidebar main";
         }
         body.sidebar-collapsed .app-shell>.sidebar{
-            width:84px!important;
-            min-width:84px!important;
-            max-width:84px!important;
+            width:100%!important;
+            max-width:none!important;
             padding-right:8px!important;
             padding-left:8px!important;
         }
-        body.sidebar-collapsed .app-shell>.main{
-            width:calc(100% - 84px)!important;
-            margin-left:84px!important;
+        body.sidebar-hidden .app-shell{
+            grid-template-columns:minmax(0,1fr)!important;
+            grid-template-areas:"main";
         }
         body.sidebar-hidden .app-shell>.sidebar{display:none!important}
         body.sidebar-hidden .app-shell>.main{
+            grid-area:main!important;
+            grid-column:1!important;
             width:100%!important;
-            margin-left:0!important;
         }
 
-        /* En todo modo web/tablet el menú conserva su columna vertical fija. */
+        /* En escritorio y tablet el sidebar siempre es vertical; nunca salta bajo el topbar. */
         @media(min-width:721px){
+            .app-shell,body.sidebar-collapsed .app-shell{
+                display:grid!important;
+                grid-template-areas:"sidebar main"!important;
+                align-items:start!important;
+            }
+            .app-shell>.sidebar{
+                position:sticky!important;
+                top:60px!important;
+                grid-area:sidebar!important;
+                grid-column:1!important;
+                grid-row:1!important;
+                width:100%!important;
+                height:calc(100dvh - 60px)!important;
+                max-height:calc(100dvh - 60px)!important;
+            }
+            .app-shell>.main{
+                grid-area:main!important;
+                grid-column:2!important;
+                grid-row:1!important;
+                width:100%!important;
+                margin:0!important;
+            }
             .app-shell>.sidebar .sidebar-inner{
                 display:flex!important;
                 flex:1 0 auto!important;
@@ -1287,22 +1321,15 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
                 padding:10px 11px!important;
                 white-space:normal!important;
             }
-            body.sidebar-collapsed .app-shell>.sidebar .sidebar-toolbar{
-                justify-content:center!important;
-            }
+            body.sidebar-collapsed .app-shell>.sidebar .sidebar-toolbar{justify-content:center!important}
             body.sidebar-collapsed .app-shell>.sidebar .sidebar-toolbar-label,
             body.sidebar-collapsed .app-shell>.sidebar .nav-label,
             body.sidebar-collapsed .app-shell>.sidebar .nav-link span,
-            body.sidebar-collapsed .app-shell>.sidebar .sidebar-footer>span:last-child{
-                display:none!important;
-            }
-            body.sidebar-collapsed .app-shell>.sidebar .nav-link{
-                justify-content:center!important;
-                padding:11px 4px!important;
-            }
+            body.sidebar-collapsed .app-shell>.sidebar .sidebar-footer>span:last-child{display:none!important}
+            body.sidebar-collapsed .app-shell>.sidebar .nav-link{justify-content:center!important;padding:11px 4px!important}
         }
 
-        /* En móvil el menú es un cajón superpuesto y no empuja el contenido. */
+        /* En móvil el sidebar es un cajón superpuesto que oculta toda la página al abrirse. */
         .sidebar-mobile-backdrop{display:none}
         @media(max-width:720px){
             .topbar{z-index:120!important}
@@ -1352,9 +1379,9 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
             }
             body.sidebar-mobile-open .app-shell>.sidebar{
                 display:flex!important;
-                transform:translateX(0);
-                visibility:visible;
-                pointer-events:auto;
+                transform:translateX(0)!important;
+                visibility:visible!important;
+                pointer-events:auto!important;
             }
             .app-shell>.sidebar .sidebar-inner,
             body.sidebar-collapsed .app-shell>.sidebar .sidebar-inner{
@@ -1403,10 +1430,7 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
             body.sidebar-collapsed .app-shell>.sidebar .nav-link span{display:inline!important}
             .app-shell>.sidebar .nav-link .icon{width:18px!important;height:18px!important}
             .app-shell>.sidebar .sidebar-preferences,
-            body.sidebar-collapsed .app-shell>.sidebar .sidebar-preferences{
-                display:grid!important;
-                margin-top:auto!important;
-            }
+            body.sidebar-collapsed .app-shell>.sidebar .sidebar-preferences{display:grid!important;margin-top:auto!important}
             body.sidebar-mobile-open .sidebar-mobile-backdrop{
                 display:block!important;
                 position:fixed!important;
@@ -1427,8 +1451,7 @@ html[data-theme="dark"] .app-notice-info .app-notice-copy p{color:#bfd3df}
         }
         @media(prefers-reduced-motion:reduce){
             .app-shell>.sidebar{transition:none!important}
-        }
-</style>
+        }</style>
 </head>
 <body class="{{ ($appAppearance['sidebar_visible'] ?? true) ? '' : 'sidebar-hidden' }}" data-sidebar-visible="{{ ($appAppearance['sidebar_visible'] ?? true) ? '1' : '0' }}" data-sidebar-color="{{ $appAppearance['sidebar_color'] ?? 'blue' }}">
 
