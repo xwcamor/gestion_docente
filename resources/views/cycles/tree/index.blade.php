@@ -199,7 +199,6 @@ html[data-theme="dark"] .workload-tree-hero{background:linear-gradient(115deg,co
  .workload-tree-search-field{grid-column:1/-1}
  .workload-tree-search .btn,.workload-tree-search>a{width:100%}
 }
-.workload-tree-metric strong{font-size:26px}}
 @media(prefers-reduced-motion:reduce){.workload-tree-summary{transition:none}}
 </style>
 @endpush
