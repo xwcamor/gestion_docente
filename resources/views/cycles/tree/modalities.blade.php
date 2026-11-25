@@ -51,7 +51,7 @@
                 </div>
                 <small data-modality-description data-active-description="{{ $enabledDescription }}">
                     @if(!$modality->active)
-                        Modalidad desactivada · Horarios e historial conservados
+                        Desactivada · datos conservados
                     @elseif($classSchedules->isNotEmpty())
                         {{ $daysLabel }} · {{ $scheduleLabel }} · {{ number_format((float) $modality->total_hours, 2) }} h/sem.
                     @else
@@ -100,8 +100,8 @@
             <span class="tree-branch-mark"></span>
             <span class="tree-modality-tag {{ $type === 'TEC' ? 'is-tec' : 'is-tall' }}">{{ $type === 'TEC' ? 'TEC' : 'TAL' }}</span>
             <div class="tree-modality-copy">
-                <strong>{{ $label }} todavía no agregada</strong>
-                <small>Activa este componente agregándolo aquí mismo.</small>
+                <strong>{{ $label }}</strong>
+                <small>Componente no agregado</small>
             </div>
             <div class="tree-modality-actions is-missing-actions">
                 <span class="tree-course-status is-pending">No agregado</span>
