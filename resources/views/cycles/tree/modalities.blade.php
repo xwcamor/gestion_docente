@@ -28,7 +28,8 @@
                            data-modality-dates
                            data-dates-url="{{ route('workload-tree.modalities.dates', $modality) }}"
                            data-start-date="{{ $modality->start_date?->toDateString() }}"
-                           data-end-date="{{ $modality->end_date?->toDateString() }}"\n                           data-modality-id="{{ $modality->id }}"
+                           data-end-date="{{ $modality->end_date?->toDateString() }}"
+                           data-modality-id="{{ $modality->id }}"
                        @endif>
                     Inicio:
                     @if($modality->active)
@@ -100,7 +101,8 @@
                     data-group-id="{{ $assignment->group->id }}"
                     data-course-code="{{ $assignment->course->code }}"
                     data-course-name="{{ $assignment->course->name }}"
-                    data-component="{{ $type }}"\n                    data-store-url="{{ route('workload-tree.modalities.store', ['assignment' => $assignment, 'type' => $type]) }}">
+                    data-component="{{ $type }}"
+                    data-store-url="{{ route('workload-tree.modalities.store', ['assignment' => $assignment, 'type' => $type]) }}">
                 <x-icon name="plus" size="13" /> Agregar {{ $type === 'TEC' ? 'TEC' : 'TAL' }}
             </button>
         </div>
