@@ -88,30 +88,60 @@ class WorkloadTreeController extends Controller
             }
         }
 
+        foreach (['workload_start_time', 'workload_end_time'] as $field) {
+            if ($request->exists($field)) {
+                $value = trim((string) $request->input($field));
+                $request->merge([$field => $value === '' ? null : $value]);
+            }
+        }
+
         $data = $request->validate([
             'career' => ['sometimes', 'required', 'string', 'max:255'],
-            'semester' => ['sometimes', 'required', 'string', 'max:60'],
+            'semester' => ['sometimes', 'required', 'string', 'in:I,II,III,IV,V,VI'],
+            'workload_start_time' => ['sometimes', 'nullable', 'date_format:H:i'],
+            'workload_end_time' => ['sometimes', 'nullable', 'date_format:H:i'],
         ], [
             'career.required' => 'Escribe la carrera de este grupo.',
             'career.max' => 'La carrera no puede superar los 255 caracteres.',
-            'semester.required' => 'Escribe el semestre de este grupo.',
+            'semester.required' => 'Selecciona el semestre del grupo.',
             'semester.in' => 'Selecciona un semestre entre I y VI.',
+            'workload_start_time.date_format' => 'Selecciona una hora de inicio válida.',
+            'workload_end_time.date_format' => 'Selecciona una hora de fin válida.',
         ]);
 
         if (!$data) {
             return response()->json([
-                'message' => 'Indica la carrera o el semestre que deseas actualizar.',
+                'message' => 'Indica el dato que deseas actualizar.',
             ], 422);
+        }
+
+        $startTime = array_key_exists('workload_start_time', $data)
+            ? $data['workload_start_time']
+            : $group->workload_start_time;
+        $endTime = array_key_exists('workload_end_time', $data)
+            ? $data['workload_end_time']
+            : $group->workload_end_time;
+
+        if ($startTime && $endTime && substr((string) $startTime, 0, 5) >= substr((string) $endTime, 0, 5)) {
+            throw ValidationException::withMessages([
+                'workload_end_time' => 'La hora final debe ser posterior a la hora de inicio.',
+            ]);
         }
 
         $group->update($data);
         $group->refresh();
 
         return response()->json([
-            'message' => 'Datos académicos del grupo actualizados.',
+            'message' => 'Datos del grupo actualizados.',
             'group_id' => $group->id,
             'career' => $group->career,
             'semester' => $group->semester,
+            'workload_start_time' => $group->workload_start_time
+                ? substr((string) $group->workload_start_time, 0, 5)
+                : '',
+            'workload_end_time' => $group->workload_end_time
+                ? substr((string) $group->workload_end_time, 0, 5)
+                : '',
         ]);
     }
 
