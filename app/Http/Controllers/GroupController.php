@@ -13,6 +13,7 @@ use App\Models\ImportBatch;
 use App\Models\GroupFiveMinuteTalk;
 use App\Services\AuditLogger;
 use App\Services\FiveMinuteTalkService;
+use App\Services\GroupStarterCourseService;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -32,7 +33,7 @@ class GroupController extends Controller
         ]);
     }
 
-    public function store(Request $request, Cycle $cycle)
+    public function store(Request $request, Cycle $cycle, GroupStarterCourseService $starterCourses)
     {
         $this->authorizeCycle($cycle);
 
@@ -101,14 +102,16 @@ class GroupController extends Controller
 
         $createdGroups = [];
 
-        DB::transaction(function () use ($groups, $cycle, &$createdGroups) {
+        DB::transaction(function () use ($groups, $cycle, $starterCourses, &$createdGroups) {
             Cycle::query()->whereKey($cycle->id)->lockForUpdate()->firstOrFail();
 
             foreach ($groups as $groupData) {
-                $createdGroups[] = $cycle->groups()->create([
+                $group = $cycle->groups()->create([
                     'professor_id' => $cycle->professor_id,
                     ...$groupData,
                 ]);
+                $starterCourses->ensure($group);
+                $createdGroups[] = $group;
             }
         });
 
