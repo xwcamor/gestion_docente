@@ -250,24 +250,29 @@ class WorkloadTreeController extends Controller
         $assignment->loadMissing(['group', 'course']);
         $this->authorizeGroup($assignment->group);
 
-        $data = $request->validate([
-            'code' => ['required', 'string', 'max:80', 'regex:/^(20\d{4}-)?[A-Z][A-Z0-9]{1,9}-[A-Z0-9]{1,12}$/i'],
-        ], [
-            'code.required' => 'Escribe el código institucional del curso.',
-            'code.regex' => 'Usa el formato institucional, por ejemplo 202620-PIAD-222.',
+        $request->merge([
+            'code' => trim((string) $request->input('code')) ?: null,
         ]);
 
-        $code = strtoupper(trim($data['code']));
-        $duplicate = Course::query()
-            ->where('professor_id', $assignment->group->professor_id)
-            ->where('code', $code)
-            ->where('id', '<>', $assignment->course_id)
-            ->exists();
+        $data = $request->validate([
+            'code' => ['nullable', 'string', 'max:80'],
+        ], [
+            'code.max' => 'El código del curso no puede superar los 80 caracteres.',
+        ]);
 
-        if ($duplicate) {
-            throw ValidationException::withMessages([
-                'code' => 'Ese código ya pertenece a otro curso del catálogo.',
-            ]);
+        $code = filled($data['code'] ?? null) ? mb_strtoupper(trim($data['code'])) : null;
+        if ($code !== null) {
+            $duplicate = Course::query()
+                ->where('professor_id', $assignment->group->professor_id)
+                ->where('code', $code)
+                ->where('id', '<>', $assignment->course_id)
+                ->exists();
+
+            if ($duplicate) {
+                throw ValidationException::withMessages([
+                    'code' => 'Ese código ya pertenece a otro curso del catálogo.',
+                ]);
+            }
         }
 
         $assignment->course->update(['code' => $code]);
