@@ -13,8 +13,8 @@
             <p class="eyebrow"><x-icon name="git-branch" size="16" /> ORGANIZACIÓN ACADÉMICA</p>
             <h1>{{ $cycle->academic_year }} <span>· Ciclo {{ $cycle->cycle_code }}</span></h1>
             <div class="workload-tree-context">
-                <span><x-icon name="graduation-cap" size="16" /> <span class="tree-cycle-inline" data-inline-cycle data-edit-on-click data-edit-field="career" data-edit-label="Nombre de la carrera" data-edit-url="{{ route('workload-tree.cycles.context', $cycle) }}" data-edit-value="{{ $cycle->career }}" data-edit-response="career" title="Clic para editar">{{ $cycle->career ?: 'Carrera pendiente' }}</span></span>
-                <span><x-icon name="layers" size="16" /> Semestre <span class="tree-cycle-inline" data-inline-cycle data-edit-on-click data-edit-field="semester" data-edit-label="Semestre" data-edit-url="{{ route('workload-tree.cycles.context', $cycle) }}" data-edit-value="{{ $cycle->semester }}" data-edit-response="semester" title="Clic para editar">{{ $cycle->semester ?: '—' }}</span></span>
+                <span><x-icon name="graduation-cap" size="16" /> <span class="tree-cycle-inline" data-inline-cycle data-edit-on-click data-edit-field="career" data-edit-kind="cycle-career" data-edit-label="Nombre de la carrera" data-edit-url="{{ route('workload-tree.cycles.context', $cycle) }}" data-edit-value="{{ $cycle->career }}" data-edit-response="career" title="Clic para editar">{{ $cycle->career ?: 'Carrera pendiente' }}</span></span>
+                <span><x-icon name="layers" size="16" /> Semestre <span class="tree-cycle-inline" data-inline-cycle data-edit-on-click data-edit-field="semester" data-edit-kind="cycle-semester" data-edit-label="Semestre" data-edit-url="{{ route('workload-tree.cycles.context', $cycle) }}" data-edit-value="{{ $cycle->semester }}" data-edit-response="semester" title="Clic para editar">{{ $cycle->semester ?: '—' }}</span></span>
                 <span><x-icon name="calendar-range" size="16" /> {{ $cycle->start_date?->format('d/m/Y') ?: 'Sin inicio' }} – {{ $cycle->end_date?->format('d/m/Y') ?: 'Sin fin' }}</span>
             </div>
         </div>
