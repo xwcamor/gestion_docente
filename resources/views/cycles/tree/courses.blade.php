@@ -3,7 +3,7 @@
     @php($tecModality = $components->get('TEC'))
     @php($tallModality = $components->get('TALL'))
     @php($periods = $assignment->modalities->filter(fn ($modality) => $modality->active && $modality->start_date && $modality->end_date)->map(fn ($modality) => $modality->start_date->format('d/m/Y').' – '.$modality->end_date->format('d/m/Y'))->unique()->values())
-    @php($periodLabel = $periods->count() === 1 ? 'Inicio y fin: '.$periods->first() : ($periods->isEmpty() ? 'Inicio y fin pendientes' : 'Fechas diferentes por TEC/TAL'))
+    @php($periodLabel = $periods->count() === 1 ? $periods->first() : ($periods->isEmpty() ? 'Fechas pendientes' : 'Fechas por modalidad'))
     <article class="workload-tree-course" data-tree-course-item
              data-assignment-id="{{ $assignment->id }}"
              data-course-id="{{ $assignment->course_id }}"
