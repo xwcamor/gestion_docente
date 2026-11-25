@@ -43,7 +43,7 @@
                         <span class="tree-disabled-value">{{ $modality->end_date?->format('d/m/Y') ?: 'Sin fecha' }}</span>
                     @endif
                 </small>
-                <small>
+                <small data-modality-description>
                     @if(!$modality->active)
                         Modalidad desactivada · Horarios e historial conservados
                     @elseif($classSchedules->isNotEmpty())
