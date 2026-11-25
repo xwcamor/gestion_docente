@@ -399,7 +399,7 @@
                                 <small>{{ $assignment->course->code ?: 'Sin código' }} · {{ $modalityTotal }} modalidades</small>
                             </div>
                             <div class="course-row-actions">
-                                <button class="btn btn-ghost btn-sm" type="button" data-modal-open="edit-course-name-{{ $assignment->course_id }}"><x-icon name="pencil" /> Editar nombre</button>
+                                <a class="btn btn-ghost btn-sm" href="{{ route('assignments.quick.edit', [$group, $assignment]) }}"><x-icon name="pencil" /> Editar curso y horario</a>
                                 <a class="btn btn-ghost btn-sm" href="{{ route('curricula.show', $assignment) }}"><x-icon name="book-open" /> Malla</a>
                                 <form method="POST" action="{{ route('assignments.destroy', $assignment) }}" data-confirm="Se retirará este curso de {{ $group->name }} junto con sus modalidades, matrículas, evaluaciones y documentos. El curso del catálogo general se conservará para usarlo en otros grupos. Esta acción no se puede deshacer.">
                                     @csrf
@@ -436,39 +436,14 @@
                         </div>
                     </article>
 
-                    <dialog class="ui-dialog sheet-dialog" id="edit-course-name-{{ $assignment->course_id }}" aria-labelledby="edit-course-name-title-{{ $assignment->course_id }}" @if((int) old('course_id') === $assignment->course_id || (int) request('edit_course') === $assignment->course_id) data-auto-open @endif>
-                        <div class="dialog-head">
-                            <div>
-                                <h2 id="edit-course-name-title-{{ $assignment->course_id }}">Editar nombre del curso</h2>
-                                <p>{{ $assignment->course->code ?: 'Curso sin código' }}</p>
-                            </div>
-                            <button class="dialog-close" type="button" data-modal-close aria-label="Cerrar"><x-icon name="x" /></button>
-                        </div>
-                        <form method="POST" action="{{ route('groups.courses.name.update', [$group, $assignment->course]) }}" data-loading-form="1">
-                            @csrf
-                            @method('PATCH')
-                            <div class="dialog-body">
-                                <input type="hidden" name="course_id" value="{{ $assignment->course_id }}">
-                                <label for="edit-course-name-field-{{ $assignment->course_id }}">Nombre del curso <span class="muted">*</span></label>
-                                <input class="field" id="edit-course-name-field-{{ $assignment->course_id }}" name="name" maxlength="255" required value="{{ (int) old('course_id') === $assignment->course_id ? old('name', $assignment->course->name) : $assignment->course->name }}">
-                                @if($errors->has('name') && (int) old('course_id') === $assignment->course_id)
-                                    <p class="field-error">{{ $errors->first('name') }}</p>
-                                @endif
-                                <p class="help mt-16">El nombre pertenece al catálogo del curso. Al guardarlo, se actualizará en todos los grupos donde se utiliza.</p>
-                            </div>
-                            <div class="dialog-footer">
-                                <button class="btn btn-secondary" type="button" data-modal-close><x-icon name="x" /> Cancelar</button>
-                                <button class="btn" type="submit"><x-icon name="check" /> Guardar nombre</button>
-                            </div>
-                        </form>
-                    </dialog>
+
                 @endforeach
             </div>
         @else
             <div class="empty">
                 <span class="stat-icon" style="margin:0 auto 10px;width:42px;height:42px"><x-icon name="book-open" size="20" /></span>
                 <strong>Aún no hay cursos en este grupo.</strong>
-                <span>Registra varios cursos desde una sola tabla.</span>
+                <span>Pega los alias y configura fechas y horarios desde un solo formulario.</span>
                 <div class="mt-16"><a class="btn" href="{{ route('assignments.quick', $group) }}"><x-icon name="plus" /> Agregar cursos</a></div>
             </div>
         @endif
