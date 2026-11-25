@@ -21,6 +21,8 @@ class CourseRegistrationService
         string $component,
         StudentImportService $students,
         array $modalityDates = [],
+        array $modalitySchedules = [],
+        array $blockCodes = [],
     ): array {
         $courseName = trim($courseName);
         $parsed = $this->parser->parse($sourceCode);
@@ -69,7 +71,7 @@ class CourseRegistrationService
         // Course identity is its institutional code, not its display name.
         // Different institutional codes may legitimately share the same course name.
 
-        return DB::transaction(function () use ($group, $courseName, $parsed, $requestedTypes, $course, $students, $modalityDates) {
+        return DB::transaction(function () use ($group, $courseName, $parsed, $requestedTypes, $course, $students, $modalityDates, $modalitySchedules, $blockCodes) {
             $courseRecord = $course ?: Course::firstOrCreate(
                 [
                     'professor_id' => $group->professor_id,
@@ -112,6 +114,7 @@ class CourseRegistrationService
                 $modality = $assignment->modalities()->create([
                     'modality' => $type,
                     'nrc' => $parsed['nrc_by_modality'][$type] ?? null,
+                    'block_code' => $blockCodes[$type] ?? null,
                     'start_date' => $modalityDates[$type]['start_date'] ?? null,
                     'end_date' => $modalityDates[$type]['end_date'] ?? null,
                     'curriculum_start_week' => 1,
@@ -119,6 +122,32 @@ class CourseRegistrationService
                     'semester' => null,
                     'period_label' => $group->cycle->academic_year.'-'.$group->cycle->cycle_code.'-'.$type,
                 ]);
+
+                $scheduleCount = 0;
+                $weeklyMinutes = 0;
+
+                foreach (($modalitySchedules[$type] ?? []) as $scheduleBlock) {
+                    $interval = max(1, (int) ($scheduleBlock['repeat_interval_weeks'] ?? 1));
+                    $duration = max(0, (int) ((strtotime($scheduleBlock['end_time']) - strtotime($scheduleBlock['start_time'])) / 60));
+                    $weeklyMinutes += $duration / $interval;
+
+                    foreach (array_unique(array_map('intval', $scheduleBlock['days'] ?? [])) as $day) {
+                        $modality->schedules()->create([
+                            'day_of_week' => $day,
+                            'start_time' => $scheduleBlock['start_time'],
+                            'end_time' => $scheduleBlock['end_time'],
+                            'classroom' => $scheduleBlock['classroom'] ?: null,
+                            'block_type' => 'CLASS',
+                            'instruction_type' => $scheduleBlock['instruction_type'] ?? ($type === 'TEC' ? 'THEORY' : 'LAB'),
+                            'repeat_interval_weeks' => $interval,
+                        ]);
+                        $scheduleCount++;
+                    }
+                }
+
+                if ($scheduleCount > 0) {
+                    $modality->update(['total_hours' => round($weeklyMinutes, 2)]);
+                }
 
                 $students->syncGroupRosterToModality($modality);
                 $createdTypes[] = $type;
@@ -128,6 +157,9 @@ class CourseRegistrationService
                 'course' => $courseRecord,
                 'assignment' => $assignment->fresh('modalities'),
                 'created_modalities' => $createdTypes,
+                'schedule_count' => collect($createdTypes)->sum(fn ($type) =>
+                    collect($modalitySchedules[$type] ?? [])->sum(fn ($block) => count($block['days'] ?? []))
+                ),
                 'missing_nrc' => array_values(array_filter(
                     $typesToCreate,
                     fn ($type) => blank($parsed['nrc_by_modality'][$type] ?? null)
