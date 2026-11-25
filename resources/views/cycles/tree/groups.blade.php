@@ -23,7 +23,7 @@
                 <span class="tree-node-copy">
                     <strong><span data-inline-text data-edit-field="name" data-edit-label="Nombre del grupo" data-edit-url="{{ route('groups.update', $group) }}" data-edit-value="{{ $group->name }}" data-edit-kind="group">{{ $group->name }}</span></strong>
                     <small>
-                        <span class="tree-meta-item">Código: <span data-inline-text data-edit-on-click data-edit-field="code" data-edit-label="Código del grupo" data-edit-url="{{ route('groups.update', $group) }}" data-edit-value="{{ $group->code }}">{{ $group->code ?: 'Código pendiente (clic para agregar)' }}</span></span>
+                        <span class="tree-meta-item">Código: <span class="tree-inline-editable" data-inline-text data-edit-on-click data-edit-field="code" data-edit-label="Código del grupo" data-edit-url="{{ route('groups.update', $group) }}" data-edit-value="{{ $group->code }}" title="Clic para editar código">{{ $group->code ?: 'Código pendiente (clic para agregar)' }}</span></span>
                         <span class="tree-meta-separator">·</span>
                         <span><span data-group-course-count>{{ $group->assignments_count }}</span> cursos</span>
                         <span class="tree-meta-separator">·</span>
