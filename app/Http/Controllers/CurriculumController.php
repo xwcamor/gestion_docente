@@ -201,7 +201,7 @@ class CurriculumController extends Controller
         $assignment->refresh(); $query=\App\Models\CourseAssignment::query()->whereHas('group',fn($builder)=>$builder->where('professor_id',auth()->user()->professor->id));
         if ($assignment->curriculum_id) $query->where('curriculum_id',$assignment->curriculum_id); else $query->whereKey($assignment->id);
         foreach ($query->with('modalities.schedules')->get() as $courseAssignment) foreach ($courseAssignment->modalities as $modality) {
-            if ($modality->start_date && $modality->end_date && $modality->schedules->where('block_type','CLASS')->isNotEmpty()) $calendar->rebuild($modality);
+            if ($modality->active && $modality->start_date && $modality->end_date && $modality->schedules->where('block_type','CLASS')->isNotEmpty()) $calendar->rebuild($modality);
         }
     }
 
