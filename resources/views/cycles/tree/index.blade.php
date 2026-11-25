@@ -28,7 +28,7 @@
             <div>
                 <p class="eyebrow">ÁRBOL DE TRABAJO</p>
                 <h2><x-icon name="git-branch" size="23" /> Grupos, cursos y componentes</h2>
-                <p>Usa + y − para desplegar. Haz clic en carrera, semestre y códigos; doble clic en nombres, NRC y fechas para editarlos.</p>
+                <p>Abre un grupo y luego un curso. Solo queda uno abierto por nivel. Clic para editar carrera, semestre, códigos, NRC y fechas; doble clic en nombres.</p>
             </div>
             <span class="workload-tree-total" data-tree-group-total>{{ $cycleGroupCount }} grupos</span>
         </div>
@@ -58,7 +58,7 @@
             @endif
         </form>
 
-        <div class="workload-tree-root" role="tree" aria-label="Estructura académica">
+        <div class="workload-tree-root" aria-label="Estructura académica">
             @include('cycles.tree.groups', ['groups' => $groups, 'cycle' => $cycle])
         </div>
     </section>
@@ -612,6 +612,133 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
 }
 @media(prefers-reduced-motion:reduce){.tree-structure-card *{scroll-behavior:auto!important;transition:none!important}}
 
+
+/* Acordeón académico: lectura simple, un grupo y un curso abiertos por vez */
+.tree-structure-card .workload-tree-root{
+    display:block;
+    padding:0;
+    overflow:hidden;
+    border:1px solid var(--line);
+    border-radius:12px;
+    background:var(--surface);
+}
+.tree-structure-card .workload-tree-group-shell{
+    overflow:hidden;
+    border:0;
+    border-bottom:1px solid var(--line);
+    border-radius:0;
+    background:var(--surface);
+}
+.tree-structure-card .workload-tree-group-shell:last-child{border-bottom:0}
+.tree-structure-card .workload-tree-group{margin:0;border-radius:0;background:transparent}
+.tree-structure-card .workload-group-summary{
+    align-items:center;
+    gap:12px;
+    min-height:64px;
+    padding:13px 16px;
+    border:0;
+    border-radius:0;
+    background:var(--surface);
+}
+.tree-structure-card .workload-group-summary:hover,
+.tree-structure-card .workload-tree-group[open]>.workload-group-summary{
+    border:0;
+    border-radius:0;
+    background:var(--accent-soft);
+}
+.tree-expand-symbol{
+    display:grid;
+    place-items:center;
+    flex:0 0 26px;
+    width:26px;
+    height:26px;
+    margin:0;
+    border:0;
+    border-radius:6px;
+    background:transparent;
+    color:var(--muted);
+    transition:transform .16s ease,color .16s ease;
+}
+.tree-expand-symbol svg{width:18px;height:18px}
+.workload-tree-group[open]>.workload-group-summary .tree-expand-symbol,
+.tree-course-branch[open]>.tree-course-summary .tree-expand-symbol{
+    transform:rotate(90deg);
+    color:var(--accent);
+}
+.tree-structure-card .workload-tree-children{
+    margin:0;
+    padding:10px 14px 13px 38px;
+    border:0;
+    border-top:1px solid var(--line);
+    border-radius:0;
+    background:var(--surface-soft);
+}
+.tree-structure-card .tree-course-entry-form{
+    margin:0 0 10px;
+    padding:11px;
+    border:1px solid var(--line);
+    border-radius:9px;
+    background:var(--surface);
+}
+.tree-structure-card .workload-tree-course{
+    margin:0;
+    border:0;
+    border-bottom:1px solid var(--line);
+    border-radius:0;
+    background:transparent;
+}
+.tree-structure-card .workload-tree-course:last-child{border-bottom:0}
+.tree-course-branch{overflow:hidden}
+.tree-structure-card .tree-course-summary{
+    align-items:center;
+    gap:10px;
+    min-height:58px;
+    padding:10px 11px;
+    border:0;
+    border-radius:0;
+    background:transparent;
+}
+.tree-structure-card .tree-course-summary:hover,
+.tree-structure-card .tree-course-branch[open]>.tree-course-summary{
+    border:0;
+    border-radius:0;
+    background:color-mix(in srgb,var(--accent-soft) 68%,var(--surface));
+}
+.tree-course-summary .tree-expand-symbol{margin:0}
+.tree-structure-card .tree-course-children{
+    margin:0;
+    padding:8px 12px 12px 34px;
+    border:0;
+    border-top:1px solid var(--line);
+    background:var(--surface);
+}
+.tree-course-tools{margin-bottom:3px}
+.tree-structure-card .workload-tree-modality{
+    padding:10px 4px;
+    border-top:1px solid var(--line);
+}
+.tree-structure-card .tree-modality-tag{
+    flex-basis:48px;
+    height:33px;
+    border-radius:7px;
+    font-size:11px;
+}
+.tree-structure-card .tree-modality-copy{gap:3px}
+.tree-structure-card .tree-modality-copy strong{font-size:12px}
+.tree-structure-card .tree-modality-copy small{font-size:11px}
+.tree-structure-card .tree-course-status{font-size:9px}
+.tree-structure-card .tree-modality-toggle{min-height:32px;font-size:10px}
+.tree-structure-card .tree-open-modality,
+.tree-structure-card .tree-add-modality{min-height:32px;font-size:10px}
+@media(max-width:760px){
+    .tree-structure-card .workload-tree-children{padding:9px 8px 11px 18px}
+    .tree-structure-card .tree-course-children{padding:7px 6px 10px 12px}
+    .tree-structure-card .workload-group-summary{padding:11px 10px}
+    .tree-structure-card .tree-course-summary{padding:9px 8px}
+    .tree-structure-card .tree-node-icon,
+    .tree-structure-card .tree-course-node{flex-basis:36px;width:36px;height:36px}
+}
+
 </style>
 @endpush
 
@@ -759,8 +886,25 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
     });
 
     document.addEventListener('click', async event => {
-        // Doble clic edita los datos y no debe abrir/cerrar el nodo padre.
-        if (event.target.closest('[data-inline-text], [data-inline-cycle], [data-inline-nrc], [data-inline-date]')) {
+        const nrcCell = event.target.closest('[data-inline-nrc]');
+        if (nrcCell) {
+            event.preventDefault();
+            event.stopPropagation();
+            startNrcEditor(nrcCell);
+            return;
+        }
+
+        const dateCell = event.target.closest('[data-inline-date]');
+        if (dateCell) {
+            event.preventDefault();
+            event.stopPropagation();
+            const wrapper = dateCell.closest('[data-modality-dates]');
+            if (wrapper) startDateEditor(dateCell, wrapper);
+            return;
+        }
+
+        // Los campos dentro de los encabezados no deben desplegar el acordeón al editar.
+        if (event.target.closest('[data-inline-text], [data-inline-cycle]')) {
             event.preventDefault();
             event.stopPropagation();
             return;
@@ -1172,21 +1316,7 @@ html[data-theme="dark"] .tree-course-entry-form{background:linear-gradient(120de
             return;
         }
 
-        const nrc = event.target.closest('[data-inline-nrc]');
-        if (nrc) {
-            event.preventDefault();
-            event.stopPropagation();
-            startNrcEditor(nrc);
-            return;
-        }
 
-        const date = event.target.closest('[data-inline-date]');
-        if (date) {
-            event.preventDefault();
-            event.stopPropagation();
-            const wrapper = date.closest('[data-modality-dates]');
-            if (wrapper) startDateEditor(date, wrapper);
-        }
     });
 })();
 </script>
