@@ -6,8 +6,9 @@
         @php($daysLabel = $classSchedules->pluck('day_of_week')->unique()->sort()->map(fn ($day) => [1 => 'Lun', 2 => 'Mar', 3 => 'Mié', 4 => 'Jue', 5 => 'Vie', 6 => 'Sáb', 7 => 'Dom'][(int) $day] ?? '')->filter()->implode(' · '))
         @php($scheduleLabel = $classSchedules->map(fn ($item) => substr((string) $item->start_time, 0, 5).'–'.substr((string) $item->end_time, 0, 5))->unique()->implode(', '))
         @php($modalityReady = $modality->start_date && $modality->end_date && $classSchedules->isNotEmpty())
+        @php($enabledDescription = $classSchedules->isNotEmpty() ? $daysLabel.' · '.$scheduleLabel.' · '.number_format((float) $modality->total_hours, 2).' h/sem.' : 'Horario pendiente')
         <article class="workload-tree-modality {{ $modality->active ? 'is-active' : 'is-disabled' }}"
-                 data-modality-row data-modality-type="{{ $type }}" data-modality-id="{{ $modality->id }}">
+                 data-modality-row data-modality-type="{{ $type }}" data-modality-id="{{ $modality->id }}" data-active="{{ $modality->active ? '1' : '0' }}" data-active-description="{{ $enabledDescription }}">
             <span class="tree-branch-mark"></span>
             <span class="tree-modality-tag {{ $type === 'TEC' ? 'is-tec' : 'is-tall' }}">{{ $type === 'TEC' ? 'TEC' : 'TAL' }}</span>
             <div class="tree-modality-copy">
@@ -43,7 +44,7 @@
                         <span class="tree-disabled-value">{{ $modality->end_date?->format('d/m/Y') ?: 'Sin fecha' }}</span>
                     @endif
                 </small>
-                <small data-modality-description>
+                <small data-modality-description data-active-description="{{ $enabledDescription }}">
                     @if(!$modality->active)
                         Modalidad desactivada · Horarios e historial conservados
                     @elseif($classSchedules->isNotEmpty())
