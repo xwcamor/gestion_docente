@@ -22,20 +22,11 @@ class CycleController extends Controller
         $professor = auth()->user()->professor;
         $query = $professor->cycles()
             ->withCount('groups')
-            ->with([
-                'groups' => fn ($groups) => $groups
-                    ->withCount(['assignments', 'students'])
-                    ->with([
-                        'assignments' => fn ($assignments) => $assignments
-                            ->with([
-                                'course',
-                                'curriculum.weeks',
-                                'modalities.schedules',
-                                'modalities.documents',
-                            ])
-                            ->orderBy('id'),
-                    ])
-                    ->orderBy('name'),
+            ->addSelect([
+                'courses_count' => DB::table('course_assignments as tree_assignments')
+                    ->join('teaching_groups as tree_groups', 'tree_groups.id', '=', 'tree_assignments.teaching_group_id')
+                    ->selectRaw('COUNT(*)')
+                    ->whereColumn('tree_groups.cycle_id', 'cycles.id'),
             ])
             ->orderByDesc('academic_year')
             ->orderByDesc('start_date');
@@ -46,18 +37,30 @@ class CycleController extends Controller
 
         if ($request->filled('q')) {
             $term = trim($request->string('q')->toString());
-            $query->where(function ($builder) use ($term) {
-                $builder->where('cycle_code', 'like', "%{$term}%")
-                    ->orWhere('academic_year', 'like', "%{$term}%");
+            $like = "%{$term}%";
+            $query->where(function ($builder) use ($like) {
+                $builder->where('cycle_code', 'like', $like)
+                    ->orWhere('academic_year', 'like', $like)
+                    ->orWhere('career', 'like', $like)
+                    ->orWhere('semester', 'like', $like)
+                    ->orWhereHas('groups', function ($groups) use ($like) {
+                        $groups->where('name', 'like', $like)
+                            ->orWhereHas('assignments.course', function ($courses) use ($like) {
+                                $courses->where('name', 'like', $like)
+                                    ->orWhere('code', 'like', $like);
+                            });
+                    });
             });
         }
 
+        // Los nodos hijos se consultan al desplegarse; el índice inicial solo carga ciclos y contadores.
         $cycles = $query->paginate(12)->withQueryString();
         $years = $professor->cycles()
             ->select('academic_year')
             ->distinct()
             ->orderByDesc('academic_year')
             ->pluck('academic_year');
+
         return view('cycles.index', compact('cycles', 'years'));
     }
 
