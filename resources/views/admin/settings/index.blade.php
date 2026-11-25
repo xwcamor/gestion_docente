@@ -1,14 +1,71 @@
 @extends('layouts.app')
-@section('title', 'Ajustes del sistema')
+@section('title', 'Ajustes')
 @section('content')
 <div class="page-head settings-page-head">
     <div>
-        <p class="eyebrow">Administración</p>
-        <h1>Ajustes del sistema</h1>
-        <p class="subhead">Personaliza la identidad visual de la aplicación. Los cambios se reflejan en la barra superior, los botones y los elementos principales.</p>
+        <p class="eyebrow">Configuración personal</p>
+        <h1>Ajustes de interfaz</h1>
+        <p class="subhead">Adapta la navegación, el color y la apariencia de tu espacio de trabajo.</p>
     </div>
 </div>
 
+@php($useSystemColor = (bool) old('use_system_color', !$user->accent_color))
+<form class="interface-preferences-card card" method="POST" action="{{ route('admin.settings.update') }}" data-loading-form="1">
+    @csrf
+    @method('PATCH')
+    <input type="hidden" name="interface_preferences" value="1">
+
+    <div class="interface-preferences-head">
+        <div class="interface-preferences-icon"><x-icon name="sliders-horizontal" size="19" /></div>
+        <div>
+            <p class="eyebrow">Tu espacio de trabajo</p>
+            <h2>Preferencias de interfaz</h2>
+            <p class="card-description">Estos cambios se aplican a tu cuenta, sin modificar la configuración de otros usuarios.</p>
+        </div>
+    </div>
+
+    <div class="interface-preferences-grid">
+        <div class="interface-preference-option">
+            <div class="interface-preference-copy">
+                <strong>Menú lateral</strong>
+                <p>Ocúltalo para aprovechar todo el ancho de pantalla. Si lo ocultas, podrás volver a mostrarlo con el botón «Menú» de la barra superior.</p>
+            </div>
+            <label class="interface-select-label" for="sidebar_visible">Visibilidad del menú</label>
+            <select class="field interface-select" id="sidebar_visible" name="sidebar_visible">
+                <option value="1" @selected((string) old('sidebar_visible', $user->sidebar_visible ? '1' : '0') === '1')>Mostrar menú lateral</option>
+                <option value="0" @selected((string) old('sidebar_visible', $user->sidebar_visible ? '1' : '0') === '0')>Ocultar menú lateral</option>
+            </select>
+            @error('sidebar_visible')<p class="field-error">{{ $message }}</p>@enderror
+        </div>
+
+        <div class="interface-preference-option">
+            <div class="interface-preference-copy">
+                <strong>Color de interfaz</strong>
+                <p>Elige el color de botones y elementos activos o utiliza el color institucional definido por administración.</p>
+            </div>
+            <div class="interface-color-controls">
+                <label class="interface-color-picker" for="user_accent_color">
+                    <input id="user_accent_color" type="color" name="accent_color" value="{{ old('accent_color', $user->accent_color ?: $branding['primary_color']) }}" @disabled($useSystemColor)>
+                    <span>Elegir color</span>
+                </label>
+                <label class="interface-system-color">
+                    <input type="checkbox" id="use_system_color" name="use_system_color" value="1" @checked($useSystemColor)>
+                    <span>Usar color institucional</span>
+                </label>
+            </div>
+            @error('accent_color')<p class="field-error">{{ $message }}</p>@enderror
+        </div>
+    </div>
+
+    <div class="interface-preferences-footer">
+        <p>El modo claro u oscuro se cambia desde la barra superior.</p>
+        <button class="btn" type="submit"><x-icon name="check" size="15" /> Guardar preferencias</button>
+    </div>
+</form>
+
+@if(auth()->user()->isAdmin())
+
+@if(auth()->user()->isAdmin())
 <form class="branding-layout" method="POST" action="{{ route('admin.settings.update') }}" enctype="multipart/form-data" data-loading-form="1">
     @csrf
     @method('PATCH')
@@ -136,7 +193,39 @@
         </section>
     </aside>
 </form>
+@endif
 @endsection
+
+
+@push('styles')
+<style>
+.interface-preferences-card{width:100%;max-width:none;padding:clamp(16px,2vw,24px);margin:0 0 16px}
+.interface-preferences-head{display:flex;align-items:flex-start;gap:13px;padding-bottom:17px;border-bottom:1px solid var(--line)}
+.interface-preferences-icon{display:grid;place-items:center;width:42px;height:42px;flex:none;border-radius:11px;background:var(--accent-soft);color:var(--accent)}
+.interface-preferences-head h2{margin:0;font-size:20px;font-weight:780;letter-spacing:-.025em}
+.interface-preferences-head .eyebrow{margin-bottom:4px}
+.interface-preferences-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:15px}
+.interface-preference-option{display:grid;align-content:start;gap:10px;min-width:0;padding:15px;border:1px solid var(--line);border-radius:10px;background:var(--surface-soft)}
+.interface-preference-copy strong{display:block;color:var(--ink);font-size:13px;font-weight:750}
+.interface-preference-copy p{margin:5px 0 0;color:var(--muted);font-size:11px;line-height:1.5}
+.interface-select-label{margin:0;color:var(--muted);font-size:10px;font-weight:700}
+.interface-select{max-width:360px}
+.interface-color-controls{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.interface-color-picker{display:inline-flex;align-items:center;gap:9px;margin:0;cursor:pointer;color:var(--ink-soft);font-size:11px;font-weight:650}
+.interface-color-picker input{width:42px;height:38px;padding:3px;border:1px solid var(--line-strong);border-radius:8px;background:var(--surface);cursor:pointer}
+.interface-color-picker input:disabled{opacity:.45;cursor:not-allowed}
+.interface-system-color{display:inline-flex;align-items:center;gap:7px;margin:0;color:var(--muted);font-size:10px;font-weight:600}
+.interface-system-color input{width:15px;height:15px;accent-color:var(--accent)}
+.interface-preferences-footer{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.interface-preferences-footer p{margin:0;color:var(--muted);font-size:10px}
+@media(max-width:700px){
+ .interface-preferences-grid{grid-template-columns:1fr}
+ .interface-preferences-footer{align-items:stretch;flex-direction:column}
+ .interface-preferences-footer .btn{width:100%}
+ .interface-select{max-width:none}
+}
+</style>
+@endpush
 
 @push('styles')
 <style>
@@ -274,6 +363,21 @@ html[data-theme="dark"] .branding-info-card>strong{color:#dce7ec}
     });
 
     syncPreview();
+})();
+</script>
+@endpush
+
+
+@push('scripts')
+<script>
+(() => {
+    const checkbox = document.getElementById('use_system_color');
+    const picker = document.getElementById('user_accent_color');
+    if (!checkbox || !picker) return;
+
+    const sync = () => { picker.disabled = checkbox.checked; };
+    checkbox.addEventListener('change', sync);
+    sync();
 })();
 </script>
 @endpush
