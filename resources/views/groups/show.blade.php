@@ -10,8 +10,6 @@
     <x-icon name="chevron-right" size="12" />
     <span class="current">{{ $group->name }}</span>
 </div>
-<a class="cycle-back" href="{{ route('cycles.tree', $group->cycle) }}"><x-icon name="arrow-left" size="15" /> Volver al árbol</a>
-
 <div class="page-head group-page-head">
     <div>
         <p class="eyebrow"><x-icon name="graduation-cap" size="12" /> Gestión académica · {{ $group->cycle->academic_year }} · Ciclo {{ $group->cycle->cycle_code }}</p>
