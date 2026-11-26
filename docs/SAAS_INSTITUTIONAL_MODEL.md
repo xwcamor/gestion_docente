@@ -65,7 +65,7 @@ Se crean cinco periodos de referencia: 202510, 202520, 202610, 202620 y 202601.
 - 202610: 5 asignaturas, 10 NRC.
 - 202620: 4 asignaturas, 12 NRC.
 - 202601: 3 asignaturas, 3 NRC.
-- Total: 23 códigos de asignatura y 47 secciones o NRC.
+- Total: 23 combinaciones asignatura-periodo, 22 códigos únicos de asignatura y 47 secciones o NRC. PIAD-220 aparece en dos periodos y comparte una sola identidad de catálogo.
 
 Se conservan exactamente los nombres, códigos, NRC, tipo TEC/TAL y estado visible. El docente se guarda como rótulo de origen, no como relación de membresía. El caso PIAD-220 de 202520 conserva el texto MÚLTIPLES PROFESORES.
 
