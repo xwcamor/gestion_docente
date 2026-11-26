@@ -86,26 +86,22 @@
                     </span>
                 </span>
                 <span class="tree-group-row-actions">
-                    <button class="tree-icon-action tree-group-delete-trigger" type="button"
+                    <button class="tree-group-delete-trigger" type="button"
                             data-toggle-group-delete
                             @disabled($cycleGroupCount <= 1)
                             aria-label="Eliminar grupo"
                             title="{{ $cycleGroupCount <= 1 ? 'El ciclo debe conservar al menos un grupo' : 'Eliminar grupo' }}">
-                        <x-icon name="trash-2" size="16" />
+                        <x-icon name="trash-2" size="15" />
+                        <span>Eliminar</span>
                     </button>
                 </span>
             </summary>
 
             <div class="workload-tree-children workload-group-children">
-                <div class="tree-delete-confirm tree-group-delete-confirm" data-group-delete-confirm hidden>
-                    <p><strong>¿Eliminar este grupo?</strong> También se quitarán sus cursos, horarios y documentos.</p>
-                    <form method="POST" action="{{ route('groups.destroy', $group) }}" data-tree-delete-group>
-                        @csrf
-                        @method('DELETE')
-                        <button class="btn btn-danger btn-sm" type="submit" @disabled($cycleGroupCount <= 1)>Eliminar grupo</button>
-                        <button class="btn btn-ghost btn-sm" type="button" data-inline-cancel>Cancelar</button>
-                    </form>
-                </div>
+                <form method="POST" action="{{ route('groups.destroy', $group) }}" data-tree-delete-group hidden>
+                    @csrf
+                    @method('DELETE')
+                </form>
 
                 <div data-tree-content>
                     <div class="tree-loading-state">Despliega el grupo para cargar sus cursos.</div>
