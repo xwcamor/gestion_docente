@@ -143,11 +143,12 @@ Esta pantalla no asigna todavía los NRC a salones ni cambia horarios, ciclos o 
 
 La configuración y el catálogo resuelven la institución mediante sus membresías. La compatibilidad automática solo funciona mientras exista un único tenant activo. **La separación de ciclos, grupos, alumnos, horarios y documentos por institución sigue pendiente**; consulta [docs/SAAS_INSTITUTIONAL_MODEL.md](docs/SAAS_INSTITUTIONAL_MODEL.md) antes de habilitar una segunda institución.
 
-Para actualizar esta fase no se añade una migración nueva. Basta con:
+Esta actualización incorpora una migración aditiva que identifica el catálogo de referencia de SENATI en la configuración institucional. No elimina ni convierte datos operativos. Ejecuta:
 
 ```powershell
 git switch main
 git pull --ff-only origin main
+php artisan migrate
 php artisan optimize:clear
 ```
 
