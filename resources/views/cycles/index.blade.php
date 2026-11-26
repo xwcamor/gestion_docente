@@ -109,7 +109,7 @@
                 </div>
                 <div>
                     <label for="cycle_code">Código del ciclo <span class="muted">*</span></label>
-                    <input class="field" id="cycle_code" name="cycle_code" value="{{ old('cycle_code', '10') }}" maxlength="20" required placeholder="Ej. 10 o 20">
+                    <input class="field" id="cycle_code" data-uppercase name="cycle_code" value="{{ old('cycle_code', '10') }}" maxlength="20" required placeholder="Ej. 10 o 20">
                     <p class="help">Usa el código de tu programación académica.</p>
                     @error('cycle_code')<p class="field-error">{{ $message }}</p>@enderror
                 </div>
@@ -117,7 +117,7 @@
             <div class="form-row">
                 <div>
                     <label for="career">Carrera predeterminada para grupos nuevos <span class="muted">*</span></label>
-                    <input class="field" id="career" name="career" value="{{ old('career', auth()->user()->professor->career) }}" maxlength="255" required placeholder="Ej. Desarrollo de Software">
+                    <input class="field" id="career" data-uppercase name="career" value="{{ old('career', auth()->user()->professor->career) }}" maxlength="255" required placeholder="Ej. Desarrollo de Software">
                     @error('career')<p class="field-error">{{ $message }}</p>@enderror
                 </div>
                 <div>
@@ -146,7 +146,7 @@
             </div>
             <div>
                 <label for="group_name">Nombre del primer grupo <span class="muted">*</span></label>
-                <input class="field" id="group_name" name="group_name" value="{{ old('group_name') }}" maxlength="100" required placeholder="Ej. IA 202">
+                <input class="field" id="group_name" data-uppercase name="group_name" value="{{ old('group_name') }}" maxlength="100" required placeholder="Ej. IA 202">
                 @error('group_name')<p class="field-error">{{ $message }}</p>@enderror
             </div>
             <p class="help mt-16"><x-icon name="calendar-range" size="12" /> La fecha de fin debe ser igual o posterior al inicio.</p>
