@@ -3,11 +3,20 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasSlugRouteKey;
+use App\Models\Concerns\ScopesToCurrentInstitution;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ClassSession extends Model
 {
+    use ScopesToCurrentInstitution;
+
+    protected static function institutionScopeRelation(): string
+    {
+        return 'modality.assignment.group.cycle';
+    }
+
+
     use HasSlugRouteKey;
 
     protected $fillable = [
