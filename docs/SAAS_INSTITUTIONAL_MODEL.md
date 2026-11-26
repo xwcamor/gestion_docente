@@ -43,6 +43,12 @@ No confundir:
 - Escuela de Educación Superior Tecnológica: unidad oficial para las siete carreras actuales de ingeniería registradas.
 - ETIA: unidad histórica de referencia según la Memoria 2022; no se mezcla automáticamente con la etiqueta ETI de Blackboard.
 
+### Catálogo general 2025 (Formación Profesional)
+
+La Memoria Institucional 2025 presenta 90 carreras en ejecución, agrupadas en 14 escuelas, y en otra sección muestra la cifra general de 91 carreras de formación profesional. Se conservan ambas cifras por separado, con su contexto documental. La extracción legible de la tabla permitió guardar 85 nombres en 14 agrupaciones: Administración, Agroindustria, Artes Gráficas, Confecciones, Electrotecnia, Hotelería/Turismo/Restaurantes, Industria Alimentaria, Tecnologías de la Información, Joyería/Orfebrería/Platería, Mantenimiento, Mecánica Automotriz, Metalmecánica, Tecnologías Ambientales y Textil. Cinco nombres no se reconstruyen porque no aparecen legibles en la extracción consultada.
+
+Los 85 nombres se guardan con estado `reference_2025`; no se presentan como una lista vigente definitiva en 2026. La Memoria 2025 no detalla la cantidad de semestres individual para cada nombre, por lo que cada versión queda con duración pendiente hasta asociar su malla. El Reglamento Interno enumera esquemas de 4, 5, 6 y 8 semestres y señala que la duración corresponde al esquema operativo de cada carrera. La página de la Escuela Superior Tecnológica indica ocho semestres para sus siete carreras.
+
 ### Carreras verificadas
 
 Se registran con versión oficial 2026 y duración de 8 semestres:
