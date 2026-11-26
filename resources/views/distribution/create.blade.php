@@ -17,7 +17,7 @@
         <input class="field" type="file" id="file" name="file" accept=".xlsx,.xls" required>
         @error('file')<p class="field-error">{{ $message }}</p>@enderror
         <p class="help">La plantilla incluye las hojas Cursos, Horarios e Instrucciones. Los ejemplos están separados y no se importan como datos reales.</p>
-        <div class="alert alert-info" style="margin-top:17px"><strong>Horarios:</strong> registra una fila por cada día y bloque en la hoja Horarios. El sistema los relacionará por CODIGO y modalidad (TEC/TALL), calculará las horas semanales y generará el calendario con los feriados excluidos.</div>
+        <div class="alert alert-info mt-16"><strong>Horarios:</strong> registra una fila por cada día y bloque en la hoja Horarios. El sistema los relacionará por CODIGO y modalidad (TEC/TALL), calculará las horas semanales y generará el calendario con los feriados excluidos.</div>
         <div class="form-actions"><a class="btn btn-secondary" href="{{ route('cycles.index') }}"><x-icon name="arrow-left" /> Cancelar</a><button class="btn" type="submit"><x-icon name="file-up" /> Leer carga laboral</button></div>
     </form>
 </section>
