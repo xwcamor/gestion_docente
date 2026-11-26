@@ -50,12 +50,6 @@ class AdminProfessorController extends Controller
             $perPage = 15;
         }
 
-        $accountCount = User::count();
-        $activeCount = User::where('is_active', true)->count();
-        $inactiveCount = User::where('is_active', false)->count();
-        $professorCount = User::where('role', 'profesor')->count();
-        $adminCount = User::where('role', 'admin')->count();
-
         $professors = $query
             ->orderBy($sort, $direction)
             ->orderBy('id')
@@ -64,11 +58,6 @@ class AdminProfessorController extends Controller
 
         return view('admin.professors.index', compact(
             'professors',
-            'accountCount',
-            'activeCount',
-            'inactiveCount',
-            'professorCount',
-            'adminCount',
             'perPage',
             'sort',
             'direction'
