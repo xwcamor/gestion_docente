@@ -377,7 +377,7 @@ class SenatiCatalogSeeder extends Seeder
 
         $trainingUnitModels = [];
         foreach ($trainingCareerGroups as $unitCode => $group) {
-            $trainingUnitModels[$unitCode] = InstitutionUnit::firstOrCreate(
+            $trainingUnit = InstitutionUnit::firstOrCreate(
                 ['institution_id' => $institution->id, 'code' => 'FORMACION_2025_' . $unitCode],
                 [
                     'name' => $group['name'],
@@ -386,18 +386,26 @@ class SenatiCatalogSeeder extends Seeder
                     'source_year' => 2025,
                     'verification_status' => !empty($group['school_label_inferred']) ? 'school_label_inferred' : 'reported_in_senati_2025_memory',
                     'is_active' => true,
-                    'metadata' => [
-                        'source_url' => 'https://embed-rech-01.dialog.cm/senati1/docs/memoria_institucional_senati_2025',
-                        'source_section' => 'Total de carreras en ejecución durante el año 2025',
-                        'reported_school_count' => 14,
-                        'reported_career_count' => $group['reported_count'],
-                        'school_label_inferred' => !empty($group['school_label_inferred']),
-                        'note' => !empty($group['school_label_inferred'])
-                            ? 'Agrupación funcional según los nombres de carreras; el encabezado oficial de esta escuela no quedó legible en la extracción y requiere confirmación.'
-                            : 'Nombre de escuela tomado de la tabla de la Memoria 2025; vigencia futura por confirmar.',
-                    ],
+                    'metadata' => [],
                 ]
             );
+            $trainingUnit->forceFill([
+                'name' => $group['name'],
+                'source_label' => $group['name'],
+                'source_year' => 2025,
+                'verification_status' => !empty($group['school_label_inferred']) ? 'school_label_inferred' : 'reported_in_senati_2025_memory',
+                'metadata' => array_merge($trainingUnit->metadata ?? [], [
+                    'source_url' => 'https://embed-rech-01.dialog.cm/senati1/docs/memoria_institucional_senati_2025',
+                    'source_section' => 'Total de carreras en ejecución durante el año 2025',
+                    'reported_school_count' => 14,
+                    'reported_career_count' => $group['reported_count'],
+                    'school_label_inferred' => !empty($group['school_label_inferred']),
+                    'note' => !empty($group['school_label_inferred'])
+                        ? 'Agrupación funcional según los nombres de carreras; el encabezado oficial de esta escuela no quedó legible en la extracción y requiere confirmación.'
+                        : 'Nombre de escuela tomado de la tabla de la Memoria 2025; vigencia futura por confirmar.',
+                ]),
+            ])->save();
+            $trainingUnitModels[$unitCode] = $trainingUnit;
 
             foreach ($group['careers'] as $careerName) {
                 $program = AcademicProgram::firstOrCreate(
