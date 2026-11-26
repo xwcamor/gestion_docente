@@ -21,32 +21,31 @@
                     <span class="tree-course-code-row">
                         <span class="tree-meta-label">Código PIAD-</span>
                         <span class="tree-inline-editable {{ filled($assignment->course->code) ? '' : 'is-empty' }}" data-inline-text data-edit-on-click data-edit-field="code" data-edit-kind="course-code" data-edit-label="Código institucional" data-edit-url="{{ route('workload-tree.courses.code', $assignment) }}" data-edit-value="{{ $assignment->course->code }}" data-edit-empty-label="Falta" title="Clic para editar código">{{ $assignment->course->code ?: 'Falta' }}</span>
+                        <span class="tree-course-period" data-course-dates
+                              data-dates-url="{{ route('workload-tree.courses.dates', $assignment) }}"
+                              data-start-date="{{ $courseStartDate }}"
+                              data-end-date="{{ $courseEndDate }}"
+                              data-start-field="course_start_date"
+                              data-end-field="course_end_date"
+                              aria-label="Periodo del curso">
+                            <span class="tree-date-field">
+                                <span class="tree-date-label">Inicio</span>
+                                <span class="tree-inline-date {{ $courseStartDate ? '' : 'is-empty' }}"
+                                      data-inline-date="course_start_date" data-empty-label="Falta"
+                                      title="Clic para agregar o editar la fecha de inicio">{{ $assignment->course_start_date?->format('d/m/Y') ?: 'Falta' }}</span>
+                            </span>
+                            <span class="tree-date-field">
+                                <span class="tree-date-label">Fin</span>
+                                <span class="tree-inline-date {{ $courseEndDate ? '' : 'is-empty' }}"
+                                      data-inline-date="course_end_date" data-empty-label="Falta"
+                                      title="Clic para agregar o editar la fecha de fin">{{ $assignment->course_end_date?->format('d/m/Y') ?: 'Falta' }}</span>
+                            </span>
+                        </span>
+                        <span class="tree-course-components" aria-label="Componentes del curso">
+                            <span class="tree-component-chip {{ !$tecModality ? 'is-missing' : ($tecModality->active ? 'is-present' : 'is-disabled') }}" title="{{ !$tecModality ? 'TEC no agregado' : ($tecModality->active ? 'TEC activo' : 'TEC desactivado') }}">TEC</span>
+                            <span class="tree-component-chip {{ !$tallModality ? 'is-missing' : ($tallModality->active ? 'is-present' : 'is-disabled') }}" title="{{ !$tallModality ? 'TAL no agregado' : ($tallModality->active ? 'TAL activo' : 'TAL desactivado') }}">TAL</span>
+                        </span>
                     </span>
-                    <div class="tree-course-period" data-course-dates
-                         data-dates-url="{{ route('workload-tree.courses.dates', $assignment) }}"
-                         data-start-date="{{ $courseStartDate }}"
-                         data-end-date="{{ $courseEndDate }}"
-                         data-start-field="course_start_date"
-                         data-end-field="course_end_date"
-                         aria-label="Periodo del curso">
-                        <span class="tree-date-field">
-                            <span class="tree-date-label">Inicio</span>
-                            <span class="tree-inline-date {{ $courseStartDate ? '' : 'is-empty' }}"
-                                  data-inline-date="course_start_date" data-empty-label="Falta"
-                                  title="Clic para agregar o editar la fecha de inicio">{{ $assignment->course_start_date?->format('d/m/Y') ?: 'Falta' }}</span>
-                        </span>
-                        <span class="tree-date-field">
-                            <span class="tree-date-label">Fin</span>
-                            <span class="tree-inline-date {{ $courseEndDate ? '' : 'is-empty' }}"
-                                  data-inline-date="course_end_date" data-empty-label="Agregar fecha"
-                                  title="Clic para agregar o editar la fecha de fin">{{ $assignment->course_end_date?->format('d/m/Y') ?: 'Falta' }}</span>
-                        </span>
-                    </div>
-                </span>
-                <span class="tree-course-components" aria-label="Componentes">
-                    <span class="tree-component-chip {{ !$tecModality ? 'is-missing' : ($tecModality->active ? 'is-present' : 'is-disabled') }}" title="{{ !$tecModality ? 'TEC no agregado' : ($tecModality->active ? 'TEC activo' : 'TEC desactivado') }}">TEC</span>
-                    <span class="tree-component-chip {{ !$tallModality ? 'is-missing' : ($tallModality->active ? 'is-present' : 'is-disabled') }}" title="{{ !$tallModality ? 'TAL no agregado' : ($tallModality->active ? 'TAL activo' : 'TAL desactivado') }}">TAL</span>
-                </span>
             </summary>
 
             <div class="tree-course-children">
