@@ -1646,6 +1646,94 @@
     .tree-structure-card .tree-modality-data-item .tree-nrc-value{font-size:9px!important}
 }
 
+
+/* La acción pertenece visualmente a la tarjeta del curso, no a una columna externa. */
+.tree-structure-card .workload-tree-course{
+    display:block!important;
+    position:relative!important;
+    min-width:0;
+    margin:8px 0 12px!important;
+    border:1px solid var(--line-strong)!important;
+    border-radius:11px!important;
+    background:var(--surface)!important;
+    overflow:visible!important;
+}
+.tree-structure-card .tree-course-branch{
+    display:block;
+    min-width:0;
+    overflow:visible!important;
+}
+.tree-structure-card .tree-course-summary{
+    min-height:76px;
+    padding:12px 148px 12px 12px!important;
+    border-radius:10px 10px 0 0;
+}
+.tree-structure-card .tree-course-children{
+    border-top:1px solid var(--line);
+    border-radius:0 0 10px 10px;
+}
+.tree-structure-card .tree-course-delete-trigger{
+    position:absolute!important;
+    z-index:10;
+    top:13px!important;
+    right:12px!important;
+    display:inline-flex!important;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    width:auto!important;
+    min-width:122px;
+    height:35px!important;
+    margin:0!important;
+    padding:0 10px!important;
+    border:1px solid color-mix(in srgb,var(--danger) 34%,var(--line));
+    border-radius:8px;
+    background:var(--danger-bg);
+    color:var(--danger);
+    font-size:10px;
+    font-weight:800;
+    white-space:nowrap;
+}
+.tree-structure-card .tree-course-delete-trigger:hover:not(:disabled){
+    border-color:var(--danger);
+    background:var(--danger);
+    color:#fff;
+}
+.tree-structure-card .tree-course-delete-trigger:disabled{
+    opacity:.35;
+    cursor:not-allowed;
+}
+.tree-structure-card .tree-group-delete-trigger{
+    min-width:128px;
+}
+.tree-structure-card .tree-group-delete-trigger span{
+    display:inline;
+}
+@media(max-width:600px){
+    .tree-structure-card .tree-course-summary{
+        padding-right:50px!important;
+    }
+    .tree-structure-card .tree-course-delete-trigger{
+        top:10px!important;
+        right:8px!important;
+        width:32px!important;
+        min-width:32px;
+        height:32px!important;
+        padding:0!important;
+    }
+    .tree-structure-card .tree-course-delete-trigger span{
+        display:none;
+    }
+    .tree-structure-card .tree-group-delete-trigger{
+        min-width:34px;
+        width:34px;
+        padding:0;
+    }
+    .tree-structure-card .tree-group-delete-trigger span{
+        display:none;
+    }
+}
+
 </style>
 @endpush
 
