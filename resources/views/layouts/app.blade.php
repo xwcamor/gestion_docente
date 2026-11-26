@@ -310,6 +310,16 @@
     textarea[data-uppercase] {
         text-transform: uppercase;
     }
+    .btn-danger-solid {
+        border-color: #a83f37;
+        background: #a83f37;
+        color: #fff;
+    }
+    .btn-danger-solid:hover {
+        border-color: #87332d;
+        background: #87332d;
+        color: #fff;
+    }
 </style>
     @stack('styles')
     <style>
@@ -1267,7 +1277,7 @@
 
 <dialog class="ui-dialog confirm-dialog" id="app-confirm-dialog" aria-labelledby="app-confirm-title">
     <div class="dialog-head"><div><h2 id="app-confirm-title">Confirmar acción</h2><p id="app-confirm-message">¿Deseas continuar?</p></div><button class="dialog-close" type="button" data-modal-close aria-label="Cerrar"><x-icon name="x" size="15" /></button></div>
-    <div class="dialog-footer"><button class="btn btn-secondary" type="button" data-modal-close>Cancelar</button><button class="btn" type="button" id="app-confirm-submit"><x-icon name="check" /> Continuar</button></div>
+    <div class="dialog-footer"><button class="btn btn-secondary" type="button" data-modal-close>Cancelar</button><button class="btn" type="button" id="app-confirm-submit"><x-icon name="check" /><span>Continuar</span></button></div>
 </dialog>
 
 
@@ -1444,8 +1454,10 @@
     }
 
     const confirmDialog = document.getElementById('app-confirm-dialog');
+    const confirmTitle = document.getElementById('app-confirm-title');
     const confirmMessage = document.getElementById('app-confirm-message');
     const confirmSubmit = document.getElementById('app-confirm-submit');
+    const confirmSubmitLabel = confirmSubmit?.querySelector('span');
 
     document.addEventListener('click', event => {
         const opener = event.target.closest('[data-modal-open]');
@@ -1483,7 +1495,14 @@
             if (pendingForm === form) return;
 
             pendingForm = form;
+            const isDelete = (form.querySelector('input[name="_method"]')?.value || method).toLowerCase() === 'delete';
+            if (confirmTitle) confirmTitle.textContent = form.dataset.confirmTitle || (isDelete ? 'Confirmar eliminación' : 'Confirmar acción');
             if (confirmMessage) confirmMessage.textContent = form.dataset.confirm;
+            if (confirmSubmitLabel) confirmSubmitLabel.textContent = isDelete ? 'Eliminar' : 'Continuar';
+            if (confirmSubmit) {
+                confirmSubmit.classList.toggle('btn-danger-solid', isDelete);
+                confirmSubmit.classList.toggle('btn', !isDelete);
+            }
             confirmDialog?.showModal();
             return;
         }
@@ -1565,31 +1584,35 @@
 (() => {
     const normalizeUppercaseField = target => {
         if (!(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement)) return;
-        if (!target.matches('[data-uppercase]')) return;
+        if (!target.matches('[data-uppercase]') || target.disabled || target.readOnly) return;
 
-        const start = target.selectionStart;
-        const end = target.selectionEnd;
         const original = target.value;
         const upper = original.toLocaleUpperCase('es-PE');
         if (original === upper) return;
 
+        let start = null;
+        let end = null;
+        try {
+            start = target.selectionStart;
+            end = target.selectionEnd;
+        } catch (_) {}
+
         target.value = upper;
         if (typeof start === 'number' && typeof end === 'number') {
-            const delta = upper.length - original.length;
-            const nextStart = Math.max(0, start + delta);
-            const nextEnd = Math.max(nextStart, end + delta);
-            target.setSelectionRange(nextStart, nextEnd);
+            try { target.setSelectionRange(start, end); } catch (_) {}
         }
     };
 
     document.querySelectorAll('[data-uppercase]').forEach(normalizeUppercaseField);
     document.addEventListener('input', event => normalizeUppercaseField(event.target));
+    document.addEventListener('change', event => normalizeUppercaseField(event.target));
     document.addEventListener('paste', event => {
         const target = event.target;
         if (target instanceof HTMLElement && target.matches('[data-uppercase]')) {
             requestAnimationFrame(() => normalizeUppercaseField(target));
         }
     });
+    document.addEventListener('focusout', event => normalizeUppercaseField(event.target));
 })();
 </script>
 </body>
