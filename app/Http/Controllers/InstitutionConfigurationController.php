@@ -10,12 +10,17 @@ use App\Models\InstitutionUnit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use App\Support\CurrentInstitution;
 
 class InstitutionConfigurationController extends Controller
 {
+    public function __construct(private readonly CurrentInstitution $currentInstitution)
+    {
+    }
+
     private function institution(): Institution
     {
-        return Institution::query()->where('code', 'SENATI')->firstOrFail();
+        return $this->currentInstitution->get();
     }
 
     public function index()
@@ -40,8 +45,8 @@ class InstitutionConfigurationController extends Controller
             ->orderBy('name')
             ->get();
 
-        $durationOptions = data_get($institution->settings, 'career_duration_options_semesters', [4, 5, 6, 8]);
-        $semesterWeeks = (int) data_get($institution->settings, 'semester_duration_weeks', 17);
+        $durationOptions = data_get($institution->settings, 'career_duration_options_semesters', []);
+        $semesterWeeks = data_get($institution->settings, 'semester_duration_weeks');
 
         return view('admin.institutions.configuration', compact(
             'institution',
@@ -78,18 +83,36 @@ class InstitutionConfigurationController extends Controller
 
         $data = $request->validate([
             'semester_duration_weeks' => ['required', 'integer', 'min:1', 'max:52'],
-            'career_duration_options' => ['required', 'array', 'min:1'],
-            'career_duration_options.*' => ['required', 'integer', 'min:1', 'max:30', 'distinct'],
+            'career_duration_options' => ['required', 'string', 'max:120'],
         ]);
+
+        $tokens = array_values(array_filter(
+            array_map('trim', preg_split('/[,;]+/', $data['career_duration_options']) ?: []),
+            fn ($value) => $value !== ''
+        ));
+
+        $durationOptions = [];
+        foreach ($tokens as $token) {
+            if (! preg_match('/^\d+$/', $token) || (int) $token < 1 || (int) $token > 30) {
+                return back()
+                    ->withErrors(['career_duration_options' => 'Ingresa únicamente números enteros entre 1 y 30, separados por comas.'])
+                    ->withInput();
+            }
+
+            $durationOptions[] = (int) $token;
+        }
+
+        if (count($durationOptions) === 0 || count($durationOptions) !== count(array_unique($durationOptions))) {
+            return back()
+                ->withErrors(['career_duration_options' => 'Indica al menos una duración y no repitas valores.'])
+                ->withInput();
+        }
+
+        sort($durationOptions);
 
         $settings = $institution->settings ?? [];
         $settings['semester_duration_weeks'] = (int) $data['semester_duration_weeks'];
-        $settings['career_duration_options_semesters'] = collect($data['career_duration_options'])
-            ->map(fn ($value) => (int) $value)
-            ->unique()
-            ->sort()
-            ->values()
-            ->all();
+        $settings['career_duration_options_semesters'] = $durationOptions;
 
         $institution->update(['settings' => $settings]);
 
