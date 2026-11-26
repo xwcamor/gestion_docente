@@ -296,8 +296,8 @@
                                         @csrf
                                         @method('DELETE')
                                         <input type="hidden" name="students_page" value="{{ request('students_page', 1) }}">
-                                        <button class="btn btn-danger btn-sm" type="submit" title="Retirar del grupo">
-                                            <x-icon name="x" /> Quitar
+                                        <button class="btn btn-danger btn-sm" type="submit" title="Retirar del grupo" aria-label="Eliminar alumno del grupo">
+                                            <x-icon name="trash-2" /> Eliminar
                                         </button>
                                     </form>
                                 @else
@@ -724,8 +724,11 @@ html[data-theme="dark"] .group-workload-panel[open]>.group-panel-summary{backgro
 .roster-table .field{min-width:130px;padding:7px 8px;font-size:11px}
 .roster-table td:nth-child(2) .field,.roster-table td:nth-child(3) .field{min-width:150px}
 .roster-table .roster-actions-heading{text-align:right}
-.roster-table .roster-actions{text-align:right;white-space:nowrap}
-.roster-table .roster-actions form{display:inline-flex;gap:5px;align-items:center}
+.roster-table .roster-actions{text-align:right;white-space:nowrap;min-width:220px}
+.roster-table .roster-actions form{display:inline-flex;flex:0 0 auto;gap:5px;align-items:center;vertical-align:middle}
+.roster-table .roster-actions .btn{flex:0 0 auto;min-width:76px;white-space:nowrap;overflow-wrap:normal}
+.roster-table .roster-actions .btn-danger{border-color:#e0b9b4;background:#fff7f6;color:#963f37}
+.roster-table .roster-actions .btn-danger:hover{border-color:#c98f88;background:#fbecea;color:#87332d}
 .roster-table tr[data-editing="true"]{background:#f5fafc}
 .roster-table tr[data-editing="true"] td{padding-top:8px;padding-bottom:8px}
 .roster-empty{padding:26px 12px}
