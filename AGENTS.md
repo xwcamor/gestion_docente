@@ -59,3 +59,19 @@ No ejecutes las diez skills en cada tarea. Escoge las que resuelvan el problema:
 - “Think UI” se usa en este repositorio como criterio de presentación de datos descrito en la guía; no afirmes que es una skill instalada mientras no haya una fuente canónica verificable.
 
 No instales paquetes, fuentes, librerías de animación ni scripts externos solo por recomendación de una skill. Verifica primero compatibilidad, licencia, mantenimiento y necesidad real.
+
+
+## Estándar de interfaz obligatorio para toda página nueva o existente
+
+- Fuente de verdad visual: `DESIGN.md`; implementación CSS: `public/css/ui-standard.css`. La hoja se carga desde `layouts/app.blade.php` después de los estilos de vista.
+- Antes de crear o modificar una página, revisa `DESIGN.md` y las clases existentes. No crees otro sistema de tokens ni una segunda librería de tarjetas.
+- Usa un solo H1 y respeta la escala H1/H2/H3, eyebrow, subhead y card-description definida en `DESIGN.md`.
+- Usa la escala de espaciado 4/8/12/16/20/24/32 px. No introduzcas márgenes y paddings arbitrarios para “alinear” una pantalla.
+- Todas las cards principales usan el padding, radio y separación global. No añadas padding local salvo una excepción funcional documentada.
+- Toda barra de búsqueda/filtros de una lista o tabla debe llevar `.filter-bar`; agrega la clase propia del módulo solo como modificador. Ordena búsqueda primero, criterios después y botones al final.
+- No muestres KPI por decoración. Antes de retirar o agregar un indicador, verifica si ayuda a decidir y si no duplica el total, el filtro o la tabla.
+- Elimina instrucciones repetidas, metadatos técnicos sobredimensionados y botones de regreso duplicados. No elimines datos académicos, trazabilidad, advertencias ni estados que cambien decisiones.
+- Evita estilos inline para márgenes, padding, ancho, colores o tipografía. Usa clases semánticas y la hoja global.
+- En módulos existentes, realiza la normalización de estructura y filtros sin alterar reglas de negocio, nombres del dominio, datos, validaciones, rutas o permisos.
+- Revisión obligatoria: 1440 px, 1024 px y 390 px; tema claro y oscuro; foco/teclado; textos y nombres largos; tabla ancha; estados vacío/error/éxito/deshabilitado.
+- Antes de entregar, revisa si la vista tiene un H1, subtítulo útil, filtros ordenados, cards con propósito, indicadores no redundantes y padding estándar. Ejecuta las comprobaciones disponibles y di qué no se pudo probar.
