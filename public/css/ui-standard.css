@@ -1,0 +1,383 @@
+/*
+ * Gestión Docente — estándar visual de páginas
+ * Fuente: DESIGN.md. Cargado después de los estilos de layout y de cada vista.
+ * Las reglas aquí son defaults compartidos; los componentes especiales conservan
+ * sus estructuras cuando necesitan interacción propia.
+ */
+:root{
+    --gd-space-1:4px;
+    --gd-space-2:8px;
+    --gd-space-3:12px;
+    --gd-space-4:16px;
+    --gd-space-5:20px;
+    --gd-space-6:24px;
+    --gd-space-8:32px;
+    --gd-content-max:1680px;
+    --gd-page-gutter:clamp(16px,2vw,30px);
+    --gd-card-padding:20px;
+    --gd-card-gap:16px;
+    --gd-control-height:40px;
+    --gd-card-radius:12px;
+}
+
+/* Área de trabajo: mismo gutter y ancho útil para todos los módulos. */
+body .app-shell>.main{
+    padding:20px var(--gd-page-gutter) 32px!important;
+    min-width:0;
+}
+body .app-shell>.main>.main-content{
+    width:100%;
+    max-width:var(--gd-content-max);
+    min-width:0;
+    margin-inline:auto;
+    box-sizing:border-box;
+}
+body .main-content{min-width:0}
+
+/* Encabezado de página: un H1, contexto breve y acciones en un mismo eje. */
+body .main-content>.breadcrumbs{
+    margin:0 0 12px!important;
+}
+body .main-content .page-head{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:20px;
+    min-width:0;
+    margin:0 0 20px!important;
+    padding:0 0 16px!important;
+    border-bottom:1px solid var(--gd-border);
+}
+body .main-content .page-head>div:first-child{min-width:0}
+body .main-content .page-head .eyebrow,
+body .main-content .eyebrow{
+    margin:0 0 7px;
+    color:var(--accent);
+    font-size:10px;
+    font-weight:800;
+    line-height:1.35;
+    letter-spacing:.075em;
+    text-transform:uppercase;
+}
+body .main-content .page-head h1{
+    margin:0;
+    color:var(--gd-ink);
+    font-size:clamp(25px,2.1vw,30px);
+    font-weight:800;
+    line-height:1.14;
+    letter-spacing:-.035em;
+    overflow-wrap:anywhere;
+}
+body .main-content .page-head .subhead,
+body .main-content>.subhead{
+    max-width:70ch;
+    margin:7px 0 0;
+    color:var(--gd-muted);
+    font-size:12.5px;
+    line-height:1.55;
+}
+body .main-content .page-head .actions{
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    flex-wrap:wrap;
+    gap:8px;
+    min-width:0;
+}
+body .main-content .page-head .actions>*{min-width:0}
+
+/* Títulos de sección y subtítulos: escala única. */
+body .main-content h2{
+    margin:0 0 6px;
+    color:var(--gd-ink);
+    font-size:16px;
+    font-weight:780;
+    line-height:1.3;
+    letter-spacing:-.018em;
+}
+body .main-content h3{
+    margin:0 0 6px;
+    color:var(--gd-ink);
+    font-size:13.5px;
+    font-weight:740;
+    line-height:1.35;
+}
+body .main-content .card-description{
+    max-width:76ch;
+    margin:4px 0 0;
+    color:var(--gd-muted);
+    font-size:12px;
+    line-height:1.5;
+}
+body .main-content .help,
+body .main-content .muted.small{
+    font-size:11px;
+    line-height:1.5;
+}
+
+/* Tarjetas: misma superficie, borde, radio, padding y separación. */
+body .main-content .card:not(.group-panel):not(.modality-section){
+    min-width:0;
+    margin:0 0 var(--gd-card-gap);
+    padding:var(--gd-card-padding);
+    border:1px solid var(--gd-border);
+    border-radius:var(--gd-card-radius);
+    background:var(--gd-surface);
+    box-shadow:var(--gd-shadow);
+}
+body .main-content .card>.card-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    min-width:0;
+    margin:0 0 16px;
+    padding:0 0 12px;
+    border-bottom:1px solid var(--gd-border);
+}
+body .main-content .card>.card-head>div:first-child{min-width:0}
+body .main-content .card>.card-head h2{margin:0}
+body .main-content .card>.card-head .card-description{margin-top:4px}
+body .main-content .card>h2:first-child{margin:0 0 12px}
+body .main-content .card>.grid,
+body .main-content .card>.form-row,
+body .main-content .card>.form-row-3{
+    gap:16px;
+}
+body .main-content .grid{min-width:0}
+body .main-content .stat-card{
+    min-width:0;
+    padding:16px;
+    border:1px solid var(--gd-border);
+    border-radius:10px;
+    background:var(--gd-surface);
+    box-shadow:none;
+}
+
+/* Los paneles de acordeón son estructuras, no cards con padding interior. */
+body .main-content details.card.group-panel,
+body .main-content details.card.modality-section{
+    padding:0;
+    overflow:hidden;
+    border-radius:12px;
+    box-shadow:none;
+}
+body .main-content details.card.group-panel>.group-panel-summary,
+body .main-content details.card.modality-section>.modality-section-summary{
+    min-width:0;
+}
+
+/* Filtros: un único patrón para búsqueda, selects y acciones. */
+body .main-content .filter-bar,
+body .main-content form.filters-toolbar,
+body .main-content form.holiday-filters,
+body .main-content form.gc-filter-form,
+body .main-content .accounts-toolbar,
+body .main-content .course-toolbar{
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:8px;
+    min-width:0;
+    margin:0 0 16px;
+    padding:12px;
+    border:1px solid var(--gd-border);
+    border-radius:10px;
+    background:var(--gd-surface-soft);
+}
+body .main-content .filter-bar :is(input,select,textarea),
+body .main-content form.filters-toolbar :is(input,select,textarea),
+body .main-content form.holiday-filters :is(input,select,textarea),
+body .main-content form.gc-filter-form :is(input,select,textarea),
+body .main-content .accounts-toolbar :is(input,select,textarea),
+body .main-content .course-toolbar :is(input,select,textarea){
+    min-width:140px;
+    min-height:var(--gd-control-height);
+    flex:1 1 155px;
+}
+body .main-content .filter-bar :is(input[type=search],.accounts-search,.holiday-search,.workload-tree-search-field),
+body .main-content .accounts-toolbar :is(input[type=search],.accounts-search),
+body .main-content .holiday-filters .holiday-search{
+    min-width:min(100%,220px);
+    flex:2 1 240px;
+}
+body .main-content .filter-bar :is(.btn,a.btn),
+body .main-content form.filters-toolbar :is(.btn,a.btn),
+body .main-content form.holiday-filters :is(.btn,a.btn),
+body .main-content form.gc-filter-form :is(.btn,a.btn),
+body .main-content .accounts-toolbar :is(.btn,a.btn),
+body .main-content .course-toolbar :is(.btn,a.btn){
+    flex:0 0 auto;
+    min-height:var(--gd-control-height);
+}
+body .main-content .filter-bar .help,
+body .main-content .accounts-toolbar .help{margin:0;flex:0 1 auto}
+body .main-content .filter-bar input[type=search],
+body .main-content .filter-bar .filter-input,
+body .main-content .filter-bar .field{
+    width:100%;
+}
+
+/* Búsqueda local dentro de listados (padrón, notas y sesiones). */
+body .main-content .roster-head-actions,
+body .main-content .roster-toolbar,
+body .main-content .modality-section-toolbar{
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:10px;
+    min-width:0;
+}
+body .main-content .roster-head-actions .roster-search{
+    flex:1 1 210px;
+    min-width:160px;
+    min-height:var(--gd-control-height);
+}
+body .main-content .roster-head-actions .btn{flex:0 0 auto}
+
+/* Formularios y tablas: alineación común sin convertir cada campo en una tarjeta. */
+body .main-content .form-row,
+body .main-content .form-row-3{
+    min-width:0;
+    gap:16px;
+}
+body .main-content .field{
+    min-width:0;
+    min-height:var(--gd-control-height);
+    border-radius:8px;
+}
+body .main-content textarea.field{min-height:96px}
+body .main-content label,
+body .main-content .field-label{
+    margin:10px 0 5px;
+    font-size:12px;
+    font-weight:680;
+}
+body .main-content .form-actions{
+    gap:8px;
+    margin-top:20px;
+    padding-top:16px;
+    border-top:1px solid var(--gd-border);
+}
+body .main-content .table-wrap{
+    width:100%;
+    min-width:0;
+    overflow-x:auto;
+    border:1px solid var(--gd-border);
+    border-radius:10px;
+    overscroll-behavior-x:contain;
+}
+body .main-content .table-wrap table{
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0;
+}
+body .main-content .table-wrap th{
+    padding:11px 12px;
+    color:var(--gd-muted);
+    font-size:10px;
+    font-weight:750;
+    letter-spacing:.04em;
+}
+body .main-content .table-wrap td{
+    padding:10px 12px;
+    vertical-align:middle;
+    line-height:1.45;
+}
+body .main-content .empty{
+    padding:24px 16px;
+    border-radius:10px;
+}
+
+/* Acciones: alturas, prioridad y texto coherentes en todo el sistema. */
+body .main-content .btn{
+    min-height:38px;
+    border-radius:8px;
+    font-size:11.5px;
+}
+body .main-content .btn.btn-sm{
+    min-height:34px;
+    font-size:10.5px;
+}
+
+/* Mobile/tablet: ningún filtro, card, formulario o tabla debe romper el ancho. */
+@media(max-width:900px){
+    body .app-shell>.main{padding:16px 16px 24px!important}
+    body .main-content .page-head{align-items:flex-start}
+    body .main-content .page-head .actions{justify-content:flex-start}
+    body .main-content .filter-bar,
+    body .main-content form.filters-toolbar,
+    body .main-content form.holiday-filters,
+    body .main-content form.gc-filter-form,
+    body .main-content .accounts-toolbar,
+    body .main-content .course-toolbar{
+        display:grid;
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        align-items:stretch;
+    }
+    body .main-content .filter-bar :is(input[type=search],.accounts-search,.holiday-search,.workload-tree-search-field),
+    body .main-content form.filters-toolbar input[type=search],
+    body .main-content form.holiday-filters .holiday-search,
+    body .main-content .accounts-toolbar input[type=search]{
+        grid-column:1/-1;
+        width:100%;
+    }
+    body .main-content .filter-bar .btn,
+    body .main-content form.filters-toolbar .btn,
+    body .main-content form.holiday-filters .btn,
+    body .main-content form.gc-filter-form .btn,
+    body .main-content .accounts-toolbar .btn{width:100%}
+    body .main-content .card:not(.group-panel):not(.modality-section){padding:16px}
+}
+@media(max-width:560px){
+    body .app-shell>.main{padding:12px 12px 20px!important}
+    body .main-content .page-head{
+        flex-direction:column;
+        align-items:stretch;
+        gap:10px;
+        margin-bottom:16px!important;
+        padding-bottom:12px!important;
+    }
+    body .main-content .page-head h1{font-size:24px}
+    body .main-content .page-head .actions{width:100%}
+    body .main-content .page-head .actions .btn,
+    body .main-content .page-head>.btn{flex:1 1 100%}
+    body .main-content .page-head .subhead{font-size:12px}
+    body .main-content .filter-bar,
+    body .main-content form.filters-toolbar,
+    body .main-content form.holiday-filters,
+    body .main-content form.gc-filter-form,
+    body .main-content .accounts-toolbar,
+    body .main-content .course-toolbar{
+        grid-template-columns:minmax(0,1fr);
+        padding:10px;
+    }
+    body .main-content .filter-bar>*,
+    body .main-content form.filters-toolbar>*,
+    body .main-content form.holiday-filters>*,
+    body .main-content form.gc-filter-form>*,
+    body .main-content .accounts-toolbar>*{grid-column:1/-1;width:100%;max-width:none}
+    body .main-content .card:not(.group-panel):not(.modality-section){
+        padding:14px;
+        margin-bottom:12px;
+        border-radius:11px;
+    }
+    body .main-content .card>.card-head{
+        align-items:flex-start;
+        flex-direction:column;
+        gap:8px;
+        margin-bottom:12px;
+        padding-bottom:10px;
+    }
+    body .main-content .grid,
+    body .main-content .form-row,
+    body .main-content .form-row-3{grid-template-columns:minmax(0,1fr);gap:12px}
+    body .main-content .form-actions{
+        align-items:stretch;
+        flex-direction:column-reverse;
+    }
+    body .main-content .form-actions .btn{width:100%}
+    body .main-content .table-wrap table{min-width:620px}
+    body .main-content .roster-head-actions{width:100%}
+    body .main-content .roster-head-actions .btn{width:100%}
+}
