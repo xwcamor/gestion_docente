@@ -84,7 +84,8 @@ class WorkloadTreeController extends Controller
 
         foreach (['career', 'semester'] as $field) {
             if ($request->exists($field)) {
-                $request->merge([$field => trim((string) $request->input($field))]);
+                $value = trim((string) $request->input($field));
+                $request->merge([$field => $field === 'career' ? mb_strtoupper($value) : mb_strtoupper($value)]);
             }
         }
 
@@ -229,6 +230,13 @@ class WorkloadTreeController extends Controller
     ) {
         $this->authorizeGroup($group);
 
+        foreach (['course_name', 'course_code'] as $field) {
+            if ($request->exists($field)) {
+                $value = trim((string) $request->input($field));
+                $request->merge([$field => $value === '' ? null : mb_strtoupper($value)]);
+            }
+        }
+
         // Si el formulario no envía componentes, ambos se crean activos por defecto.
         if (!$request->has('components')) {
             $request->merge(['components' => ['TEC', 'TALL']]);
@@ -366,7 +374,7 @@ class WorkloadTreeController extends Controller
             'name.max' => 'El nombre del curso no puede superar los 255 caracteres.',
         ]);
 
-        $assignment->course->update(['name' => trim($data['name'])]);
+        $assignment->course->update(['name' => mb_strtoupper(trim($data['name']))]);
 
         return response()->json([
             'message' => 'Nombre del curso actualizado.',
