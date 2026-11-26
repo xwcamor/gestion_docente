@@ -161,7 +161,7 @@ class InstitutionConfigurationController extends Controller
         abort_unless($program->institution_id === $institution->id, 404);
         abort_unless($version->academic_program_id === $program->id, 404);
 
-        $allowedDurations = data_get($institution->settings, 'career_duration_options_semesters', [4, 5, 6, 8]);
+        $allowedDurations = data_get($institution->settings, 'career_duration_options_semesters', []);
 
         $data = $request->validate([
             'duration_semesters' => ['nullable', 'integer', Rule::in($allowedDurations)],
