@@ -120,8 +120,8 @@
     @foreach($trainingPrograms->groupBy(fn ($program) => $program->unit?->name ?: 'Escuela sin clasificar') as $schoolName => $programs)
         <details class="institution-period">
             <summary>
-                <div><strong>{{ $schoolName }}</strong><small>Referencia de oferta 2025 · Duración individual pendiente de malla</small></div>
-                <span class="institution-period-count">{{ $programs->count() }} carreras</span>
+                <div><strong>{{ $schoolName }}</strong><small>Referencia 2025 · Duración individual pendiente de malla</small></div>
+                <span class="institution-period-count">{{ $programs->count() }} de {{ data_get($programs->first()->unit?->metadata, 'reported_career_count', $programs->count()) }} nombres</span>
             </summary>
             <div class="institution-program-list">
                 @foreach($programs as $program)
