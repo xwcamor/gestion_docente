@@ -10,10 +10,10 @@
 
     <section class="workload-tree-hero">
         <div class="workload-tree-hero-copy">
-            <p class="eyebrow"><x-icon name="git-branch" size="16" /> ORGANIZACIÓN ACADÉMICA</p>
+            <p class="eyebrow">ORGANIZACIÓN ACADÉMICA</p>
             <h1>{{ $cycle->academic_year }} <span>· Ciclo {{ $cycle->cycle_code }}</span></h1>
             <div class="workload-tree-context">
-                <span><x-icon name="calendar-range" size="16" /> Periodo: {{ $cycle->start_date?->format('d/m/Y') ?: 'Sin inicio' }} – {{ $cycle->end_date?->format('d/m/Y') ?: 'Sin fin' }}</span>
+                <span>Periodo: {{ $cycle->start_date?->format('d/m/Y') ?: 'Sin inicio' }} – {{ $cycle->end_date?->format('d/m/Y') ?: 'Sin fin' }}</span>
                 <span class="tree-context-hint">Carrera y semestre se configuran en cada grupo</span>
             </div>
         </div>
