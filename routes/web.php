@@ -22,6 +22,7 @@ use App\Http\Controllers\SystemSettingController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\WorkloadTreeController;
 use App\Http\Controllers\InstitutionCatalogController;
+use App\Http\Controllers\InstitutionConfigurationController;
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1')->name('login.store');
