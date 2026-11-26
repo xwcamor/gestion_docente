@@ -2,12 +2,20 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\ScopesToCurrentInstitution;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class EmploymentRelationship extends Model
 {
+    use ScopesToCurrentInstitution;
+
     protected $fillable = ['institution_id', 'user_id', 'employment_type', 'job_title', 'contracted_weekly_hours', 'starts_on', 'ends_on', 'status', 'metadata'];
+
+    protected static function institutionIdColumn(): ?string
+    {
+        return 'institution_id';
+    }
 
     protected function casts(): array
     {
