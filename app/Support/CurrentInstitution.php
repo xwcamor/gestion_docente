@@ -62,7 +62,7 @@ class CurrentInstitution
             'Tu cuenta no tiene una membresía institucional activa.'
         );
 
-        // Compatibility for the current SENATI installation, whose users
+        // Compatibility for the current single-institution installation, whose users
         // predate institution memberships. This fallback stops working as soon
         // as a second active tenant is registered.
         $activeInstitutions = Institution::query()
