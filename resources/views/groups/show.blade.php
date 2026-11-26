@@ -723,8 +723,10 @@ html[data-theme="dark"] .group-workload-panel[open]>.group-panel-summary{backgro
 .roster-table td{font-size:11px;vertical-align:middle}
 .roster-table .field{min-width:130px;padding:7px 8px;font-size:11px}
 .roster-table td:nth-child(2) .field,.roster-table td:nth-child(3) .field{min-width:150px}
-.roster-table .roster-actions-heading{text-align:right}
-.roster-table .roster-actions{text-align:right;white-space:nowrap;min-width:220px}
+.roster-table .roster-actions-heading{text-align:right;position:sticky;right:0;z-index:6;background:#f2f7f9;box-shadow:-8px 0 12px -12px rgba(25,45,55,.5)}
+.roster-table .roster-actions{text-align:right;white-space:nowrap;min-width:220px;position:sticky;right:0;z-index:2;background:#fff;box-shadow:-8px 0 12px -12px rgba(25,45,55,.45)}
+.roster-table tr:hover .roster-actions{background:#fcfdfb}
+.roster-table tr[data-editing="true"] .roster-actions{background:#f5fafc}
 .roster-table .roster-actions form{display:inline-flex;flex:0 0 auto;gap:5px;align-items:center;vertical-align:middle}
 .roster-table .roster-actions .btn{flex:0 0 auto;min-width:76px;white-space:nowrap;overflow-wrap:normal}
 .roster-table .roster-actions .btn-danger{border-color:#e0b9b4;background:#fff7f6;color:#963f37}
