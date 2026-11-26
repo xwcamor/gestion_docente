@@ -8,8 +8,6 @@
     <x-icon name="chevron-right" size="12" />
     <span class="current">{{ $cycle->academic_year }} · Ciclo {{ $cycle->cycle_code }}</span>
 </div>
-<a class="cycle-back" href="{{ route('cycles.index') }}"><x-icon name="arrow-left" size="15" /> Volver a todos los ciclos</a>
-
 <div class="page-head cycle-detail-head">
     <div>
         <p class="eyebrow"><x-icon name="calendar-days" size="12" /> Ciclo académico</p>
