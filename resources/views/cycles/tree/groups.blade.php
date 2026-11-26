@@ -54,12 +54,11 @@
                                   title="Clic para editar semestre">{{ $group->semester ?: 'Falta' }}</span>
                         </span>
                         <span class="tree-group-inline-field tree-group-inline-schedule">
-                            <span class="tree-group-inline-label">Horario</span>
                             @if($daysLabel)
                                 <span class="tree-group-inline-days">{{ $daysLabel }}</span>
                             @endif
                             <span class="tree-group-inline-time">
-                                <span class="tree-group-inline-sub-label">Del</span>
+                                <span class="tree-group-inline-sub-label">Inicio</span>
                                 <span class="tree-inline-editable {{ $startTime ? '' : 'is-empty' }}"
                                       data-inline-text data-edit-on-click
                                       data-edit-field="workload_start_time" data-edit-kind="group-time"
@@ -71,7 +70,7 @@
                                       title="Clic para editar hora de inicio">{{ $startTime ?: 'Falta' }}</span>
                             </span>
                             <span class="tree-group-inline-time">
-                                <span class="tree-group-inline-sub-label">Hasta</span>
+                                <span class="tree-group-inline-sub-label">Fin</span>
                                 <span class="tree-inline-editable {{ $endTime ? '' : 'is-empty' }}"
                                       data-inline-text data-edit-on-click
                                       data-edit-field="workload_end_time" data-edit-kind="group-time"
