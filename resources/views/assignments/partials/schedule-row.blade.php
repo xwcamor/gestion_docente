@@ -36,7 +36,7 @@
     </label>
     <label class="quick-schedule-field quick-schedule-room">
         <span>Aula / ambiente</span>
-        <input class="field" name="rows[{{ $rowIndex }}][{{ $prefix }}_schedules][{{ $scheduleIndex }}][classroom]" value="{{ $schedule['classroom'] ?? '' }}" maxlength="100" placeholder="Ej. LAB 105">
+        <input class="field" name="rows[{{ $rowIndex }}][{{ $prefix }}_schedules][{{ $scheduleIndex }}][classroom]" data-uppercase value="{{ $schedule['classroom'] ?? '' }}" maxlength="100" placeholder="Ej. LAB 105">
     </label>
     <button class="btn btn-ghost btn-sm quick-schedule-remove" type="button" aria-label="Quitar bloque semanal" title="Quitar bloque"><x-icon name="x" /></button>
 </div>
