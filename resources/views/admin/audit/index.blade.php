@@ -10,7 +10,7 @@
 </div>
 
 <section class="card">
-    <form method="GET" action="{{ route('admin.audit.index') }}" class="filters-toolbar">
+    <form method="GET" action="{{ route('admin.audit.index') }}" class="filter-bar filters-toolbar">
         <input class="field" type="search" name="q" value="{{ request('q') }}" placeholder="Buscar acción, usuario o módulo…">
         <select class="field" name="module">
             <option value="">Todos los módulos</option>
@@ -55,10 +55,3 @@
     @if($logs->hasPages())<x-pagination :paginator="$logs" />@endif
 </section>
 @endsection
-@push('styles')
-<style>
-.filters-toolbar{display:grid;grid-template-columns:minmax(200px,2fr) repeat(5,minmax(105px,1fr)) auto auto;gap:8px;margin-bottom:15px;align-items:center}
-.filters-toolbar .field{width:100%;min-width:0}
-@media(max-width:900px){.filters-toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}.filters-toolbar input[type=search]{grid-column:1/-1}}
-</style>
-@endpush
