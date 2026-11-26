@@ -14,8 +14,9 @@
 
 <div class="institution-catalog-stats">
     <article class="card institution-stat"><span>Periodos capturados</span><strong>{{ $periods->count() }}</strong></article>
+    <article class="card institution-stat"><span>Asignaturas (códigos)</span><strong>{{ number_format($courseCount) }}</strong></article>
     <article class="card institution-stat"><span>Secciones / NRC</span><strong>{{ number_format($offeringCount) }}</strong></article>
-    <article class="card institution-stat"><span>Grupos por vincular</span><strong>{{ number_format($pendingGroupCount) }}</strong></article>
+    <article class="card institution-stat"><span>NRC por vincular a grupos</span><strong>{{ number_format($pendingGroupCount) }}</strong></article>
     <article class="card institution-stat"><span>Plantillas Excel cargadas</span><strong>{{ number_format($templateCount) }}</strong></article>
 </div>
 
@@ -52,7 +53,13 @@
                             @foreach($period->offerings->sortBy(fn ($offering) => [$offering->course_code_snapshot, $offering->nrc]) as $offering)
                                 <tr>
                                     <td><code>{{ $offering->external_identifier }}</code></td>
-                                    <td><strong>{{ $offering->course_name_snapshot }}</strong><small>{{ $offering->course_code_snapshot }}</small></td>
+                                    <td>
+                                        <strong>{{ $offering->course_name_snapshot }}</strong>
+                                        <small>{{ $offering->course_code_snapshot }}</small>
+                                        @if(data_get($offering->course?->metadata, 'observed_group_pattern'))
+                                            <small>Dos salones observados: uno con TEC+TAL y otro solo TEC; NRC por salón pendiente.</small>
+                                        @endif
+                                    </td>
                                     <td>{{ $offering->instructionType?->code ?: 'Sin tipo' }}</td>
                                     <td>
                                         @if($offering->source_status === 'open')
@@ -127,7 +134,7 @@
 
 @push('styles')
 <style>
-.institution-catalog-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.institution-catalog-stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:16px}
 .institution-stat{padding:16px;display:grid;gap:7px}
 .institution-stat span{font-size:11px;color:var(--muted)}
 .institution-stat strong{font-size:25px;line-height:1.1;color:var(--ink)}
@@ -155,6 +162,7 @@
 .institution-note{margin-top:12px}
 .institution-catalog-disclaimer{display:flex;align-items:flex-start;gap:10px;padding:13px 15px;border:1px solid var(--line);border-radius:10px;color:var(--muted)}
 .institution-catalog-disclaimer p{margin:0;font-size:11px;line-height:1.6}
+@media(max-width:1100px){.institution-catalog-stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:900px){.institution-catalog-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.institution-catalog-stats{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}.institution-stat{padding:12px}.institution-stat strong{font-size:21px}.institution-catalog-section{padding:13px}.institution-type-row,.institution-feature-row{align-items:flex-start;flex-wrap:wrap}}
 </style>
