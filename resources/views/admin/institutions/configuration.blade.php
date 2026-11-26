@@ -310,9 +310,7 @@
 .institution-config-form{display:grid;gap:15px}
 .institution-config-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 16px}
 .institution-rules-grid{display:grid;grid-template-columns:minmax(220px,.8fr) minmax(0,1.2fr);gap:22px}
-.institution-duration-options{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:7px}
-.institution-duration-option{display:inline-flex;align-items:center;gap:7px;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font-size:11px;cursor:pointer}
-.institution-duration-option input,.institution-inline-check input{accent-color:var(--accent)}
+.institution-inline-check input{accent-color:var(--accent)}
 .institution-config-form-footer,.institution-record-footer,.institution-version-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-top:13px;border-top:1px solid var(--line)}
 .institution-config-form-footer>span{font-size:10px;color:var(--muted)}
 .institution-config-records{display:grid}
