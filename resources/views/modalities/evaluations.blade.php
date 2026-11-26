@@ -35,7 +35,6 @@
     <section class="card">
         <div class="card-head">
             <div><h2>{{ $evaluation->title }}</h2><p class="card-description">{{ $evaluation->evaluation_date?->format('d/m/Y') ?? 'Sin fecha' }} · Peso {{ $evaluation->weight ?? 'No definido' }}% · Nota máxima {{ $evaluation->maximum_score }}</p></div>
-            <span class="badge badge-blue">Evaluación #{{ $evaluation->id }}</span>
         </div>
         @if($enrollmentCount > 0)
             <form method="POST" action="{{ route('evaluations.grades', $evaluation) }}">
