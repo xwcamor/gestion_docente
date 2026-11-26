@@ -12,7 +12,7 @@
         @csrf
         <div class="form-row">
             <div><label for="academic_year">Año académico</label><input class="field" id="academic_year" type="number" name="academic_year" min="2020" max="2100" value="{{ old('academic_year', date('Y')) }}" required><p class="help">Ejemplo: 2027.</p></div>
-            <div><label for="cycle_code">Código del ciclo</label><input class="field" id="cycle_code" name="cycle_code" value="{{ old('cycle_code', '10') }}" maxlength="20" required placeholder="10 o 20"><p class="help">Ejemplo: ciclo 10 o ciclo 20.</p></div>
+            <div><label for="cycle_code">Código del ciclo</label><input class="field" id="cycle_code" data-uppercase name="cycle_code" value="{{ old('cycle_code', '10') }}" maxlength="20" required placeholder="10 o 20"><p class="help">Ejemplo: ciclo 10 o ciclo 20.</p></div>
         </div>
         <div class="form-row">
             <div><label for="start_date">Inicio del rango de carga laboral</label><input class="field" id="start_date" type="date" name="start_date" value="{{ old('start_date') }}" required></div>
