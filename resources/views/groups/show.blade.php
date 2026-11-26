@@ -62,7 +62,7 @@
                 </div>
             @endif
             <label for="edit_group_name">Nombre del grupo</label>
-            <input class="field" id="edit_group_name" name="name" value="{{ old('name', $group->name) }}" required maxlength="100" autofocus>
+            <input class="field" id="edit_group_name" data-uppercase name="name" value="{{ old('name', $group->name) }}" required maxlength="100" autofocus>
         </div>
         <div class="dialog-footer">
             <button class="btn btn-secondary" type="button" data-modal-close><x-icon name="x" /> Cancelar</button>
@@ -267,12 +267,12 @@
                             </td>
                             <td>
                                 <span data-student-display @if($editing) hidden @endif>{{ $student->surnames }}</span>
-                                <input class="field student-edit-input" form="{{ $formId }}" name="surnames" maxlength="255" data-original-value="{{ $student->surnames }}" value="{{ $useOldValues ? old('surnames') : $student->surnames }}" required @unless($editing) hidden disabled @endunless>
+                                <input class="field student-edit-input" form="{{ $formId }}" name="surnames" data-uppercase maxlength="255" data-original-value="{{ $student->surnames }}" value="{{ $useOldValues ? old('surnames') : $student->surnames }}" required @unless($editing) hidden disabled @endunless>
                                 @if($editing) @error('surnames')<small class="field-error">{{ $message }}</small>@enderror @endif
                             </td>
                             <td>
                                 <span data-student-display @if($editing) hidden @endif>{{ $student->given_names }}</span>
-                                <input class="field student-edit-input" form="{{ $formId }}" name="given_names" maxlength="255" data-original-value="{{ $student->given_names }}" value="{{ $useOldValues ? old('given_names') : $student->given_names }}" required @unless($editing) hidden disabled @endunless>
+                                <input class="field student-edit-input" form="{{ $formId }}" name="given_names" data-uppercase maxlength="255" data-original-value="{{ $student->given_names }}" value="{{ $useOldValues ? old('given_names') : $student->given_names }}" required @unless($editing) hidden disabled @endunless>
                                 @if($editing) @error('given_names')<small class="field-error">{{ $message }}</small>@enderror @endif
                             </td>
                             <td>
