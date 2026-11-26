@@ -84,7 +84,7 @@
 
 <section class="card institution-catalog-section">
     <div class="institution-section-head">
-        <div><h2>Carreras y duración de malla</h2><p>La duración se guarda por carrera y versión, nunca como una cantidad fija para toda la institución.</p></div>
+        <div><h2>Escuela Superior Tecnológica · oferta 2026</h2><p>Estas siete carreras aparecen en la oferta oficial vigente consultada y tienen ocho semestres publicados.</p></div>
     </div>
     <div class="table-scroll">
         <table class="data-table">
@@ -104,6 +104,38 @@
     </div>
     <p class="institution-note">SENATI reportó 91 carreras de formación profesional y 14 escuelas en su memoria institucional 2025. Esta pantalla no pretende ser la lista completa: muestra siete programas vigentes de la Escuela Superior con duración oficial de ocho semestres y {{ $historicalPrograms }} nombres ETIA históricos de 2022. El catálogo vigente completo de Formación Profesional debe importarse desde el documento oficial actualizado.</p>
     <p class="institution-note">{{ $historicalPrograms }} nombres históricos de ETIA (memoria 2022) se conservaron como referencia y no se ofrecen como carreras vigentes.</p>
+</section>
+
+<section class="card institution-catalog-section">
+    <div class="institution-section-head">
+        <div>
+            <h2>Formación Profesional · catálogo 2025</h2>
+            <p>{{ $trainingPrograms->count() }} nombres recuperados de la tabla oficial, agrupados según las escuelas que aparecen en la memoria.</p>
+        </div>
+        <span class="badge badge-gray">{{ $reportedTrainingCareerCount }} reportadas</span>
+    </div>
+    <div class="institution-catalog-note">
+        La Memoria 2025 informa {{ $reportedTrainingCareerCount }} carreras en ejecución y 14 escuelas. La extracción legible de la tabla permitió registrar {{ $trainingPrograms->count() }} nombres; {{ $unresolvedTrainingNames }} quedan pendientes de recuperar de la fuente completa. No se inventaron. La memoria también muestra 91 como cifra institucional general de carreras, por lo que se conservan ambas cifras con su contexto.
+    </div>
+    @foreach($trainingPrograms->groupBy(fn ($program) => $program->unit?->name ?: 'Escuela sin clasificar') as $schoolName => $programs)
+        <details class="institution-period">
+            <summary>
+                <div><strong>{{ $schoolName }}</strong><small>Referencia de oferta 2025 · Duración individual pendiente de malla</small></div>
+                <span class="institution-period-count">{{ $programs->count() }} carreras</span>
+            </summary>
+            <div class="institution-program-list">
+                @foreach($programs as $program)
+                    <div class="institution-program-row">
+                        <span>{{ $program->name }}</span>
+                        <small>Duración: por validar en su versión de malla</small>
+                    </div>
+                @endforeach
+            </div>
+        </details>
+    @endforeach
+    <div class="institution-catalog-note">
+        El reglamento consultado contempla carreras de 4, 5, 6 u 8 semestres. Esa es la lista de duraciones admitidas como referencia para SENATI; no determina por sí sola cuántos semestres tiene cada una de estas 85 carreras.
+    </div>
 </section>
 
 <section class="card institution-catalog-section">
@@ -160,6 +192,11 @@
 .institution-offerings td strong,.institution-offerings td small{display:block}
 .institution-offerings td small{color:var(--muted);font-size:10px;margin-top:3px}
 .institution-note{margin-top:12px}
+.institution-catalog-note{padding:11px 12px;border-radius:8px;background:var(--surface-muted, #f7f8fa);color:var(--muted);font-size:11px;line-height:1.6;margin-bottom:12px}
+.institution-program-list{display:grid;padding:0 2px 8px}
+.institution-program-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--line);font-size:12px}
+.institution-program-row small{color:var(--muted);font-size:10px;text-align:right}
+@media(max-width:560px){.institution-program-row{align-items:flex-start;flex-direction:column;gap:3px}.institution-program-row small{text-align:left}}
 .institution-catalog-disclaimer{display:flex;align-items:flex-start;gap:10px;padding:13px 15px;border:1px solid var(--line);border-radius:10px;color:var(--muted)}
 .institution-catalog-disclaimer p{margin:0;font-size:11px;line-height:1.6}
 @media(max-width:1100px){.institution-catalog-stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
