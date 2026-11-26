@@ -305,6 +305,11 @@
         @media(prefers-reduced-motion:reduce){
             .app-shell>.sidebar{transition:none}
         }
+
+    input[data-uppercase],
+    textarea[data-uppercase] {
+        text-transform: uppercase;
+    }
 </style>
     @stack('styles')
     <style>
