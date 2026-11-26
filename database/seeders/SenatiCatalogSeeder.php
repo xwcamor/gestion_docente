@@ -30,7 +30,10 @@ class SenatiCatalogSeeder extends Seeder
                     'career_duration_options_semesters' => [4, 5, 6, 8],
                     'semester_duration_weeks' => 17,
                     'reported_professional_careers_2025' => 91,
+                    'reported_careers_in_execution_2025' => 90,
                     'reported_professional_schools_2025' => 14,
+                    'named_careers_extracted_from_2025_report' => 85,
+                    'unresolved_career_names_from_2025_report' => 5,
                     'notes' => [
                         'La cantidad de semestres se define por carrera y versión de malla, no por tenant.',
                         'Los códigos 202510, 202520, 202610, 202620 y 202601 se conservan como periodos de Blackboard; no equivalen al semestre de avance curricular.',
@@ -209,6 +212,227 @@ class SenatiCatalogSeeder extends Seeder
                 ['enabled' => $feature['enabled'], 'settings' => $feature['settings']]
             );
         }
+
+
+        // Catálogo de Formación Profesional 2025.
+        // Se cargan únicamente los 85 nombres legibles en la tabla oficial consultada.
+        // El informe reporta 90 carreras en 14 escuelas; cinco nombres no se inventan.
+        $trainingCareerGroups = [
+            'ADMINISTRACION' => [
+                'name' => 'Administración de Empresas',
+                'careers' => [
+                    'Administración de Empresas',
+                    'Administración de Negocios Internacionales',
+                    'Administración de Recursos Humanos',
+                    'Administración Industrial',
+                    'Administración Logística',
+                    'Contabilidad',
+                    'Ingeniería de Producción Industrial',
+                    'Marketing y Gestión Comercial',
+                    'Procesos de Producción Industrial',
+                    'Seguridad Industrial y Prevención de Riesgos',
+                    'Trade Marketing y Visual Merchandising',
+                ],
+            ],
+            'AGROINDUSTRIA' => [
+                'name' => 'Agroindustria',
+                'careers' => ['Agroindustria'],
+            ],
+            'ARTES_GRAFICAS' => [
+                'name' => 'Artes Gráficas',
+                'careers' => ['Diseño Gráfico', 'Diseño y Producción de Animación Digital', 'Producción Gráfica'],
+            ],
+            'CONFECCIONES' => [
+                'name' => 'Confecciones',
+                'careers' => [
+                    'Confeccionista de Prendas de Vestir',
+                    'Diseño y Gestión de Moda',
+                    'Mecatrónica en Industria de la Moda',
+                    'Tecnología de Procesos de Producción de Prendas de Vestir',
+                ],
+            ],
+            'ELECTROTECNIA' => [
+                'name' => 'Electrotecnia',
+                'careers' => [
+                    'Climatización y Refrigeración en Edificaciones',
+                    'Climatización y Refrigeración Industrial',
+                    'Electricidad Industrial',
+                    'Electrónica y Automatización Industrial',
+                    'Electrotecnia Industrial y Energías Renovables',
+                    'Ingeniería Mecatrónica',
+                    'Instrumentación y Control de Procesos Industriales',
+                    'Mecatrónica Industrial',
+                    'Técnicas en Ingeniería Electrónica',
+                ],
+            ],
+            'HOTELERIA_TURISMO_RESTAURANTES' => [
+                'name' => 'Hotelería, Turismo y Restaurantes',
+                'careers' => ['Administración Turística', 'Cocina Peruana e Internacional', 'Guía Oficial de Turismo'],
+            ],
+            'INDUSTRIA_ALIMENTARIA' => [
+                'name' => 'Industria Alimentaria',
+                'careers' => [
+                    'Control de Calidad y Procesos en la Industria Alimentaria',
+                    'Ingeniería de Industrias Alimentarias',
+                    'Panadería y Pastelería',
+                    'Procesamiento Industrial de Alimentos',
+                    'Procesos de la Industria Alimentaria y Productos Hidrobiológicos',
+                    'Técnicas en Ingeniería de Industrias Alimentarias',
+                ],
+            ],
+            'TECNOLOGIAS_INFORMACION' => [
+                'name' => 'Tecnologías de la Información',
+                'careers' => [
+                    'Administrador de Sistemas de Información',
+                    'Computación e Informática',
+                    'Desarrollo de Software',
+                    'Diseño de Estructuras Metálicas y Modelamiento BIM',
+                    'Diseño Gráfico Digital',
+                    'Diseño y Desarrollo de Videojuegos y Realidad Aumentada',
+                    'Informática y Desarrollo de Aplicaciones Web',
+                    'Ingeniería de Ciberseguridad',
+                    'Ingeniería de Ciencia de Datos e Inteligencia Artificial',
+                    'Ingeniería de Cloud Computing y Data Center',
+                    'Ingeniería de Software con Inteligencia Artificial',
+                    'Ingeniería de Soporte de TI',
+                    'Ingeniería de Tecnologías de la Información y Comunicación',
+                    'Redes y Seguridad Informática',
+                    'Soporte y Mantenimiento de Equipos de Computación',
+                ],
+            ],
+            'JOYERIA_ORFEBRERIA_PLATERIA' => [
+                'name' => 'Joyería, Orfebrería y Platería',
+                'careers' => ['Diseño y Gestión de Joyería'],
+            ],
+            'MANTENIMIENTO' => [
+                'name' => 'Mantenimiento',
+                'careers' => [
+                    'Ingeniería de Mantenimiento Industrial',
+                    'Mantenimiento de Plantas Industriales',
+                    'Mecánico de Mantenimiento',
+                    'Técnicas en Ingeniería Mecánica de Mantenimiento',
+                ],
+            ],
+            'MECANICA_AUTOMOTRIZ' => [
+                'name' => 'Mecánica Automotriz',
+                'careers' => [
+                    'Mantenimiento de Maquinaria Pesada',
+                    'Mantenimiento de Maquinaria Pesada para Construcción',
+                    'Mecánica de Vehículos y Equipos Menores',
+                    'Mecánico Automotriz',
+                    'Mecánico de Automotores Diesel',
+                    'Mecánico de Mantenimiento de Maquinaria Pesada',
+                    'Mecánico de Maquinaria Pesada',
+                    'Mecánico de Motores Menores',
+                    'Mecatrónica Automotriz',
+                    'Mecatrónica de Buses y Camiones',
+                    'Mecatrónica de Maquinaria Agrícola',
+                    'Mecatrónica de Motores Diésel',
+                ],
+            ],
+            'METALMECANICA' => [
+                'name' => 'Metalmecánica',
+                'careers' => [
+                    'Diseño y Desarrollo de Máquinas',
+                    'Estructuras y Construcciones Metálicas',
+                    'Mecánica de Producción',
+                    'Mecánico de Construcciones Metálicas',
+                    'Mecatrónica de Fabricación Metalmecánica',
+                    'Procesos de la Industria del Plástico',
+                    'Procesos Tecnológicos de Soldadura',
+                    'Soldador Universal',
+                ],
+            ],
+            'TECNOLOGIAS_AMBIENTALES' => [
+                'name' => 'Tecnologías Ambientales',
+                'careers' => ['Química Industrial', 'Tecnologías Ambientales'],
+            ],
+            'TEXTIL' => [
+                'name' => 'Textil',
+                'careers' => [
+                    'Analista de Calidad Textil',
+                    'Diseño y Desarrollo Textil',
+                    'Mecatrónica Textil',
+                    'Procesos de Producción Textil',
+                    'Química en Procesos Textiles',
+                    'Tintorería y Acabados Textiles',
+                ],
+            ],
+        ];
+
+        $trainingUnitModels = [];
+        foreach ($trainingCareerGroups as $unitCode => $group) {
+            $trainingUnitModels[$unitCode] = InstitutionUnit::firstOrCreate(
+                ['institution_id' => $institution->id, 'code' => 'FORMACION_2025_' . $unitCode],
+                [
+                    'name' => $group['name'],
+                    'unit_type' => 'professional_school_reference',
+                    'source_label' => $group['name'],
+                    'source_year' => 2025,
+                    'verification_status' => 'reported_in_senati_2025_memory',
+                    'is_active' => true,
+                    'metadata' => [
+                        'source_url' => 'https://embed-rech-01.dialog.cm/senati1/docs/memoria_institucional_senati_2025',
+                        'source_section' => 'Total de carreras en ejecución durante el año 2025',
+                        'reported_school_count' => 14,
+                        'note' => 'Agrupación reproducida desde la tabla de la Memoria 2025; la vigencia futura debe confirmarse con el catálogo actualizado.',
+                    ],
+                ]
+            );
+
+            foreach ($group['careers'] as $careerName) {
+                $program = AcademicProgram::firstOrCreate(
+                    [
+                        'institution_id' => $institution->id,
+                        'institution_unit_id' => $trainingUnitModels[$unitCode]->id,
+                        'name' => $careerName,
+                    ],
+                    [
+                        'status' => 'reference_2025',
+                        'verification_status' => 'reported_in_senati_2025_memory',
+                        'source_url' => 'https://embed-rech-01.dialog.cm/senati1/docs/memoria_institucional_senati_2025',
+                        'source_year' => 2025,
+                        'metadata' => [
+                            'source_section' => 'Total de carreras en ejecución durante el año 2025',
+                            'duration_semesters' => null,
+                            'duration_note' => 'La memoria 2025 consultada no detalla la duración individual de esta carrera.',
+                        ],
+                    ]
+                );
+
+                AcademicProgramVersion::firstOrCreate(
+                    ['academic_program_id' => $program->id, 'version_code' => 'EJECUCION_2025'],
+                    [
+                        'duration_semesters' => null,
+                        'status' => 'reference_2025',
+                        'is_current' => false,
+                        'source_url' => 'https://embed-rech-01.dialog.cm/senati1/docs/memoria_institucional_senati_2025',
+                        'source_year' => 2025,
+                        'metadata' => [
+                            'duration_note' => 'Pendiente de verificar en la malla curricular de la carrera.',
+                            'reported_duration_options_semesters' => [4, 5, 6, 8],
+                        ],
+                    ]
+                );
+            }
+        }
+
+        // El informe cierra con 90 carreras en ejecución en 14 escuelas.
+        // La extracción consultada permitió recuperar 85 nombres. Los otros cinco
+        // quedan contabilizados como pendientes, sin fabricar nombres ni códigos.
+        $institution->forceFill([
+            'settings' => array_merge($institution->settings ?? [], [
+                '2025_career_catalog' => [
+                    'reported_execution_careers' => 90,
+                    'reported_schools' => 14,
+                    'names_imported_from_readable_table' => 85,
+                    'names_pending_source_validation' => 5,
+                    'duration_options_semesters' => [4, 5, 6, 8],
+                    'note' => 'La cantidad de semestres es específica de cada carrera y versión de malla. Cinco nombres no se inventaron porque la extracción legible de la tabla no los recuperó.',
+                    'source_url' => 'https://embed-rech-01.dialog.cm/senati1/docs/memoria_institucional_senati_2025',
+                ],
+            ]),
+        ])->save();
 
         $currentPrograms = [
             'Ingeniería de Mantenimiento Industrial',
