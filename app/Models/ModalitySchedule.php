@@ -1,8 +1,17 @@
 <?php
 namespace App\Models;
+use App\Models\Concerns\ScopesToCurrentInstitution;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ModalitySchedule extends Model {
+    use ScopesToCurrentInstitution;
+
+    protected static function institutionScopeRelation(): string
+    {
+        return 'modality.assignment.group.cycle';
+    }
+
+
  protected $fillable=['course_modality_id','day_of_week','start_time','end_time','classroom','block_type','instruction_type','repeat_interval_weeks'];
 
  public function setClassroomAttribute($value): void
