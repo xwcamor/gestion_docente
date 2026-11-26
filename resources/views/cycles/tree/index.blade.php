@@ -2042,7 +2042,7 @@
         if (dateCell) {
             event.preventDefault();
             event.stopPropagation();
-            const wrapper = dateCell.closest('[data-modality-dates], [data-course-dates]');
+            const wrapper = dateCell.closest('[data-modality-dates], [data-course-dates], [data-group-dates]');
             if (wrapper) startDateEditor(dateCell, wrapper);
             return;
         }
