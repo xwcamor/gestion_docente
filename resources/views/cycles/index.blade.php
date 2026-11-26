@@ -63,7 +63,7 @@
             </article>
         @empty
             <div class="empty cycle-directory-empty">
-                <span class="stat-icon" style="margin:0 auto 10px;width:42px;height:42px"><x-icon name="calendar-days" size="20" /></span>
+                <span class="stat-icon empty-state-icon"><x-icon name="calendar-days" size="20" /></span>
                 <strong>{{ request()->hasAny(['q', 'year']) ? 'No encontramos ciclos con esos filtros.' : 'Todavía no tienes ciclos académicos.' }}</strong>
                 <span>{{ request()->hasAny(['q', 'year']) ? 'Prueba otra búsqueda o limpia los filtros.' : 'Importa tu distribución académica o crea el primer ciclo.' }}</span>
                 <div class="cycle-directory-empty-actions">
