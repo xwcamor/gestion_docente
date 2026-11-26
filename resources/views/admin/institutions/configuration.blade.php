@@ -5,7 +5,7 @@
 @section('content')
 <div class="page-head institution-config-head">
     <div>
-        <p class="eyebrow">Administración · Tenant SENATI</p>
+        <p class="eyebrow">Administración · Tenant {{ $institution->name }}</p>
         <h1>Configuración institucional</h1>
         <p class="subhead">Administra la identidad, estructura académica y reglas propias de esta institución.</p>
     </div>
@@ -92,20 +92,13 @@
             </div>
             <div class="form-field">
                 <label>Duraciones admitidas por carrera</label>
-                <div class="institution-duration-options">
-                    @foreach($durationOptions as $duration)
-                        <label class="institution-duration-option">
-                            <input type="checkbox" name="career_duration_options[]" value="{{ $duration }}" @checked(in_array($duration, old('career_duration_options', $durationOptions)))>
-                            <span>{{ $duration }} semestres</span>
-                        </label>
-                    @endforeach
-                </div>
+                <input class="field" id="career_duration_options" name="career_duration_options" value="{{ old('career_duration_options', implode(', ', $durationOptions)) }}" placeholder="Ej. 4, 5, 6, 8" required>
+                <small class="help">Escribe las duraciones permitidas, separadas por comas. Cada carrera podrá elegir una duración de esta lista.</small>
                 @error('career_duration_options')<p class="field-error">{{ $message }}</p>@enderror
-                @error('career_duration_options.*')<p class="field-error">{{ $message }}</p>@enderror
             </div>
         </div>
         <div class="institution-config-form-footer">
-            <span>No existe una cantidad única de ciclos para todas las carreras de SENATI.</span>
+            <span>No existe una cantidad única de ciclos para todas las carreras de {{ $institution->name }}.</span>
             <button class="btn" type="submit"><x-icon name="check" size="15" /> Guardar reglas</button>
         </div>
     </form>
@@ -172,7 +165,7 @@
         <div>
             <p class="eyebrow">04 · Organización</p>
             <h2>Unidades académicas</h2>
-            <p>Se conservan los rótulos originales. El listado incluye 14 agrupaciones de Formación Profesional y cuatro unidades o contextos de referencia.</p>
+            <p>Se conservan los rótulos originales y la clasificación de cada unidad académica registrada.</p>
         </div>
         <span class="institution-config-count">{{ $units->count() }} unidades</span>
     </div>
@@ -297,7 +290,7 @@
 
 <section class="institution-config-notice">
     <x-icon name="info" />
-    <p>Los cambios aquí afectan la configuración de referencia del tenant SENATI. No alteran las fechas de ciclos existentes, los grupos, los NRC ni los horarios. La duración de una carrera solo se considera definida cuando se valida con su malla curricular oficial.</p>
+    <p>Los cambios aquí afectan la configuración de referencia de {{ $institution->name }}. No alteran las fechas de ciclos existentes, los grupos, los NRC ni los horarios. La duración de una carrera solo se considera definida cuando se valida con su malla curricular oficial.</p>
 </section>
 @endsection
 
