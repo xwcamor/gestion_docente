@@ -2,11 +2,19 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\ScopesToCurrentInstitution;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class InstitutionCourseOffering extends Model
 {
+    use ScopesToCurrentInstitution;
+
+    protected static function institutionIdColumn(): ?string
+    {
+        return 'institution_id';
+    }
+
     protected $fillable = [
         'institution_id', 'institution_academic_period_id', 'institution_unit_id', 'institution_course_id',
         'institution_instruction_type_id', 'teaching_group_id', 'nrc', 'external_identifier',
