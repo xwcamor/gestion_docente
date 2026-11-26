@@ -60,7 +60,6 @@ Route::middleware(['auth', 'professor'])->group(function () {
     Route::patch('/ciclos/{cycle}', [CycleController::class, 'update'])->name('cycles.update');
     Route::delete('/ciclos/{cycle}', [CycleController::class, 'destroy'])->name('cycles.destroy');
     Route::get('/ciclos/{cycle}/arbol', [WorkloadTreeController::class, 'index'])->name('cycles.tree');
-    Route::get('/ciclos/{cycle}/arbol-prueba', [WorkloadTreeController::class, 'index'])->name('cycles.tree.layout-test');
     Route::get('/ciclos/{cycle}', [CycleController::class, 'show'])->name('cycles.show');
 
     Route::get('/ciclos/{cycle}/grupos/crear', [GroupController::class, 'create'])->name('groups.create');
