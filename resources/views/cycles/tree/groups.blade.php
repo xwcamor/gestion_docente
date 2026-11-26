@@ -1,7 +1,7 @@
 @forelse($groups as $group)
     @php($daysLabel = collect($group->workload_days ?? [])->map(fn ($day) => [1 => 'Lun', 2 => 'Mar', 3 => 'Mié', 4 => 'Jue', 5 => 'Vie', 6 => 'Sáb', 7 => 'Dom'][(int) $day] ?? null)->filter()->implode(' · '))
-    @php($startTime = filled($group->workload_start_time) ? substr((string) $group->workload_start_time, 0, 5) : '')
-    @php($endTime = filled($group->workload_end_time) ? substr((string) $group->workload_end_time, 0, 5) : '')
+    @php($startDate = $group->workload_start_date?->toDateString() ?: '')
+    @php($endDate = $group->workload_end_date?->toDateString() ?: '')
     <div class="workload-tree-group-shell" data-group-shell="{{ $group->id }}" data-group-id="{{ $group->id }}">
         <details class="workload-tree-group"
                  id="tree-group-{{ $group->id }}"
@@ -53,33 +53,27 @@
                                   data-group-semester-display
                                   title="Clic para editar semestre">{{ $group->semester ?: 'Falta' }}</span>
                         </span>
-                        <span class="tree-group-inline-field tree-group-inline-schedule">
+                        <span class="tree-group-inline-field tree-group-inline-schedule"
+                              data-group-dates
+                              data-dates-url="{{ route('workload-tree.groups.context', $group) }}"
+                              data-start-date="{{ $startDate }}"
+                              data-end-date="{{ $endDate }}"
+                              data-start-field="workload_start_date"
+                              data-end-field="workload_end_date">
                             @if($daysLabel)
                                 <span class="tree-group-inline-days">{{ $daysLabel }}</span>
                             @endif
                             <span class="tree-group-inline-time">
                                 <span class="tree-group-inline-sub-label">Inicio</span>
-                                <span class="tree-inline-editable {{ $startTime ? '' : 'is-empty' }}"
-                                      data-inline-text data-edit-on-click
-                                      data-edit-field="workload_start_time" data-edit-kind="group-time"
-                                      data-edit-input-type="time" data-edit-label="Hora de inicio del grupo"
-                                      data-edit-url="{{ route('workload-tree.groups.context', $group) }}"
-                                      data-edit-value="{{ $startTime }}"
-                                      data-edit-response="workload_start_time"
-                                      data-edit-empty-label="Agregar"
-                                      title="Clic para editar hora de inicio">{{ $startTime ?: 'Falta' }}</span>
+                                <span class="tree-inline-date {{ $startDate ? '' : 'is-empty' }}"
+                                      data-inline-date="workload_start_date" data-empty-label="Falta"
+                                      title="Clic para seleccionar la fecha de inicio">{{ $group->workload_start_date?->format('d/m/Y') ?: 'Falta' }}</span>
                             </span>
                             <span class="tree-group-inline-time">
                                 <span class="tree-group-inline-sub-label">Fin</span>
-                                <span class="tree-inline-editable {{ $endTime ? '' : 'is-empty' }}"
-                                      data-inline-text data-edit-on-click
-                                      data-edit-field="workload_end_time" data-edit-kind="group-time"
-                                      data-edit-input-type="time" data-edit-label="Hora de fin del grupo"
-                                      data-edit-url="{{ route('workload-tree.groups.context', $group) }}"
-                                      data-edit-value="{{ $endTime }}"
-                                      data-edit-response="workload_end_time"
-                                      data-edit-empty-label="Agregar"
-                                      title="Clic para editar hora de fin">{{ $endTime ?: 'Falta' }}</span>
+                                <span class="tree-inline-date {{ $endDate ? '' : 'is-empty' }}"
+                                      data-inline-date="workload_end_date" data-empty-label="Falta"
+                                      title="Clic para seleccionar la fecha de fin">{{ $group->workload_end_date?->format('d/m/Y') ?: 'Falta' }}</span>
                             </span>
                         </span>
                     </span>
