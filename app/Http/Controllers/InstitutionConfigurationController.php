@@ -150,7 +150,7 @@ class InstitutionConfigurationController extends Controller
             $isCurrent = (bool) ($data['is_current'] ?? false);
 
             if ($isCurrent) {
-                $program->versions()->whereKeyNot($version->id)->update(['is_current' => false]);
+                $program->versions()->where('id', '<>', $version->id)->update(['is_current' => false]);
             }
 
             $version->update([
