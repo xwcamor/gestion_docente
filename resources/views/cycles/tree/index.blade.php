@@ -62,7 +62,7 @@
             <div class="tree-draft-fields">
                 <label class="tree-course-name-input">
                     <span>Nombre del grupo</span>
-                    <input class="field" name="name" maxlength="100" required placeholder="Ej. Grupo 01">
+                    <input class="field" name="name" data-uppercase maxlength="100" required placeholder="Ej. Grupo 01">
                 </label>
             </div>
             <div class="tree-draft-footer">
