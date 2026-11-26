@@ -22,7 +22,7 @@
 
 <section class="card institution-catalog-section">
     <div class="institution-section-head">
-        <div><h2>Tipos de impartición</h2><p>Configuración propia de SENATI; no es una regla universal del sistema.</p></div>
+        <div><h2>Tipos de impartición</h2><p>Componentes y modalidades configurados específicamente para esta institución.</p></div>
     </div>
     <div class="institution-type-list">
         @foreach($institution->instructionTypes()->orderBy('sort_order')->get() as $type)
@@ -37,7 +37,7 @@
 
 <section class="card institution-catalog-section">
     <div class="institution-section-head">
-        <div><h2>Periodos de Blackboard</h2><p>Se conserva el código del periodo y el nombre de unidad que aparecen en las capturas.</p></div>
+        <div><h2>@if($isSenati) Periodos de Blackboard @else Periodos institucionales @endif</h2><p>Se conserva el código, el periodo académico y su unidad de origen.</p></div>
     </div>
     @foreach($periods as $period)
         <details class="institution-period" @if($loop->first) open @endif>
@@ -48,7 +48,7 @@
             <div class="institution-offerings-wrap">
                 <div class="table-scroll">
                     <table class="data-table institution-offerings">
-                        <thead><tr><th>Identificador Blackboard</th><th>Asignatura</th><th>Componente</th><th>Estado observado</th><th>Docente visible</th><th>Grupo</th></tr></thead>
+                        <thead><tr><th>@if($isSenati) Identificador Blackboard @else Identificador de origen @endif</th><th>Asignatura</th><th>Componente</th><th>Estado observado</th><th>Docente visible</th><th>Grupo</th></tr></thead>
                         <tbody>
                             @foreach($period->offerings->sortBy(fn ($offering) => [$offering->course_code_snapshot, $offering->nrc]) as $offering)
                                 <tr>
@@ -84,13 +84,13 @@
 
 <section class="card institution-catalog-section">
     <div class="institution-section-head">
-        <div><h2>Escuela Superior Tecnológica · oferta 2026</h2><p>Estas siete carreras aparecen en la oferta oficial vigente consultada y tienen ocho semestres publicados.</p></div>
+        <div><h2>Escuela Superior Tecnológica · oferta 2026</h2><p>Programas vigentes registrados en el catálogo de {{ $institution->name }}.</p></div>
     </div>
     <div class="table-scroll">
         <table class="data-table">
             <thead><tr><th>Unidad</th><th>Programa</th><th>Duración</th><th>Fuente</th></tr></thead>
             <tbody>
-                @foreach($activePrograms as $program)
+                @forelse($activePrograms as $program)
                     @php $currentVersion = $program->versions->firstWhere('is_current', true); @endphp
                     <tr>
                         <td>{{ $program->unit?->name ?: 'Sin unidad' }}</td>
@@ -98,14 +98,19 @@
                         <td>{{ $currentVersion?->duration_semesters ? $currentVersion->duration_semesters.' semestres' : 'Pendiente de verificar' }}</td>
                         <td><a href="{{ $program->source_url }}" target="_blank" rel="noopener">Fuente oficial</a></td>
                     </tr>
-                @endforeach
+                @empty
+                    <tr><td colspan="4">No hay programas vigentes registrados para esta institución.</td></tr>
+                @endforelse
             </tbody>
         </table>
     </div>
-    <p class="institution-note">SENATI reportó 91 carreras de formación profesional y 14 escuelas en su memoria institucional 2025. Esta pantalla no pretende ser la lista completa: muestra siete programas vigentes de la Escuela Superior con duración oficial de ocho semestres y {{ $historicalPrograms }} nombres ETIA históricos de 2022. El catálogo vigente completo de Formación Profesional debe importarse desde el documento oficial actualizado.</p>
-    <p class="institution-note">{{ $historicalPrograms }} nombres históricos de ETIA (memoria 2022) se conservaron como referencia y no se ofrecen como carreras vigentes.</p>
+    @if($isSenati)
+        <p class="institution-note">SENATI reportó 91 carreras de formación profesional y 14 escuelas en su memoria institucional 2025. Esta pantalla no pretende ser la lista completa: muestra siete programas vigentes de la Escuela Superior con duración oficial de ocho semestres y {{ $historicalPrograms }} nombres ETIA históricos de 2022. El catálogo vigente completo de Formación Profesional debe importarse desde el documento oficial actualizado.</p>
+        <p class="institution-note">{{ $historicalPrograms }} nombres históricos de ETIA (memoria 2022) se conservaron como referencia y no se ofrecen como carreras vigentes.</p>
+    @endif
 </section>
 
+@if($isSenati)
 <section class="card institution-catalog-section">
     <div class="institution-section-head">
         <div>
@@ -135,6 +140,8 @@
     @endforeach
     <div class="institution-catalog-note">
         El reglamento consultado contempla carreras de 4, 5, 6 u 8 semestres. Esa es la lista de duraciones admitidas como referencia para SENATI; no determina por sí sola cuántos semestres tiene cada una de estas 85 carreras.
+@endif
+
     </div>
 </section>
 
@@ -158,10 +165,12 @@
     </div>
 </section>
 
-<section class="institution-catalog-disclaimer">
-    <x-icon name="info" />
-    <p>Las capturas no muestran los nombres reales de los salones ni permiten emparejar con certeza cada NRC TEC con un NRC TAL. Por eso los 47 NRC se guardaron sin asignarlos a grupos ficticios. Tampoco se importaron horarios: la captura de repetición muestra un ejemplo de calendario, no el horario real de cada asignatura.</p>
-</section>
+@if($isSenati)
+    <section class="institution-catalog-disclaimer">
+        <x-icon name="info" />
+        <p>Las capturas no muestran los nombres reales de los salones ni permiten emparejar con certeza cada NRC TEC con un NRC TAL. Por eso los 47 NRC se guardaron sin asignarlos a grupos ficticios. Tampoco se importaron horarios: la captura de repetición muestra un ejemplo de calendario, no el horario real de cada asignatura.</p>
+    </section>
+@endif
 @endsection
 
 @push('styles')
