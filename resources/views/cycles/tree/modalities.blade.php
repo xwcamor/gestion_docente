@@ -11,7 +11,6 @@
         <article class="workload-tree-modality {{ $modality->active ? 'is-active' : 'is-disabled' }}"
                  data-modality-row data-modality-type="{{ $type }}" data-modality-id="{{ $modality->id }}" data-active="{{ $modality->active ? '1' : '0' }}" data-active-description="{{ $enabledDescription }}">
             <span class="tree-branch-mark"></span>
-            <span class="tree-modality-tag {{ $type === 'TEC' ? 'is-tec' : 'is-tall' }}">{{ $type === 'TEC' ? 'TEC' : 'TAL' }}</span>
             <div class="tree-modality-copy">
                 <strong>{{ $label }} · NRC
                     @if($modality->active)
@@ -104,7 +103,6 @@
     @else
         <div class="workload-tree-modality is-missing" data-modality-row data-modality-type="{{ $type }}">
             <span class="tree-branch-mark"></span>
-            <span class="tree-modality-tag {{ $type === 'TEC' ? 'is-tec' : 'is-tall' }}">{{ $type === 'TEC' ? 'TEC' : 'TAL' }}</span>
             <div class="tree-modality-copy">
                 <strong>{{ $label }}</strong>
                 <small>Componente no agregado</small>
