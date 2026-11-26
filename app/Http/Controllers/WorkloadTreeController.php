@@ -146,6 +146,15 @@ class WorkloadTreeController extends Controller
             ? ($data['workload_end_date'] ?: null)
             : $group->workload_end_date?->toDateString();
 
+        $groupDatesWereSubmitted = $request->exists('workload_start_date')
+            || $request->exists('workload_end_date');
+
+        if ($groupDatesWereSubmitted && $endDate && !$startDate) {
+            throw ValidationException::withMessages([
+                'workload_end_date' => 'Primero registra la fecha de inicio antes de establecer Fin.',
+            ]);
+        }
+
         if ($startDate && $endDate && $endDate < $startDate) {
             throw ValidationException::withMessages([
                 'workload_end_date' => 'La fecha de fin debe ser igual o posterior a la fecha de inicio.',
@@ -427,6 +436,12 @@ class WorkloadTreeController extends Controller
             ? ($data['course_end_date'] ?: null)
             : $assignment->course_end_date?->toDateString();
 
+        if ($endDate && !$startDate) {
+            throw ValidationException::withMessages([
+                'course_end_date' => 'Primero registra la fecha de inicio del curso antes de establecer Fin.',
+            ]);
+        }
+
         if ($startDate && $endDate && $endDate < $startDate) {
             throw ValidationException::withMessages([
                 'course_end_date' => 'La fecha de fin del curso debe ser igual o posterior a la fecha de inicio.',
@@ -473,6 +488,12 @@ class WorkloadTreeController extends Controller
         if ($hasSessions && $clearsExistingDate) {
             throw ValidationException::withMessages([
                 'start_date' => 'Esta modalidad ya tiene sesiones generadas. No borres una fecha desde aquí; modifica el periodo y recalcula el calendario.',
+            ]);
+        }
+
+        if ($endDate && !$startDate) {
+            throw ValidationException::withMessages([
+                'end_date' => 'Primero registra la fecha de inicio antes de establecer Fin.',
             ]);
         }
 
