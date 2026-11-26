@@ -3,11 +3,32 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasSlugRouteKey;
+use App\Models\Concerns\ScopesToCurrentInstitution;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class GeneratedDocument extends Model
 {
+    use ScopesToCurrentInstitution;
+
+    protected static function applyInstitutionScope(Builder $builder, int $institutionId): void
+    {
+        $builder->where(function (Builder $query) use ($institutionId): void {
+            $query
+                ->whereHas('cycle', fn (Builder $cycle) => $cycle->where('institution_id', $institutionId))
+                ->orWhereHas(
+                    'group.cycle',
+                    fn (Builder $cycle) => $cycle->where('institution_id', $institutionId)
+                )
+                ->orWhereHas(
+                    'modality.assignment.group.cycle',
+                    fn (Builder $cycle) => $cycle->where('institution_id', $institutionId)
+                );
+        });
+    }
+
+
     use HasSlugRouteKey;
 
     protected $fillable = [
