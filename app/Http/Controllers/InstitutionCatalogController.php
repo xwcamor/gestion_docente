@@ -18,7 +18,7 @@ class InstitutionCatalogController extends Controller
     public function index()
     {
         $institution = $this->currentInstitution->get();
-        $isSenati = $institution->code === 'SENATI';
+        $showSenatiReference = data_get($institution->settings, 'catalog_profile') === 'senati_reference';
 
         $periods = InstitutionAcademicPeriod::query()
             ->whereHas('type', fn ($query) => $query->where('institution_id', $institution->id))
@@ -58,7 +58,7 @@ class InstitutionCatalogController extends Controller
         return view('admin.institutions.catalog', compact(
             'institution', 'periods', 'activePrograms', 'trainingPrograms',
             'reportedTrainingCareerCount', 'unresolvedTrainingNames',
-            'historicalPrograms', 'courseCount', 'offeringCount', 'pendingGroupCount', 'isSenati',
+            'historicalPrograms', 'courseCount', 'offeringCount', 'pendingGroupCount', 'showSenatiReference',
             'templateCount', 'features'
         ));
     }
