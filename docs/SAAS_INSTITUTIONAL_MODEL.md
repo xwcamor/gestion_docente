@@ -97,16 +97,16 @@ employment_relationships guarda la relación usuario-institución, tipo de dedic
 
 ## Límite de esta primera migración
 
-Esta migración añade el catálogo institucional y una importación histórica de Blackboard, sin modificar ni borrar las tablas operativas actuales de ciclos, grupos, cursos o sesiones. Los NRC quedan pendientes de vincular con los grupos existentes. La separación SaaS requiere después integrar el contexto de institución activa, membresías y autorización por tenant en todos los controladores; no debe declararse completa hasta terminar ese trabajo y probar aislamiento entre instituciones.
+Esta migración añade el catálogo institucional y una importación histórica de Blackboard, sin modificar ni borrar las tablas operativas actuales de ciclos, grupos, cursos o sesiones. Los NRC quedan pendientes de vincular con los grupos existentes. Ya existe un resolvedor de institución activa y se utiliza en la configuración y el catálogo institucional; sin embargo, esto todavía no equivale a aislamiento SaaS completo. Las tablas operativas tradicionales aún no están vinculadas a una institución y sus controladores todavía no aplican autorización transversal por tenant.
 
 
 ## Fase 2: configuración del tenant SENATI
 
-La pantalla administrativa está disponible en **Administración → Configuración institucional**. Esta primera pantalla edita únicamente el tenant SENATI, porque el selector/contexto multi-tenant y el aislamiento transversal se completan en fases posteriores.
+La pantalla administrativa está disponible en **Administración → Configuración institucional**. Usa el contexto de institución activa para cargar y guardar la identidad, reglas, unidades y programas del tenant autorizado. El catálogo histórico de Blackboard y las notas documentales de SENATI solo se muestran cuando el tenant resuelto tiene código `SENATI`.
 
 Datos administrables:
 - Identidad institucional: nombre, razón social, país y zona horaria. El código SENATI y el slug permanecen estables.
-- Reglas académicas de referencia: semanas por semestre y opciones de duración disponibles.
+- Reglas académicas de referencia: semanas por semestre y opciones de duración disponibles. Las duraciones se escriben separadas por comas (por ejemplo: `4, 5, 6, 8`) y se validan como enteros únicos entre 1 y 30.
 - Tipos de periodo: nombre, unidad, patrón de código, semanas de referencia y estado.
 - Unidades académicas: nombre visible y estado, conservando código, tipo, rótulo de origen y trazabilidad de importación.
 - Versiones de carrera: duración en semestres, vigencia, estado y versión actual.
@@ -131,3 +131,37 @@ La edición de una unidad o una regla institucional no cambia retroactivamente l
 - [ ] Confirmación del administrador de que las opciones y valores de SENATI son correctos.
 
 No se considera completada la fase 2 hasta que las casillas manuales pendientes se comprueben en la instalación local.
+
+## Fase 3: contexto institucional y portabilidad inicial
+
+Se agregó `App\\Support\\CurrentInstitution` como punto único de resolución del tenant para los módulos de configuración y catálogo institucional.
+
+Reglas de resolución:
+- Si el usuario tiene una sola membresía activa, se utiliza esa institución.
+- Si tiene varias membresías activas, se exige que la sesión tenga una institución seleccionada mediante `current_institution_id`; el identificador se valida contra sus propias membresías.
+- Si el usuario aún no tiene filas de membresía, se permite compatibilidad temporal únicamente cuando existe una sola institución activa.
+- Si hay membresías vencidas, inactivas o asociadas a instituciones deshabilitadas, no se aplica el fallback.
+- Si existen varias instituciones activas y el usuario no tiene membresía, se deniega el acceso al catálogo/configuración.
+
+La pantalla de configuración ya no fija las opciones de duración en el código. Cada institución guarda sus propias semanas de referencia y su lista de semestres permitidos en `institutions.settings`. La actualización de una versión de malla valida la duración contra esa lista.
+
+### Lo que todavía no es multi-tenant
+
+- No se ha implementado todavía la pantalla o endpoint para seleccionar/cambiar entre varias instituciones.
+- No se ha implementado el flujo administrativo para crear instituciones y asignar membresías.
+- Las tablas operativas heredadas de ciclos, grupos, asignaciones, cursos, alumnos, horarios, feriados y documentos todavía no están aisladas por `institution_id`.
+- No se debe activar una segunda institución para dictado real ni compartir usuarios entre tenants hasta completar el aislamiento, migrar los datos históricos a SENATI y probar accesos cruzados.
+
+### Checklist de portabilidad inicial
+
+- [x] Resolver la institución desde las membresías activas del usuario.
+- [x] Mantener compatibilidad temporal con la instalación actual de un solo tenant.
+- [x] Aplicar el contexto a configuración y catálogo institucional.
+- [x] Evitar mostrar las notas históricas de SENATI en catálogos de otras instituciones.
+- [x] Permitir configurar duraciones académicas sin defaults codificados para nuevos tenants.
+- [ ] Implementar selección/cambio de institución para usuarios con varias membresías.
+- [ ] Implementar administración de instituciones y membresías.
+- [ ] Incorporar `institution_id` a las entidades operativas y restringir todas las consultas y escrituras.
+- [ ] Migrar los datos operativos actuales a SENATI sin alterar sus relaciones.
+- [ ] Probar aislamiento entre dos tenants con usuarios, grupos, ciclos, horarios y documentos distintos.
+
