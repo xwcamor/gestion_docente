@@ -8,7 +8,6 @@ use App\Models\ModalitySchedule;
 use App\Models\GeneratedDocument;
 use App\Models\ImportBatch;
 use App\Services\AuditLogger;
-use App\Services\GroupStarterCourseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -75,14 +74,11 @@ class CycleController extends Controller
         return redirect()->route('cycles.index', ['nuevo' => 1]);
     }
 
-    public function store(Request $request, GroupStarterCourseService $starterCourses)
+    public function store(Request $request)
     {
         $professorId = auth()->user()->professor->id;
         $request->merge([
             'cycle_code' => mb_strtoupper(trim((string) $request->input('cycle_code'))),
-            'career' => mb_strtoupper(trim((string) $request->input('career'))),
-            'semester' => mb_strtoupper(trim((string) $request->input('semester'))),
-            'group_name' => mb_strtoupper(trim((string) $request->input('group_name'))),
         ]);
 
         $data = $request->validate(
@@ -90,23 +86,10 @@ class CycleController extends Controller
             $this->cycleValidationMessages()
         );
 
-        $groupName = $data['group_name'];
-        unset($data['group_name']);
+        $cycle = Cycle::create([...$data, 'professor_id' => $professorId]);
 
-        $cycle = DB::transaction(function () use ($data, $professorId, $groupName, $starterCourses) {
-            $cycle = Cycle::create([...$data, 'professor_id' => $professorId]);
-
-            $group = $cycle->groups()->create([
-                'professor_id' => $professorId,
-                'name' => $groupName,
-            ]);
-            $starterCourses->ensure($group);
-
-            return $cycle;
-        });
-
-        return redirect()->route('cycles.tree', $cycle)
-            ->with('success', 'Ciclo y primer grupo creados. Ya puedes organizar sus cursos.');
+        return redirect()->route('cycles.show', $cycle)
+            ->with('success', 'Ciclo creado. Ahora puedes agregar los grupos que correspondan.');
     }
 
     public function update(Request $request, Cycle $cycle)
@@ -115,8 +98,6 @@ class CycleController extends Controller
         $professorId = auth()->user()->professor->id;
         $request->merge([
             'cycle_code' => mb_strtoupper(trim((string) $request->input('cycle_code'))),
-            'career' => mb_strtoupper(trim((string) $request->input('career'))),
-            'semester' => mb_strtoupper(trim((string) $request->input('semester'))),
         ]);
 
         $validator = Validator::make(
@@ -243,8 +224,9 @@ class CycleController extends Controller
     }
 
     /**
-     * Mantiene las mismas reglas al crear y editar un ciclo.
-     * El nombre del primer grupo solo se exige al crear el ciclo.
+     * Un ciclo se identifica únicamente por su año académico y su código.
+     * Los grupos, carreras, semestres y periodos de dictado se configuran
+     * desde sus propios módulos.
      */
     private function cycleValidationRules(int $professorId, Request $request, ?Cycle $cycle = null): array
     {
@@ -258,20 +240,10 @@ class CycleController extends Controller
             $uniqueCycleCode->ignore($cycle->id);
         }
 
-        $rules = [
+        return [
             'academic_year' => ['required', 'integer', 'min:2020', 'max:2100'],
             'cycle_code' => ['required', 'string', 'max:20', $uniqueCycleCode],
-            'career' => ['required', 'string', 'max:255'],
-            'semester' => ['required', 'string', Rule::in(['I', 'II', 'III', 'IV', 'V', 'VI'])],
-            'start_date' => ['required', 'date'],
-            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
         ];
-
-        if (!$cycle) {
-            $rules['group_name'] = ['required', 'string', 'max:100'];
-        }
-
-        return $rules;
     }
 
     private function cycleValidationMessages(bool $updating = false): array
@@ -280,10 +252,6 @@ class CycleController extends Controller
             'cycle_code.unique' => $updating
                 ? 'Ya existe otro ciclo con ese año y código.'
                 : 'Ya existe un ciclo con ese año y código.',
-            'career.required' => 'Indica el nombre de la carrera.',
-            'semester.required' => 'Indica el semestre académico.',
-            'end_date.after_or_equal' => 'La fecha de fin debe ser igual o posterior al inicio.',
-            'group_name.required' => 'Registra el nombre del primer grupo del ciclo.',
         ];
     }
 
