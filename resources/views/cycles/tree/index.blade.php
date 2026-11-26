@@ -296,11 +296,11 @@
     box-shadow:none;
 }.tree-structure-card .workload-tree-group-shell:last-child{border-bottom:0}.tree-structure-card .workload-tree-group{min-width:0;margin:0;overflow:hidden;background:transparent}.tree-structure-card .workload-group-summary{
     display:grid;
-    grid-template-columns:22px 38px minmax(0,1fr) 30px;
+    grid-template-columns:18px minmax(0,1fr) 30px;
     align-items:center;
-    gap:10px;
+    gap:6px;
     min-height:68px;
-    padding:11px 13px;
+    padding:9px 10px;
     border:0;
     border-radius:0;
     background:var(--surface);
@@ -337,7 +337,7 @@
     color:var(--accent);
 }.tree-structure-card .tree-node-copy{
     display:grid;
-    grid-column:3;
+    grid-column:2;
     grid-row:1;
     gap:5px;
     min-width:0;
@@ -398,7 +398,7 @@
     transition:background .14s ease,border-color .14s ease,color .14s ease;
 }.tree-group-row-actions{
     display:flex;
-    grid-column:4;
+    grid-column:3;
     grid-row:1;
     align-items:center;
     justify-content:center;
@@ -456,11 +456,11 @@
     background:transparent;
 }.tree-structure-card .workload-tree-course:last-child{border-bottom:0}.tree-course-branch{min-width:0;overflow:hidden}.tree-structure-card .tree-course-summary{
     display:grid;
-    grid-template-columns:20px 34px minmax(0,1fr) auto;
+    grid-template-columns:18px minmax(0,1fr) auto;
     align-items:center;
-    gap:8px;
+    gap:6px;
     min-height:58px;
-    padding:9px 44px 9px 8px;
+    padding:9px 42px 9px 6px;
     border:0;
     border-radius:0;
     background:transparent;
@@ -479,7 +479,7 @@
     background:var(--accent-soft);
 }.tree-course-summary .tree-node-copy{
     display:grid;
-    grid-column:3;
+    grid-column:2;
     grid-row:1;
     gap:3px;
     min-width:0;
@@ -505,7 +505,7 @@
     overflow-wrap:anywhere;
 }.tree-course-components{
     display:flex;
-    grid-column:4;
+    grid-column:3;
     grid-row:1;
     align-items:center;
     flex-wrap:wrap;
@@ -812,16 +812,16 @@
     }.tree-icon-action:hover:not(:disabled){background:var(--surface-soft)}
 }
 @media(max-width:760px){.workload-tree-page{gap:11px}.workload-tree-hero{align-items:flex-start;padding:16px}.workload-tree-hero h1{font-size:29px}.workload-tree-hero-actions>.btn{min-height:38px}.tree-structure-card{padding:12px}.tree-structure-card .tree-panel-heading{align-items:flex-start;gap:8px;margin-bottom:12px}.tree-structure-card .tree-panel-heading h2{font-size:19px}.tree-structure-card .tree-panel-heading p:not(.eyebrow){font-size:10px}.tree-structure-card .workload-tree-search-field{height:40px}.tree-structure-card .workload-tree-search .btn{min-height:40px}.tree-structure-card .workload-group-summary{
-        grid-template-columns:20px 34px minmax(0,1fr) 28px;
-        gap:7px;
+        grid-template-columns:16px minmax(0,1fr) 26px;
+        gap:5px;
         min-height:62px;
-        padding:9px 9px;
+        padding:8px 7px;
     }.tree-structure-card .tree-node-icon{width:34px;height:34px}.tree-group-title-row{gap:4px 7px}.tree-group-title-row>strong{font-size:14px}.tree-meta-pill{padding:2px 5px;font-size:8px}.tree-group-code-row{font-size:9px}.tree-group-row-actions .tree-icon-action{width:28px;height:28px}.tree-structure-card .workload-tree-children{padding:9px 8px 10px 16px}.tree-structure-card .tree-course-summary{
-        grid-template-columns:18px 30px minmax(0,1fr);
-        gap:6px;
-        padding:8px 38px 8px 5px;
-    }.tree-course-summary .tree-node-copy{grid-column:3;grid-row:1;gap:3px}.tree-course-summary .tree-node-copy>strong{font-size:12px}.tree-course-summary .tree-course-components{
-        grid-column:3;
+        grid-template-columns:16px minmax(0,1fr);
+        gap:5px;
+        padding:8px 36px 8px 4px;
+    }.tree-course-summary .tree-node-copy{grid-column:2;grid-row:1;gap:3px}.tree-course-summary .tree-node-copy>strong{font-size:12px}.tree-course-summary .tree-course-components{
+        grid-column:2;
         grid-row:2;
         justify-content:flex-start;
         margin:0;
@@ -847,13 +847,13 @@
         align-items:start;
         gap:7px;
     }.tree-structure-card .tree-panel-heading h2{font-size:17px;gap:6px}.tree-structure-card .tree-panel-heading p:not(.eyebrow){font-size:10px}.tree-structure-card .workload-tree-total{align-self:start;padding:5px 7px;font-size:9px}.tree-structure-card .workload-tree-search{display:grid;grid-template-columns:minmax(0,1fr) 72px;gap:6px}.tree-structure-card .workload-tree-search-field{grid-column:1;grid-row:1;width:100%;padding:0 8px}.tree-structure-card .workload-tree-search-field input{font-size:11px}.tree-structure-card .workload-tree-search .btn{grid-column:2;grid-row:1;width:100%;min-width:0;padding:6px;font-size:10px}.tree-structure-card .workload-group-summary{
-        grid-template-columns:17px 29px minmax(0,1fr) 25px;
-        gap:5px;
-        padding:8px 6px;
+        grid-template-columns:15px minmax(0,1fr) 23px;
+        gap:4px;
+        padding:7px 5px;
     }.tree-structure-card .tree-expand-symbol{width:17px;height:20px}.tree-structure-card .tree-node-icon{width:29px;height:29px;border-radius:7px}.tree-structure-card .tree-node-icon svg{width:18px;height:18px}.tree-node-copy{gap:4px}.tree-group-title-row{align-items:flex-start;flex-direction:column;gap:3px}.tree-group-title-row>strong{font-size:13px;line-height:1.3}.tree-group-counts{gap:3px}.tree-meta-pill{font-size:8px}.tree-group-code-row{align-items:flex-start;gap:3px 5px;font-size:9px}.tree-group-row-actions .tree-icon-action{width:25px;height:25px}.tree-group-row-actions .tree-icon-action svg{width:14px;height:14px}.tree-structure-card .workload-tree-children{padding:8px 5px 9px 10px}.tree-group-schedule-item{grid-column:1}.tree-structure-card .tree-course-summary{
-        grid-template-columns:16px 27px minmax(0,1fr);
-        gap:5px;
-        padding:7px 34px 7px 3px;
+        grid-template-columns:14px minmax(0,1fr);
+        gap:4px;
+        padding:7px 32px 7px 3px;
     }.tree-structure-card .tree-course-node{width:27px;height:27px}.tree-structure-card .tree-course-node svg{width:16px;height:16px}.tree-structure-card .tree-course-summary .tree-node-copy>strong{font-size:11px;line-height:1.3}.tree-course-code-row{font-size:9px}.tree-course-period{font-size:8px}.tree-component-chip{min-width:29px;padding:3px 5px;font-size:8px}.tree-course-delete-trigger{top:7px;right:3px;width:25px;height:25px}.tree-course-delete-trigger svg{width:14px;height:14px}.tree-structure-card .tree-course-children{padding:5px 3px 7px 7px}.tree-structure-card .workload-tree-modality{
         grid-template-columns:minmax(0,1fr);
         gap:6px;
@@ -866,13 +866,13 @@
     }.tree-modality-toggle{min-width:0}.tree-structure-card .tree-open-modality{min-width:0}.tree-delete-confirm{padding:8px;gap:8px}.tree-delete-confirm p{font-size:9px}.tree-delete-confirm form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.tree-delete-confirm .btn{min-width:0;min-height:32px;padding:5px;font-size:9px}.tree-draft-heading strong{font-size:11px}.tree-draft-heading>span,.tree-draft-note{font-size:8px}.tree-draft-footer .btn{min-height:36px;font-size:10px}.tree-add-row{padding:7px 5px}.tree-add-row>button{width:100%;min-height:38px}.tree-live-feedback{padding:9px;font-size:10px}.tree-empty-child{min-height:110px;padding:16px 9px}.tree-empty-child strong{font-size:11px}.tree-empty-child span{font-size:9px}.tree-inline-editor{min-height:37px;font-size:11px}
 }
 @media(max-width:360px){.tree-structure-card .tree-panel-heading{grid-template-columns:minmax(0,1fr)}.tree-structure-card .workload-tree-total{justify-self:start}.tree-structure-card .workload-group-summary{
-        grid-template-columns:15px 26px minmax(0,1fr) 23px;
+        grid-template-columns:14px minmax(0,1fr) 22px;
         gap:4px;
         padding:7px 4px;
     }.tree-structure-card .tree-node-icon{width:26px;height:26px}.tree-group-title-row>strong{font-size:12px}.tree-meta-pill{font-size:7px;padding:2px 4px}.tree-structure-card .tree-course-summary{
-        grid-template-columns:14px 24px minmax(0,1fr);
-        gap:4px;
-        padding-right:31px;
+        grid-template-columns:13px minmax(0,1fr);
+        gap:3px;
+        padding-right:29px;
     }.tree-structure-card .tree-course-node{width:24px;height:24px}.tree-course-delete-trigger{right:2px;width:23px;height:23px}.tree-modality-toggle,.tree-open-modality,.tree-add-modality{font-size:8px;padding:4px 6px}
 }
 @media(prefers-reduced-motion:reduce){.workload-tree-page *,.tree-live-feedback,.tree-course-entry-form,.tree-group-draft-form,.tree-course-draft-form{
@@ -1022,7 +1022,7 @@
 .tree-structure-card .workload-tree-root{
     position:relative!important;
     display:block!important;
-    padding:12px 0 12px 22px!important;
+    padding:12px 0 12px 18px!important;
 }
 .tree-structure-card .workload-tree-root::before{
     content:"";
@@ -1038,7 +1038,7 @@
     position:relative!important;
     min-width:0;
     margin:0 0 9px!important;
-    padding:0 0 0 16px!important;
+    padding:0 0 0 10px!important;
     overflow:visible!important;
     border:0!important;
     border-radius:0!important;
@@ -1050,8 +1050,8 @@
     content:"";
     position:absolute;
     top:33px;
-    left:-14px;
-    width:30px;
+    left:-10px;
+    width:20px;
     height:2px;
     border-radius:2px;
     background:color-mix(in srgb,var(--accent) 42%,var(--line-strong));
@@ -1079,8 +1079,8 @@
 .tree-structure-card .workload-tree-children.workload-group-children{
     position:relative!important;
     min-width:0;
-    margin:0 0 0 18px!important;
-    padding:9px 7px 12px 22px!important;
+    margin:0 0 0 14px!important;
+    padding:9px 7px 12px 18px!important;
     border:0!important;
     border-radius:0!important;
     background:transparent!important;
@@ -1099,8 +1099,8 @@
     content:"";
     position:absolute;
     top:0;
-    left:-18px;
-    width:26px;
+    left:-14px;
+    width:22px;
     height:2px;
     border-radius:2px;
     background:color-mix(in srgb,var(--accent) 36%,var(--line-strong));
@@ -1115,7 +1115,7 @@
     position:relative!important;
     min-width:0;
     margin:0 0 7px!important;
-    padding:0 0 0 16px!important;
+    padding:0 0 0 10px!important;
     overflow:visible!important;
     border:0!important;
     background:transparent!important;
@@ -1125,8 +1125,8 @@
     content:"";
     position:absolute;
     top:29px;
-    left:-14px;
-    width:30px;
+    left:-10px;
+    width:20px;
     height:2px;
     border-radius:2px;
     background:color-mix(in srgb,var(--accent) 36%,var(--line-strong));
@@ -1150,8 +1150,8 @@
 .tree-structure-card .tree-course-children{
     position:relative!important;
     min-width:0;
-    margin:0 0 0 22px!important;
-    padding:9px 7px 12px 26px!important;
+    margin:0 0 0 18px!important;
+    padding:9px 7px 12px 22px!important;
     border:0!important;
     border-radius:0!important;
     background:transparent!important;
@@ -1161,7 +1161,7 @@
     position:absolute;
     top:0;
     bottom:20px;
-    left:11px;
+    left:9px;
     width:2px;
     border-radius:2px;
     background:color-mix(in srgb,var(--accent) 32%,var(--line-strong));
@@ -1170,8 +1170,8 @@
     content:"";
     position:absolute;
     top:0;
-    left:-22px;
-    width:33px;
+    left:-18px;
+    width:27px;
     height:2px;
     border-radius:2px;
     background:color-mix(in srgb,var(--accent) 32%,var(--line-strong));
@@ -1214,20 +1214,20 @@
     border-top:1px solid color-mix(in srgb,var(--line) 72%,transparent)!important;
 }
 @media(max-width:760px){
-    .tree-structure-card .workload-tree-root{padding-left:15px!important}
+    .tree-structure-card .workload-tree-root{padding-left:13px!important}
     .tree-structure-card .workload-tree-root::before{left:5px}
-    .tree-structure-card .workload-tree-root>.workload-tree-group-shell{padding-left:11px!important}
-    .tree-structure-card .workload-tree-root>.workload-tree-group-shell::before{left:-10px;width:21px}
-    .tree-structure-card .workload-tree-children.workload-group-children{margin-left:10px!important;padding-left:17px!important}
+    .tree-structure-card .workload-tree-root>.workload-tree-group-shell{padding-left:8px!important}
+    .tree-structure-card .workload-tree-root>.workload-tree-group-shell::before{left:-8px;width:16px}
+    .tree-structure-card .workload-tree-children.workload-group-children{margin-left:8px!important;padding-left:14px!important}
     .tree-structure-card .workload-tree-children.workload-group-children::before{left:5px}
-    .tree-structure-card .workload-tree-children.workload-group-children::after{left:-10px;width:15px}
-    .tree-structure-card .workload-tree-course{padding-left:11px!important}
-    .tree-structure-card .workload-tree-course::before{left:-12px;width:23px}
-    .tree-structure-card .tree-course-children{margin-left:13px!important;padding-left:20px!important}
+    .tree-structure-card .workload-tree-children.workload-group-children::after{left:-8px;width:13px}
+    .tree-structure-card .workload-tree-course{padding-left:8px!important}
+    .tree-structure-card .workload-tree-course::before{left:-9px;width:17px}
+    .tree-structure-card .tree-course-children{margin-left:10px!important;padding-left:17px!important}
     .tree-structure-card .tree-course-children::before{left:8px}
-    .tree-structure-card .tree-course-children::after{left:-13px;width:21px}
+    .tree-structure-card .tree-course-children::after{left:-10px;width:17px}
     .tree-structure-card .workload-tree-modality{margin-left:10px!important}
-    .tree-structure-card .workload-tree-modality::before{left:-22px;width:22px}
+    .tree-structure-card .workload-tree-modality::before{left:-19px;width:19px}
     .tree-course-period{gap:3px 8px;font-size:9px}
     .tree-course-period .tree-date-label{font-size:8px}
 }
@@ -1242,7 +1242,7 @@
 .tree-structure-card .workload-tree-root{
     display:block!important;
     position:relative!important;
-    padding:12px 0 12px 22px!important;
+    padding:12px 0 12px 18px!important;
 }
 .tree-structure-card .workload-tree-root::before{
     content:"";
@@ -1308,14 +1308,14 @@
     transform:rotate(135deg);
     color:var(--accent);
 }
-.workload-tree-summary,.tree-course-summary{gap:8px!important}
+.workload-tree-summary,.tree-course-summary{gap:5px!important}
 .tree-node-copy{margin-left:0!important}
 .tree-modality-schedule-summary .icon{display:none!important}
 @media(max-width:760px){
     .tree-structure-card .workload-tree-root{padding-left:15px!important}
     .tree-structure-card .workload-tree-root::before{left:5px}
     .tree-cycle-root{margin-left:11px;max-width:calc(100% - 12px);padding:7px 10px}
-    .tree-cycle-root::before{left:-21px;width:21px}
+    .tree-cycle-root::before{left:-18px;width:18px}
 }
 
 
