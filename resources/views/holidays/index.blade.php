@@ -316,7 +316,7 @@
 
 @push('styles')
 <style>
-.holiday-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.holiday-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px}
 .holiday-stat{display:grid;gap:3px;min-width:0;padding:11px 13px;border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:9px;background:var(--surface)}
 .holiday-stat span{color:var(--muted);font-size:9px;font-weight:750}
 .holiday-stat strong{color:var(--ink);font-size:21px;font-weight:850;font-variant-numeric:tabular-nums}
