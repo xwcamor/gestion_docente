@@ -1556,5 +1556,36 @@
 })();
 </script>
 @stack('scripts')
+<script>
+(() => {
+    const normalizeUppercaseField = target => {
+        if (!(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement)) return;
+        if (!target.matches('[data-uppercase]')) return;
+
+        const start = target.selectionStart;
+        const end = target.selectionEnd;
+        const original = target.value;
+        const upper = original.toLocaleUpperCase('es-PE');
+        if (original === upper) return;
+
+        target.value = upper;
+        if (typeof start === 'number' && typeof end === 'number') {
+            const delta = upper.length - original.length;
+            const nextStart = Math.max(0, start + delta);
+            const nextEnd = Math.max(nextStart, end + delta);
+            target.setSelectionRange(nextStart, nextEnd);
+        }
+    };
+
+    document.querySelectorAll('[data-uppercase]').forEach(normalizeUppercaseField);
+    document.addEventListener('input', event => normalizeUppercaseField(event.target));
+    document.addEventListener('paste', event => {
+        const target = event.target;
+        if (target instanceof HTMLElement && target.matches('[data-uppercase]')) {
+            requestAnimationFrame(() => normalizeUppercaseField(target));
+        }
+    });
+})();
+</script>
 </body>
 </html>
