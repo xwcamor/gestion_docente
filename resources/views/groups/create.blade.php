@@ -24,7 +24,6 @@
             <label for="name">Nombre del grupo</label>
             <input class="field" id="name" name="name" value="{{ old('name') }}" required maxlength="100" autofocus placeholder="Ej. Grupo 01">
             @error('name')<p class="help field-error">{{ $message }}</p>@enderror
-            <p class="help">La disponibilidad y la carga horaria se configuran después, desde el detalle del grupo.</p>
         </div>
 
         <div class="form-actions">
