@@ -13,6 +13,21 @@ class Course extends Model
 
     protected $fillable = ['professor_id', 'code', 'name', 'career', 'module', 'description'];
 
+    public function setNameAttribute($value): void
+    {
+        $this->attributes['name'] = mb_strtoupper(trim((string) $value));
+    }
+
+    public function setCodeAttribute($value): void
+    {
+        $this->attributes['code'] = filled($value) ? mb_strtoupper(trim((string) $value)) : null;
+    }
+
+    public function setCareerAttribute($value): void
+    {
+        $this->attributes['career'] = filled($value) ? mb_strtoupper(trim((string) $value)) : null;
+    }
+
     protected function slugSource(): string
     {
         return 'curso-'.($this->code ?: $this->name);
