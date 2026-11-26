@@ -88,7 +88,8 @@ class SenatiCatalogSeeder extends Seeder
         ];
 
         foreach ($unitDefinitions as $data) {
-            $unit = InstitutionUnit::firstOrCreate(
+            // Reaplica las etiquetas de origen y el estado histórico correcto sin crear duplicados.
+            $unit = InstitutionUnit::updateOrCreate(
                 ['institution_id' => $institution->id, 'code' => $data['key']],
                 [
                     'name' => $data['name'],
