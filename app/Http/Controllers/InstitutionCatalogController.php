@@ -3,17 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Models\AcademicProgram;
-use App\Models\Institution;
 use App\Models\InstitutionAcademicPeriod;
 use App\Models\InstitutionCourseOffering;
 use App\Models\InstitutionDocumentTemplate;
 use App\Models\InstitutionFeature;
+use App\Support\CurrentInstitution;
 
 class InstitutionCatalogController extends Controller
 {
+    public function __construct(private readonly CurrentInstitution $currentInstitution)
+    {
+    }
+
     public function index()
     {
-        $institution = Institution::query()->where('code', 'SENATI')->firstOrFail();
+        $institution = $this->currentInstitution->get();
+        $isSenati = $institution->code === 'SENATI';
 
         $periods = InstitutionAcademicPeriod::query()
             ->whereHas('type', fn ($query) => $query->where('institution_id', $institution->id))
@@ -36,8 +41,8 @@ class InstitutionCatalogController extends Controller
             ->orderBy('name')
             ->get();
 
-        $reportedTrainingCareerCount = (int) data_get($institution->settings, '2025_career_catalog.reported_execution_careers', 90);
-        $unresolvedTrainingNames = (int) data_get($institution->settings, '2025_career_catalog.names_pending_source_validation', 5);
+        $reportedTrainingCareerCount = (int) data_get($institution->settings, '2025_career_catalog.reported_execution_careers', 0);
+        $unresolvedTrainingNames = (int) data_get($institution->settings, '2025_career_catalog.names_pending_source_validation', 0);
 
         $historicalPrograms = AcademicProgram::where('institution_id', $institution->id)
             ->where('status', 'historical_reference')->count();
@@ -53,7 +58,7 @@ class InstitutionCatalogController extends Controller
         return view('admin.institutions.catalog', compact(
             'institution', 'periods', 'activePrograms', 'trainingPrograms',
             'reportedTrainingCareerCount', 'unresolvedTrainingNames',
-            'historicalPrograms', 'courseCount', 'offeringCount', 'pendingGroupCount',
+            'historicalPrograms', 'courseCount', 'offeringCount', 'pendingGroupCount', 'isSenati',
             'templateCount', 'features'
         ));
     }
