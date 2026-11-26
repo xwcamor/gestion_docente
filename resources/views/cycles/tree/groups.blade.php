@@ -136,7 +136,7 @@
                 aria-label="Eliminar grupo"
                 title="{{ $cycleGroupCount <= 1 ? 'El ciclo debe conservar al menos un grupo' : 'Eliminar grupo' }}">
             <x-icon name="trash-2" size="15" />
-            <span>Eliminar</span>
+            <span>Eliminar grupo</span>
         </button>
     </div>
 @empty
