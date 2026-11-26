@@ -500,3 +500,35 @@ body .main-content .roster-head-actions .btn{flex:0 0 auto}
     body .main-content .roster-head-actions .roster-search,
     body .main-content .roster-head-actions .btn{width:100%;max-width:none}
 }
+
+
+/* Las dos cabeceras especiales (inicio y árbol) conservan su superficie,
+   pero comparten escala tipográfica y ritmo con el resto de las páginas. */
+body .main-content :is(.dashboard-hero,.workload-tree-hero){
+    min-width:0;
+    margin:0 0 20px;
+    border-radius:var(--gd-card-radius);
+}
+body .main-content :is(.dashboard-hero,.workload-tree-hero) h1{
+    margin:0;
+    color:var(--gd-ink);
+    font-size:clamp(25px,2.1vw,30px);
+    font-weight:800;
+    line-height:1.14;
+    letter-spacing:-.035em;
+}
+body .main-content .dashboard-hero-copy>p:not(.eyebrow),
+body .main-content .workload-tree-context{
+    max-width:70ch;
+    color:var(--gd-muted);
+    font-size:12.5px;
+    line-height:1.55;
+}
+body .main-content .dashboard-hero-copy>p:not(.eyebrow){margin:7px 0 0}
+body .main-content .workload-tree-context{margin-top:10px}
+@media(max-width:560px){
+    body .main-content :is(.dashboard-hero,.workload-tree-hero){margin-bottom:16px}
+    body .main-content :is(.dashboard-hero,.workload-tree-hero) h1{font-size:24px}
+    body .main-content .dashboard-hero-copy>p:not(.eyebrow),
+    body .main-content .workload-tree-context{font-size:12px}
+}
