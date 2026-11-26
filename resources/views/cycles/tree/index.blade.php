@@ -1771,15 +1771,18 @@
         if (node.querySelector('input, select')) return;
 
         const options = Array.isArray(config.options) ? config.options : null;
+        const uppercase = config.uppercase === true;
         const rawOriginal = String(config.value ?? '').trim();
+        const normalizedOriginal = uppercase ? rawOriginal.toLocaleUpperCase('es-PE') : rawOriginal;
         const original = options
-            ? (options.find(option => option.toLowerCase() === rawOriginal.toLowerCase()
-                || (option + ' semestre').toLowerCase() === rawOriginal.toLowerCase()) || '')
-            : rawOriginal;
+            ? (options.find(option => option.toLowerCase() === normalizedOriginal.toLowerCase()
+                || (option + ' semestre').toLowerCase() === normalizedOriginal.toLowerCase()) || '')
+            : normalizedOriginal;
         const originalDisplay = node.textContent.trim();
         const inputType = config.inputType === 'time' ? 'time' : 'text';
         const input = document.createElement(options ? 'select' : 'input');
         input.className = 'tree-inline-editor';
+        if (uppercase && !options && inputType === 'text') input.dataset.uppercase = 'true';
         input.setAttribute('aria-label', config.label || 'Editar texto');
 
         if (options) {
@@ -1814,7 +1817,8 @@
         };
         const save = async () => {
             if (finished) return;
-            const value = input.value.trim();
+            const value = (uppercase ? input.value.toLocaleUpperCase('es-PE') : input.value).trim();
+            input.value = value;
             if (value === original) {
                 restore();
                 return;
@@ -1863,7 +1867,8 @@
         input.inputMode = 'numeric';
         input.maxLength = 12;
         input.className = 'tree-inline-editor';
-        input.value = original;
+        input.dataset.uppercase = 'true';
+        input.value = original.toLocaleUpperCase('es-PE');
         input.placeholder = 'NRC';
         cell.replaceChildren(input);
         input.focus();
@@ -1877,7 +1882,8 @@
         };
         const save = async () => {
             if (finished) return;
-            const value = input.value.trim();
+            const value = input.value.toLocaleUpperCase('es-PE').trim();
+            input.value = value;
             if (value === original) {
                 restore();
                 return;
@@ -1998,6 +2004,7 @@
             field,
             label: editable.dataset.editLabel,
             responseField: editable.dataset.editResponse || '',
+            uppercase: ['group', 'group-code', 'group-career', 'group-semester', 'course-name', 'course-code'].includes(kind),
             maxLength: field === 'code' ? 80 : 255,
             emptyLabel: editable.dataset.editEmptyLabel || (['code', 'career', 'semester'].includes(field) ? 'Falta' : ''),
             allowEmpty: kind === 'group-code' || kind === 'course-code' || kind === 'group-time',
