@@ -18,9 +18,9 @@
                               data-inline-nrc
                               data-nrc-url="{{ route('workload-tree.modalities.nrc', $modality) }}"
                               data-nrc="{{ $modality->nrc }}" data-modality-id="{{ $modality->id }}"
-                              title="Doble clic para editar">{{ $modality->nrc ?: 'NRC pendiente' }}</span>
+                              title="Doble clic para editar">{{ $modality->nrc ?: 'Falta' }}</span>
                     @else
-                        <span class="tree-disabled-value">{{ $modality->nrc ?: 'NRC pendiente' }}</span>
+                        <span class="tree-disabled-value">{{ $modality->nrc ?: 'Falta' }}</span>
                     @endif
                 </strong>
                 <div class="tree-modality-dates"
