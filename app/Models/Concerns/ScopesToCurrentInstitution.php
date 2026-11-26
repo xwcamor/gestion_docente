@@ -43,8 +43,24 @@ trait ScopesToCurrentInstitution
         return null;
     }
 
+    protected static function institutionScopeColumn(): ?string
+    {
+        return static::institutionIdColumn();
+    }
+
     protected static function applyInstitutionScope(Builder $builder, int $institutionId): void
     {
+        $column = static::institutionScopeColumn();
+
+        if ($column !== null) {
+            $builder->where(
+                $builder->getModel()->qualifyColumn($column),
+                $institutionId
+            );
+
+            return;
+        }
+
         $relation = static::institutionScopeRelation();
 
         $builder->whereHas($relation, function (Builder $related) use ($institutionId): void {
