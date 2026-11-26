@@ -93,7 +93,7 @@
             <div class="form-field">
                 <label>Duraciones admitidas por carrera</label>
                 <div class="institution-duration-options">
-                    @foreach([4,5,6,8,10,12] as $duration)
+                    @foreach($durationOptions as $duration)
                         <label class="institution-duration-option">
                             <input type="checkbox" name="career_duration_options[]" value="{{ $duration }}" @checked(in_array($duration, old('career_duration_options', $durationOptions)))>
                             <span>{{ $duration }} semestres</span>
@@ -127,7 +127,13 @@
                 <div class="institution-record-title">
                     <strong>{{ $periodType->name }}</strong>
                     <span class="institution-code-chip">{{ $periodType->code }}</span>
-                    <small>{{ $periodType->periods_count }} periodos registrados</small>
+                    <small>
+                        @if($periodType->code === 'STUDY_SEMESTER')
+                            La cantidad se define en cada versión de malla
+                        @else
+                            {{ $periodType->periods_count }} periodos registrados
+                        @endif
+                    </small>
                 </div>
                 <div class="institution-record-fields">
                     <div class="form-field">
@@ -166,7 +172,7 @@
         <div>
             <p class="eyebrow">04 · Organización</p>
             <h2>Unidades académicas</h2>
-            <p>Se conserva el rótulo de origen cuando Blackboard no permite determinar la jerarquía real.</p>
+            <p>Se conservan los rótulos originales. El listado incluye 14 agrupaciones de Formación Profesional y cuatro unidades o contextos de referencia.</p>
         </div>
         <span class="institution-config-count">{{ $units->count() }} unidades</span>
     </div>
@@ -232,7 +238,6 @@
                                                 'reference_2025' => 'Referencia 2025',
                                                 'historical_reference' => 'Referencia histórica',
                                                 'historical' => 'Histórica',
-                                                'reference_2025' => 'Referencia 2025',
                                                 'reference_2026' => 'Referencia 2026',
                                                 'draft' => 'Borrador',
                                                 'archived' => 'Archivada',
