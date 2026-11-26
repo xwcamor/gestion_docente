@@ -29,6 +29,16 @@ class User extends Authenticatable
         return $this->hasOne(Professor::class);
     }
 
+    public function institutionMemberships(): HasMany
+    {
+        return $this->hasMany(InstitutionMembership::class);
+    }
+
+    public function employmentRelationships(): HasMany
+    {
+        return $this->hasMany(EmploymentRelationship::class);
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
