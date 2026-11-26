@@ -1,26 +1,16 @@
 @extends('layouts.app')
+
 @section('title', 'Prueba de layout · '.$cycle->academic_year.' · Ciclo '.$cycle->cycle_code)
+
 @section('content')
 <div class="workload-tree-page">
-    <div class="breadcrumbs">
-        <a href="{{ route('cycles.index') }}">Cargas laborales</a>
-        <x-icon name="chevron-right" size="13" />
-        <span class="current">Prueba de layout · {{ $cycle->academic_year }} · Ciclo {{ $cycle->cycle_code }}</span>
-    </div>
-
-    <section class="workload-tree-hero">
-        <div class="workload-tree-hero-copy">
-            <p class="eyebrow">ORGANIZACIÓN ACADÉMICA</p>
-            <h1>{{ $cycle->academic_year }} <span>· Ciclo {{ $cycle->cycle_code }}</span></h1>
-            <div class="workload-tree-context">
-                <span>Periodo: {{ $cycle->start_date?->format('d/m/Y') ?: 'Sin inicio' }} – {{ $cycle->end_date?->format('d/m/Y') ?: 'Sin fin' }}</span>
-                <span class="tree-context-hint">Carrera y semestre se configuran en cada grupo</span>
-            </div>
+    <header class="page-head">
+        <div>
+            <p class="eyebrow">DIAGNÓSTICO VISUAL</p>
+            <h1>Prueba de layout</h1>
+            <p class="subhead">Vista de prueba con la tarjeta real del árbol académico.</p>
         </div>
-        <div class="workload-tree-hero-actions">
-            <a class="btn btn-secondary" href="{{ route('cycles.show', $cycle) }}"><x-icon name="settings" size="16" /> Datos del ciclo</a>
-        </div>
-    </section>
+    </header>
 
     <section class="card tree-structure-card">
         <div class="tree-panel-heading">
@@ -2682,3 +2672,5 @@
 })();
 </script>
 @endpush
+
+@endsection
