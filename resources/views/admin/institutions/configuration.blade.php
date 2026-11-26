@@ -23,7 +23,7 @@
         <span>Carreras y programas</span><strong>{{ $programs->count() }}</strong>
     </div>
     <div class="card institution-config-summary-item">
-        <span>Duración de semestre de referencia</span><strong>{{ $semesterWeeks }} <small>semanas</small></strong>
+        <span>Duración de semestre de referencia</span><strong>{{ $semesterWeeks ?: 'Sin definir' }} <small>{{ $semesterWeeks ? 'semanas' : '' }}</small></strong>
     </div>
 </div>
 
@@ -109,7 +109,7 @@
         <div>
             <p class="eyebrow">03 · Calendario institucional</p>
             <h2>Sistemas de periodos</h2>
-            <p>Se distinguen los códigos de Blackboard del semestre de avance de la malla curricular.</p>
+            <p>Se distinguen los periodos de la institución de los semestres de avance de la malla curricular.</p>
         </div>
     </div>
     <div class="institution-config-records">
@@ -136,7 +136,7 @@
                     <div class="form-field">
                         <label>Unidad académica</label>
                         <select class="field" name="period_unit" required>
-                            @foreach(['period' => 'Periodo general', 'institution_period' => 'Periodo de plataforma (Blackboard)', 'semester' => 'Semestre', 'trimester' => 'Trimestre', 'quarter' => 'Cuatrimestre', 'module' => 'Módulo', 'year' => 'Año académico', 'term' => 'Término'] as $value => $label)
+                            @foreach(['period' => 'Periodo general', 'institution_period' => 'Periodo de plataforma externa', 'semester' => 'Semestre', 'trimester' => 'Trimestre', 'quarter' => 'Cuatrimestre', 'module' => 'Módulo', 'year' => 'Año académico', 'term' => 'Término'] as $value => $label)
                                 <option value="{{ $value }}" @selected(old('period_unit', $periodType->period_unit) === $value)>{{ $label }}</option>
                             @endforeach
                         </select>
