@@ -264,8 +264,12 @@ El sistema sigue un estándar visual y funcional común para sus módulos. No se
 Antes de diseñar o modificar pantallas, consulta:
 
 - **[AGENTS.md](AGENTS.md):** instrucciones que debe seguir el agente de programación.
-- **[DESIGN.md](DESIGN.md):** colores, tipografía, jerarquía, tarjetas, botones, tablas y patrones visuales de Gestión Docente.
-- **[Guía UI/UX para futuros sistemas](docs/GUIA_UI_UX_FUTUROS_SISTEMAS.md):** cuándo utilizar Anti UI Slop, Think UI, Taste Skill, Emil Design Engineering, Vercel Guidelines, Anthropic Frontend Design, Hallmark, Make Interfaces Feel Better, UI/UX Pro Max y Stageshow. Incluye checklist e instalación selectiva.
+- **[DESIGN.md](DESIGN.md):** colores, tipografía, jerarquía, tarjetas, botones, tablas, escala de espaciado, subtítulos y filtros obligatorios.
+- **[Guía UI/UX para futuros sistemas](docs/GUIA_UI_UX_FUTUROS_SISTEMAS.md):** selección de referencias, checklist de revisión, estándar de consistencia y reglas para nuevos módulos.
+
+
+
+La implementación CSS del estándar está centralizada en `public/css/ui-standard.css`, cargada automáticamente por `layouts/app.blade.php` después de los estilos de cada vista. Los módulos autenticados deben reutilizar esta hoja; no agregues otra capa global ni dupliques sus reglas.
 
 Al reutilizar la guía en otro proyecto, copia `AGENTS.md`, `DESIGN.md` y la guía UI/UX. Actualiza los tokens de `DESIGN.md` según la marca y tecnología del nuevo sistema; no copies automáticamente los colores de Gestión Docente.
 
