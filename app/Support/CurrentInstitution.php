@@ -3,7 +3,6 @@
 namespace App\Support;
 
 use App\Models\Institution;
-use Illuminate\Support\Collection;
 
 class CurrentInstitution
 {
