@@ -98,3 +98,36 @@ employment_relationships guarda la relación usuario-institución, tipo de dedic
 ## Límite de esta primera migración
 
 Esta migración añade el catálogo institucional y una importación histórica de Blackboard, sin modificar ni borrar las tablas operativas actuales de ciclos, grupos, cursos o sesiones. Los NRC quedan pendientes de vincular con los grupos existentes. La separación SaaS requiere después integrar el contexto de institución activa, membresías y autorización por tenant en todos los controladores; no debe declararse completa hasta terminar ese trabajo y probar aislamiento entre instituciones.
+
+
+## Fase 2: configuración del tenant SENATI
+
+La pantalla administrativa está disponible en **Administración → Configuración institucional**. Esta primera pantalla edita únicamente el tenant SENATI, porque el selector/contexto multi-tenant y el aislamiento transversal se completan en fases posteriores.
+
+Datos administrables:
+- Identidad institucional: nombre, razón social, país y zona horaria. El código SENATI y el slug permanecen estables.
+- Reglas académicas de referencia: semanas por semestre y opciones de duración disponibles.
+- Tipos de periodo: nombre, unidad, patrón de código, semanas de referencia y estado.
+- Unidades académicas: nombre visible y estado, conservando código, tipo, rótulo de origen y trazabilidad de importación.
+- Versiones de carrera: duración en semestres, vigencia, estado y versión actual.
+
+Regla fundamental:
+- La institución no tiene un único número universal de ciclos.
+- La duración se define en cada `academic_program_versions.duration_semesters`.
+- Las opciones institucionales de duración son una lista orientativa y editable, no la duración efectiva de todas las carreras.
+- El código de periodo Blackboard (por ejemplo, 202620) es distinto al número de semestre de avance curricular.
+
+La edición de una unidad o una regla institucional no cambia retroactivamente las fechas de ciclos, horarios, NRC ni grupos ya creados. La modificación de una versión de malla no cambia las demás versiones.
+
+### Checklist de fase 2
+
+- [x] Pantalla de configuración del tenant.
+- [x] Edición de identidad y zona horaria.
+- [x] Edición de opciones de duración por carrera.
+- [x] Edición de tipos de periodos.
+- [x] Edición de unidades académicas y rótulos de origen.
+- [x] Edición de duración y vigencia por versión de carrera.
+- [ ] Verificación funcional en Laragon de guardado y recarga de cada formulario.
+- [ ] Confirmación del administrador de que las opciones y valores de SENATI son correctos.
+
+No se considera completada la fase 2 hasta que las casillas manuales pendientes se comprueben en la instalación local.
