@@ -359,11 +359,11 @@
             <div class="form-row">
                 <div>
                     <label for="new_student_surnames">Apellidos <span class="muted">*</span></label>
-                    <input class="field" id="new_student_surnames" name="surnames" maxlength="255" value="{{ old('surnames') }}" required>
+                    <input class="field" id="new_student_surnames" name="surnames" data-uppercase maxlength="255" value="{{ old('surnames') }}" required>
                 </div>
                 <div>
                     <label for="new_student_names">Nombres <span class="muted">*</span></label>
-                    <input class="field" id="new_student_names" name="given_names" maxlength="255" value="{{ old('given_names') }}" required>
+                    <input class="field" id="new_student_names" name="given_names" data-uppercase maxlength="255" value="{{ old('given_names') }}" required>
                 </div>
             </div>
             <p class="help">Si el ID o el usuario ya existe en tu padrón general, se reutilizará esa ficha y se conservarán sus notas.</p>
