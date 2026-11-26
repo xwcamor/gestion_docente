@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasSlugRouteKey;
+use App\Models\Concerns\ScopesToCurrentInstitution;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -10,6 +11,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TeachingGroup extends Model
 {
+    use ScopesToCurrentInstitution;
+
+    protected static function institutionScopeRelation(): string
+    {
+        return 'cycle';
+    }
+
+
     use HasSlugRouteKey;
 
     protected $fillable = [
