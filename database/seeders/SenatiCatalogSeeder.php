@@ -450,6 +450,7 @@ class SenatiCatalogSeeder extends Seeder
         // quedan contabilizados como pendientes, sin fabricar nombres ni códigos.
         $institution->forceFill([
             'settings' => array_merge($institution->settings ?? [], [
+                'catalog_profile' => 'senati_reference',
                 '2025_career_catalog' => [
                     'reported_execution_careers' => 90,
                     'reported_schools' => 14,
