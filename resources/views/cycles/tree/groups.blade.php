@@ -71,9 +71,9 @@
                             </span>
                             <span class="tree-group-inline-date">
                                 <span class="tree-group-inline-sub-label">Fin</span>
-                                <span class="tree-inline-date {{ $endDate ? '' : 'is-empty' }}"
+                                <span class="tree-inline-date {{ $endDate ? '' : 'is-empty' }} {{ $startDate ? '' : 'is-awaiting-start' }}"
                                       data-inline-date="workload_end_date" data-empty-label="Falta"
-                                      title="Clic para seleccionar la fecha de fin">{{ $group->workload_end_date?->format('d/m/Y') ?: 'Falta' }}</span>
+                                      title="{{ $startDate ? 'Clic para seleccionar la fecha de fin' : 'Primero selecciona la fecha de inicio' }}">{{ $group->workload_end_date?->format('d/m/Y') ?: 'Falta' }}</span>
                             </span>
                         </span>
                     </span>
