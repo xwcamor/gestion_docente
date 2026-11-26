@@ -269,6 +269,12 @@ Antes de diseñar o modificar pantallas, consulta:
 
 Al reutilizar la guía en otro proyecto, copia `AGENTS.md`, `DESIGN.md` y la guía UI/UX. Actualiza los tokens de `DESIGN.md` según la marca y tecnología del nuevo sistema; no copies automáticamente los colores de Gestión Docente.
 
+### Normalización de datos académicos
+
+Los valores académicos visibles se guardan en **MAYÚSCULAS**, tanto si se escriben como si se pegan: carrera, grupos, cursos, códigos, NRC, bloques, aulas y nombres/apellidos del padrón. La interfaz transforma los campos marcados en tiempo real; los modelos Laravel aplican la misma normalización como respaldo para formularios, importaciones y otros procesos. Correos, usuarios y contraseñas no se alteran.
+
+La migración `2026_11_25_000008_uppercase_academic_text_fields.php` convierte los registros académicos existentes una sola vez. Para aplicarla en desarrollo ejecuta `php artisan migrate`.
+
 ### Layout del árbol y selector de semestre
 
 - El ancho real del sidebar coincide con el espacio reservado en la grilla; su relleno no aumenta el ancho visual ni tapa el contenido. En tablet y móvil el menú pasa a una fila horizontal.
