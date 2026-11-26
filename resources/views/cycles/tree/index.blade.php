@@ -82,6 +82,20 @@
     <p class="tree-live-feedback" id="tree-live-feedback" role="status" aria-live="polite" hidden></p>
 </div>
 
+<dialog class="ui-dialog confirm-dialog tree-delete-dialog" id="tree-delete-dialog" aria-labelledby="tree-delete-title">
+    <div class="dialog-head">
+        <div>
+            <p class="eyebrow">CONFIRMACIÓN</p>
+            <h2 id="tree-delete-title">Eliminar elemento</h2>
+            <p id="tree-delete-message">Esta acción no se puede deshacer.</p>
+        </div>
+        <button class="dialog-close" type="button" data-modal-close aria-label="Cerrar"><x-icon name="x" size="15" /></button>
+    </div>
+    <div class="dialog-footer">
+        <button class="btn btn-secondary" type="button" data-modal-close>Cancelar</button>
+        <button class="btn btn-danger" type="button" id="tree-delete-confirm-submit"><x-icon name="trash-2" size="15" /> Eliminar</button>
+    </div>
+</dialog>
 
 @push('styles')
 <style>.workload-tree-page{width:100%;max-width:none}.workload-tree-hero{display:flex;align-items:center;justify-content:space-between;gap:24px;margin:0 0 14px;padding:clamp(19px,2.2vw,30px);border:1px solid color-mix(in srgb,var(--accent) 34%,var(--line));border-radius:16px;background:linear-gradient(120deg,var(--accent-soft),var(--surface) 72%);box-shadow:0 5px 22px rgba(25,56,78,.055)}.workload-tree-hero-copy{min-width:0}.workload-tree-hero .eyebrow{margin:0 0 8px;color:var(--accent);font-size:9px;font-weight:850;letter-spacing:.13em}.workload-tree-hero h1{margin:0;color:var(--ink);font-size:clamp(29px,3.4vw,44px);font-weight:850;letter-spacing:-.055em;line-height:1.04}.workload-tree-hero h1 span{color:var(--muted);font-size:.68em;font-weight:650;letter-spacing:-.035em}.workload-tree-context{display:flex;align-items:center;gap:8px 18px;flex-wrap:wrap;margin-top:13px;color:var(--muted);font-size:11px}.workload-tree-context span{display:inline-flex;align-items:center;gap:6px}.workload-tree-hero-actions{display:flex;align-items:flex-start;gap:8px;flex:none;flex-wrap:wrap}.workload-tree-hero-actions>.btn{min-height:40px}.tree-inline-create-group{position:relative}.tree-inline-create-group>summary{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;padding:10px 14px;border:1px solid color-mix(in srgb,var(--accent) 45%,var(--line));border-radius:9px;background:var(--accent);color:#fff;font-size:11px;font-weight:800;cursor:pointer;list-style:none;box-shadow:0 3px 10px color-mix(in srgb,var(--accent) 22%,transparent);transition:transform .15s ease,box-shadow .15s ease}.tree-inline-create-group>summary::-webkit-details-marker{display:none}.tree-inline-create-group>summary:hover{transform:translateY(-1px);box-shadow:0 6px 15px color-mix(in srgb,var(--accent) 28%,transparent)}.tree-group-create-form{position:absolute;z-index:20;top:calc(100% + 9px);right:0;display:grid;grid-template-columns:minmax(190px,1fr) auto;align-items:end;gap:10px;width:min(480px,calc(100vw - 28px));padding:14px;border:1px solid color-mix(in srgb,var(--accent) 35%,var(--line));border-radius:12px;background:var(--surface);box-shadow:0 18px 45px rgba(15,30,45,.18)}.tree-entry-field{display:grid;gap:6px;min-width:0;color:var(--ink-soft);font-size:10px;font-weight:750}.tree-entry-field .field{width:100%;min-width:0}.tree-entry-field small{color:var(--muted);font-size:9px;font-weight:450}.tree-group-create-form .btn{min-height:39px;white-space:nowrap}.workload-tree-browser{padding:clamp(14px,1.8vw,22px);border-color:var(--line-strong);border-radius:14px}.workload-tree-browser-head{align-items:flex-end;margin-bottom:13px}.workload-tree-browser-head .eyebrow{margin-bottom:5px;color:var(--accent);font-size:9px;font-weight:850;letter-spacing:.12em}.workload-tree-browser-head h2{color:var(--ink);font-size:21px;font-weight:800;letter-spacing:-.03em}.workload-tree-total{flex:none;padding:6px 9px;border:1px solid var(--line);border-radius:8px;background:var(--surface-soft);color:var(--muted);font-size:10px;font-weight:750}.workload-tree-search{display:flex;gap:8px;margin-bottom:14px}.workload-tree-search-field{display:flex;align-items:center;gap:9px;flex:1;min-width:0;height:42px;margin:0;padding:0 12px;border:1px solid var(--line-strong);border-radius:9px;background:var(--surface);color:var(--muted);transition:border-color .15s ease,box-shadow .15s ease}.workload-tree-search-field:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 15%,transparent)}.workload-tree-search-field input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:var(--ink);font-size:12px}.workload-tree-search-field input:focus{box-shadow:none}.workload-tree-search-field input::placeholder{color:var(--faint)}.workload-tree-search .btn{min-height:42px}.workload-tree-root{display:grid;gap:10px}.workload-tree-root>.workload-tree-group-shell{margin:0}.workload-tree-root>.tree-empty-child{padding:34px 16px;border:1px dashed var(--line-strong);border-radius:10px;text-align:center}.workload-tree-group-shell{position:relative;overflow:visible;border:1px solid var(--line-strong);border-radius:12px;background:var(--surface);transition:border-color .16s ease,box-shadow .16s ease,background .16s ease}.workload-tree-group-shell.is-focused{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 14%,transparent),0 8px 22px rgba(28,63,88,.075)}.workload-tree-group{margin:0;border:0;border-radius:12px;background:var(--surface);overflow:visible}.workload-group-summary{min-height:66px;padding:12px 158px 12px 14px;border-radius:12px;background:var(--surface);transition:background .15s ease}.workload-tree-summary{display:flex;align-items:center;gap:10px;min-width:0;list-style:none;cursor:pointer}.workload-tree-summary::-webkit-details-marker{display:none}.workload-tree-summary:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:8px}.workload-tree-summary:hover{background:var(--accent-soft)}.workload-tree-group[open]>.workload-group-summary{border-bottom:1px solid color-mix(in srgb,var(--accent) 28%,var(--line));border-radius:12px 12px 0 0;background:linear-gradient(90deg,var(--accent-soft),var(--surface))}.workload-tree-group[open]>.workload-group-summary .tree-node-icon{background:var(--accent);color:#fff}.workload-tree-children{position:relative;margin-left:25px;padding:10px 13px 14px 17px;border-left:2px solid color-mix(in srgb,var(--accent) 36%,var(--line))}.workload-group-children{margin:0 0 0 22px;padding:11px 12px 14px 16px}.workload-tree-group-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 9px}.workload-tree-group-actions .btn{min-height:32px;padding:6px 9px;font-size:10px}.tree-node-icon{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;border-radius:10px;transition:background .15s ease,color .15s ease}.tree-group-icon{background:var(--info-bg);color:var(--info)}.tree-course-icon{background:var(--accent-soft);color:var(--accent)}.tree-node-copy{display:grid;gap:3px;min-width:0;flex:1}.tree-node-copy strong{color:var(--ink);font-size:13px;font-weight:800;line-height:1.35;overflow-wrap:anywhere}.tree-node-copy small{color:var(--muted);font-size:10px;line-height:1.45;overflow-wrap:anywhere}.tree-branch-mark{position:relative;flex:0 0 11px;width:11px;height:1px;background:var(--line-strong)}.tree-chevron{display:grid;place-items:center;flex:none;color:var(--muted);transition:transform .16s ease,color .16s ease}.workload-tree-group[open]>.workload-tree-summary .tree-chevron,.workload-tree-course[open]>.workload-tree-summary .tree-chevron{transform:rotate(90deg);color:var(--accent)}.workload-tree-add-course-inline{position:absolute;z-index:5;top:11px;right:11px}.workload-tree-add-course-inline>summary{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:36px;padding:8px 11px;border:1px solid color-mix(in srgb,var(--accent) 40%,var(--line));border-radius:9px;background:var(--accent-soft);color:var(--accent);font-size:10px;font-weight:850;cursor:pointer;list-style:none;transition:background .15s ease,transform .15s ease}.workload-tree-add-course-inline>summary::-webkit-details-marker{display:none}.workload-tree-add-course-inline>summary:hover{transform:translateY(-1px);background:color-mix(in srgb,var(--accent) 18%,var(--surface))}.workload-tree-add-course-inline[open]{position:relative;top:auto;right:auto;padding:13px;border-top:1px solid color-mix(in srgb,var(--accent) 24%,var(--line));border-radius:0 0 12px 12px;background:linear-gradient(120deg,var(--accent-soft),var(--surface) 72%);animation:tree-reveal .18s ease-out}.workload-tree-add-course-inline[open]>summary{margin-bottom:12px;background:var(--accent);color:#fff}.tree-course-entry-form{display:grid;gap:12px}.tree-course-entry-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}.tree-course-entry-heading>div{display:grid;gap:3px}.tree-course-entry-heading strong{color:var(--ink);font-size:13px;font-weight:850}.tree-course-entry-heading small{color:var(--muted);font-size:10px}.tree-inline-step{padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--muted);font-size:8px;font-weight:850;letter-spacing:.1em}.tree-course-entry-error{padding:10px 12px;border:1px solid var(--danger);border-radius:8px;background:var(--danger-bg);color:var(--danger);font-size:11px;line-height:1.5}.tree-entry-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.tree-entry-grid-course{grid-template-columns:minmax(190px,.7fr) minmax(240px,1.3fr)}.tree-entry-grid-three{grid-template-columns:repeat(3,minmax(0,1fr))}.tree-entry-field .field{height:39px}.tree-shared-course-note{margin:0;color:var(--muted);font-size:9px;line-height:1.5}.tree-entry-field .field:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 13%,transparent)}.tree-entry-components{display:flex;align-items:center;gap:10px 18px;flex-wrap:wrap;margin:0;padding:12px 13px;border:1px solid var(--line-strong);border-radius:10px;background:var(--surface)}.tree-entry-components legend{padding:0 5px;color:var(--muted);font-size:9px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}.tree-entry-components label{display:inline-flex;align-items:center;gap:7px;margin:0;color:var(--ink);font-size:11px;font-weight:700;cursor:pointer}.tree-entry-components input,.tree-entry-days input{accent-color:var(--accent)}.tree-entry-components>small{flex:1 1 100%;color:var(--muted);font-size:9px}.tree-component-choice{display:inline-grid;place-items:center;min-width:37px;height:25px;padding:0 7px;border-radius:6px;font-size:9px;font-weight:900}.tree-component-choice.is-tec{background:var(--info-bg);color:var(--info)}.tree-component-choice.is-tall{background:var(--accent-soft);color:var(--accent)}.tree-entry-component{display:grid;gap:11px;padding:13px;border:1px solid color-mix(in srgb,var(--accent) 25%,var(--line));border-radius:10px;background:var(--surface)}.tree-entry-component[hidden]{display:none!important}.tree-entry-component-title{display:flex;align-items:center;gap:8px;padding-bottom:9px;border-bottom:1px solid var(--line);color:var(--ink);font-size:11px}.tree-entry-schedule{padding-top:10px;border-top:1px solid var(--line)}.tree-entry-schedule>summary{color:var(--accent);font-size:10px;font-weight:800;cursor:pointer}.tree-entry-days{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:10px 0}.tree-entry-days label{display:inline-flex;align-items:center;gap:4px;margin:0;padding:6px 8px;border:1px solid var(--line);border-radius:7px;background:var(--surface-soft);color:var(--ink-soft);font-size:10px;cursor:pointer}.tree-course-entry-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:10px;border-top:1px solid var(--line)}.tree-course-entry-footer>span{color:var(--muted);font-size:9px;line-height:1.4}.tree-course-entry-footer .btn{min-height:39px}.workload-tree-course{margin:8px 0;border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden;transition:border-color .15s ease,box-shadow .15s ease}.workload-tree-course.is-focused{border-color:color-mix(in srgb,var(--accent) 48%,var(--line));box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 10%,transparent)}.workload-course-summary{min-height:57px;padding:10px 12px}.workload-tree-course[open]>.workload-course-summary{border-bottom:1px solid color-mix(in srgb,var(--accent) 24%,var(--line));background:var(--accent-soft)}.workload-tree-course[open]>.workload-course-summary .tree-course-icon{background:var(--accent);color:#fff}.workload-course-children{margin-left:17px;padding:10px 11px 13px 14px}.tree-course-components{display:flex;align-items:center;gap:5px;flex:none}.tree-component-chip{display:inline-flex;align-items:center;padding:5px 8px;border-radius:7px;font-size:9px;font-weight:900;letter-spacing:.04em}.tree-component-chip.is-present{background:var(--success-bg);color:var(--success)}.tree-component-chip.is-missing{background:var(--surface-soft);color:var(--muted);border:1px dashed var(--line-strong)}.tree-course-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 10px}.tree-course-action-inline{position:relative}.tree-course-action-inline>summary{display:inline-flex;align-items:center;gap:5px;min-height:31px;padding:6px 9px;border:1px solid var(--line);border-radius:7px;background:var(--surface);color:var(--ink-soft);font-size:10px;font-weight:750;cursor:pointer;list-style:none}.tree-course-action-inline>summary::-webkit-details-marker{display:none}.tree-course-action-inline>summary:hover{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}.tree-course-action-inline[open]{padding:10px;border:1px solid var(--line);border-radius:9px;background:var(--surface-soft)}.tree-course-action-inline[open]>summary{margin-bottom:9px;border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}.tree-course-action-inline form{display:grid;gap:9px;min-width:min(360px,calc(100vw - 80px))}.tree-inline-form-actions,.tree-remove-confirm form{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.tree-remove-confirm{max-width:360px}.tree-remove-confirm p{margin:0 0 9px;color:var(--muted);font-size:10px;line-height:1.5}.tree-course-remove[open]{border-color:var(--danger)}.tree-course-remove[open]>summary{border-color:var(--danger);background:var(--danger-bg);color:var(--danger)}.tree-course-hint{margin:0 0 8px;color:var(--muted);font-size:9px;line-height:1.4}.tree-live-feedback{margin:0 0 12px;padding:9px 11px;border:1px solid var(--success);border-radius:8px;background:var(--success-bg);color:var(--success);font-size:11px;line-height:1.45}.tree-live-feedback.is-error{border-color:var(--danger);background:var(--danger-bg);color:var(--danger)}.workload-tree-modality{position:relative;display:flex;align-items:center;gap:10px;min-width:0;padding:12px 5px;border-top:1px solid var(--line)}.tree-modality-copy{display:grid;gap:4px;flex:1;min-width:0}.tree-modality-copy strong{color:var(--ink);font-size:11px;font-weight:800;line-height:1.4;overflow-wrap:anywhere}.tree-modality-copy small{color:var(--muted);font-size:10px;line-height:1.5;overflow-wrap:anywhere}.tree-course-status{display:inline-flex;align-items:center;gap:4px;flex:none;padding:5px 8px;border-radius:6px;font-size:9px;font-weight:800;white-space:nowrap}.tree-course-status.is-ready{background:var(--success-bg);color:var(--success)}.tree-course-status.is-pending{background:var(--warning-bg);color:var(--warning)}.tree-inline-editable{display:inline-flex;align-items:center;min-height:20px;padding:1px 4px;border-radius:4px;border-bottom:1px dashed var(--line-strong);cursor:pointer}.tree-inline-editable:hover{background:var(--accent-soft);border-bottom-color:var(--accent);color:var(--accent)}.tree-cycle-inline{display:inline-flex;align-items:center;min-height:22px;padding:1px 4px;border-radius:4px;border-bottom:1px dashed var(--line-strong);cursor:text}.tree-cycle-inline:hover{background:var(--accent-soft);border-bottom-color:var(--accent);color:var(--accent)}.tree-inline-date,.tree-inline-nrc{display:inline-flex;align-items:center;min-height:23px;padding:2px 5px;border-radius:5px;border-bottom:1px dashed var(--line-strong);color:var(--ink-soft);cursor:text}.tree-inline-date:hover,.tree-inline-nrc:hover{background:var(--accent-soft);border-bottom-color:var(--accent);color:var(--accent)}.tree-inline-editor{width:auto;min-width:112px;max-width:160px;min-height:30px;padding:4px 6px;border:1px solid var(--accent);border-radius:6px;background:var(--surface);color:var(--ink);font:inherit;font-size:11px;outline:none}.tree-inline-hint{margin-left:4px;color:var(--faint);font-size:9px}.tree-inline-saving{opacity:.55;pointer-events:none}.tree-open-modality{flex:none}.tree-empty-child{padding:12px;color:var(--muted);font-size:11px}.tree-loading-state,.tree-load-error{padding:12px 14px;color:var(--muted);font-size:11px;line-height:1.5}.tree-load-error{color:var(--danger);background:var(--danger-bg);border-radius:8px}
@@ -1329,6 +1343,33 @@
     letter-spacing:.01em;
 }
 </style>
+<style>
+.tree-delete-dialog{width:min(460px,calc(100% - 32px))}
+.tree-delete-dialog .dialog-head p#tree-delete-message{max-width:360px;margin-top:6px;color:var(--muted);font-size:12px;line-height:1.6}
+.tree-delete-dialog .dialog-footer{justify-content:flex-end}
+.tree-delete-dialog .btn-danger{border-color:var(--danger);background:var(--danger);color:#fff}
+.tree-delete-dialog .btn-danger:hover{border-color:color-mix(in srgb,var(--danger) 82%,#000);background:color-mix(in srgb,var(--danger) 82%,#000);color:#fff}
+.tree-group-row-actions .tree-group-delete-trigger{
+    display:inline-flex;align-items:center;justify-content:center;gap:7px;
+    width:auto;min-width:102px;height:35px;padding:0 11px;
+    border:1px solid color-mix(in srgb,var(--danger) 35%,var(--line));
+    border-radius:8px;background:var(--danger-bg);color:var(--danger);
+    font-size:11px;font-weight:800;white-space:nowrap;cursor:pointer;
+}
+.tree-group-row-actions .tree-group-delete-trigger:hover:not(:disabled){
+    border-color:var(--danger);background:var(--danger);color:#fff;
+}
+.tree-group-row-actions .tree-group-delete-trigger:disabled{opacity:.35;cursor:not-allowed}
+.tree-course-delete-trigger{
+    display:inline-flex!important;align-items:center;justify-content:center;gap:6px;
+    width:auto!important;min-width:92px;height:32px!important;padding:0 10px!important;
+    border:1px solid color-mix(in srgb,var(--danger) 35%,var(--line));
+    border-radius:8px;background:var(--danger-bg);color:var(--danger);
+    font-size:10px;font-weight:800;white-space:nowrap;cursor:pointer;
+}
+.tree-course-delete-trigger:hover:not(:disabled){border-color:var(--danger);background:var(--danger);color:#fff}
+.tree-course-delete-trigger:disabled{opacity:.35;cursor:not-allowed}
+</style>
 @endpush
 
 @push('scripts')
@@ -1424,6 +1465,32 @@
 
     const groupNodeById = id => root.querySelector('[data-tree-group-id="' + id + '"]');
     const courseNodeById = id => root.querySelector('[data-assignment-id="' + id + '"]');
+
+    const treeDeleteDialog = document.getElementById('tree-delete-dialog');
+    const treeDeleteTitle = document.getElementById('tree-delete-title');
+    const treeDeleteMessage = document.getElementById('tree-delete-message');
+    const treeDeleteSubmit = document.getElementById('tree-delete-confirm-submit');
+    let pendingTreeDeleteForm = null;
+
+    const openTreeDeleteDialog = (form, title, message) => {
+        if (!form || !treeDeleteDialog || typeof treeDeleteDialog.showModal !== 'function') return;
+        pendingTreeDeleteForm = form;
+        if (treeDeleteTitle) treeDeleteTitle.textContent = title;
+        if (treeDeleteMessage) treeDeleteMessage.textContent = message;
+        treeDeleteDialog.showModal();
+    };
+
+    treeDeleteSubmit?.addEventListener('click', () => {
+        const form = pendingTreeDeleteForm;
+        if (!form) return;
+        pendingTreeDeleteForm = null;
+        treeDeleteDialog.close();
+        form.requestSubmit();
+    });
+
+    treeDeleteDialog?.addEventListener('close', () => {
+        pendingTreeDeleteForm = null;
+    });
 
     const updateCourseDeleteGuards = (groupNode, count) => {
         if (!groupNode) return;
@@ -1588,8 +1655,13 @@
             event.preventDefault();
             event.stopPropagation();
             const group = groupDeleteToggle.closest('[data-tree-group-id]');
-            const confirm = group?.querySelector('[data-group-delete-confirm]');
-            if (confirm) confirm.hidden = !confirm.hidden;
+            const form = group?.querySelector('[data-tree-delete-group]');
+            const groupName = group?.dataset.groupName || 'este grupo';
+            openTreeDeleteDialog(
+                form,
+                'Eliminar grupo',
+                '¿Eliminar el grupo "' + groupName + '"? También se quitarán sus cursos, horarios y documentos.'
+            );
             return;
         }
 
@@ -1598,14 +1670,13 @@
             event.preventDefault();
             event.stopPropagation();
             const course = courseDeleteToggle.closest('[data-tree-course-item]');
-            const confirm = course?.querySelector('[data-course-delete-confirm]');
-            if (confirm) confirm.hidden = !confirm.hidden;
-            return;
-        }
-
-        const cancel = event.target.closest('[data-inline-cancel]');
-        if (cancel) {
-            cancel.closest('.tree-delete-confirm')?.setAttribute('hidden', '');
+            const form = course?.querySelector('[data-tree-delete-course]');
+            const courseName = course?.dataset.courseName || 'este curso';
+            openTreeDeleteDialog(
+                form,
+                'Eliminar curso',
+                '¿Eliminar "' + courseName + '" de este grupo? Se quitarán sus horarios y modalidades; la malla curricular se conservará.'
+            );
             return;
         }
 
