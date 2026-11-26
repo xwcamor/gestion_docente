@@ -47,7 +47,11 @@ class WorkloadTreeController extends Controller
 
         $groups = $groupsQuery->get();
 
-        return view('cycles.tree.index', compact('cycle', 'groups', 'term', 'cycleGroupCount'));
+        $view = $request->routeIs('cycles.tree.layout-test')
+            ? 'cycles.tree.layout-test'
+            : 'cycles.tree.index';
+
+        return view($view, compact('cycle', 'groups', 'term', 'cycleGroupCount'));
     }
 
     public function updateCycleContext(Request $request, Cycle $cycle)
