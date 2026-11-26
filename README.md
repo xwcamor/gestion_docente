@@ -139,7 +139,9 @@ Después de actualizar el proyecto, entra con una cuenta administradora a **Admi
 
 Desde esa pantalla puedes mantener el nombre institucional, país, zona horaria, reglas de duración por carrera, tipos de periodo, unidades académicas y duración/vigencia de cada versión de malla.
 
-Esta pantalla no asigna todavía los NRC a salones ni cambia horarios, ciclos o grupos existentes. La cantidad de semestres se define por versión de carrera, no como un valor único de la institución.
+Esta pantalla no asigna todavía los NRC a salones ni cambia horarios, ciclos o grupos existentes. La cantidad de semestres se define por versión de carrera, no como un valor único de la institución. Las duraciones permitidas se configuran como una lista separada por comas (por ejemplo, `4, 5, 6, 8`).
+
+La configuración y el catálogo resuelven la institución mediante sus membresías. La compatibilidad automática solo funciona mientras exista un único tenant activo. **La separación de ciclos, grupos, alumnos, horarios y documentos por institución sigue pendiente**; consulta [docs/SAAS_INSTITUTIONAL_MODEL.md](docs/SAAS_INSTITUTIONAL_MODEL.md) antes de habilitar una segunda institución.
 
 Para actualizar esta fase no se añade una migración nueva. Basta con:
 
