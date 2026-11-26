@@ -10,6 +10,7 @@ use App\Models\InstitutionInstructionType;
 use App\Models\InstitutionPeriodType;
 use App\Models\InstitutionUnit;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class SenatiCatalogSeeder extends Seeder
 {
