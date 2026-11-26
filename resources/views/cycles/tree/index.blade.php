@@ -1338,6 +1338,16 @@
     .tree-cycle-root::before{left:-21px;width:21px}
 }
 
+
+/* Identificadores textuales para distinguir niveles del árbol sin añadir iconos. */
+.tree-node-kind{
+    display:inline;
+    margin-right:3px;
+    color:var(--muted);
+    font-size:.72em;
+    font-weight:800;
+    letter-spacing:.01em;
+}
 </style>
 @endpush
 
