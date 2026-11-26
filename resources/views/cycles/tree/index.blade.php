@@ -25,7 +25,7 @@
             <span class="workload-tree-total" data-tree-group-total>{{ $cycleGroupCount }} {{ (int) $cycleGroupCount === 1 ? 'grupo' : 'grupos' }}</span>
         </div>
 
-        <form method="GET" action="{{ route('cycles.tree', $cycle) }}" class="workload-tree-search">
+        <form method="GET" action="{{ route('cycles.tree', $cycle) }}" class="filter-bar workload-tree-search">
             <label class="workload-tree-search-field">
                 <x-icon name="search" size="19" />
                 <input type="search" name="q" value="{{ $term }}" placeholder="Buscar grupo, curso o NRC…" aria-label="Buscar en el árbol">
