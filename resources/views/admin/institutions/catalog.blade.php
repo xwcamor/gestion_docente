@@ -1,0 +1,160 @@
+@extends('layouts.app')
+
+@section('title', 'Catálogo institucional')
+
+@section('content')
+<div class="page-head">
+    <div>
+        <p class="eyebrow">Administración SaaS</p>
+        <h1>Catálogo institucional</h1>
+        <p class="subhead">Estructura académica y oferta capturada de {{ $institution->name }}.</p>
+    </div>
+    <span class="badge badge-green">Referencia cargada</span>
+</div>
+
+<div class="institution-catalog-stats">
+    <article class="card institution-stat"><span>Periodos capturados</span><strong>{{ $periods->count() }}</strong></article>
+    <article class="card institution-stat"><span>Secciones / NRC</span><strong>{{ number_format($offeringCount) }}</strong></article>
+    <article class="card institution-stat"><span>Grupos por vincular</span><strong>{{ number_format($pendingGroupCount) }}</strong></article>
+    <article class="card institution-stat"><span>Plantillas Excel cargadas</span><strong>{{ number_format($templateCount) }}</strong></article>
+</div>
+
+<section class="card institution-catalog-section">
+    <div class="institution-section-head">
+        <div><h2>Tipos de impartición</h2><p>Configuración propia de SENATI; no es una regla universal del sistema.</p></div>
+    </div>
+    <div class="institution-type-list">
+        @foreach($institution->instructionTypes()->orderBy('sort_order')->get() as $type)
+            <div class="institution-type-row">
+                <span class="institution-type-code">{{ $type->code }}</span>
+                <div><strong>{{ $type->name }}</strong><small>{{ $type->description }}</small></div>
+                <span class="badge {{ $type->is_active ? 'badge-green' : 'badge-gray' }}">{{ $type->is_active ? 'Activo' : 'Inactivo' }}</span>
+            </div>
+        @endforeach
+    </div>
+</section>
+
+<section class="card institution-catalog-section">
+    <div class="institution-section-head">
+        <div><h2>Periodos de Blackboard</h2><p>Se conserva el código del periodo y el nombre de unidad que aparecen en las capturas.</p></div>
+    </div>
+    @foreach($periods as $period)
+        <details class="institution-period" @if($loop->first) open @endif>
+            <summary>
+                <div><strong>{{ $period->code }}</strong><small>{{ $period->source_label ?: 'Unidad sin clasificar' }} · {{ $period->academic_year }}</small></div>
+                <span class="institution-period-count">{{ $period->offerings->count() }} NRC</span>
+            </summary>
+            <div class="institution-offerings-wrap">
+                <div class="table-scroll">
+                    <table class="data-table institution-offerings">
+                        <thead><tr><th>Identificador Blackboard</th><th>Asignatura</th><th>Componente</th><th>Estado observado</th><th>Docente visible</th><th>Grupo</th></tr></thead>
+                        <tbody>
+                            @foreach($period->offerings->sortBy(fn ($offering) => [$offering->course_code_snapshot, $offering->nrc]) as $offering)
+                                <tr>
+                                    <td><code>{{ $offering->external_identifier }}</code></td>
+                                    <td><strong>{{ $offering->course_name_snapshot }}</strong><small>{{ $offering->course_code_snapshot }}</small></td>
+                                    <td>{{ $offering->instructionType?->code ?: 'Sin tipo' }}</td>
+                                    <td>
+                                        @if($offering->source_status === 'open')
+                                            <span class="badge badge-green">Abierto</span>
+                                        @elseif($offering->source_status === 'finished')
+                                            <span class="badge badge-gray">Finalizado</span>
+                                        @else
+                                            <span class="badge badge-yellow">No visible</span>
+                                        @endif
+                                    </td>
+                                    <td>{{ $offering->instructor_label ?: 'No visible' }}</td>
+                                    <td><span class="badge badge-yellow">Pendiente de vincular</span></td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </details>
+    @endforeach
+</section>
+
+<section class="card institution-catalog-section">
+    <div class="institution-section-head">
+        <div><h2>Carreras y duración de malla</h2><p>La duración se guarda por carrera y versión, nunca como una cantidad fija para toda la institución.</p></div>
+    </div>
+    <div class="table-scroll">
+        <table class="data-table">
+            <thead><tr><th>Unidad</th><th>Programa</th><th>Duración</th><th>Fuente</th></tr></thead>
+            <tbody>
+                @foreach($activePrograms as $program)
+                    @php $currentVersion = $program->versions->firstWhere('is_current', true); @endphp
+                    <tr>
+                        <td>{{ $program->unit?->name ?: 'Sin unidad' }}</td>
+                        <td><strong>{{ $program->name }}</strong></td>
+                        <td>{{ $currentVersion?->duration_semesters ? $currentVersion->duration_semesters.' semestres' : 'Pendiente de verificar' }}</td>
+                        <td><a href="{{ $program->source_url }}" target="_blank" rel="noopener">Fuente oficial</a></td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+    <p class="institution-note">{{ $historicalPrograms }} nombres históricos de ETIA (memoria 2022) se conservaron como referencia y no se ofrecen como carreras vigentes.</p>
+</section>
+
+<section class="card institution-catalog-section">
+    <div class="institution-section-head">
+        <div><h2>Documentos y funciones</h2><p>Las funciones son configurables por institución. Las plantillas reales se registran cuando se cargan los archivos Excel.</p></div>
+    </div>
+    <div class="institution-feature-list">
+        @foreach($features as $feature)
+            @php
+                $featureNote = data_get($feature->settings, 'note')
+                    ?? (!data_get($feature->settings, 'templates_uploaded', true)
+                        ? 'Pendiente cargar los archivos oficiales.'
+                        : 'Configuración institucional.');
+            @endphp
+            <div class="institution-feature-row">
+                <div><strong>{{ str($feature->feature_key)->replace('_', ' ')->title() }}</strong><small>{{ $featureNote }}</small></div>
+                <span class="badge {{ $feature->enabled ? 'badge-green' : 'badge-gray' }}">{{ $feature->enabled ? 'Habilitado' : 'Deshabilitado' }}</span>
+            </div>
+        @endforeach
+    </div>
+</section>
+
+<section class="institution-catalog-disclaimer">
+    <x-icon name="info" />
+    <p>Las capturas no muestran los nombres reales de los salones ni permiten emparejar con certeza cada NRC TEC con un NRC TAL. Por eso los 47 NRC se guardaron sin asignarlos a grupos ficticios. Tampoco se importaron horarios: la captura de repetición muestra un ejemplo de calendario, no el horario real de cada asignatura.</p>
+</section>
+@endsection
+
+@push('styles')
+<style>
+.institution-catalog-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.institution-stat{padding:16px;display:grid;gap:7px}
+.institution-stat span{font-size:11px;color:var(--muted)}
+.institution-stat strong{font-size:25px;line-height:1.1;color:var(--ink)}
+.institution-catalog-section{padding:18px;margin-bottom:14px;min-width:0}
+.institution-section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:14px}
+.institution-section-head h2{margin:0 0 4px;font-size:16px}
+.institution-section-head p,.institution-note{margin:0;color:var(--muted);font-size:11px;line-height:1.55}
+.institution-type-list,.institution-feature-list{display:grid;gap:0}
+.institution-type-row,.institution-feature-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.institution-type-row>div,.institution-feature-row>div{display:grid;gap:3px;min-width:0;flex:1}
+.institution-type-row small,.institution-feature-row small{color:var(--muted);font-size:10px}
+.institution-type-code{min-width:52px;padding:7px 9px;border-radius:7px;background:var(--accent-soft);color:var(--accent);font-weight:800;text-align:center}
+.institution-period{border-top:1px solid var(--line)}
+.institution-period summary{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 2px;cursor:pointer;list-style:none}
+.institution-period summary::-webkit-details-marker{display:none}
+.institution-period summary>div{display:grid;gap:4px}
+.institution-period summary strong{font-size:13px}
+.institution-period summary small{color:var(--muted);font-size:10px}
+.institution-period-count{font-size:11px;color:var(--muted);white-space:nowrap}
+.institution-offerings-wrap{padding-bottom:12px}
+.institution-offerings{min-width:900px}
+.institution-offerings code{font-size:10px;white-space:nowrap}
+.institution-offerings td strong,.institution-offerings td small{display:block}
+.institution-offerings td small{color:var(--muted);font-size:10px;margin-top:3px}
+.institution-note{margin-top:12px}
+.institution-catalog-disclaimer{display:flex;align-items:flex-start;gap:10px;padding:13px 15px;border:1px solid var(--line);border-radius:10px;color:var(--muted)}
+.institution-catalog-disclaimer p{margin:0;font-size:11px;line-height:1.6}
+@media(max-width:900px){.institution-catalog-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.institution-catalog-stats{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}.institution-stat{padding:12px}.institution-stat strong{font-size:21px}.institution-catalog-section{padding:13px}.institution-type-row,.institution-feature-row{align-items:flex-start;flex-wrap:wrap}}
+</style>
+@endpush
