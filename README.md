@@ -133,6 +133,24 @@ Los Excel oficiales TEC/TAL todavía deben cargarse como archivos reales en la c
 
 ---
 
+## Configurar el tenant SENATI
+
+Después de actualizar el proyecto, entra con una cuenta administradora a **Administración → Configuración institucional**.
+
+Desde esa pantalla puedes mantener el nombre institucional, país, zona horaria, reglas de duración por carrera, tipos de periodo, unidades académicas y duración/vigencia de cada versión de malla.
+
+Esta pantalla no asigna todavía los NRC a salones ni cambia horarios, ciclos o grupos existentes. La cantidad de semestres se define por versión de carrera, no como un valor único de la institución.
+
+Para actualizar esta fase no se añade una migración nueva. Basta con:
+
+```powershell
+git switch main
+git pull --ff-only origin main
+php artisan optimize:clear
+```
+
+---
+
 ## Reconstruir la base de datos durante las pruebas
 
 Cada vez que quieras borrar la información de prueba y generar nuevamente todas las tablas, ejecuta desde la carpeta del proyecto:
