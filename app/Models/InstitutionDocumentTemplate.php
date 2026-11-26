@@ -2,11 +2,19 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\ScopesToCurrentInstitution;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class InstitutionDocumentTemplate extends Model
 {
+    use ScopesToCurrentInstitution;
+
+    protected static function institutionIdColumn(): ?string
+    {
+        return 'institution_id';
+    }
+
     protected $fillable = ['institution_id', 'institution_instruction_type_id', 'document_type', 'name', 'version', 'disk', 'file_path', 'original_filename', 'mime_type', 'mapping_config', 'status', 'valid_from', 'valid_until'];
 
     protected function casts(): array { return ['mapping_config' => 'array', 'valid_from' => 'date', 'valid_until' => 'date']; }
