@@ -38,7 +38,7 @@
 @endif
 
 <section class="card gc-toolbar-card" aria-label="Filtros del calendario">
-    <form class="gc-filter-form" method="GET" action="{{ route('groups.calendar', $group) }}" data-loading-form="1">
+    <form class="filter-bar gc-filter-form" method="GET" action="{{ route('groups.calendar', $group) }}" data-loading-form="1">
         <div class="gc-filter-field">
             <label for="calendar-month">Mes</label>
             <input class="field" id="calendar-month" type="month" name="month" value="{{ $month }}">
