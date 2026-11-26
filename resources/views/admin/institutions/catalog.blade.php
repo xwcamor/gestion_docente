@@ -39,7 +39,7 @@
     <div class="institution-section-head">
         <div><h2>@if($isSenati) Periodos de Blackboard @else Periodos institucionales @endif</h2><p>Se conserva el código, el periodo académico y su unidad de origen.</p></div>
     </div>
-    @foreach($periods as $period)
+    @forelse($periods as $period)
         <details class="institution-period" @if($loop->first) open @endif>
             <summary>
                 <div><strong>{{ $period->code }}</strong><small>{{ $period->source_label ?: 'Unidad sin clasificar' }} · {{ $period->academic_year }}</small></div>
@@ -56,7 +56,7 @@
                                     <td>
                                         <strong>{{ $offering->course_name_snapshot }}</strong>
                                         <small>{{ $offering->course_code_snapshot }}</small>
-                                        @if(data_get($offering->course?->metadata, 'observed_group_pattern'))
+                                        @if($isSenati && data_get($offering->course?->metadata, 'observed_group_pattern'))
                                             <small>Dos salones observados: uno con TEC+TAL y otro solo TEC; NRC por salón pendiente.</small>
                                         @endif
                                     </td>
@@ -79,12 +79,14 @@
                 </div>
             </div>
         </details>
-    @endforeach
+    @empty
+        <p class="institution-catalog-note">No hay periodos institucionales registrados todavía.</p>
+    @endforelse
 </section>
 
 <section class="card institution-catalog-section">
     <div class="institution-section-head">
-        <div><h2>Escuela Superior Tecnológica · oferta 2026</h2><p>Programas vigentes registrados en el catálogo de {{ $institution->name }}.</p></div>
+        <div><h2>Programas vigentes</h2><p>Programas vigentes registrados en el catálogo de {{ $institution->name }}.</p></div>
     </div>
     <div class="table-scroll">
         <table class="data-table">
@@ -140,10 +142,9 @@
     @endforeach
     <div class="institution-catalog-note">
         El reglamento consultado contempla carreras de 4, 5, 6 u 8 semestres. Esa es la lista de duraciones admitidas como referencia para SENATI; no determina por sí sola cuántos semestres tiene cada una de estas 85 carreras.
-@endif
-
     </div>
 </section>
+@endif
 
 <section class="card institution-catalog-section">
     <div class="institution-section-head">
