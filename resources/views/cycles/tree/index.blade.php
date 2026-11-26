@@ -26,7 +26,7 @@
         <div class="tree-panel-heading">
             <div>
                 <p class="eyebrow">ÁRBOL DE TRABAJO</p>
-                <h2><x-icon name="git-branch" size="23" /> Grupos, cursos y componentes</h2>
+                <h2>Grupos, cursos y componentes</h2>
                 <p>Despliega un grupo para gestionar sus cursos, componentes y horarios.</p>
             </div>
             <span class="workload-tree-total" data-tree-group-total>{{ $cycleGroupCount }} {{ (int) $cycleGroupCount === 1 ? 'grupo' : 'grupos' }}</span>
@@ -44,6 +44,10 @@
         </form>
 
         <div class="workload-tree-root" aria-label="Estructura académica">
+            <div class="tree-cycle-root" data-tree-cycle-root>
+                <strong>{{ $cycle->academic_year }} · Ciclo {{ $cycle->cycle_code }}</strong>
+                <small>{{ $cycle->groups_count ?? $cycleGroupCount }} {{ (int) ($cycle->groups_count ?? $cycleGroupCount) === 1 ? 'grupo' : 'grupos' }}</small>
+            </div>
             @include('cycles.tree.groups', ['groups' => $groups, 'cycle' => $cycle])
         </div>
 
@@ -1250,6 +1254,88 @@
     .tree-structure-card .workload-tree-group-shell::before,
     .tree-structure-card .workload-tree-course::before,
     .tree-structure-card .workload-tree-modality::before{transition:none}
+}
+
+
+/* El ciclo es el nodo raíz; sus grupos cuelgan de un único tronco. */
+.tree-structure-card .workload-tree-root{
+    display:block!important;
+    position:relative!important;
+    padding:12px 0 12px 22px!important;
+}
+.tree-structure-card .workload-tree-root::before{
+    content:"";
+    position:absolute;
+    top:32px;
+    bottom:25px;
+    left:8px;
+    width:2px;
+    border-radius:2px;
+    background:color-mix(in srgb,var(--accent) 42%,var(--line-strong));
+}
+.tree-cycle-root{
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    width:max-content;
+    max-width:calc(100% - 18px);
+    min-height:42px;
+    margin:0 0 12px 16px;
+    padding:8px 13px;
+    border:1px solid color-mix(in srgb,var(--accent) 42%,var(--line-strong));
+    border-radius:9px;
+    background:var(--accent-soft);
+    color:var(--ink);
+}
+.tree-cycle-root::before{
+    content:"";
+    position:absolute;
+    top:50%;
+    left:-30px;
+    width:30px;
+    height:2px;
+    background:color-mix(in srgb,var(--accent) 42%,var(--line-strong));
+}
+.tree-cycle-root strong{font-size:12px;font-weight:850;line-height:1.3}
+.tree-cycle-root small{color:var(--muted);font-size:9px;font-weight:700;white-space:nowrap}
+
+/* El indicador de despliegue es una marca simple, no un icono de biblioteca. */
+.tree-expand-symbol{
+    display:grid!important;
+    place-items:center;
+    flex:0 0 18px!important;
+    width:18px!important;
+    height:24px!important;
+    margin:0!important;
+    border:0!important;
+    border-radius:0!important;
+    background:transparent!important;
+    color:var(--muted)!important;
+}
+.tree-expand-symbol::before{
+    content:"";
+    width:7px;
+    height:7px;
+    border-top:2px solid currentColor;
+    border-right:2px solid currentColor;
+    transform:rotate(45deg);
+    transition:transform .16s ease,color .16s ease;
+}
+.workload-tree-group[open]>.workload-tree-summary .tree-expand-symbol::before,
+.tree-course-branch[open]>.tree-course-summary .tree-expand-symbol::before{
+    transform:rotate(135deg);
+    color:var(--accent);
+}
+.workload-tree-summary,.tree-course-summary{gap:8px!important}
+.tree-node-copy{margin-left:0!important}
+.tree-modality-tag{font-size:10px;font-weight:850;letter-spacing:.04em}
+.tree-modality-schedule-summary .icon{display:none!important}
+@media(max-width:760px){
+    .tree-structure-card .workload-tree-root{padding-left:15px!important}
+    .tree-structure-card .workload-tree-root::before{left:5px}
+    .tree-cycle-root{margin-left:11px;max-width:calc(100% - 12px);padding:7px 10px}
+    .tree-cycle-root::before{left:-21px;width:21px}
 }
 
 </style>
