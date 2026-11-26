@@ -950,7 +950,7 @@
     color:var(--ink-soft);
     font-size:9px;
 }
-.tree-group-inline-time{
+.tree-group-inline-date{
     display:inline-flex;
     align-items:center;
     flex-wrap:wrap;
@@ -967,7 +967,7 @@
     font-size:9px;
     line-height:1.3;
 }
-.tree-group-inline-details .tree-inline-editor[type="time"]{
+.tree-group-inline-details .tree-inline-editor[type="date"]{
     min-width:105px;
     max-width:120px;
     min-height:30px;
@@ -1742,7 +1742,7 @@
 .tree-structure-card .tree-group-inline-field{
     gap:2px 4px;
 }
-.tree-structure-card .tree-group-inline-time{
+.tree-structure-card .tree-group-inline-date{
     gap:2px 3px;
 }
 .tree-structure-card .tree-group-inline-sub-label{
