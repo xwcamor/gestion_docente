@@ -497,13 +497,39 @@
     grid-row:1;
     gap:3px;
     min-width:0;
-}.tree-course-summary .tree-node-copy>strong{
+}.tree-course-title-row{
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:5px 9px;
+    min-width:0;
+}
+.tree-course-title-row>strong{
     min-width:0;
     color:var(--ink);
-    font-size:13px;
-    font-weight:750;
-    line-height:1.35;
+    font-size:15px;
+    font-weight:800;
+    line-height:1.3;
     overflow-wrap:anywhere;
+}
+.tree-course-title-row .tree-course-components{
+    display:inline-flex!important;
+    align-items:center;
+    flex:none;
+    gap:4px;
+    margin:0;
+    padding:0;
+}
+.tree-course-title-row .tree-component-chip{
+    min-width:34px;
+    padding:3px 6px;
+    border:1px solid #cfe4d6;
+    border-radius:6px;
+    background:#eef7f0;
+    color:#28623d;
+    font-size:9px;
+    font-weight:850;
+    line-height:1.25;
 }.tree-course-code-row{
     display:flex;
     align-items:center;
@@ -1771,6 +1797,54 @@
     .tree-structure-card .tree-group-inline-field{gap:2px 3px}
     .tree-structure-card .tree-course-code-row{gap:4px 6px!important}
     .tree-structure-card .tree-course-period{gap:4px 7px}
+}
+
+
+/* TEC/TAL se leen como contadores del título, al estilo de los datos del grupo. */
+.tree-structure-card .tree-course-title-row{
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:5px 9px;
+    min-width:0;
+}
+.tree-structure-card .tree-course-title-row>strong{
+    min-width:0;
+    color:var(--ink);
+    font-size:15px;
+    font-weight:800;
+    line-height:1.3;
+    overflow-wrap:anywhere;
+}
+.tree-structure-card .tree-course-title-row .tree-course-components{
+    display:inline-flex!important;
+    grid-column:auto!important;
+    grid-row:auto!important;
+    align-items:center;
+    flex:none;
+    gap:4px;
+    margin:0;
+    padding:0;
+}
+.tree-structure-card .tree-course-title-row .tree-component-chip{
+    min-width:34px;
+    padding:3px 6px;
+    border:1px solid #cfe4d6;
+    border-radius:6px;
+    background:#eef7f0;
+    color:#28623d;
+    font-size:9px;
+    font-weight:850;
+    line-height:1.25;
+}
+@media(max-width:560px){
+    .tree-structure-card .tree-course-title-row{gap:4px 7px}
+    .tree-structure-card .tree-course-title-row>strong{font-size:13px}
+    .tree-structure-card .tree-course-title-row .tree-component-chip{
+        min-width:31px;
+        padding:3px 5px;
+        font-size:8px;
+    }
 }
 
 </style>
