@@ -17,6 +17,21 @@ class CourseModality extends Model
         'period_label', 'semester',
     ];
 
+    public function setNrcAttribute($value): void
+    {
+        $this->attributes['nrc'] = filled($value) ? mb_strtoupper(trim((string) $value)) : null;
+    }
+
+    public function setBlockCodeAttribute($value): void
+    {
+        $this->attributes['block_code'] = filled($value) ? mb_strtoupper(trim((string) $value)) : null;
+    }
+
+    public function setBlockReferenceAttribute($value): void
+    {
+        $this->attributes['block_reference'] = filled($value) ? mb_strtoupper(trim((string) $value)) : null;
+    }
+
     protected function casts(): array
     {
         return [
