@@ -6,6 +6,7 @@ use App\Models\ClassSession;
 use App\Models\CourseAssignment;
 use App\Models\CourseModality;
 use App\Models\Holiday;
+use App\Support\CurrentInstitution;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -15,6 +16,7 @@ class DashboardController extends Controller
         $user = auth()->user();
         $professor = $user->professor;
         $professorId = (int) $professor->id;
+        $institutionId = (int) app(CurrentInstitution::class)->get()->getKey();
 
         $cyclesCount = $professor->cycles()->count();
         $activeCyclesCount = $professor->cycles()->where('status', 'active')->count();
@@ -39,7 +41,9 @@ class DashboardController extends Controller
 
         $studentsCount = DB::table('teaching_group_students')
             ->join('teaching_groups', 'teaching_groups.id', '=', 'teaching_group_students.teaching_group_id')
+            ->join('cycles', 'cycles.id', '=', 'teaching_groups.cycle_id')
             ->where('teaching_groups.professor_id', $professorId)
+            ->where('cycles.institution_id', $institutionId)
             ->distinct()
             ->count('teaching_group_students.student_id');
 
