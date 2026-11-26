@@ -13,6 +13,16 @@ class Cycle extends Model
 
     protected $fillable = ['professor_id', 'academic_year', 'cycle_code', 'career', 'semester', 'start_date', 'end_date', 'status'];
 
+    public function setCycleCodeAttribute($value): void
+    {
+        $this->attributes['cycle_code'] = mb_strtoupper(trim((string) $value));
+    }
+
+    public function setCareerAttribute($value): void
+    {
+        $this->attributes['career'] = filled($value) ? mb_strtoupper(trim((string) $value)) : null;
+    }
+
     protected function casts(): array
     {
         return ['start_date' => 'date', 'end_date' => 'date'];
