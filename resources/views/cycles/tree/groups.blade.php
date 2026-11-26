@@ -85,16 +85,6 @@
                         </span>
                     </span>
                 </span>
-                <span class="tree-group-row-actions">
-                    <button class="tree-group-delete-trigger" type="button"
-                            data-toggle-group-delete
-                            @disabled($cycleGroupCount <= 1)
-                            aria-label="Eliminar grupo"
-                            title="{{ $cycleGroupCount <= 1 ? 'El ciclo debe conservar al menos un grupo' : 'Eliminar grupo' }}">
-                        <x-icon name="trash-2" size="15" />
-                        <span>Eliminar</span>
-                    </button>
-                </span>
             </summary>
 
             <div class="workload-tree-children workload-group-children">
@@ -140,6 +130,14 @@
                 </div>
             </div>
         </details>
+        <button class="tree-group-delete-trigger" type="button"
+                data-toggle-group-delete
+                @disabled($cycleGroupCount <= 1)
+                aria-label="Eliminar grupo"
+                title="{{ $cycleGroupCount <= 1 ? 'El ciclo debe conservar al menos un grupo' : 'Eliminar grupo' }}">
+            <x-icon name="trash-2" size="15" />
+            <span>Eliminar</span>
+        </button>
     </div>
 @empty
     <div class="tree-empty-child">
