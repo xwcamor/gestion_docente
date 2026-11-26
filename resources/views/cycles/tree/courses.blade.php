@@ -14,8 +14,8 @@
              data-group-id="{{ $group->id }}">
         <details class="tree-course-branch" data-course-branch>
             <summary class="tree-course-summary" data-select-course>
-                <span class="tree-expand-symbol" aria-hidden="true"><x-icon name="chevron-right" size="16" /></span>
-                <span class="tree-course-node"><x-icon name="book-open" size="21" /></span>
+                <span class="tree-expand-symbol" aria-hidden="true"></span>
+                
                 <span class="tree-node-copy">
                     <strong><span data-inline-text data-edit-field="name" data-edit-label="Nombre del curso" data-edit-url="{{ route('workload-tree.courses.name', $assignment) }}" data-edit-value="{{ $assignment->course->name }}" data-edit-kind="course-name">{{ $assignment->course->name }}</span></strong>
                     <span class="tree-course-code-row">
