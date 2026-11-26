@@ -19,15 +19,11 @@
                 
                 <span class="tree-node-copy">
                     <span class="tree-group-title-row">
-                        <strong><span data-inline-text data-edit-field="name" data-edit-label="Nombre del grupo" data-edit-url="{{ route('groups.update', $group) }}" data-edit-value="{{ $group->name }}" data-edit-kind="group">{{ $group->name }}</span></strong>
+                        <strong><span class="tree-node-kind">Grupo:</span> <span data-inline-text data-edit-field="name" data-edit-label="Nombre del grupo" data-edit-url="{{ route('groups.update', $group) }}" data-edit-value="{{ $group->name }}" data-edit-kind="group">{{ $group->name }}</span></strong>
                         <span class="tree-group-counts">
                             <span class="tree-meta-pill"><span data-group-course-count>{{ $group->assignments_count }}</span> <span data-group-course-label>{{ (int) $group->assignments_count === 1 ? 'curso' : 'cursos' }}</span></span>
                             <span class="tree-meta-pill">{{ $group->students_count }} {{ (int) $group->students_count === 1 ? 'alumno' : 'alumnos' }}</span>
                         </span>
-                    </span>
-                    <span class="tree-group-code-row">
-                        <span class="tree-meta-label">Código</span>
-                        <span class="tree-inline-editable" data-inline-text data-edit-on-click data-edit-field="code" data-edit-kind="group-code" data-edit-label="Código del grupo" data-edit-url="{{ route('groups.update', $group) }}" data-edit-value="{{ $group->code }}" title="Clic para editar código">{{ $group->code ?: 'Falta' }}</span>
                     </span>
                     <span class="tree-group-inline-details" aria-label="Carrera, semestre y horario">
                         <span class="tree-group-inline-field">
