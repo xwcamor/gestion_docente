@@ -185,14 +185,14 @@
                 </div>
                 <div>
                     <label for="edit_cycle_code">Código del ciclo <span class="muted">*</span></label>
-                    <input class="field" id="edit_cycle_code" name="cycle_code" maxlength="20" value="{{ old('cycle_code', $cycle->cycle_code) }}" required placeholder="Ej. 10 o 20">
+                    <input class="field" id="edit_cycle_code" data-uppercase name="cycle_code" maxlength="20" value="{{ old('cycle_code', $cycle->cycle_code) }}" required placeholder="Ej. 10 o 20">
                     @error('cycle_code')<p class="field-error">{{ $message }}</p>@enderror
                 </div>
             </div>
             <div class="form-row">
                 <div>
                     <label for="edit_cycle_career">Carrera predeterminada para grupos nuevos <span class="muted">*</span></label>
-                    <input class="field" id="edit_cycle_career" name="career" maxlength="255" value="{{ old('career', $cycle->career) }}" required placeholder="Ej. Desarrollo de Software">
+                    <input class="field" id="edit_cycle_career" data-uppercase name="career" maxlength="255" value="{{ old('career', $cycle->career) }}" required placeholder="Ej. Desarrollo de Software">
                     @error('career')<p class="field-error">{{ $message }}</p>@enderror
                 </div>
                 <div>
