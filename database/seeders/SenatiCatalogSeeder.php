@@ -219,6 +219,7 @@ class SenatiCatalogSeeder extends Seeder
         // El informe reporta 90 carreras en 14 escuelas; cinco nombres no se inventan.
         $trainingCareerGroups = [
             'ADMINISTRACION' => [
+                'reported_count' => 12,
                 'name' => 'Administración de Empresas',
                 'careers' => [
                     'Administración de Empresas',
@@ -235,14 +236,17 @@ class SenatiCatalogSeeder extends Seeder
                 ],
             ],
             'AGROINDUSTRIA' => [
+                'reported_count' => 1,
                 'name' => 'Agroindustria',
                 'careers' => ['Agroindustria'],
             ],
             'ARTES_GRAFICAS' => [
+                'reported_count' => 3,
                 'name' => 'Artes Gráficas',
                 'careers' => ['Diseño Gráfico', 'Diseño y Producción de Animación Digital', 'Producción Gráfica'],
             ],
             'CONFECCIONES' => [
+                'reported_count' => 4,
                 'name' => 'Confecciones',
                 'careers' => [
                     'Confeccionista de Prendas de Vestir',
@@ -252,6 +256,7 @@ class SenatiCatalogSeeder extends Seeder
                 ],
             ],
             'ELECTROTECNIA' => [
+                'reported_count' => 11,
                 'name' => 'Electrotecnia',
                 'careers' => [
                     'Climatización y Refrigeración en Edificaciones',
@@ -266,10 +271,12 @@ class SenatiCatalogSeeder extends Seeder
                 ],
             ],
             'HOTELERIA_TURISMO_RESTAURANTES' => [
+                'reported_count' => 3,
                 'name' => 'Hotelería, Turismo y Restaurantes',
                 'careers' => ['Administración Turística', 'Cocina Peruana e Internacional', 'Guía Oficial de Turismo'],
             ],
             'INDUSTRIA_ALIMENTARIA' => [
+                'reported_count' => 7,
                 'name' => 'Industria Alimentaria',
                 'careers' => [
                     'Control de Calidad y Procesos en la Industria Alimentaria',
@@ -281,6 +288,7 @@ class SenatiCatalogSeeder extends Seeder
                 ],
             ],
             'TECNOLOGIAS_INFORMACION' => [
+                'reported_count' => 16,
                 'name' => 'Tecnologías de la Información',
                 'careers' => [
                     'Administrador de Sistemas de Información',
@@ -301,10 +309,12 @@ class SenatiCatalogSeeder extends Seeder
                 ],
             ],
             'JOYERIA_ORFEBRERIA_PLATERIA' => [
+                'reported_count' => 1,
                 'name' => 'Joyería, Orfebrería y Platería',
                 'careers' => ['Diseño y Gestión de Joyería'],
             ],
             'MANTENIMIENTO' => [
+                'reported_count' => 4,
                 'name' => 'Mantenimiento',
                 'careers' => [
                     'Ingeniería de Mantenimiento Industrial',
@@ -314,7 +324,9 @@ class SenatiCatalogSeeder extends Seeder
                 ],
             ],
             'MECANICA_AUTOMOTRIZ' => [
-                'name' => 'Mecánica Automotriz',
+                'reported_count' => 12,
+                'name' => 'Área de mecánica y automotores (nombre oficial de escuela pendiente)',
+                'school_label_inferred' => true,
                 'careers' => [
                     'Mantenimiento de Maquinaria Pesada',
                     'Mantenimiento de Maquinaria Pesada para Construcción',
@@ -331,6 +343,7 @@ class SenatiCatalogSeeder extends Seeder
                 ],
             ],
             'METALMECANICA' => [
+                'reported_count' => 8,
                 'name' => 'Metalmecánica',
                 'careers' => [
                     'Diseño y Desarrollo de Máquinas',
@@ -344,10 +357,12 @@ class SenatiCatalogSeeder extends Seeder
                 ],
             ],
             'TECNOLOGIAS_AMBIENTALES' => [
+                'reported_count' => 2,
                 'name' => 'Tecnologías Ambientales',
                 'careers' => ['Química Industrial', 'Tecnologías Ambientales'],
             ],
             'TEXTIL' => [
+                'reported_count' => 6,
                 'name' => 'Textil',
                 'careers' => [
                     'Analista de Calidad Textil',
@@ -369,13 +384,17 @@ class SenatiCatalogSeeder extends Seeder
                     'unit_type' => 'professional_school_reference',
                     'source_label' => $group['name'],
                     'source_year' => 2025,
-                    'verification_status' => 'reported_in_senati_2025_memory',
+                    'verification_status' => !empty($group['school_label_inferred']) ? 'school_label_inferred' : 'reported_in_senati_2025_memory',
                     'is_active' => true,
                     'metadata' => [
                         'source_url' => 'https://embed-rech-01.dialog.cm/senati1/docs/memoria_institucional_senati_2025',
                         'source_section' => 'Total de carreras en ejecución durante el año 2025',
                         'reported_school_count' => 14,
-                        'note' => 'Agrupación reproducida desde la tabla de la Memoria 2025; la vigencia futura debe confirmarse con el catálogo actualizado.',
+                        'reported_career_count' => $group['reported_count'],
+                        'school_label_inferred' => !empty($group['school_label_inferred']),
+                        'note' => !empty($group['school_label_inferred'])
+                            ? 'Agrupación funcional según los nombres de carreras; el encabezado oficial de esta escuela no quedó legible en la extracción y requiere confirmación.'
+                            : 'Nombre de escuela tomado de la tabla de la Memoria 2025; vigencia futura por confirmar.',
                     ],
                 ]
             );
