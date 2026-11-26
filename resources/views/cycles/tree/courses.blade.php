@@ -46,6 +46,7 @@
                             <span class="tree-component-chip {{ !$tallModality ? 'is-missing' : ($tallModality->active ? 'is-present' : 'is-disabled') }}" title="{{ !$tallModality ? 'TAL no agregado' : ($tallModality->active ? 'TAL activo' : 'TAL desactivado') }}">TAL</span>
                         </span>
                     </span>
+                </span>
             </summary>
 
             <div class="tree-course-children">
