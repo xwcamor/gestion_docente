@@ -1513,6 +1513,17 @@
     .tree-modality-nrc-row{gap:7px}
 }
 
+/* Fecha Fin bloqueada visualmente hasta que exista Inicio. */
+.tree-structure-card .tree-inline-date.is-awaiting-start{
+    opacity:.58;
+    cursor:not-allowed!important;
+    border-style:dashed!important;
+}
+.tree-structure-card .tree-inline-date.is-awaiting-start:hover{
+    background:transparent!important;
+    color:var(--muted)!important;
+}
+
 /* Estado de información incompleta: el mismo ámbar en todo el árbol. */
 .tree-structure-card .is-empty,
 .tree-structure-card .tree-group-inline-details .is-empty,
@@ -2476,13 +2487,23 @@
         const endField = wrapper.dataset.endField || 'end_date';
         const isStart = field === startField;
         const key = isStart ? 'startDate' : 'endDate';
+        const startDate = wrapper.dataset.startDate || '';
+        const endDate = wrapper.dataset.endDate || '';
         const original = wrapper.dataset[key] || '';
         const emptyLabel = cell.dataset.emptyLabel || 'Sin fecha';
-        const input = document.createElement('input');
 
+        if (!isStart && !startDate) {
+            cell.classList.add('is-awaiting-start');
+            showFeedback('Primero selecciona la fecha de Inicio. Después podrás elegir Fin.', true);
+            return;
+        }
+
+        const input = document.createElement('input');
         input.type = 'date';
         input.className = 'tree-inline-editor';
         input.value = original;
+        if (isStart && endDate) input.max = endDate;
+        if (!isStart) input.min = startDate;
         input.setAttribute('aria-label', isStart ? 'Fecha de inicio' : 'Fecha de fin');
         cell.replaceChildren(input);
         input.focus();
@@ -2493,6 +2514,9 @@
             if (finished) return;
             finished = true;
             cell.textContent = original ? displayDate(original) : emptyLabel;
+            if (cell.dataset.inlineDate === endField) {
+                cell.classList.toggle('is-awaiting-start', !startDate);
+            }
         };
 
         const save = async () => {
@@ -2503,9 +2527,27 @@
                 return;
             }
 
+            if (isStart && !value && endDate) {
+                restore();
+                showFeedback('Primero elimina la fecha de Fin antes de quitar Inicio.', true);
+                return;
+            }
+
+            if (!isStart && (!startDate || (value && value < startDate))) {
+                restore();
+                showFeedback('La fecha de Fin no puede ser anterior a Inicio.', true);
+                return;
+            }
+
+            if (isStart && endDate && value && value > endDate) {
+                restore();
+                showFeedback('La fecha de Inicio no puede ser posterior a Fin.', true);
+                return;
+            }
+
             const values = {
-                [startField]: isStart ? value : (wrapper.dataset.startDate || ''),
-                [endField]: isStart ? (wrapper.dataset.endDate || '') : value
+                [startField]: isStart ? value : startDate,
+                [endField]: isStart ? endDate : value
             };
 
             finished = true;
@@ -2522,6 +2564,14 @@
                     const fallback = dateNode.dataset.emptyLabel || 'Sin fecha';
                     dateNode.textContent = dateValue ? displayDate(dateValue) : fallback;
                     dateNode.classList.toggle('is-empty', !dateValue);
+
+                    if (dateNode.dataset.inlineDate === endField) {
+                        const waitingForStart = !savedStart;
+                        dateNode.classList.toggle('is-awaiting-start', waitingForStart);
+                        dateNode.title = waitingForStart
+                            ? 'Primero selecciona la fecha de inicio'
+                            : 'Clic para seleccionar la fecha de fin';
+                    }
                 });
 
                 showFeedback(payload.message || 'Fechas actualizadas.');
