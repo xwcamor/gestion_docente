@@ -954,6 +954,9 @@
 
                 @if(auth()->user()->isAdmin())
                     <div class="nav-label nav-section-label">Administración</div>
+                    <a class="nav-link {{ request()->routeIs('admin.institution.settings*') || request()->routeIs('admin.institution.rules*') || request()->routeIs('admin.institution.units*') || request()->routeIs('admin.institution.period-types*') || request()->routeIs('admin.institution.program-versions*') ? 'active' : '' }}" href="{{ route('admin.institution.settings') }}" title="Configuración institucional">
+                        <x-icon name="sliders-horizontal" /><span>Configuración institucional</span>
+                    </a>
                     <a class="nav-link {{ request()->routeIs('admin.institution.catalog') ? 'active' : '' }}" href="{{ route('admin.institution.catalog') }}" title="Catálogo institucional">
                         <x-icon name="building-2" /><span>Catálogo institucional</span>
                     </a>
