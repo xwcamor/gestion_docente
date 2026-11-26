@@ -1423,6 +1423,71 @@
     }
     .tree-structure-card .tree-course-delete-trigger span{display:none}
 }
+
+<style>
+/* Valores faltantes: advertencia suave y consistente, no acento azul. */
+.tree-group-inline-details .tree-inline-editable.is-empty,
+.tree-course-code-row .tree-inline-editable.is-empty,
+.tree-course-period .tree-inline-date.is-empty,
+.tree-modality-nrc-row .is-empty{
+    min-height:23px;
+    padding:3px 8px;
+    border:1px solid #eadfbe;
+    border-radius:6px;
+    border-bottom-style:solid;
+    background:#faf6e9;
+    color:#85651f;
+    font-weight:750;
+}
+.tree-group-inline-details .tree-inline-editable.is-empty:hover,
+.tree-course-code-row .tree-inline-editable.is-empty:hover,
+.tree-course-period .tree-inline-date.is-empty:hover,
+.tree-modality-nrc-row .tree-inline-nrc.is-empty:hover{
+    border-color:#d9bd79;
+    background:#f7efd9;
+    color:#76571c;
+}
+
+/* Teoría/Taller y NRC mantienen jerarquía clara: nombre arriba, NRC debajo. */
+.tree-modality-copy{gap:5px}
+.tree-modality-heading{display:flex;align-items:center;min-height:19px}
+.tree-modality-heading strong{color:var(--ink);font-size:12px;font-weight:800;line-height:1.35}
+.tree-modality-nrc-row{display:flex;align-items:center;gap:8px;min-height:24px}
+.tree-modality-field-label{color:var(--muted);font-size:10px;font-weight:700}
+.tree-modality-nrc-row .tree-inline-nrc,
+.tree-modality-nrc-row .tree-nrc-value{
+    display:inline-flex;
+    align-items:center;
+    min-width:0;
+    min-height:23px;
+    padding:3px 8px;
+    border:1px dashed var(--line-strong);
+    border-radius:6px;
+    background:var(--surface);
+    color:var(--ink-soft);
+    font-size:10px;
+    font-weight:750;
+    line-height:1.3;
+}
+.tree-modality-nrc-row .tree-inline-nrc{cursor:pointer}
+.tree-modality-nrc-row .tree-inline-nrc:not(.is-empty):hover{
+    border-color:var(--accent);
+    background:var(--accent-soft);
+    color:var(--accent);
+}
+.tree-modality-nrc-row .tree-inline-nrc.is-empty,
+.tree-modality-nrc-row .tree-nrc-value.is-empty{
+    border:1px solid #eadfbe;
+    background:#faf6e9;
+    color:#85651f;
+}
+.tree-modality-copy>strong .tree-inline-nrc{font-size:10px}
+@media(max-width:560px){
+    .tree-modality-copy{gap:4px}
+    .tree-modality-heading strong{font-size:11px}
+    .tree-modality-nrc-row{gap:7px}
+}
+</style>
 </style>
 @endpush
 
@@ -1940,6 +2005,7 @@
             if (finished) return;
             finished = true;
             node.textContent = originalDisplay || (config.emptyLabel && !original ? config.emptyLabel : original);
+            node.classList.toggle('is-empty', !original && Boolean(config.emptyLabel));
         };
         const save = async () => {
             if (finished) return;
@@ -1961,10 +2027,12 @@
                 const saved = config.responseField ? payload[config.responseField] : (config.field === 'name' ? payload.name : payload.code);
                 node.dataset.editValue = saved || '';
                 node.textContent = saved || config.emptyLabel || '';
+                node.classList.toggle('is-empty', !saved && Boolean(config.emptyLabel));
                 config.onSaved?.(saved, payload);
                 showFeedback(payload.message || 'Dato actualizado.');
             } catch (error) {
                 node.textContent = originalDisplay || original || config.emptyLabel || '';
+                node.classList.toggle('is-empty', !original && Boolean(config.emptyLabel));
                 showFeedback(error.message, true);
             } finally {
                 node.classList.remove('tree-inline-saving');
@@ -2004,7 +2072,8 @@
         const restore = () => {
             if (finished) return;
             finished = true;
-            cell.textContent = original || 'NRC pendiente';
+            cell.textContent = original || 'Falta';
+            cell.classList.toggle('is-empty', !original);
         };
         const save = async () => {
             if (finished) return;
@@ -2018,10 +2087,12 @@
             try {
                 const payload = await patch(cell.dataset.nrcUrl, {nrc: value});
                 cell.dataset.nrc = payload.nrc || '';
-                cell.textContent = payload.nrc || 'NRC pendiente';
+                cell.textContent = payload.nrc || 'Falta';
+                cell.classList.toggle('is-empty', !payload.nrc);
                 showFeedback(payload.message || 'NRC actualizado.');
             } catch (error) {
-                cell.textContent = original || 'NRC pendiente';
+                cell.textContent = original || 'Falta';
+                cell.classList.toggle('is-empty', !original);
                 showFeedback(error.message, true);
             }
         };
