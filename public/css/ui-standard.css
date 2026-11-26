@@ -468,3 +468,35 @@ body .main-content .gc-filter-form .btn{align-self:end}
     .grade-score-field{max-width:100%}
     .grade-observation-field{min-width:0;max-width:100%}
 }
+
+/* El calendario mantiene filtros y navegación como controles hermanos, no como card anidada. */
+body .main-content .gc-toolbar-card{
+    min-width:0;
+    margin:0 0 16px;
+}
+body .main-content .gc-toolbar-card .gc-month-navigation{min-width:0}
+
+/* Toolbar de padrón: búsqueda y alta de alumno comparten una línea clara. */
+body .main-content .roster-head-actions{
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    flex-wrap:wrap;
+    gap:8px;
+    min-width:0;
+}
+body .main-content .roster-head-actions .roster-search{
+    flex:1 1 220px;
+    min-width:170px;
+    min-height:40px;
+    padding:8px 10px;
+    border:1px solid var(--gd-border-strong);
+    border-radius:8px;
+    background:var(--gd-surface);
+}
+body .main-content .roster-head-actions .btn{flex:0 0 auto}
+@media(max-width:560px){
+    body .main-content .roster-head-actions{justify-content:stretch}
+    body .main-content .roster-head-actions .roster-search,
+    body .main-content .roster-head-actions .btn{width:100%;max-width:none}
+}
