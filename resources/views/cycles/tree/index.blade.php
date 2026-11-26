@@ -564,22 +564,14 @@
     font-weight:700;
 }.tree-course-tools>span{display:inline-flex;align-items:center;gap:6px}.tree-structure-card .workload-tree-modality{
     display:grid;
-    grid-template-columns:48px minmax(0,1fr) 172px;
+    grid-template-columns:minmax(0,1fr) 172px;
     align-items:center;
     gap:10px;
     min-width:0;
     margin:0;
     padding:10px 5px;
     border-top:1px solid var(--line);
-}.tree-branch-mark{display:none}.tree-modality-tag{
-    display:grid;
-    place-items:center;
-    width:44px;
-    height:38px;
-    border-radius:8px;
-    font-size:10px;
-    font-weight:850;
-}.tree-modality-tag.is-tec{background:var(--info-bg);color:var(--info)}.tree-modality-tag.is-tall{background:var(--accent-soft);color:var(--accent)}.tree-modality-copy{
+}.tree-branch-mark{display:none}.tree-modality-copy{
     display:grid;
     gap:4px;
     min-width:0;
@@ -839,18 +831,12 @@
         justify-content:flex-start;
         margin:0;
     }.tree-structure-card .tree-course-node{width:30px;height:30px}.tree-course-delete-trigger{top:8px;right:5px;width:27px;height:27px}.tree-structure-card .tree-course-children{padding:6px 5px 8px 10px}.tree-structure-card .workload-tree-modality{
-        grid-template-columns:40px minmax(0,1fr);
+        grid-template-columns:minmax(0,1fr);
         align-items:start;
         gap:7px;
         padding:9px 2px;
-    }.tree-structure-card .tree-modality-tag{
+    }.tree-modality-copy{grid-column:1;grid-row:1}.tree-modality-actions{
         grid-column:1;
-        grid-row:1;
-        width:38px;
-        height:33px;
-        font-size:9px;
-    }.tree-modality-copy{grid-column:2;grid-row:1}.tree-modality-actions{
-        grid-column:2;
         grid-row:2;
         display:flex;
         align-items:center;
@@ -874,10 +860,10 @@
         gap:5px;
         padding:7px 34px 7px 3px;
     }.tree-structure-card .tree-course-node{width:27px;height:27px}.tree-structure-card .tree-course-node svg{width:16px;height:16px}.tree-structure-card .tree-course-summary .tree-node-copy>strong{font-size:11px;line-height:1.3}.tree-course-code-row{font-size:9px}.tree-course-period{font-size:8px}.tree-component-chip{min-width:29px;padding:3px 5px;font-size:8px}.tree-course-delete-trigger{top:7px;right:3px;width:25px;height:25px}.tree-course-delete-trigger svg{width:14px;height:14px}.tree-structure-card .tree-course-children{padding:5px 3px 7px 7px}.tree-structure-card .workload-tree-modality{
-        grid-template-columns:35px minmax(0,1fr);
+        grid-template-columns:minmax(0,1fr);
         gap:6px;
         padding:8px 1px;
-    }.tree-structure-card .tree-modality-tag{width:33px;height:30px;font-size:8px}.tree-modality-copy>strong{font-size:10px;gap:2px 4px}.tree-modality-dates{gap:4px 8px;font-size:8px}.tree-date-label{font-size:8px}.tree-modality-copy>small{font-size:8px;line-height:1.4}.tree-modality-actions{gap:5px}.tree-course-status{padding:2px 5px;font-size:8px}.tree-modality-buttons{gap:5px}.tree-modality-toggle,.tree-open-modality,.tree-add-modality{
+    }.tree-modality-copy{grid-column:1;grid-row:1}.tree-modality-actions{grid-column:1;grid-row:2}.tree-modality-copy>strong{font-size:10px;gap:2px 4px}.tree-modality-dates{gap:4px 8px;font-size:8px}.tree-date-label{font-size:8px}.tree-modality-copy>small{font-size:8px;line-height:1.4}.tree-modality-actions{gap:5px}.tree-course-status{padding:2px 5px;font-size:8px}.tree-modality-buttons{gap:5px}.tree-modality-toggle,.tree-open-modality,.tree-add-modality{
         min-height:32px;
         padding:5px 7px;
         border-radius:6px;
