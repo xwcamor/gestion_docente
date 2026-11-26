@@ -1424,7 +1424,6 @@
     .tree-structure-card .tree-course-delete-trigger span{display:none}
 }
 
-<style>
 /* Valores faltantes: advertencia suave y consistente, no acento azul. */
 .tree-group-inline-details .tree-inline-editable.is-empty,
 .tree-course-code-row .tree-inline-editable.is-empty,
@@ -1487,7 +1486,166 @@
     .tree-modality-heading strong{font-size:11px}
     .tree-modality-nrc-row{gap:7px}
 }
-</style>
+
+/* Estado de información incompleta: el mismo ámbar en todo el árbol. */
+.tree-structure-card .is-empty,
+.tree-structure-card .tree-group-inline-details .is-empty,
+.tree-structure-card .tree-course-code-row .is-empty,
+.tree-structure-card .tree-course-period .is-empty,
+.tree-structure-card .tree-modality-data-row .is-empty{
+    border:1px solid #eadfbe!important;
+    border-bottom:1px solid #eadfbe!important;
+    border-style:solid!important;
+    border-radius:6px!important;
+    background:#faf6e9!important;
+    color:#85651f!important;
+    font-weight:750!important;
+}
+.tree-structure-card .is-empty:hover{
+    border-color:#d9bd79!important;
+    background:#f7efd9!important;
+    color:#76571c!important;
+}
+
+/* Curso: PIAD + fechas + TEC/TAL debajo del nombre, sin invadir Eliminar. */
+.tree-structure-card .tree-course-code-row{
+    display:flex!important;
+    align-items:center!important;
+    flex-wrap:wrap!important;
+    gap:6px 12px!important;
+    min-width:0;
+    margin-top:2px;
+}
+.tree-structure-card .tree-course-period{
+    display:inline-flex!important;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:5px 12px;
+    margin:0!important;
+    font-size:10px!important;
+    line-height:1.35;
+}
+.tree-structure-card .tree-course-period .tree-date-field{
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+}
+.tree-structure-card .tree-course-period .tree-date-label{
+    color:var(--muted);
+    font-size:10px!important;
+    font-weight:650;
+}
+.tree-structure-card .tree-course-components{
+    display:inline-flex!important;
+    grid-column:auto!important;
+    grid-row:auto!important;
+    align-items:center;
+    flex:none;
+    gap:5px;
+    margin:0 0 0 2px;
+    padding:0!important;
+}
+.tree-structure-card .tree-component-chip{
+    min-width:34px;
+    height:22px;
+    padding:3px 7px;
+    border-radius:6px;
+    font-size:9px;
+    line-height:1;
+}
+.tree-structure-card .tree-course-delete-trigger{
+    align-self:start;
+    justify-self:end;
+    margin-top:11px;
+}
+@media(max-width:560px){
+    .tree-structure-card .tree-course-code-row{gap:5px 8px}
+    .tree-structure-card .tree-course-period{gap:4px 8px}
+    .tree-structure-card .tree-course-components{flex-basis:100%;margin:0}
+    .tree-structure-card .tree-course-delete-trigger{margin-top:9px}
+}
+
+/* Teoría/Taller: NRC, inicio y fin en una sola fila, con tipografía equilibrada. */
+.tree-structure-card .tree-modality-copy{gap:5px}
+.tree-structure-card .tree-modality-heading strong{
+    font-size:12px!important;
+    font-weight:800;
+}
+.tree-structure-card .tree-modality-data-row{
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:6px 16px;
+    min-width:0;
+}
+.tree-structure-card .tree-modality-data-item{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+}
+.tree-structure-card .tree-modality-field-label,
+.tree-structure-card .tree-modality-dates .tree-date-label{
+    color:var(--muted);
+    font-size:10px!important;
+    font-weight:650;
+    line-height:1.3;
+}
+.tree-structure-card .tree-modality-data-item .tree-inline-nrc,
+.tree-structure-card .tree-modality-data-item .tree-nrc-value{
+    display:inline-flex;
+    align-items:center;
+    min-height:23px;
+    padding:3px 8px;
+    border:1px dashed var(--line-strong);
+    border-radius:6px;
+    background:var(--surface);
+    color:var(--ink-soft);
+    font-size:10px!important;
+    font-weight:700;
+    line-height:1.3;
+}
+.tree-structure-card .tree-modality-dates{
+    display:inline-flex!important;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:6px 14px;
+    min-width:0;
+    color:var(--muted);
+    font-size:10px!important;
+}
+.tree-structure-card .tree-modality-dates .tree-date-field{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    min-width:0;
+}
+.tree-structure-card .tree-modality-dates .tree-inline-date,
+.tree-structure-card .tree-modality-dates .tree-disabled-value{
+    min-height:23px;
+    padding:2px 5px;
+    border:1px dashed transparent;
+    border-radius:5px;
+    color:var(--ink-soft);
+    font-size:10px!important;
+    line-height:1.3;
+}
+.tree-structure-card .tree-modality-dates .tree-inline-date{cursor:pointer}
+.tree-structure-card .tree-modality-dates .tree-inline-date:not(.is-empty):hover{
+    background:var(--accent-soft);
+    color:var(--accent);
+}
+.tree-structure-card .tree-modality-nrc-row .tree-inline-nrc{cursor:pointer}
+@media(max-width:560px){
+    .tree-structure-card .tree-modality-data-row{gap:6px 10px}
+    .tree-structure-card .tree-modality-dates{gap:5px 10px}
+    .tree-structure-card .tree-modality-field-label,
+    .tree-structure-card .tree-modality-dates .tree-date-label,
+    .tree-structure-card .tree-modality-dates .tree-inline-date,
+    .tree-structure-card .tree-modality-dates .tree-disabled-value,
+    .tree-structure-card .tree-modality-data-item .tree-inline-nrc,
+    .tree-structure-card .tree-modality-data-item .tree-nrc-value{font-size:9px!important}
+}
+
 </style>
 @endpush
 
