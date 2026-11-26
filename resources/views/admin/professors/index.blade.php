@@ -12,14 +12,6 @@
     </div>
 </div>
 
-<section class="accounts-overview" aria-label="Resumen de cuentas">
-    <article class="account-metric metric-total"><span>Total de cuentas</span><strong>{{ number_format($accountCount) }}</strong></article>
-    <article class="account-metric metric-active"><span>Activas</span><strong>{{ number_format($activeCount) }}</strong></article>
-    <article class="account-metric metric-inactive"><span>Inactivas</span><strong>{{ number_format($inactiveCount) }}</strong></article>
-    <article class="account-metric metric-professors"><span>Docentes</span><strong>{{ number_format($professorCount) }}</strong></article>
-    <article class="account-metric metric-admins"><span>Administradores</span><strong>{{ number_format($adminCount) }}</strong></article>
-</section>
-
 <section class="card accounts-card">
     <div class="card-head accounts-card-head">
         <div>
@@ -29,7 +21,7 @@
         <span class="badge">{{ $professors->total() }} resultados</span>
     </div>
 
-    <form method="GET" action="{{ route('admin.professors.index') }}" class="accounts-toolbar">
+    <form method="GET" action="{{ route('admin.professors.index') }}" class="filter-bar accounts-toolbar">
         <label class="accounts-search">
             <x-icon name="search" size="16" />
             <input name="q" type="search" value="{{ request('q') }}" placeholder="Nombre, correo, ID o escuela…" aria-label="Buscar cuentas">
@@ -239,11 +231,6 @@
 @push('styles')
 <style>
 .accounts-head{align-items:center}
-.accounts-overview{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin:0 0 13px}
-.account-metric{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;padding:12px;border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:9px;background:var(--surface)}
-.account-metric span{color:var(--muted);font-size:9px;font-weight:700}
-.account-metric strong{color:var(--ink);font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
-.metric-total{border-top-color:#4f86a8}.metric-active{border-top-color:#3b9a79}.metric-inactive{border-top-color:#b87979}.metric-professors{border-top-color:#7a82b4}.metric-admins{border-top-color:#aa8b4c}
 .accounts-card{padding:15px}
 .accounts-card-head{align-items:center}
 .accounts-toolbar{display:grid;grid-template-columns:minmax(200px,1.5fr) repeat(4,minmax(110px,.75fr)) auto auto;align-items:center;gap:7px;margin:0 0 12px}
@@ -288,7 +275,6 @@
 .account-form-section span{color:var(--muted);font-size:9px}
 .account-field-error{color:var(--danger)}
 @media(max-width:1180px){
- .accounts-overview{grid-template-columns:repeat(3,minmax(0,1fr))}
  .accounts-toolbar{grid-template-columns:minmax(180px,1fr) repeat(2,minmax(110px,.6fr)) auto}
  .accounts-toolbar select[name="sort"],.accounts-toolbar select[name="per_page"]{display:none}
  .account-row{grid-template-columns:minmax(170px,1fr) minmax(100px,.5fr) auto}
@@ -299,9 +285,6 @@
 @media(max-width:760px){
  .accounts-head{align-items:stretch}
  .accounts-head .actions .btn{width:100%}
- .accounts-overview{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
- .account-metric{padding:10px}
- .account-metric strong{font-size:19px}
  .accounts-card{padding:11px}
  .accounts-toolbar{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
  .accounts-search{grid-column:1/-1}
