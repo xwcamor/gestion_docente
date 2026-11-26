@@ -812,12 +812,12 @@
     }.tree-icon-action:hover:not(:disabled){background:var(--surface-soft)}
 }
 @media(max-width:760px){.workload-tree-page{gap:11px}.workload-tree-hero{align-items:flex-start;padding:16px}.workload-tree-hero h1{font-size:29px}.workload-tree-hero-actions>.btn{min-height:38px}.tree-structure-card{padding:12px}.tree-structure-card .tree-panel-heading{align-items:flex-start;gap:8px;margin-bottom:12px}.tree-structure-card .tree-panel-heading h2{font-size:19px}.tree-structure-card .tree-panel-heading p:not(.eyebrow){font-size:10px}.tree-structure-card .workload-tree-search-field{height:40px}.tree-structure-card .workload-tree-search .btn{min-height:40px}.tree-structure-card .workload-group-summary{
-        grid-template-columns:16px minmax(0,1fr) 26px;
+        grid-template-columns:18px minmax(0,1fr) 26px;
         gap:5px;
         min-height:62px;
         padding:8px 7px;
     }.tree-structure-card .tree-node-icon{width:34px;height:34px}.tree-group-title-row{gap:4px 7px}.tree-group-title-row>strong{font-size:14px}.tree-meta-pill{padding:2px 5px;font-size:8px}.tree-group-code-row{font-size:9px}.tree-group-row-actions .tree-icon-action{width:28px;height:28px}.tree-structure-card .workload-tree-children{padding:9px 8px 10px 16px}.tree-structure-card .tree-course-summary{
-        grid-template-columns:16px minmax(0,1fr);
+        grid-template-columns:18px minmax(0,1fr);
         gap:5px;
         padding:8px 36px 8px 4px;
     }.tree-course-summary .tree-node-copy{grid-column:2;grid-row:1;gap:3px}.tree-course-summary .tree-node-copy>strong{font-size:12px}.tree-course-summary .tree-course-components{
@@ -847,11 +847,11 @@
         align-items:start;
         gap:7px;
     }.tree-structure-card .tree-panel-heading h2{font-size:17px;gap:6px}.tree-structure-card .tree-panel-heading p:not(.eyebrow){font-size:10px}.tree-structure-card .workload-tree-total{align-self:start;padding:5px 7px;font-size:9px}.tree-structure-card .workload-tree-search{display:grid;grid-template-columns:minmax(0,1fr) 72px;gap:6px}.tree-structure-card .workload-tree-search-field{grid-column:1;grid-row:1;width:100%;padding:0 8px}.tree-structure-card .workload-tree-search-field input{font-size:11px}.tree-structure-card .workload-tree-search .btn{grid-column:2;grid-row:1;width:100%;min-width:0;padding:6px;font-size:10px}.tree-structure-card .workload-group-summary{
-        grid-template-columns:15px minmax(0,1fr) 23px;
+        grid-template-columns:18px minmax(0,1fr) 23px;
         gap:4px;
         padding:7px 5px;
     }.tree-structure-card .tree-expand-symbol{width:17px;height:20px}.tree-structure-card .tree-node-icon{width:29px;height:29px;border-radius:7px}.tree-structure-card .tree-node-icon svg{width:18px;height:18px}.tree-node-copy{gap:4px}.tree-group-title-row{align-items:flex-start;flex-direction:column;gap:3px}.tree-group-title-row>strong{font-size:13px;line-height:1.3}.tree-group-counts{gap:3px}.tree-meta-pill{font-size:8px}.tree-group-code-row{align-items:flex-start;gap:3px 5px;font-size:9px}.tree-group-row-actions .tree-icon-action{width:25px;height:25px}.tree-group-row-actions .tree-icon-action svg{width:14px;height:14px}.tree-structure-card .workload-tree-children{padding:8px 5px 9px 10px}.tree-group-schedule-item{grid-column:1}.tree-structure-card .tree-course-summary{
-        grid-template-columns:14px minmax(0,1fr);
+        grid-template-columns:18px minmax(0,1fr);
         gap:4px;
         padding:7px 32px 7px 3px;
     }.tree-structure-card .tree-course-node{width:27px;height:27px}.tree-structure-card .tree-course-node svg{width:16px;height:16px}.tree-structure-card .tree-course-summary .tree-node-copy>strong{font-size:11px;line-height:1.3}.tree-course-code-row{font-size:9px}.tree-course-period{font-size:8px}.tree-component-chip{min-width:29px;padding:3px 5px;font-size:8px}.tree-course-delete-trigger{top:7px;right:3px;width:25px;height:25px}.tree-course-delete-trigger svg{width:14px;height:14px}.tree-structure-card .tree-course-children{padding:5px 3px 7px 7px}.tree-structure-card .workload-tree-modality{
@@ -866,11 +866,11 @@
     }.tree-modality-toggle{min-width:0}.tree-structure-card .tree-open-modality{min-width:0}.tree-delete-confirm{padding:8px;gap:8px}.tree-delete-confirm p{font-size:9px}.tree-delete-confirm form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.tree-delete-confirm .btn{min-width:0;min-height:32px;padding:5px;font-size:9px}.tree-draft-heading strong{font-size:11px}.tree-draft-heading>span,.tree-draft-note{font-size:8px}.tree-draft-footer .btn{min-height:36px;font-size:10px}.tree-add-row{padding:7px 5px}.tree-add-row>button{width:100%;min-height:38px}.tree-live-feedback{padding:9px;font-size:10px}.tree-empty-child{min-height:110px;padding:16px 9px}.tree-empty-child strong{font-size:11px}.tree-empty-child span{font-size:9px}.tree-inline-editor{min-height:37px;font-size:11px}
 }
 @media(max-width:360px){.tree-structure-card .tree-panel-heading{grid-template-columns:minmax(0,1fr)}.tree-structure-card .workload-tree-total{justify-self:start}.tree-structure-card .workload-group-summary{
-        grid-template-columns:14px minmax(0,1fr) 22px;
+        grid-template-columns:18px minmax(0,1fr) 22px;
         gap:4px;
         padding:7px 4px;
     }.tree-structure-card .tree-node-icon{width:26px;height:26px}.tree-group-title-row>strong{font-size:12px}.tree-meta-pill{font-size:7px;padding:2px 4px}.tree-structure-card .tree-course-summary{
-        grid-template-columns:13px minmax(0,1fr);
+        grid-template-columns:18px minmax(0,1fr);
         gap:3px;
         padding-right:29px;
     }.tree-structure-card .tree-course-node{width:24px;height:24px}.tree-course-delete-trigger{right:2px;width:23px;height:23px}.tree-modality-toggle,.tree-open-modality,.tree-add-modality{font-size:8px;padding:4px 6px}
@@ -1273,8 +1273,8 @@
     content:"";
     position:absolute;
     top:50%;
-    left:-30px;
-    width:30px;
+    left:-26px;
+    width:26px;
     height:2px;
     background:color-mix(in srgb,var(--accent) 42%,var(--line-strong));
 }
@@ -1315,7 +1315,7 @@
     .tree-structure-card .workload-tree-root{padding-left:15px!important}
     .tree-structure-card .workload-tree-root::before{left:5px}
     .tree-cycle-root{margin-left:11px;max-width:calc(100% - 12px);padding:7px 10px}
-    .tree-cycle-root::before{left:-18px;width:18px}
+    .tree-cycle-root::before{left:-19px;width:19px}
 }
 
 
