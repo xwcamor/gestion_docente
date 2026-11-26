@@ -2,11 +2,20 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\ScopesToCurrentInstitution;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class GroupFiveMinuteTalk extends Model
 {
+    use ScopesToCurrentInstitution;
+
+    protected static function institutionScopeRelation(): string
+    {
+        return 'group.cycle';
+    }
+
+
     protected $fillable = [
         'teaching_group_id',
         'topic',
