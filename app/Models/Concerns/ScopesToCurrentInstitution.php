@@ -10,17 +10,19 @@ trait ScopesToCurrentInstitution
 {
     protected static function bootScopesToCurrentInstitution(): void
     {
-        static::addGlobalScope('current_institution', function (Builder $builder): void {
+        $modelClass = static::class;
+
+        static::addGlobalScope('current_institution', function (Builder $builder) use ($modelClass): void {
             if (!auth()->check()) {
                 return;
             }
 
             $institutionId = (int) app(CurrentInstitution::class)->get()->getKey();
-            static::applyInstitutionScope($builder, $institutionId);
+            $modelClass::applyInstitutionScope($builder, $institutionId);
         });
 
-        static::creating(function (Model $model): void {
-            $column = static::institutionIdColumn();
+        static::creating(function (Model $model) use ($modelClass): void {
+            $column = $modelClass::institutionIdColumn();
 
             if ($column === null || !auth()->check() || filled($model->getAttribute($column))) {
                 return;
