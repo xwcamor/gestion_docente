@@ -25,7 +25,6 @@
 </div>
 
 <section class="holiday-stats" aria-label="Resumen de feriados">
-    <article class="holiday-stat stat-total"><span>Fechas visibles</span><strong>{{ number_format($generalCount + $personalCount) }}</strong><small>General y personales</small></article>
     <article class="holiday-stat stat-global"><span>Calendario general</span><strong>{{ number_format($generalCount) }}</strong><small>Compartidas</small></article>
     <article class="holiday-stat stat-personal"><span>Mi calendario</span><strong>{{ number_format($personalCount) }}</strong><small>Solo para tus grupos</small></article>
     <article class="holiday-stat stat-blocking"><span>Próximas</span><strong>{{ number_format($upcomingCount) }}</strong><small>Desde hoy en adelante</small></article>
@@ -41,11 +40,6 @@
 </nav>
 
 @if($isCalendarView)
-<section class="holiday-summary">
-    <div><span class="holiday-summary-label">Fechas en {{ $monthNames[$calendarMonth] }}</span><strong>{{ $monthEventCount }}</strong></div>
-    <p>Los feriados generales y tus cierres personales se muestran juntos. Una fecha personal no modifica los calendarios de otros docentes.</p>
-</section>
-
 <section class="card calendar-card">
     <div class="calendar-heading">
         <div><p class="eyebrow">Vista mensual</p><h2>{{ ucfirst($monthNames[$calendarMonth]) }} {{ $calendarYear }}</h2></div>
@@ -105,7 +99,7 @@
         <div><h2>Fechas registradas</h2><p class="card-description">Filtra, consulta y administra los registros que te corresponden.</p></div>
         <span class="badge">{{ $holidays->total() }} registros</span>
     </div>
-    <form method="GET" action="{{ route('holidays.index') }}" class="holiday-filters">
+    <form method="GET" action="{{ route('holidays.index') }}" class="filter-bar holiday-filters">
         <input type="hidden" name="presentation" value="list">
         <input type="hidden" name="calendar_month" value="{{ $calendarMonth }}">
         <input type="hidden" name="calendar_year" value="{{ $calendarYear }}">
