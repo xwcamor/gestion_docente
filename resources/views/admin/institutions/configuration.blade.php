@@ -177,8 +177,13 @@
                 @method('PATCH')
                 <div class="institution-unit-meta">
                     <strong>{{ $unit->name }}</strong>
-                    <small>{{ $unit->code ?: 'Sin código' }} · {{ $unit->unit_type }}</small>
-                    <span class="institution-unit-counts">{{ $unit->programs_count }} programas · {{ $unit->courses_count }} asignaturas · {{ $unit->offerings_count }} NRC</span>
+                    <small>{{ $unit->code ?: 'Sin código' }} · {{ [
+                        'blackboard_context' => 'Rótulo de Blackboard',
+                        'historical_school_reference' => 'Unidad histórica',
+                        'professional_school_reference' => 'Escuela de Formación Profesional',
+                        'school' => 'Escuela',
+                    ][$unit->unit_type] ?? 'Unidad académica' }}</small>
+                    <span class="institution-unit-counts">{{ $unit->programs_count }} {{ $unit->programs_count === 1 ? 'programa' : 'programas' }} · {{ $unit->courses_count }} {{ $unit->courses_count === 1 ? 'asignatura' : 'asignaturas' }} · {{ $unit->offerings_count }} {{ $unit->offerings_count === 1 ? 'NRC' : 'NRC' }}</span>
                 </div>
                 <div class="institution-unit-edit">
                     <div class="form-field">
@@ -192,6 +197,8 @@
                     <small class="institution-warning-note">Nombre provisional: confirmar denominación oficial.</small>
                 @elseif($unit->verification_status === 'source_label_unclassified')
                     <small class="institution-warning-note">Rótulo observado en Blackboard; tipo de unidad pendiente de confirmar.</small>
+                @elseif($unit->verification_status === 'historical_reference')
+                    <small class="institution-history-note">Referencia histórica 2022. Se mantiene inactiva para no ofrecerla como escuela vigente.</small>
                 @endif
             </form>
         @endforeach
@@ -220,7 +227,16 @@
                         <div class="institution-program-config-heading">
                             <div>
                                 <strong>{{ $program->name }}</strong>
-                                <small>{{ $program->code ?: 'Código no registrado' }} · {{ str($program->status)->replace('_', ' ')->title() }}</small>
+                                <small>{{ $program->code ?: 'Código no registrado' }} · {{ [
+                                                'active' => 'Vigente',
+                                                'reference_2025' => 'Referencia 2025',
+                                                'historical_reference' => 'Referencia histórica',
+                                                'historical' => 'Histórica',
+                                                'reference_2025' => 'Referencia 2025',
+                                                'reference_2026' => 'Referencia 2026',
+                                                'draft' => 'Borrador',
+                                                'archived' => 'Archivada',
+                                            ][$program->status] ?? 'Pendiente de clasificación' }}</small>
                             </div>
                         </div>
                         @forelse($program->versions as $version)
@@ -313,6 +329,7 @@
 .institution-unit-meta small,.institution-unit-counts{font-size:10px;color:var(--muted)}
 .institution-unit-edit{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:end;gap:10px}
 .institution-warning-note{display:block;color:#9a6716;font-size:10px;margin-top:7px}
+.institution-history-note{display:block;color:var(--muted);font-size:10px;margin-top:7px}
 .institution-program-group{border-top:1px solid var(--line)}
 .institution-program-group>summary{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 2px;cursor:pointer;list-style:none}
 .institution-program-group>summary::-webkit-details-marker{display:none}
