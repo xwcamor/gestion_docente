@@ -2,12 +2,20 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\ScopesToCurrentInstitution;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class InstitutionAcademicPeriod extends Model
 {
+    use ScopesToCurrentInstitution;
+
+    protected static function institutionScopeRelation(): string
+    {
+        return 'type';
+    }
+
     protected $fillable = ['institution_period_type_id', 'code', 'label', 'academic_year', 'sequence_number', 'starts_on', 'ends_on', 'status', 'source_label', 'metadata'];
 
     protected function casts(): array { return ['starts_on' => 'date', 'ends_on' => 'date', 'metadata' => 'array']; }
