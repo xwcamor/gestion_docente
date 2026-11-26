@@ -49,8 +49,8 @@
                             <td>{{ $enrollment->student->institutional_id }}</td>
                             <td><strong>{{ $enrollment->student->surnames }}, {{ $enrollment->student->given_names }}</strong></td>
                             <td>{{ $enrollment->platform_grade ?? '—' }}</td>
-                            <td><input class="field" style="min-width:100px;max-width:130px" type="number" min="0" max="{{ $evaluation->maximum_score }}" step=".01" name="scores[{{ $enrollment->id }}]" value="{{ $grade?->score }}" aria-label="Nota de {{ $enrollment->student->given_names }}"></td>
-                            <td><input class="field" style="min-width:170px" name="observations[{{ $enrollment->id }}]" value="{{ $grade?->observations }}" placeholder="Observación (opcional)"></td>
+                            <td><input class="field grade-score-field" type="number" min="0" max="{{ $evaluation->maximum_score }}" step=".01" name="scores[{{ $enrollment->id }}]" value="{{ $grade?->score }}" aria-label="Nota de {{ $enrollment->student->given_names }}"></td>
+                            <td><input class="field grade-observation-field" name="observations[{{ $enrollment->id }}]" value="{{ $grade?->observations }}" placeholder="Observación (opcional)"></td>
                         </tr>
                     @endforeach
                 </tbody></table></div>
