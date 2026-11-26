@@ -47,6 +47,22 @@ class GroupController extends Controller
             ]];
         }
 
+        $groupsInput = array_map(static function ($row) {
+            if (!is_array($row)) {
+                return $row;
+            }
+
+            if (array_key_exists('name', $row)) {
+                $row['name'] = mb_strtoupper(trim((string) $row['name']));
+            }
+
+            if (array_key_exists('code', $row)) {
+                $row['code'] = filled($row['code']) ? mb_strtoupper(trim((string) $row['code'])) : null;
+            }
+
+            return $row;
+        }, $groupsInput);
+
         $request->merge(['groups' => $groupsInput]);
 
         $validator = Validator::make($request->all(), [
@@ -146,10 +162,12 @@ class GroupController extends Controller
 
         $changes = [];
         if ($request->exists('name')) {
-            $changes['name'] = trim((string) $request->input('name'));
+            $changes['name'] = mb_strtoupper(trim((string) $request->input('name')));
         }
         if ($request->exists('code')) {
-            $changes['code'] = trim((string) $request->input('code')) ?: null;
+            $changes['code'] = filled($request->input('code'))
+                ? mb_strtoupper(trim((string) $request->input('code')))
+                : null;
         }
         $request->merge($changes);
 
