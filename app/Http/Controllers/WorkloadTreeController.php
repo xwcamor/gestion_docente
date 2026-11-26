@@ -95,11 +95,20 @@ class WorkloadTreeController extends Controller
             }
         }
 
+        foreach (['workload_start_date', 'workload_end_date'] as $field) {
+            if ($request->exists($field)) {
+                $value = trim((string) $request->input($field));
+                $request->merge([$field => $value === '' ? null : $value]);
+            }
+        }
+
         $data = $request->validate([
             'career' => ['sometimes', 'required', 'string', 'max:255'],
             'semester' => ['sometimes', 'required', 'string', 'in:I,II,III,IV,V,VI'],
             'workload_start_time' => ['sometimes', 'nullable', 'date_format:H:i'],
             'workload_end_time' => ['sometimes', 'nullable', 'date_format:H:i'],
+            'workload_start_date' => ['sometimes', 'nullable', 'date'],
+            'workload_end_date' => ['sometimes', 'nullable', 'date'],
         ], [
             'career.required' => 'Escribe la carrera de este grupo.',
             'career.max' => 'La carrera no puede superar los 255 caracteres.',
@@ -107,6 +116,8 @@ class WorkloadTreeController extends Controller
             'semester.in' => 'Selecciona un semestre entre I y VI.',
             'workload_start_time.date_format' => 'Selecciona una hora de inicio válida.',
             'workload_end_time.date_format' => 'Selecciona una hora de fin válida.',
+            'workload_start_date.date' => 'Selecciona una fecha de inicio válida.',
+            'workload_end_date.date' => 'Selecciona una fecha de fin válida.',
         ]);
 
         if (!$data) {
@@ -128,6 +139,19 @@ class WorkloadTreeController extends Controller
             ]);
         }
 
+        $startDate = array_key_exists('workload_start_date', $data)
+            ? ($data['workload_start_date'] ?: null)
+            : $group->workload_start_date?->toDateString();
+        $endDate = array_key_exists('workload_end_date', $data)
+            ? ($data['workload_end_date'] ?: null)
+            : $group->workload_end_date?->toDateString();
+
+        if ($startDate && $endDate && $endDate < $startDate) {
+            throw ValidationException::withMessages([
+                'workload_end_date' => 'La fecha de fin debe ser igual o posterior a la fecha de inicio.',
+            ]);
+        }
+
         $group->update($data);
         $group->refresh();
 
@@ -142,6 +166,8 @@ class WorkloadTreeController extends Controller
             'workload_end_time' => $group->workload_end_time
                 ? substr((string) $group->workload_end_time, 0, 5)
                 : '',
+            'workload_start_date' => $group->workload_start_date?->toDateString(),
+            'workload_end_date' => $group->workload_end_date?->toDateString(),
         ]);
     }
 
