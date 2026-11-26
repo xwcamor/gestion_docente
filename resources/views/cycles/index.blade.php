@@ -42,12 +42,7 @@
                 <div class="cycle-directory-main">
                     <div class="cycle-directory-mark" aria-hidden="true"><x-icon name="calendar-days" size="21" /></div>
                     <div class="cycle-directory-copy">
-                        <p class="cycle-directory-career">{{ $cycle->career ?: 'Carrera pendiente' }}</p>
                         <h3>{{ $cycle->academic_year }} · Ciclo {{ $cycle->cycle_code }}</h3>
-                        <p class="cycle-directory-meta">
-                            <span>Semestre {{ $cycle->semester ?: '—' }}</span>
-                            <span>{{ $cycle->start_date?->format('d/m/Y') }} – {{ $cycle->end_date?->format('d/m/Y') }}</span>
-                        </p>
                     </div>
                 </div>
 
@@ -83,7 +78,7 @@
     <div class="dialog-head">
         <div>
             <h2 id="cycle-create-title">Crear ciclo académico</h2>
-            <p>Registra el periodo que aparece en tu programación docente.</p>
+            <p>Ingresa el año académico y el código del ciclo. Luego podrás agregar sus grupos.</p>
         </div>
         <button class="dialog-close" type="button" data-modal-close aria-label="Cerrar"><x-icon name="x" /></button>
     </div>
@@ -96,10 +91,6 @@
                     <ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
                 </div>
             @endif
-            <div class="modal-context">
-                <x-icon name="info" size="16" />
-                <span>Todo ciclo debe tener al menos un grupo. Registra aquí el primero; después podrás agregar más.</span>
-            </div>
             <div class="form-row">
                 <div>
                     <label for="academic_year">Año académico <span class="muted">*</span></label>
@@ -114,42 +105,6 @@
                     @error('cycle_code')<p class="field-error">{{ $message }}</p>@enderror
                 </div>
             </div>
-            <div class="form-row">
-                <div>
-                    <label for="career">Carrera predeterminada para grupos nuevos <span class="muted">*</span></label>
-                    <input class="field" id="career" data-uppercase name="career" value="{{ old('career', auth()->user()->professor->career) }}" maxlength="255" required placeholder="Ej. Desarrollo de Software">
-                    @error('career')<p class="field-error">{{ $message }}</p>@enderror
-                </div>
-                <div>
-                    <label for="semester">Semestre predeterminado para grupos nuevos <span class="muted">*</span></label>
-                    <select class="field" id="semester" name="semester" required>
-                        <option value="">Seleccionar semestre</option>
-                        @foreach(['I', 'II', 'III', 'IV', 'V', 'VI'] as $semesterOption)
-                            <option value="{{ $semesterOption }}" @selected(old('semester') === $semesterOption)>{{ $semesterOption }}</option>
-                        @endforeach
-                    </select>
-                    @error('semester')<p class="field-error">{{ $message }}</p>@enderror
-                </div>
-            </div>
-            <p class="help">Estos valores se copian al crear grupos. Luego puedes cambiar la carrera y el semestre de cada grupo por separado.</p>
-            <div class="form-row">
-                <div>
-                    <label for="start_date">Fecha de inicio <span class="muted">*</span></label>
-                    <input class="field" id="start_date" type="date" name="start_date" value="{{ old('start_date') }}" required data-cycle-start>
-                    @error('start_date')<p class="field-error">{{ $message }}</p>@enderror
-                </div>
-                <div>
-                    <label for="end_date">Fecha de fin <span class="muted">*</span></label>
-                    <input class="field" id="end_date" type="date" name="end_date" value="{{ old('end_date') }}" min="{{ old('start_date') }}" required data-cycle-end>
-                    @error('end_date')<p class="field-error">{{ $message }}</p>@enderror
-                </div>
-            </div>
-            <div>
-                <label for="group_name">Nombre del primer grupo <span class="muted">*</span></label>
-                <input class="field" id="group_name" data-uppercase name="group_name" value="{{ old('group_name') }}" maxlength="100" required placeholder="Ej. IA 202">
-                @error('group_name')<p class="field-error">{{ $message }}</p>@enderror
-            </div>
-            <p class="help mt-16"><x-icon name="calendar-range" size="12" /> La fecha de fin debe ser igual o posterior al inicio.</p>
         </div>
         <div class="dialog-footer">
             <button class="btn btn-secondary" type="button" data-modal-close><x-icon name="x" /> Cancelar</button>
@@ -158,24 +113,6 @@
     </form>
 </dialog>
 
-@push('scripts')
-<script>
-(() => {
-    const start = document.querySelector('[data-cycle-start]');
-    const end = document.querySelector('[data-cycle-end]');
-    if (!start || !end) return;
-    const syncDates = () => {
-        end.min = start.value || '';
-        end.setCustomValidity(start.value && end.value && end.value < start.value
-            ? 'La fecha de fin debe ser igual o posterior al inicio.'
-            : '');
-    };
-    start.addEventListener('change', syncDates);
-    end.addEventListener('change', syncDates);
-    syncDates();
-})();
-</script>
-@endpush
 @push('styles')
 <style>
 .cycle-directory-card{padding:clamp(14px,1.8vw,22px)}
@@ -185,9 +122,7 @@
 .cycle-directory-main{display:flex;align-items:center;gap:14px;min-width:0}
 .cycle-directory-mark{width:48px;height:48px;flex:none;display:grid;place-items:center;border:1px solid color-mix(in srgb,var(--accent) 22%,var(--line));border-radius:13px;background:var(--accent-soft);color:var(--accent)}
 .cycle-directory-copy{min-width:0}
-.cycle-directory-career{margin:0 0 4px;color:var(--muted);font-size:10px;font-weight:650;letter-spacing:.03em}
 .cycle-directory-copy h3{margin:0;color:var(--ink);font-size:17px;font-weight:780;letter-spacing:-.025em;line-height:1.25}
-.cycle-directory-meta{display:flex;flex-wrap:wrap;gap:5px 12px;margin:6px 0 0;color:var(--muted);font-size:10px}
 .cycle-directory-metrics{display:flex;gap:20px;justify-content:flex-start}
 .cycle-directory-metrics div{display:grid;gap:3px}
 .cycle-directory-metrics strong{color:var(--ink);font-size:21px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
