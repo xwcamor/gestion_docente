@@ -11,7 +11,7 @@
         <article class="workload-tree-modality {{ $modality->active ? 'is-active' : 'is-disabled' }}"
                  data-modality-row data-modality-type="{{ $type }}" data-modality-id="{{ $modality->id }}" data-active="{{ $modality->active ? '1' : '0' }}" data-active-description="{{ $enabledDescription }}">
             <span class="tree-branch-mark"></span>
-            <span class="tree-modality-tag {{ $type === 'TEC' ? 'is-tec' : 'is-tall' }}"><x-icon name="{{ $type === 'TEC' ? 'file-text' : 'clipboard-check' }}" size="18" />{{ $type === 'TEC' ? 'TEC' : 'TAL' }}</span>
+            <span class="tree-modality-tag {{ $type === 'TEC' ? 'is-tec' : 'is-tall' }}">{{ $type === 'TEC' ? 'TEC' : 'TAL' }}</span>
             <div class="tree-modality-copy">
                 <strong>{{ $label }} · NRC
                     @if($modality->active)
@@ -55,9 +55,9 @@
                     @if(!$modality->active)
                         Desactivada · datos conservados
                     @elseif($classSchedules->isNotEmpty())
-                        <x-icon name="calendar-check" size="13" /> {{ $daysLabel }} · {{ $scheduleLabel }} · {{ number_format((float) $modality->total_hours, 2) }} h/sem.
+                        {{ $daysLabel }} · {{ $scheduleLabel }} · {{ number_format((float) $modality->total_hours, 2) }} h/sem.
                     @else
-                        <x-icon name="calendar-days" size="13" /> Programación horaria
+                        Programación horaria
                     @endif
                     @if($modality->block_code)
                         <span class="tree-modality-extra-meta">Bloque {{ $modality->block_code }}</span>
