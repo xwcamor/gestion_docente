@@ -51,7 +51,6 @@
     <div class="modality-section-body">
     @if($hasAnySchedule)
         <div class="modality-weekly-overview">
-            <strong>{{ number_format($weeklyHoursCalculated, 2) }} h/semana</strong>
             <div class="modality-day-chips">
                 @foreach($scheduleWeekdays as $day => $dayLabel)
                     @if($schedulesByDay->has($day))
