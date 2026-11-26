@@ -52,7 +52,7 @@
                 </div>
                 <div class="form-field profile-field-wide">
                     <label for="career">Carrera o especialidad</label>
-                    <input class="field" id="career" name="career" value="{{ old('career', $user->professor->career) }}" maxlength="255">
+                    <input class="field" id="career" data-uppercase name="career" value="{{ old('career', $user->professor->career) }}" maxlength="255">
                     @error('career')<p class="field-error">{{ $message }}</p>@enderror
                 </div>
             </div>
