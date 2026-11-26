@@ -224,7 +224,7 @@
     @foreach($programs->groupBy(fn ($program) => $program->unit?->name ?: 'Sin unidad asignada') as $unitName => $unitPrograms)
         <details class="institution-program-group">
             <summary>
-                <div><strong>{{ $unitName }}</strong><small>{{ $unitPrograms->count() }} carreras o programas</small></div>
+                <div><strong>{{ $unitName }}</strong><small>{{ $unitPrograms->count() }} {{ $unitPrograms->count() === 1 ? 'carrera o programa' : 'carreras o programas' }}</small></div>
                 <span class="institution-period-count">{{ $unitPrograms->whereIn('status', ['active', 'reference_2025'])->count() }} referencias no históricas</span>
             </summary>
             <div class="institution-program-config-list">
@@ -258,7 +258,7 @@
                                         <label>Semestres</label>
                                         <select class="field" name="duration_semesters">
                                             <option value="">Pendiente de malla</option>
-                                            @foreach([4,5,6,8,10,12] as $duration)
+                                            @foreach($durationOptions as $duration)
                                                 <option value="{{ $duration }}" @selected((string) old('duration_semesters', $version->duration_semesters) === (string) $duration)>{{ $duration }}</option>
                                             @endforeach
                                         </select>
