@@ -1277,7 +1277,7 @@
 
 <dialog class="ui-dialog confirm-dialog" id="app-confirm-dialog" aria-labelledby="app-confirm-title">
     <div class="dialog-head"><div><h2 id="app-confirm-title">Confirmar acción</h2><p id="app-confirm-message">¿Deseas continuar?</p></div><button class="dialog-close" type="button" data-modal-close aria-label="Cerrar"><x-icon name="x" size="15" /></button></div>
-    <div class="dialog-footer"><button class="btn btn-secondary" type="button" data-modal-close>Cancelar</button><button class="btn" type="button" id="app-confirm-submit"><x-icon name="check" /><span>Continuar</span></button></div>
+    <div class="dialog-footer"><button class="btn btn-secondary" type="button" data-modal-close>Cancelar</button><button class="btn" type="button" id="app-confirm-submit"><x-icon name="check" data-confirm-default-icon /><x-icon name="trash-2" data-confirm-delete-icon hidden /><span>Continuar</span></button></div>
 </dialog>
 
 
@@ -1458,6 +1458,8 @@
     const confirmMessage = document.getElementById('app-confirm-message');
     const confirmSubmit = document.getElementById('app-confirm-submit');
     const confirmSubmitLabel = confirmSubmit?.querySelector('span');
+    const confirmDefaultIcon = confirmSubmit?.querySelector('[data-confirm-default-icon]');
+    const confirmDeleteIcon = confirmSubmit?.querySelector('[data-confirm-delete-icon]');
 
     document.addEventListener('click', event => {
         const opener = event.target.closest('[data-modal-open]');
@@ -1501,7 +1503,8 @@
             if (confirmSubmitLabel) confirmSubmitLabel.textContent = isDelete ? 'Eliminar' : 'Continuar';
             if (confirmSubmit) {
                 confirmSubmit.classList.toggle('btn-danger-solid', isDelete);
-                confirmSubmit.classList.toggle('btn', !isDelete);
+                if (confirmDefaultIcon) confirmDefaultIcon.hidden = isDelete;
+                if (confirmDeleteIcon) confirmDeleteIcon.hidden = !isDelete;
             }
             confirmDialog?.showModal();
             return;
