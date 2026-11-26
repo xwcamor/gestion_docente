@@ -52,9 +52,9 @@
         @csrf
         <div class="form-row"><div><label for="group_name">Nombre del grupo</label><input class="field" id="group_name" name="group_name" required maxlength="100" value="{{ old('group_name', 'Grupo principal') }}"><p class="help">Puedes cambiarlo por el nombre de tu sección o aula.</p></div><div><label>Ciclo que se creará o reutilizará</label><input class="field" value="{{ $data['academic_year'] }} · {{ $data['cycle_code'] }}" disabled></div></div>
         @if($data['schedule_count'] > 0)
-            <div class="alert alert-info" style="margin-top:16px">Se importarán {{ $data['schedule_count'] }} bloques semanales. Al confirmar, el sistema calculará las horas y generará las sesiones según las fechas de cada modalidad, excluyendo feriados bloqueados.</div>
+            <div class="alert alert-info mt-16">Se importarán {{ $data['schedule_count'] }} bloques semanales. Al confirmar, el sistema calculará las horas y generará las sesiones según las fechas de cada modalidad, excluyendo feriados bloqueados.</div>
         @else
-            <div class="alert alert-warning" style="margin-top:16px">No se detectaron bloques en la hoja Horarios. El ciclo y los cursos se pueden importar, pero deberás configurar los horarios de cada modalidad después.</div>
+            <div class="alert alert-warning mt-16">No se detectaron bloques en la hoja Horarios. El ciclo y los cursos se pueden importar, pero deberás configurar los horarios de cada modalidad después.</div>
         @endif
         <div class="form-actions"><a class="btn btn-secondary" href="{{ route('distribution.create') }}"><x-icon name="arrow-left" /> Cancelar</a><button class="btn" type="submit" {{ count($data['rows']) === 0 || count($data['errors']) > 0 ? 'disabled' : '' }}><x-icon name="check" /> Confirmar e importar {{ count($data['rows']) }} cursos</button></div>
     </form>
