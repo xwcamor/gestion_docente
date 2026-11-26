@@ -121,7 +121,7 @@ class InstitutionConfigurationController extends Controller
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
-            'period_unit' => ['required', Rule::in(['period', 'semester', 'trimester', 'quarter', 'module', 'year', 'term'])],
+            'period_unit' => ['required', Rule::in(['period', 'institution_period', 'semester', 'trimester', 'quarter', 'module', 'year', 'term'])],
             'code_pattern' => ['nullable', 'string', 'max:80'],
             'default_duration_weeks' => ['nullable', 'integer', 'min:1', 'max:52'],
             'is_active' => ['required', 'boolean'],
