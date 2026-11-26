@@ -21,6 +21,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SystemSettingController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\WorkloadTreeController;
+use App\Http\Controllers\InstitutionCatalogController;
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1')->name('login.store');
@@ -119,6 +120,7 @@ Route::middleware(['auth', 'professor'])->group(function () {
     Route::delete('/feriados/{holiday}', [HolidayController::class, 'destroy'])->name('holidays.destroy');
 
     Route::prefix('administracion')->name('admin.')->middleware('admin')->group(function () {
+        Route::get('/institucion/catalogo', [InstitutionCatalogController::class, 'index'])->name('institution.catalog');
         Route::get('/profesores', [AdminProfessorController::class, 'index'])->name('professors.index');
         Route::post('/profesores', [AdminProfessorController::class, 'store'])->name('professors.store');
         Route::patch('/profesores/{user}', [AdminProfessorController::class, 'update'])->name('professors.update');
