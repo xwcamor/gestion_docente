@@ -15,7 +15,9 @@
         <p class="eyebrow"><x-icon name="graduation-cap" size="12" /> Gestión académica · {{ $group->cycle->academic_year }} · Ciclo {{ $group->cycle->cycle_code }}</p>
         <h1>{{ $group->name }}</h1>
         <div class="cycle-item-meta">
-            <span><x-icon name="calendar-range" size="12" /> Carga: {{ $group->cycle->start_date?->format('d/m/Y') }} – {{ $group->cycle->end_date?->format('d/m/Y') }}</span>
+            @if($group->cycle->start_date && $group->cycle->end_date)
+                <span><x-icon name="calendar-range" size="12" /> Rango del ciclo: {{ $group->cycle->start_date->format('d/m/Y') }} – {{ $group->cycle->end_date->format('d/m/Y') }}</span>
+            @endif
             @if($workloadDaysLabels->isNotEmpty() && filled($group->workload_start_time) && filled($group->workload_end_time))
                 <span>·</span>
                 <span><x-icon name="clock" size="12" /> {{ $workloadDaysLabels->map(fn ($day) => mb_substr($day, 0, 3))->join(', ') }} · {{ substr((string) $group->workload_start_time, 0, 5) }}–{{ substr((string) $group->workload_end_time, 0, 5) }}</span>
