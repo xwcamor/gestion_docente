@@ -17,7 +17,7 @@
                 <span class="tree-expand-symbol" aria-hidden="true"></span>
                 
                 <span class="tree-node-copy">
-                    <strong><span data-inline-text data-edit-field="name" data-edit-label="Nombre del curso" data-edit-url="{{ route('workload-tree.courses.name', $assignment) }}" data-edit-value="{{ $assignment->course->name }}" data-edit-kind="course-name">{{ $assignment->course->name }}</span></strong>
+                    <strong><span class="tree-node-kind">Curso:</span> <span data-inline-text data-edit-field="name" data-edit-label="Nombre del curso" data-edit-url="{{ route('workload-tree.courses.name', $assignment) }}" data-edit-value="{{ $assignment->course->name }}" data-edit-kind="course-name">{{ $assignment->course->name }}</span></strong>
                     <span class="tree-course-code-row">
                         <span class="tree-meta-label">Código PIAD-</span>
                         <span class="tree-inline-editable" data-inline-text data-edit-on-click data-edit-field="code" data-edit-kind="course-code" data-edit-label="Código institucional" data-edit-url="{{ route('workload-tree.courses.code', $assignment) }}" data-edit-value="{{ $assignment->course->code }}" title="Clic para editar código">{{ $assignment->course->code ?: 'Falta' }}</span>
