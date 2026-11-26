@@ -37,7 +37,7 @@
 
 <section class="card institution-catalog-section">
     <div class="institution-section-head">
-        <div><h2>@if($isSenati) Periodos de Blackboard @else Periodos institucionales @endif</h2><p>Se conserva el código, el periodo académico y su unidad de origen.</p></div>
+        <div><h2>@if($showSenatiReference) Periodos de Blackboard @else Periodos institucionales @endif</h2><p>Se conserva el código, el periodo académico y su unidad de origen.</p></div>
     </div>
     @forelse($periods as $period)
         <details class="institution-period" @if($loop->first) open @endif>
@@ -48,7 +48,7 @@
             <div class="institution-offerings-wrap">
                 <div class="table-scroll">
                     <table class="data-table institution-offerings">
-                        <thead><tr><th>@if($isSenati) Identificador Blackboard @else Identificador de origen @endif</th><th>Asignatura</th><th>Componente</th><th>Estado observado</th><th>Docente visible</th><th>Grupo</th></tr></thead>
+                        <thead><tr><th>@if($showSenatiReference) Identificador Blackboard @else Identificador de origen @endif</th><th>Asignatura</th><th>Componente</th><th>Estado observado</th><th>Docente visible</th><th>Grupo</th></tr></thead>
                         <tbody>
                             @foreach($period->offerings->sortBy(fn ($offering) => [$offering->course_code_snapshot, $offering->nrc]) as $offering)
                                 <tr>
@@ -56,7 +56,7 @@
                                     <td>
                                         <strong>{{ $offering->course_name_snapshot }}</strong>
                                         <small>{{ $offering->course_code_snapshot }}</small>
-                                        @if($isSenati && data_get($offering->course?->metadata, 'observed_group_pattern'))
+                                        @if($showSenatiReference && data_get($offering->course?->metadata, 'observed_group_pattern'))
                                             <small>Dos salones observados: uno con TEC+TAL y otro solo TEC; NRC por salón pendiente.</small>
                                         @endif
                                     </td>
@@ -106,13 +106,13 @@
             </tbody>
         </table>
     </div>
-    @if($isSenati)
+    @if($showSenatiReference)
         <p class="institution-note">SENATI reportó 91 carreras de formación profesional y 14 escuelas en su memoria institucional 2025. Esta pantalla no pretende ser la lista completa: muestra siete programas vigentes de la Escuela Superior con duración oficial de ocho semestres y {{ $historicalPrograms }} nombres ETIA históricos de 2022. El catálogo vigente completo de Formación Profesional debe importarse desde el documento oficial actualizado.</p>
         <p class="institution-note">{{ $historicalPrograms }} nombres históricos de ETIA (memoria 2022) se conservaron como referencia y no se ofrecen como carreras vigentes.</p>
     @endif
 </section>
 
-@if($isSenati)
+@if($showSenatiReference)
 <section class="card institution-catalog-section">
     <div class="institution-section-head">
         <div>
@@ -166,7 +166,7 @@
     </div>
 </section>
 
-@if($isSenati)
+@if($showSenatiReference)
     <section class="institution-catalog-disclaimer">
         <x-icon name="info" />
         <p>Las capturas no muestran los nombres reales de los salones ni permiten emparejar con certeza cada NRC TEC con un NRC TAL. Por eso los 47 NRC se guardaron sin asignarlos a grupos ficticios. Tampoco se importaron horarios: la captura de repetición muestra un ejemplo de calendario, no el horario real de cada asignatura.</p>
