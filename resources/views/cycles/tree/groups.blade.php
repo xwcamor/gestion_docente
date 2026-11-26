@@ -124,7 +124,7 @@
                     <div class="tree-draft-fields">
                         <label class="tree-course-name-input">
                             <span>Nombre del curso</span>
-                            <input class="field" name="course_name" maxlength="255" required placeholder="Ej. Desarrollo de Aplicaciones Web">
+                            <input class="field" name="course_name" data-uppercase maxlength="255" required placeholder="Ej. Desarrollo de Aplicaciones Web">
                         </label>
                     </div>
                     <input type="hidden" name="components[]" value="TEC">
