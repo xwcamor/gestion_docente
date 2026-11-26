@@ -144,6 +144,18 @@ class SenatiCatalogSeeder extends Seeder
             );
         }
 
+        // Vincula los componentes existentes de SENATI con su catálogo institucional.
+        // Se conserva el código anterior en course_modalities.modality para compatibilidad.
+        $typeIds = InstitutionInstructionType::where('institution_id', $institution->id)->pluck('id', 'code');
+        foreach (['TEC', 'TAL'] as $componentCode) {
+            if (isset($typeIds[$componentCode])) {
+                DB::table('course_modalities')
+                    ->where('modality', $componentCode)
+                    ->whereNull('institution_instruction_type_id')
+                    ->update(['institution_instruction_type_id' => $typeIds[$componentCode]]);
+            }
+        }
+
         $features = [
             [
                 'feature_key' => 'five_minute_talks',
