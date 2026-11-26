@@ -15,42 +15,48 @@
                 <div class="tree-modality-heading">
                     <strong>{{ $label }}</strong>
                 </div>
-                <div class="tree-modality-nrc-row">
-                    <span class="tree-modality-field-label">NRC</span>
-                    @if($modality->active)
-                        <span class="tree-inline-nrc {{ filled($modality->nrc) ? '' : 'is-empty' }}"
-                              data-inline-nrc
-                              data-nrc-url="{{ route('workload-tree.modalities.nrc', $modality) }}"
-                              data-nrc="{{ $modality->nrc }}" data-modality-id="{{ $modality->id }}"
-                              title="Clic para editar NRC">{{ $modality->nrc ?: 'Falta' }}</span>
-                    @else
-                        <span class="tree-disabled-value tree-nrc-value {{ filled($modality->nrc) ? '' : 'is-empty' }}">{{ $modality->nrc ?: 'Falta' }}</span>
-                    @endif
-                </div>
-                <div class="tree-modality-dates"
-                     @if($modality->active)
-                         data-modality-dates
-                         data-dates-url="{{ route('workload-tree.modalities.dates', $modality) }}"
-                         data-start-date="{{ $modality->start_date?->toDateString() }}"
-                         data-end-date="{{ $modality->end_date?->toDateString() }}"
-                         data-modality-id="{{ $modality->id }}"
-                     @endif>
-                    <span class="tree-date-field">
-                        <span class="tree-date-label">Inicio</span>
+                <div class="tree-modality-data-row">
+                    <span class="tree-modality-data-item">
+                        <span class="tree-modality-field-label">NRC</span>
                         @if($modality->active)
-                            <span class="tree-inline-date" data-inline-date="start_date" title="Clic para editar la fecha">{{ $modality->start_date?->format('d/m/Y') ?: 'Sin fecha' }}</span>
+                            <span class="tree-inline-nrc {{ filled($modality->nrc) ? '' : 'is-empty' }}"
+                                  data-inline-nrc
+                                  data-nrc-url="{{ route('workload-tree.modalities.nrc', $modality) }}"
+                                  data-nrc="{{ $modality->nrc }}" data-modality-id="{{ $modality->id }}"
+                                  title="Clic para editar NRC">{{ $modality->nrc ?: 'Falta' }}</span>
                         @else
-                            <span class="tree-disabled-value">{{ $modality->start_date?->format('d/m/Y') ?: 'Sin fecha' }}</span>
+                            <span class="tree-disabled-value tree-nrc-value {{ filled($modality->nrc) ? '' : 'is-empty' }}">{{ $modality->nrc ?: 'Falta' }}</span>
                         @endif
                     </span>
-                    <span class="tree-date-field">
-                        <span class="tree-date-label">Fin</span>
-                        @if($modality->active)
-                            <span class="tree-inline-date" data-inline-date="end_date" title="Clic para editar la fecha">{{ $modality->end_date?->format('d/m/Y') ?: 'Sin fecha' }}</span>
-                        @else
-                            <span class="tree-disabled-value">{{ $modality->end_date?->format('d/m/Y') ?: 'Sin fecha' }}</span>
-                        @endif
-                    </span>
+                    <div class="tree-modality-dates"
+                         @if($modality->active)
+                             data-modality-dates
+                             data-dates-url="{{ route('workload-tree.modalities.dates', $modality) }}"
+                             data-start-date="{{ $modality->start_date?->toDateString() }}"
+                             data-end-date="{{ $modality->end_date?->toDateString() }}"
+                             data-modality-id="{{ $modality->id }}"
+                         @endif>
+                        <span class="tree-date-field">
+                            <span class="tree-date-label">Inicio</span>
+                            @if($modality->active)
+                                <span class="tree-inline-date {{ $modality->start_date ? '' : 'is-empty' }}"
+                                      data-inline-date="start_date" data-empty-label="Falta"
+                                      title="Clic para editar la fecha">{{ $modality->start_date?->format('d/m/Y') ?: 'Falta' }}</span>
+                            @else
+                                <span class="tree-disabled-value tree-inline-date {{ $modality->start_date ? '' : 'is-empty' }}">{{ $modality->start_date?->format('d/m/Y') ?: 'Falta' }}</span>
+                            @endif
+                        </span>
+                        <span class="tree-date-field">
+                            <span class="tree-date-label">Fin</span>
+                            @if($modality->active)
+                                <span class="tree-inline-date {{ $modality->end_date ? '' : 'is-empty' }}"
+                                      data-inline-date="end_date" data-empty-label="Falta"
+                                      title="Clic para editar la fecha">{{ $modality->end_date?->format('d/m/Y') ?: 'Falta' }}</span>
+                            @else
+                                <span class="tree-disabled-value tree-inline-date {{ $modality->end_date ? '' : 'is-empty' }}">{{ $modality->end_date?->format('d/m/Y') ?: 'Falta' }}</span>
+                            @endif
+                        </span>
+                    </div>
                 </div>
                 @if(!$modality->active || $classSchedules->isNotEmpty() || filled($modality->block_code) || filled($modality->block_reference))
                     <small class="tree-modality-schedule-summary {{ !$modality->active ? 'is-disabled' : 'is-ready' }}"
