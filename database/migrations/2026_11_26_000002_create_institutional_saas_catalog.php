@@ -142,8 +142,9 @@ return new class extends Migration
         Schema::create('institution_document_templates', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
-            $table->foreignId('institution_instruction_type_id')->nullable()
-                ->constrained('institution_instruction_types')->nullOnDelete();
+            $table->foreignId('institution_instruction_type_id')->nullable();
+            $table->foreign('institution_instruction_type_id', 'inst_template_type_fk')
+                ->references('id')->on('institution_instruction_types')->nullOnDelete();
             $table->string('document_type', 80);
             $table->string('name', 180);
             $table->string('version', 40)->default('1');
@@ -177,11 +178,14 @@ return new class extends Migration
         Schema::create('institution_course_offerings', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
-            $table->foreignId('institution_academic_period_id')->constrained('institution_academic_periods')->cascadeOnDelete();
+            $table->foreignId('institution_academic_period_id');
+            $table->foreign('institution_academic_period_id', 'inst_offer_period_fk')
+                ->references('id')->on('institution_academic_periods')->cascadeOnDelete();
             $table->foreignId('institution_unit_id')->nullable()->constrained('institution_units')->nullOnDelete();
             $table->foreignId('institution_course_id')->constrained('institution_courses')->cascadeOnDelete();
-            $table->foreignId('institution_instruction_type_id')->nullable()
-                ->constrained('institution_instruction_types')->nullOnDelete();
+            $table->foreignId('institution_instruction_type_id')->nullable();
+            $table->foreign('institution_instruction_type_id', 'inst_offering_type_fk')
+                ->references('id')->on('institution_instruction_types')->nullOnDelete();
             $table->foreignId('teaching_group_id')->nullable()
                 ->constrained('teaching_groups')->nullOnDelete();
             $table->string('nrc', 40);
