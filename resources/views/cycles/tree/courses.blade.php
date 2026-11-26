@@ -17,7 +17,19 @@
                 <span class="tree-expand-symbol" aria-hidden="true"></span>
                 
                 <span class="tree-node-copy">
-                    <strong><span class="tree-node-kind">Curso:</span> <span data-inline-text data-edit-field="name" data-edit-label="Nombre del curso" data-edit-url="{{ route('workload-tree.courses.name', $assignment) }}" data-edit-value="{{ $assignment->course->name }}" data-edit-kind="course-name">{{ $assignment->course->name }}</span></strong>
+                    <span class="tree-course-title-row">
+                        <strong><span class="tree-node-kind">Curso:</span> <span data-inline-text data-edit-field="name" data-edit-label="Nombre del curso" data-edit-url="{{ route('workload-tree.courses.name', $assignment) }}" data-edit-value="{{ $assignment->course->name }}" data-edit-kind="course-name">{{ $assignment->course->name }}</span></strong>
+                        @if(($tecModality && $tecModality->active) || ($tallModality && $tallModality->active))
+                            <span class="tree-course-components" aria-label="Componentes activos">
+                                @if($tecModality && $tecModality->active)
+                                    <span class="tree-component-chip is-present" title="TEC activo">TEC</span>
+                                @endif
+                                @if($tallModality && $tallModality->active)
+                                    <span class="tree-component-chip is-present" title="TAL activo">TAL</span>
+                                @endif
+                            </span>
+                        @endif
+                    </span>
                     <span class="tree-course-code-row">
                         <span class="tree-meta-label">Código PIAD-</span>
                         <span class="tree-inline-editable {{ filled($assignment->course->code) ? '' : 'is-empty' }}" data-inline-text data-edit-on-click data-edit-field="code" data-edit-kind="course-code" data-edit-label="Código institucional" data-edit-url="{{ route('workload-tree.courses.code', $assignment) }}" data-edit-value="{{ $assignment->course->code }}" data-edit-empty-label="Falta" title="Clic para editar código">{{ $assignment->course->code ?: 'Falta' }}</span>
@@ -41,16 +53,6 @@
                                       title="Clic para agregar o editar la fecha de fin">{{ $assignment->course_end_date?->format('d/m/Y') ?: 'Falta' }}</span>
                             </span>
                         </span>
-                        @if($tecModality || $tallModality)
-                            <span class="tree-course-components" aria-label="Componentes del curso">
-                                @if($tecModality)
-                                    <span class="tree-component-chip {{ $tecModality->active ? 'is-present' : 'is-disabled' }}" title="{{ $tecModality->active ? 'TEC activo' : 'TEC desactivado' }}">TEC</span>
-                                @endif
-                                @if($tallModality)
-                                    <span class="tree-component-chip {{ $tallModality->active ? 'is-present' : 'is-disabled' }}" title="{{ $tallModality->active ? 'TAL activo' : 'TAL desactivado' }}">TAL</span>
-                                @endif
-                            </span>
-                        @endif
                     </span>
                 </span>
             </summary>
