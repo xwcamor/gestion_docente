@@ -23,6 +23,7 @@ use App\Models\Student;
 use App\Models\TeachingGroup;
 use App\Models\SystemSetting;
 use App\Observers\AuditObserver;
+use App\Support\CurrentInstitution;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -30,6 +31,7 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->scoped(CurrentInstitution::class);
     }
 
     public function boot(): void
