@@ -1369,6 +1369,60 @@
 }
 .tree-course-delete-trigger:hover:not(:disabled){border-color:var(--danger);background:var(--danger);color:#fff}
 .tree-course-delete-trigger:disabled{opacity:.35;cursor:not-allowed}
+
+/* Acciones separadas del área clicable de los acordeones: sin solapes ni recortes. */
+.tree-structure-card .workload-tree-group-shell{position:relative}
+.tree-structure-card .workload-group-summary{
+    grid-template-columns:18px minmax(0,1fr)!important;
+    padding-right:132px!important;
+}
+.tree-structure-card .tree-group-delete-trigger{
+    position:absolute;z-index:8;top:14px;right:14px;
+    display:inline-flex;align-items:center;justify-content:center;gap:7px;
+    width:auto;min-width:104px;height:35px;padding:0 12px;
+    border:1px solid color-mix(in srgb,var(--danger) 34%,var(--line));
+    border-radius:8px;background:var(--danger-bg);color:var(--danger);
+    font-size:11px;font-weight:800;white-space:nowrap;cursor:pointer;
+}
+.tree-structure-card .tree-group-delete-trigger:hover:not(:disabled){
+    border-color:var(--danger);background:var(--danger);color:#fff;
+}
+.tree-structure-card .tree-group-delete-trigger:disabled{opacity:.35;cursor:not-allowed}
+
+.tree-structure-card .workload-tree-course{
+    display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;
+}
+.tree-structure-card .tree-course-branch{grid-column:1;grid-row:1;min-width:0}
+.tree-structure-card .tree-course-summary{padding-right:10px!important}
+.tree-structure-card .tree-course-delete-trigger{
+    position:static!important;z-index:auto;grid-column:2;grid-row:1;
+    align-self:start;justify-self:end;
+    display:inline-flex!important;align-items:center;justify-content:center;gap:6px;
+    width:auto!important;min-width:94px;height:34px!important;
+    margin:12px 12px 0 8px;padding:0 11px!important;
+    border:1px solid color-mix(in srgb,var(--danger) 34%,var(--line));
+    border-radius:8px;background:var(--danger-bg);color:var(--danger);
+    font-size:10px;font-weight:800;white-space:nowrap;cursor:pointer;
+}
+.tree-structure-card .tree-course-delete-trigger:hover:not(:disabled){
+    border-color:var(--danger);background:var(--danger);color:#fff;
+}
+.tree-structure-card .tree-course-delete-trigger:disabled{opacity:.35;cursor:not-allowed}
+
+@media(max-width:560px){
+    .tree-structure-card .workload-group-summary{padding-right:54px!important}
+    .tree-structure-card .tree-group-delete-trigger{
+        top:12px;right:9px;width:34px;min-width:34px;height:34px;padding:0;
+    }
+    .tree-structure-card .tree-group-delete-trigger span{display:none}
+    .tree-structure-card .workload-tree-course{grid-template-columns:minmax(0,1fr) 38px}
+    .tree-structure-card .tree-course-summary{padding-right:6px!important}
+    .tree-structure-card .tree-course-delete-trigger{
+        width:34px!important;min-width:34px;height:34px!important;
+        margin:10px 4px 0 0;padding:0!important;
+    }
+    .tree-structure-card .tree-course-delete-trigger span{display:none}
+}
 </style>
 @endpush
 
@@ -1654,7 +1708,8 @@
         if (groupDeleteToggle) {
             event.preventDefault();
             event.stopPropagation();
-            const group = groupDeleteToggle.closest('[data-tree-group-id]');
+            const groupShell = groupDeleteToggle.closest('[data-group-shell]');
+            const group = groupShell?.querySelector('[data-tree-group-id]');
             const form = group?.querySelector('[data-tree-delete-group]');
             const groupName = group?.dataset.groupName || 'este grupo';
             openTreeDeleteDialog(
