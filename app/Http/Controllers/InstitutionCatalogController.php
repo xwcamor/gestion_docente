@@ -31,6 +31,7 @@ class InstitutionCatalogController extends Controller
 
         $historicalPrograms = AcademicProgram::where('institution_id', $institution->id)
             ->where('status', 'historical_reference')->count();
+        $courseCount = $institution->courses()->count();
         $offeringCount = InstitutionCourseOffering::where('institution_id', $institution->id)->count();
         $pendingGroupCount = InstitutionCourseOffering::where('institution_id', $institution->id)
             ->where('group_mapping_status', 'pending_review')->count();
@@ -41,7 +42,7 @@ class InstitutionCatalogController extends Controller
 
         return view('admin.institutions.catalog', compact(
             'institution', 'periods', 'activePrograms', 'historicalPrograms',
-            'offeringCount', 'pendingGroupCount', 'templateCount', 'features'
+            'courseCount', 'offeringCount', 'pendingGroupCount', 'templateCount', 'features'
         ));
     }
 }
