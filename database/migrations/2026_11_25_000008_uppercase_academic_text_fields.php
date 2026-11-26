@@ -16,6 +16,7 @@ return new class extends Migration
             'course_modalities' => ['nrc', 'block_code', 'block_reference'],
             'modality_schedules' => ['classroom', 'block_type', 'instruction_type'],
             'students' => ['surnames', 'given_names'],
+            'professors' => ['career'],
         ];
 
         foreach ($columns as $table => $fields) {
