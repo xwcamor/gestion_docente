@@ -1734,6 +1734,45 @@
     }
 }
 
+
+/* Ajuste fino de distancia entre etiquetas y sus valores. */
+.tree-structure-card .tree-group-inline-details{
+    gap:3px 9px;
+}
+.tree-structure-card .tree-group-inline-field{
+    gap:2px 4px;
+}
+.tree-structure-card .tree-group-inline-time{
+    gap:2px 3px;
+}
+.tree-structure-card .tree-group-inline-sub-label{
+    color:var(--muted);
+    font-size:9px;
+    font-weight:750;
+}
+.tree-structure-card .tree-course-code-row{
+    gap:4px 6px!important;
+}
+.tree-structure-card .tree-course-code-row .tree-meta-label{
+    margin-right:0;
+}
+.tree-structure-card .tree-course-code-row>.tree-inline-editable{
+    min-height:21px;
+    padding:1px 4px;
+}
+.tree-structure-card .tree-course-period{
+    gap:4px 8px;
+}
+.tree-structure-card .tree-course-period .tree-date-field{
+    gap:3px;
+}
+@media(max-width:560px){
+    .tree-structure-card .tree-group-inline-details{gap:3px 7px}
+    .tree-structure-card .tree-group-inline-field{gap:2px 3px}
+    .tree-structure-card .tree-course-code-row{gap:4px 6px!important}
+    .tree-structure-card .tree-course-period{gap:4px 7px}
+}
+
 </style>
 @endpush
 
