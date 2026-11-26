@@ -41,10 +41,16 @@
                                       title="Clic para agregar o editar la fecha de fin">{{ $assignment->course_end_date?->format('d/m/Y') ?: 'Falta' }}</span>
                             </span>
                         </span>
-                        <span class="tree-course-components" aria-label="Componentes del curso">
-                            <span class="tree-component-chip {{ !$tecModality ? 'is-missing' : ($tecModality->active ? 'is-present' : 'is-disabled') }}" title="{{ !$tecModality ? 'TEC no agregado' : ($tecModality->active ? 'TEC activo' : 'TEC desactivado') }}">TEC</span>
-                            <span class="tree-component-chip {{ !$tallModality ? 'is-missing' : ($tallModality->active ? 'is-present' : 'is-disabled') }}" title="{{ !$tallModality ? 'TAL no agregado' : ($tallModality->active ? 'TAL activo' : 'TAL desactivado') }}">TAL</span>
-                        </span>
+                        @if($tecModality || $tallModality)
+                            <span class="tree-course-components" aria-label="Componentes del curso">
+                                @if($tecModality)
+                                    <span class="tree-component-chip {{ $tecModality->active ? 'is-present' : 'is-disabled' }}" title="{{ $tecModality->active ? 'TEC activo' : 'TEC desactivado' }}">TEC</span>
+                                @endif
+                                @if($tallModality)
+                                    <span class="tree-component-chip {{ $tallModality->active ? 'is-present' : 'is-disabled' }}" title="{{ $tallModality->active ? 'TAL activo' : 'TAL desactivado' }}">TAL</span>
+                                @endif
+                            </span>
+                        @endif
                     </span>
                 </span>
             </summary>
@@ -57,10 +63,10 @@
         <button class="tree-course-delete-trigger" type="button"
                 data-toggle-course-delete
                 @disabled($group->assignments_count <= 1)
-                aria-label="Eliminar curso del grupo"
-                title="{{ $group->assignments_count <= 1 ? 'El grupo debe conservar al menos un curso' : 'Eliminar curso del grupo' }}">
+                aria-label="Eliminar curso"
+                title="{{ $group->assignments_count <= 1 ? 'El grupo debe conservar al menos un curso' : 'Eliminar curso' }}">
             <x-icon name="trash-2" size="14" />
-            <span>Eliminar</span>
+            <span>Eliminar curso</span>
         </button>
         <form method="POST" action="{{ route('assignments.destroy', $assignment) }}" data-tree-delete-course hidden>
             @csrf
