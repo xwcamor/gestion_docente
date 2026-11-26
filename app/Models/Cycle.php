@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasSlugRouteKey;
+use App\Models\Concerns\ScopesToCurrentInstitution;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,8 +11,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Cycle extends Model
 {
     use HasSlugRouteKey;
+    use ScopesToCurrentInstitution;
 
-    protected $fillable = ['professor_id', 'academic_year', 'cycle_code', 'career', 'semester', 'start_date', 'end_date', 'status'];
+    protected $fillable = ['institution_id', 'professor_id', 'academic_year', 'cycle_code', 'career', 'semester', 'start_date', 'end_date', 'status'];
+
+    protected static function institutionIdColumn(): ?string
+    {
+        return 'institution_id';
+    }
 
     public function setCycleCodeAttribute($value): void
     {
@@ -31,6 +38,11 @@ class Cycle extends Model
     protected function slugSource(): string
     {
         return "ciclo-{$this->academic_year}-{$this->cycle_code}";
+    }
+
+    public function institution(): BelongsTo
+    {
+        return $this->belongsTo(Institution::class);
     }
 
     public function professor(): BelongsTo
