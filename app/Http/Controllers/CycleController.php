@@ -79,10 +79,10 @@ class CycleController extends Controller
     {
         $professorId = auth()->user()->professor->id;
         $request->merge([
-            'cycle_code' => trim((string) $request->input('cycle_code')),
-            'career' => trim((string) $request->input('career')),
-            'semester' => trim((string) $request->input('semester')),
-            'group_name' => trim((string) $request->input('group_name')),
+            'cycle_code' => mb_strtoupper(trim((string) $request->input('cycle_code'))),
+            'career' => mb_strtoupper(trim((string) $request->input('career'))),
+            'semester' => mb_strtoupper(trim((string) $request->input('semester'))),
+            'group_name' => mb_strtoupper(trim((string) $request->input('group_name'))),
         ]);
 
         $data = $request->validate(
@@ -114,9 +114,9 @@ class CycleController extends Controller
         $this->authorizeCycle($cycle);
         $professorId = auth()->user()->professor->id;
         $request->merge([
-            'cycle_code' => trim((string) $request->input('cycle_code')),
-            'career' => trim((string) $request->input('career')),
-            'semester' => trim((string) $request->input('semester')),
+            'cycle_code' => mb_strtoupper(trim((string) $request->input('cycle_code'))),
+            'career' => mb_strtoupper(trim((string) $request->input('career'))),
+            'semester' => mb_strtoupper(trim((string) $request->input('semester'))),
         ]);
 
         $validator = Validator::make(
