@@ -954,6 +954,9 @@
 
                 @if(auth()->user()->isAdmin())
                     <div class="nav-label nav-section-label">Administración</div>
+                    <a class="nav-link {{ request()->routeIs('admin.institution.catalog') ? 'active' : '' }}" href="{{ route('admin.institution.catalog') }}" title="Catálogo institucional">
+                        <x-icon name="building-2" /><span>Catálogo institucional</span>
+                    </a>
                     <a class="nav-link {{ request()->routeIs('admin.professors.*') ? 'active' : '' }}" href="{{ route('admin.professors.index') }}" title="Gestión de cuentas">
                         <x-icon name="users-round" /><span>Gestión de cuentas</span>
                     </a>
