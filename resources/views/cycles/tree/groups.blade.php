@@ -28,7 +28,7 @@
                     <span class="tree-group-inline-details" aria-label="Carrera, semestre y horario">
                         <span class="tree-group-inline-field">
                             <span class="tree-group-inline-label">Carrera</span>
-                            <span class="tree-inline-editable"
+                            <span class="tree-inline-editable {{ filled($group->career) ? '' : 'is-empty' }}"
                                   data-inline-text data-edit-on-click
                                   data-edit-field="career" data-edit-kind="group-career"
                                   data-edit-label="Carrera del grupo"
@@ -41,7 +41,7 @@
                         </span>
                         <span class="tree-group-inline-field">
                             <span class="tree-group-inline-label">Semestre</span>
-                            <span class="tree-inline-editable"
+                            <span class="tree-inline-editable {{ filled($group->semester) ? '' : 'is-empty' }}"
                                   data-inline-text data-edit-on-click
                                   data-edit-field="semester" data-edit-kind="group-semester"
                                   data-edit-options="I|II|III|IV|V|VI"
@@ -60,7 +60,7 @@
                             @endif
                             <span class="tree-group-inline-time">
                                 <span class="tree-group-inline-sub-label">Del</span>
-                                <span class="tree-inline-editable"
+                                <span class="tree-inline-editable {{ $startTime ? '' : 'is-empty' }}"
                                       data-inline-text data-edit-on-click
                                       data-edit-field="workload_start_time" data-edit-kind="group-time"
                                       data-edit-input-type="time" data-edit-label="Hora de inicio del grupo"
@@ -72,7 +72,7 @@
                             </span>
                             <span class="tree-group-inline-time">
                                 <span class="tree-group-inline-sub-label">Hasta</span>
-                                <span class="tree-inline-editable"
+                                <span class="tree-inline-editable {{ $endTime ? '' : 'is-empty' }}"
                                       data-inline-text data-edit-on-click
                                       data-edit-field="workload_end_time" data-edit-kind="group-time"
                                       data-edit-input-type="time" data-edit-label="Hora de fin del grupo"
