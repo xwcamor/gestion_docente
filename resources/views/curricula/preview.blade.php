@@ -7,23 +7,23 @@
     <li class="is-complete"><span class="step-number"><x-icon name="check" size="13" /></span><span><strong>ChatGPT</strong><small>JSON recibido</small></span></li>
     <li class="is-active" aria-current="step"><span class="step-number">3</span><span><strong>Importar</strong><small>Revisar datos</small></span></li>
 </ol>
-<div class="grid grid-3">
-<div class="card"><div class="stat-label">Versión del prompt</div><strong>{{ $promptInfo['prompt_version'] ?? 'No indicada' }}</strong></div>
-<div class="card"><div class="stat-label">Generado el</div><strong>{{ $promptInfo['prompt_generated_at'] ?? 'No indicado' }}</strong></div>
-<div class="card"><div class="stat-label">Bloques encontrados</div><div class="stat">{{ count($payload['weeks']) }}</div></div>
+<div class="import-context-row" aria-label="Origen de la programación">
+    <span><small>Versión del prompt</small><strong>{{ $promptInfo['prompt_version'] ?? 'No indicada' }}</strong></span>
+    <span><small>Generado</small><strong>{{ $promptInfo['prompt_generated_at'] ?? 'No indicado' }}</strong></span>
+    <span><small>Bloques curriculares</small><strong>{{ count($payload['weeks']) }}</strong></span>
 </div>
 <section class="card"><h2>Datos generales</h2><div class="grid grid-2">
 @foreach($payload['metadata'] as $key=>$value)<div><div class="muted small">{{ str_replace('_',' ',ucfirst($key)) }}</div><strong>{{ is_scalar($value)?$value:'—' }}</strong></div>@endforeach
 </div></section>
 <section class="card"><h2>Relación de tareas y operaciones</h2>
 @forelse($payload['operation_matrix'] as $task)
-<div style="padding:10px 0;border-bottom:1px solid #e8edf3"><strong>{{ $task['task_code'] }} · {{ $task['task_title'] }}</strong><ul>@foreach($task['operations'] as $operation)<li>{{ $operation['code'] }} — {{ $operation['description'] }} <span class="badge">{{ $operation['type'] ?? 'UNSPECIFIED' }}</span></li>@endforeach</ul></div>
+<div class="curriculum-operation-row"><strong>{{ $task['task_code'] }} · {{ $task['task_title'] }}</strong><ul>@foreach($task['operations'] as $operation)<li>{{ $operation['code'] }} — {{ $operation['description'] }} <span class="badge">{{ $operation['type'] ?? 'UNSPECIFIED' }}</span></li>@endforeach</ul></div>
 @empty <div class="empty">No se identificaron tareas HT.</div> @endforelse
 </section>
 <section class="card"><h2>Bloques curriculares</h2>
 @foreach($payload['weeks'] as $week)
-<div style="padding:14px 0;border-bottom:1px solid #e8edf3">
-<div class="page-head"><div><strong>Semana del curso {{ $week['week_number'] }}</strong> @if($week['source_week_number'])<span class="badge badge-blue">Semana fuente {{ $week['source_week_number'] }}</span>@endif
+<div class="curriculum-week-block">
+<div class="curriculum-week-head"><div><strong>Semana del curso {{ $week['week_number'] }}</strong> @if($week['source_week_number'])<span class="badge badge-blue">Semana fuente {{ $week['source_week_number'] }}</span>@endif
 <div class="muted small">Horas T/P/V: {{ $week['hours']['T'] ?? '—' }} / {{ $week['hours']['P'] ?? '—' }} / {{ $week['hours']['V'] ?? '—' }}</div></div>
 @if($week['is_evaluation'])<span class="badge badge-orange">Evaluación</span>@endif</div>
 @if($week['task_code'] ?? false)<p><strong>{{ $week['task_code'] }}</strong> · {{ $week['task_title'] ?? '' }}</p>@endif
@@ -33,7 +33,7 @@
 <h3>Conocimientos complementarios</h3><ul>@foreach($week['complementary_knowledge'] as $item)<li>{{ $item }}</li>@endforeach</ul>
 <h3>Formación virtual</h3><ul>@foreach($week['virtual_activities'] as $item)<li>{{ $item }}</li>@endforeach</ul></div>
 <div><h3>Propuesta TEC</h3><strong>{{ $week['tec_plan']['topic'] ?? '' }}</strong><p>{{ $week['tec_plan']['objective'] ?? '' }}</p><div class="small muted">Actividades: {{ count($week['tec_plan']['activities'] ?? []) }} · Ejercicios: {{ count($week['tec_plan']['exercises'] ?? []) }} · Materiales: {{ count($week['tec_plan']['materials'] ?? []) }}</div>
-<h3 style="margin-top:14px">Propuesta TALL</h3><strong>{{ $week['tall_plan']['topic'] ?? '' }}</strong><p>{{ $week['tall_plan']['objective'] ?? '' }}</p><div class="small muted">Actividades: {{ count($week['tall_plan']['activities'] ?? []) }} · Ejercicios: {{ count($week['tall_plan']['exercises'] ?? []) }} · Materiales: {{ count($week['tall_plan']['materials'] ?? []) }}</div></div>
+<h3 class="curriculum-subheading-break">Propuesta TALL</h3><strong>{{ $week['tall_plan']['topic'] ?? '' }}</strong><p>{{ $week['tall_plan']['objective'] ?? '' }}</p><div class="small muted">Actividades: {{ count($week['tall_plan']['activities'] ?? []) }} · Ejercicios: {{ count($week['tall_plan']['exercises'] ?? []) }} · Materiales: {{ count($week['tall_plan']['materials'] ?? []) }}</div></div>
 </div>
 @if($week['notes'])<p class="muted small">Nota: {{ $week['notes'] }}</p>@endif
 </div>
