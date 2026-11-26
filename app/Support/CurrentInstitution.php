@@ -6,6 +6,8 @@ use App\Models\Institution;
 
 class CurrentInstitution
 {
+    private ?Institution $resolved = null;
+
     /**
      * Resolve the institution available to the authenticated user.
      *
@@ -15,6 +17,10 @@ class CurrentInstitution
      */
     public function get(): Institution
     {
+        if ($this->resolved) {
+            return $this->resolved;
+        }
+
         $user = auth()->user();
 
         abort_unless($user, 401);
@@ -38,7 +44,7 @@ class CurrentInstitution
             ->values();
 
         if ($memberships->count() === 1) {
-            return $memberships->first()->institution;
+            return $this->resolved = $memberships->first()->institution;
         }
 
         if ($memberships->count() > 1) {
@@ -51,7 +57,7 @@ class CurrentInstitution
                 'Tu cuenta pertenece a varias instituciones. Selecciona primero la institución de trabajo.'
             );
 
-            return $selectedMembership->institution;
+            return $this->resolved = $selectedMembership->institution;
         }
 
         // Do not silently fall back when a membership exists but is inactive,
@@ -77,6 +83,6 @@ class CurrentInstitution
             'Tu cuenta no tiene una institución asignada. Solicita al administrador que configure tu membresía.'
         );
 
-        return $activeInstitutions->first();
+        return $this->resolved = $activeInstitutions->first();
     }
 }
