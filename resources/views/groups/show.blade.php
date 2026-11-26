@@ -319,7 +319,7 @@
             @endif
         @else
             <div class="empty roster-empty">
-                <span class="stat-icon" style="margin:0 auto 10px;width:42px;height:42px"><x-icon name="users" size="20" /></span>
+                <span class="stat-icon empty-state-icon"><x-icon name="users" size="20" /></span>
                 <strong>Este grupo todavía no tiene alumnos.</strong>
                 <span>Agrega el primer alumno manualmente o importa el padrón oficial del campus.</span>
             </div>
@@ -442,7 +442,7 @@
             </div>
         @else
             <div class="empty">
-                <span class="stat-icon" style="margin:0 auto 10px;width:42px;height:42px"><x-icon name="book-open" size="20" /></span>
+                <span class="stat-icon empty-state-icon"><x-icon name="book-open" size="20" /></span>
                 <strong>Aún no hay cursos en este grupo.</strong>
                 <span>Pega los alias y configura fechas y horarios desde un solo formulario.</span>
                 <div class="mt-16"><a class="btn" href="{{ route('assignments.quick', $group) }}"><x-icon name="plus" /> Agregar cursos</a></div>
