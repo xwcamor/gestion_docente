@@ -112,6 +112,27 @@ Abre http://127.0.0.1:8000/login.
 
 ---
 
+## Actualizar el sistema y cargar el catálogo SENATI
+
+Cuando ya tienes una base con información que deseas conservar, actualiza el repositorio y ejecuta las migraciones aditivas:
+
+```powershell
+git switch main
+git pull --ff-only origin main
+php artisan migrate
+php artisan db:seed --class=SenatiCatalogSeeder
+php artisan db:seed --class=SenatiBlackboardSnapshotSeeder
+php artisan optimize:clear
+```
+
+Estos comandos no eliminan los ciclos, grupos, alumnos ni documentos existentes. Los dos seeders agregan el catálogo institucional SENATI y la instantánea de 47 secciones/NRC observadas en Blackboard. La importación queda en el catálogo de referencia; los NRC todavía deben asociarse a los grupos reales y no genera horarios lectivos ficticios.
+
+Los Excel oficiales TEC/TAL todavía deben cargarse como archivos reales en la configuración de plantillas. No se incluyen archivos de plantilla inventados.
+
+**No ejecutes migrate:fresh en una base que contenga información que debas conservar.**
+
+---
+
 ## Reconstruir la base de datos durante las pruebas
 
 Cada vez que quieras borrar la información de prueba y generar nuevamente todas las tablas, ejecuta desde la carpeta del proyecto:
