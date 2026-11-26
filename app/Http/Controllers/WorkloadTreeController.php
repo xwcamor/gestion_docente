@@ -84,8 +84,7 @@ class WorkloadTreeController extends Controller
 
         foreach (['career', 'semester'] as $field) {
             if ($request->exists($field)) {
-                $value = trim((string) $request->input($field));
-                $request->merge([$field => $field === 'career' ? mb_strtoupper($value) : mb_strtoupper($value)]);
+                $request->merge([$field => mb_strtoupper(trim((string) $request->input($field)))]);
             }
         }
 
