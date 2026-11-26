@@ -137,7 +137,7 @@
                     <div class="form-field">
                         <label>Unidad académica</label>
                         <select class="field" name="period_unit" required>
-                            @foreach(['period' => 'Periodo institucional', 'semester' => 'Semestre', 'trimester' => 'Trimestre', 'quarter' => 'Cuatrimestre', 'module' => 'Módulo', 'year' => 'Año académico', 'term' => 'Término'] as $value => $label)
+                            @foreach(['period' => 'Periodo general', 'institution_period' => 'Periodo de plataforma (Blackboard)', 'semester' => 'Semestre', 'trimester' => 'Trimestre', 'quarter' => 'Cuatrimestre', 'module' => 'Módulo', 'year' => 'Año académico', 'term' => 'Término'] as $value => $label)
                                 <option value="{{ $value }}" @selected(old('period_unit', $periodType->period_unit) === $value)>{{ $label }}</option>
                             @endforeach
                         </select>
@@ -152,7 +152,7 @@
                     </div>
                 </div>
                 <div class="institution-record-footer">
-                    <label class="institution-inline-check"><input type="checkbox" name="is_active" value="1" @checked(old('is_active', $periodType->is_active))> Activo</label>
+                    <label class="institution-inline-check"><input type="hidden" name="is_active" value="0"><input type="checkbox" name="is_active" value="1" @checked(old('is_active', $periodType->is_active))> Activo</label>
                     <button class="btn btn-secondary btn-sm" type="submit">Guardar tipo</button>
                 </div>
                 @error('name')<p class="field-error">{{ $message }}</p>@enderror
@@ -185,7 +185,7 @@
                         <label>Nombre visible</label>
                         <input class="field" name="name" value="{{ old('name', $unit->name) }}" maxlength="255" required>
                     </div>
-                    <label class="institution-inline-check"><input type="checkbox" name="is_active" value="1" @checked(old('is_active', $unit->is_active))> Activa</label>
+                    <label class="institution-inline-check"><input type="hidden" name="is_active" value="0"><input type="checkbox" name="is_active" value="1" @checked(old('is_active', $unit->is_active))> Activa</label>
                     <button class="btn btn-secondary btn-sm" type="submit">Guardar</button>
                 </div>
                 @if($unit->verification_status === 'school_label_inferred')
