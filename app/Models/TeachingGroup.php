@@ -18,6 +18,21 @@ class TeachingGroup extends Model
         'workload_start_time', 'workload_end_time', 'supervisor_theory_hours', 'supervisor_lab_hours',
     ];
 
+    public function setNameAttribute($value): void
+    {
+        $this->attributes['name'] = mb_strtoupper(trim((string) $value));
+    }
+
+    public function setCodeAttribute($value): void
+    {
+        $this->attributes['code'] = filled($value) ? mb_strtoupper(trim((string) $value)) : null;
+    }
+
+    public function setCareerAttribute($value): void
+    {
+        $this->attributes['career'] = filled($value) ? mb_strtoupper(trim((string) $value)) : null;
+    }
+
     protected static function booted(): void
     {
         static::creating(function (TeachingGroup $group) {
