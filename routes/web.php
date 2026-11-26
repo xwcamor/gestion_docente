@@ -120,6 +120,13 @@ Route::middleware(['auth', 'professor'])->group(function () {
     Route::delete('/feriados/{holiday}', [HolidayController::class, 'destroy'])->name('holidays.destroy');
 
     Route::prefix('administracion')->name('admin.')->middleware('admin')->group(function () {
+        Route::get('/institucion/configuracion', [InstitutionConfigurationController::class, 'index'])->name('institution.settings');
+        Route::patch('/institucion/configuracion', [InstitutionConfigurationController::class, 'updateInstitution'])->name('institution.settings.update');
+        Route::patch('/institucion/reglas-academicas', [InstitutionConfigurationController::class, 'updateAcademicRules'])->name('institution.rules.update');
+        Route::patch('/institucion/unidades/{unit}', [InstitutionConfigurationController::class, 'updateUnit'])->name('institution.units.update');
+        Route::patch('/institucion/tipos-periodo/{periodType}', [InstitutionConfigurationController::class, 'updatePeriodType'])->name('institution.period-types.update');
+        Route::patch('/institucion/programas/{program}/versiones/{version}', [InstitutionConfigurationController::class, 'updateProgramVersion'])->name('institution.program-versions.update');
+        
         Route::get('/institucion/catalogo', [InstitutionCatalogController::class, 'index'])->name('institution.catalog');
         Route::get('/profesores', [AdminProfessorController::class, 'index'])->name('professors.index');
         Route::post('/profesores', [AdminProfessorController::class, 'store'])->name('professors.store');
