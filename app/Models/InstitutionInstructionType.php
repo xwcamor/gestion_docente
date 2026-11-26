@@ -2,12 +2,20 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\ScopesToCurrentInstitution;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class InstitutionInstructionType extends Model
 {
+    use ScopesToCurrentInstitution;
+
+    protected static function institutionIdColumn(): ?string
+    {
+        return 'institution_id';
+    }
+
     protected $fillable = ['institution_id', 'code', 'name', 'description', 'is_active', 'sort_order', 'settings'];
 
     protected function casts(): array { return ['is_active' => 'boolean', 'settings' => 'array']; }
