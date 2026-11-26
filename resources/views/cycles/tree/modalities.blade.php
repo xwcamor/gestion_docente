@@ -49,9 +49,9 @@
                         <span class="tree-date-field">
                             <span class="tree-date-label">Fin</span>
                             @if($modality->active)
-                                <span class="tree-inline-date {{ $modality->end_date ? '' : 'is-empty' }}"
+                                <span class="tree-inline-date {{ $modality->end_date ? '' : 'is-empty' }} {{ $modality->start_date ? '' : 'is-awaiting-start' }}"
                                       data-inline-date="end_date" data-empty-label="Falta"
-                                      title="Clic para editar la fecha">{{ $modality->end_date?->format('d/m/Y') ?: 'Falta' }}</span>
+                                      title="{{ $modality->start_date ? 'Clic para editar la fecha de fin' : 'Primero selecciona la fecha de inicio' }}">{{ $modality->end_date?->format('d/m/Y') ?: 'Falta' }}</span>
                             @else
                                 <span class="tree-disabled-value tree-inline-date {{ $modality->end_date ? '' : 'is-empty' }}">{{ $modality->end_date?->format('d/m/Y') ?: 'Falta' }}</span>
                             @endif
