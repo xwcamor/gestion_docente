@@ -5,6 +5,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 class Professor extends Model {
  protected $fillable=['user_id','institutional_id','full_name','school','career'];
+
+ public function setCareerAttribute($value): void
+ {
+  $this->attributes['career'] = filled($value) ? mb_strtoupper(trim((string) $value)) : null;
+ }
  public function user(): BelongsTo { return $this->belongsTo(User::class); }
  public function cycles(): HasMany { return $this->hasMany(Cycle::class); }
  public function groups(): HasMany { return $this->hasMany(TeachingGroup::class); }
