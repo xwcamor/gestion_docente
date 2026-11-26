@@ -824,6 +824,7 @@
             .app-shell>.sidebar{transition:none!important}
         }
 </style>
+    <link rel="stylesheet" href="{{ asset('css/ui-standard.css') }}">
 </head>
 <body class="{{ ($appAppearance['sidebar_visible'] ?? true) ? '' : 'sidebar-hidden' }}" data-sidebar-visible="{{ ($appAppearance['sidebar_visible'] ?? true) ? '1' : '0' }}" data-sidebar-color="{{ $appAppearance['sidebar_color'] ?? 'blue' }}">
 
