@@ -95,6 +95,7 @@
             </tbody>
         </table>
     </div>
+    <p class="institution-note">SENATI reportó 91 carreras de formación profesional y 14 escuelas en su memoria institucional 2025. Esta pantalla no pretende ser la lista completa: muestra siete programas vigentes de la Escuela Superior con duración oficial de ocho semestres y {{ $historicalPrograms }} nombres ETIA históricos de 2022. El catálogo vigente completo de Formación Profesional debe importarse desde el documento oficial actualizado.</p>
     <p class="institution-note">{{ $historicalPrograms }} nombres históricos de ETIA (memoria 2022) se conservaron como referencia y no se ofrecen como carreras vigentes.</p>
 </section>
 
