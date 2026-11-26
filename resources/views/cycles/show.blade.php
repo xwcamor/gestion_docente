@@ -13,9 +13,6 @@
         <p class="eyebrow"><x-icon name="calendar-days" size="12" /> Ciclo académico</p>
         <h1>{{ $cycle->academic_year }} · Ciclo {{ $cycle->cycle_code }}</h1>
         <div class="cycle-item-meta">
-            <span><x-icon name="graduation-cap" size="12" /> Carrera inicial: {{ $cycle->career ?: 'Pendiente' }}</span>
-            <span>Semestre inicial: {{ $cycle->semester ?: '—' }}</span>
-            <span><x-icon name="calendar-range" size="12" /> {{ $cycle->start_date?->format('d/m/Y') }} – {{ $cycle->end_date?->format('d/m/Y') }}</span>
             <span class="badge badge-green">{{ $cycle->status === 'active' ? 'Activo' : 'Registrado' }}</span>
         </div>
     </div>
@@ -165,7 +162,10 @@
 
 <dialog class="ui-dialog sheet-dialog" id="cycle-edit-dialog" aria-labelledby="cycle-edit-title" @if(request('dialog') === 'edit-cycle') data-auto-open @endif>
     <div class="dialog-head">
-        <div><h2 id="cycle-edit-title">Editar ciclo</h2><p>{{ $cycle->academic_year }} · Ciclo {{ $cycle->cycle_code }}</p></div>
+        <div>
+            <h2 id="cycle-edit-title">Editar ciclo</h2>
+            <p>{{ $cycle->academic_year }} · Ciclo {{ $cycle->cycle_code }}</p>
+        </div>
         <button class="dialog-close" type="button" data-modal-close aria-label="Cerrar"><x-icon name="x" /></button>
     </div>
     <form method="POST" action="{{ route('cycles.update', $cycle) }}" data-loading-form="1">
@@ -173,54 +173,28 @@
         @method('PATCH')
         <div class="dialog-body">
             @if($errors->any() && request('dialog') === 'edit-cycle')
-                <div class="dialog-error" role="alert"><strong>Revisa estos datos:</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
+                <div class="dialog-error" role="alert">
+                    <strong>Revisa estos datos:</strong>
+                    <ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+                </div>
             @endif
             <div class="form-row">
                 <div>
-                    <label for="edit_academic_year">Año académico <span class="muted">*</span></label>
+                    <label for="edit_academic_year">Año académico</label>
                     <input class="field" id="edit_academic_year" type="number" name="academic_year" min="2020" max="2100" value="{{ old('academic_year', $cycle->academic_year) }}" required>
                     @error('academic_year')<p class="field-error">{{ $message }}</p>@enderror
                 </div>
                 <div>
-                    <label for="edit_cycle_code">Código del ciclo <span class="muted">*</span></label>
+                    <label for="edit_cycle_code">Código del ciclo</label>
                     <input class="field" id="edit_cycle_code" data-uppercase name="cycle_code" maxlength="20" value="{{ old('cycle_code', $cycle->cycle_code) }}" required placeholder="Ej. 10 o 20">
                     @error('cycle_code')<p class="field-error">{{ $message }}</p>@enderror
                 </div>
             </div>
-            <div class="form-row">
-                <div>
-                    <label for="edit_cycle_career">Carrera predeterminada para grupos nuevos <span class="muted">*</span></label>
-                    <input class="field" id="edit_cycle_career" data-uppercase name="career" maxlength="255" value="{{ old('career', $cycle->career) }}" required placeholder="Ej. Desarrollo de Software">
-                    @error('career')<p class="field-error">{{ $message }}</p>@enderror
-                </div>
-                <div>
-                    <label for="edit_cycle_semester">Semestre predeterminado para grupos nuevos <span class="muted">*</span></label>
-                    @php($selectedCycleSemester = strtoupper(trim(str_ireplace('semestre', '', (string) old('semester', $cycle->semester)))))
-                    <select class="field" id="edit_cycle_semester" name="semester" required>
-                        <option value="">Seleccionar semestre</option>
-                        @foreach(['I', 'II', 'III', 'IV', 'V', 'VI'] as $semesterOption)
-                            <option value="{{ $semesterOption }}" @selected($selectedCycleSemester === $semesterOption)>{{ $semesterOption }}</option>
-                        @endforeach
-                    </select>
-                    @error('semester')<p class="field-error">{{ $message }}</p>@enderror
-                </div>
-            </div>
-            <div class="form-row">
-                <div>
-                    <label for="edit_cycle_start">Fecha de inicio <span class="muted">*</span></label>
-                    <input class="field" id="edit_cycle_start" type="date" name="start_date" value="{{ old('start_date', $cycle->start_date?->format('Y-m-d')) }}" required data-cycle-start>
-                    @error('start_date')<p class="field-error">{{ $message }}</p>@enderror
-                </div>
-                <div>
-                    <label for="edit_cycle_end">Fecha de fin <span class="muted">*</span></label>
-                    <input class="field" id="edit_cycle_end" type="date" name="end_date" value="{{ old('end_date', $cycle->end_date?->format('Y-m-d')) }}" min="{{ old('start_date', $cycle->start_date?->format('Y-m-d')) }}" required data-cycle-end>
-                    @error('end_date')<p class="field-error">{{ $message }}</p>@enderror
-                </div>
-            </div>
-            <p class="help mt-16"><x-icon name="info" size="12" /> Carrera y semestre se copian a los grupos nuevos. Cada grupo puede modificarlos por separado sin alterar a los demás.</p>
-            <p class="help"><x-icon name="calendar-range" size="12" /> La fecha de fin debe ser igual o posterior al inicio.</p>
         </div>
-        <div class="dialog-footer"><button class="btn btn-secondary" type="button" data-modal-close><x-icon name="x" /> Cancelar</button><button class="btn" type="submit"><x-icon name="check" /> Guardar cambios</button></div>
+        <div class="dialog-footer">
+            <button class="btn btn-secondary" type="button" data-modal-close><x-icon name="x" /> Cancelar</button>
+            <button class="btn" type="submit"><x-icon name="check" /> Guardar cambios</button>
+        </div>
     </form>
 </dialog>
 
