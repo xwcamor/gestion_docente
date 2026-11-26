@@ -210,7 +210,31 @@ Para este panel administrativo, usa como núcleo Anti UI Slop + Vercel Web Desig
 - Las skills son instrucciones para el agente, no garantía de una interfaz correcta. El resultado debe revisarse visual y funcionalmente.
 - El usuario debe revisar las licencias, dependencias y scripts de cada skill antes de instalarla en un entorno de trabajo.
 
-## 7. Cómo reutilizar esta guía en otro proyecto
+
+## 7. Estándar de consistencia entre páginas
+
+Cuando el proyecto ya tenga un diseño definido, no se debe reconstruir la interfaz desde cero en cada módulo. Primero se identifican los componentes y tokens existentes; después se aplican de manera consistente.
+
+Para Gestión Docente, el estándar implementado está en `DESIGN.md` y `public/css/ui-standard.css`. Incluye:
+- Contenedor de página con gutter uniforme y ancho máximo controlado.
+- Un H1; eyebrow y subtítulo con tamaños y márgenes definidos; H2/H3 para secciones y subsecciones.
+- Tarjetas con padding, radio y separación uniformes.
+- Filtros con búsqueda primero, criterios después y acciones al final; fila flexible en escritorio, dos columnas en tablet y una columna en móvil.
+- Tablas contenidas en un área desplazable; formularios que se apilan sin desbordamiento.
+- Indicadores solo cuando sean útiles y no dupliquen el contenido principal.
+- Metadatos de importación en una fila compacta, no en tarjetas KPI.
+- Sin márgenes/paddings inline ni `.page-head` anidados para encabezar filas repetidas.
+
+Al crear un módulo nuevo en este repositorio:
+1. Extiende `layouts.app` y usa las clases existentes.
+2. Añade `.filter-bar` a toda barra de filtros de listas/tablas.
+3. Usa clases locales únicamente para una interacción o dato propio del módulo, no para reemplazar reglas globales.
+4. Revisa escritorio/tablet/móvil y modo claro/oscuro.
+5. No retires datos académicos o advertencias útiles bajo el pretexto de simplificar.
+
+En otro proyecto, utiliza esta sección como checklist, pero adapta el tamaño de contenedor, tokens, colores y componentes a su propia marca y tecnología. No copies directamente los valores de Gestión Docente si no corresponden a ese producto.
+
+## 8. Cómo reutilizar esta guía en otro proyecto
 
 Copia estos archivos al nuevo repositorio:
 - `AGENTS.md`: reglas para el agente que modifica el código.
