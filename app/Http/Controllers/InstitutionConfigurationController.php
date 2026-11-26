@@ -138,16 +138,24 @@ class InstitutionConfigurationController extends Controller
         abort_unless($program->institution_id === $institution->id, 404);
         abort_unless($version->academic_program_id === $program->id, 404);
 
+        $allowedDurations = data_get($institution->settings, 'career_duration_options_semesters', [4, 5, 6, 8]);
+
         $data = $request->validate([
-            'duration_semesters' => ['nullable', 'integer', 'min:1', 'max:30'],
+            'duration_semesters' => ['nullable', 'integer', Rule::in($allowedDurations)],
             'valid_from' => ['nullable', 'date'],
             'valid_until' => ['nullable', 'date', 'after_or_equal:valid_from'],
             'status' => ['required', Rule::in(['current', 'reference_2025', 'historical_reference', 'draft', 'archived'])],
             'is_current' => ['nullable', 'boolean'],
         ]);
 
-        DB::transaction(function () use ($program, $version, $data) {
-            $isCurrent = (bool) ($data['is_current'] ?? false);
+        $isCurrent = (bool) ($data['is_current'] ?? false);
+        if ($isCurrent && $data['status'] !== 'current') {
+            return back()
+                ->withErrors(['status' => 'Una versión marcada como actual debe tener estado Vigente.'])
+                ->withInput();
+        }
+
+        DB::transaction(function () use ($program, $version, $data, $isCurrent) {
 
             if ($isCurrent) {
                 $program->versions()->where('id', '<>', $version->id)->update(['is_current' => false]);
