@@ -48,9 +48,9 @@
                             </span>
                             <span class="tree-date-field">
                                 <span class="tree-date-label">Fin</span>
-                                <span class="tree-inline-date {{ $courseEndDate ? '' : 'is-empty' }}"
+                                <span class="tree-inline-date {{ $courseEndDate ? '' : 'is-empty' }} {{ $courseStartDate ? '' : 'is-awaiting-start' }}"
                                       data-inline-date="course_end_date" data-empty-label="Falta"
-                                      title="Clic para agregar o editar la fecha de fin">{{ $assignment->course_end_date?->format('d/m/Y') ?: 'Falta' }}</span>
+                                      title="{{ $courseStartDate ? 'Clic para agregar o editar la fecha de fin' : 'Primero selecciona la fecha de inicio' }}">{{ $assignment->course_end_date?->format('d/m/Y') ?: 'Falta' }}</span>
                             </span>
                         </span>
                     </span>
