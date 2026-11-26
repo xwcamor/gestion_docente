@@ -25,7 +25,7 @@
                             <span class="tree-meta-pill">{{ $group->students_count }} {{ (int) $group->students_count === 1 ? 'alumno' : 'alumnos' }}</span>
                         </span>
                     </span>
-                    <span class="tree-group-inline-details" aria-label="Carrera, semestre y horario">
+                    <span class="tree-group-inline-details" aria-label="Carrera, semestre y fechas">
                         <span class="tree-group-inline-field">
                             <span class="tree-group-inline-label">Carrera</span>
                             <span class="tree-inline-editable {{ filled($group->career) ? '' : 'is-empty' }}"
@@ -63,13 +63,13 @@
                             @if($daysLabel)
                                 <span class="tree-group-inline-days">{{ $daysLabel }}</span>
                             @endif
-                            <span class="tree-group-inline-time">
+                            <span class="tree-group-inline-date">
                                 <span class="tree-group-inline-sub-label">Inicio</span>
                                 <span class="tree-inline-date {{ $startDate ? '' : 'is-empty' }}"
                                       data-inline-date="workload_start_date" data-empty-label="Falta"
                                       title="Clic para seleccionar la fecha de inicio">{{ $group->workload_start_date?->format('d/m/Y') ?: 'Falta' }}</span>
                             </span>
-                            <span class="tree-group-inline-time">
+                            <span class="tree-group-inline-date">
                                 <span class="tree-group-inline-sub-label">Fin</span>
                                 <span class="tree-inline-date {{ $endDate ? '' : 'is-empty' }}"
                                       data-inline-date="workload_end_date" data-empty-label="Falta"
