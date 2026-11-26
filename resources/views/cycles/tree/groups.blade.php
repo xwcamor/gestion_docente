@@ -15,8 +15,8 @@
                  data-tree-load="{{ route('workload-tree.courses', $group) }}"
                  data-tree-loaded="0">
             <summary class="workload-tree-summary workload-group-summary" data-select-group>
-                <span class="tree-expand-symbol" aria-hidden="true"><x-icon name="chevron-right" size="17" /></span>
-                <span class="tree-node-icon tree-group-icon"><x-icon name="folder-open" size="23" /></span>
+                <span class="tree-expand-symbol" aria-hidden="true"></span>
+                
                 <span class="tree-node-copy">
                     <span class="tree-group-title-row">
                         <strong><span data-inline-text data-edit-field="name" data-edit-label="Nombre del grupo" data-edit-url="{{ route('groups.update', $group) }}" data-edit-value="{{ $group->name }}" data-edit-kind="group">{{ $group->name }}</span></strong>
