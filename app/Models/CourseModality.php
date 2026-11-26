@@ -12,7 +12,7 @@ class CourseModality extends Model
     use HasSlugRouteKey;
 
     protected $fillable = [
-        'course_assignment_id', 'modality', 'nrc', 'block_code', 'block_reference',
+        'course_assignment_id', 'modality', 'institution_instruction_type_id', 'nrc', 'block_code', 'block_reference',
         'start_date', 'end_date', 'total_hours', 'curriculum_start_week', 'active',
         'period_label', 'semester',
     ];
@@ -46,6 +46,11 @@ class CourseModality extends Model
     protected function slugSource(): string
     {
         return "modalidad-{$this->modality}-asignacion-{$this->course_assignment_id}";
+    }
+
+    public function instructionType(): BelongsTo
+    {
+        return $this->belongsTo(InstitutionInstructionType::class, 'institution_instruction_type_id');
     }
 
     public function assignment(): BelongsTo
@@ -85,6 +90,14 @@ class CourseModality extends Model
 
     public function getLabelAttribute(): string
     {
-        return $this->modality === 'TEC' ? 'Técnica' : 'Taller';
+        if ($this->instructionType) {
+            return $this->instructionType->name;
+        }
+
+        return match ($this->modality) {
+            'TEC' => 'Técnica',
+            'TAL' => 'Taller',
+            default => (string) $this->modality,
+        };
     }
 }
