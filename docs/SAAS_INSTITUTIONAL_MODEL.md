@@ -102,7 +102,7 @@ Esta migración añade el catálogo institucional y una importación histórica 
 
 ## Fase 2: configuración del tenant SENATI
 
-La pantalla administrativa está disponible en **Administración → Configuración institucional**. Usa el contexto de institución activa para cargar y guardar la identidad, reglas, unidades y programas del tenant autorizado. El catálogo histórico de Blackboard y las notas documentales de SENATI solo se muestran cuando el tenant resuelto tiene código `SENATI`.
+La pantalla administrativa está disponible en **Administración → Configuración institucional**. Usa el contexto de institución activa para cargar y guardar la identidad, reglas, unidades y programas del tenant autorizado. El catálogo histórico de Blackboard y las notas documentales de SENATI solo se muestran cuando la configuración del tenant incluye `catalog_profile=senati_reference`.
 
 Datos administrables:
 - Identidad institucional: nombre, razón social, país y zona horaria. El código SENATI y el slug permanecen estables.
@@ -143,7 +143,7 @@ Reglas de resolución:
 - Si hay membresías vencidas, inactivas o asociadas a instituciones deshabilitadas, no se aplica el fallback.
 - Si existen varias instituciones activas y el usuario no tiene membresía, se deniega el acceso al catálogo/configuración.
 
-La pantalla de configuración ya no fija las opciones de duración en el código. Cada institución guarda sus propias semanas de referencia y su lista de semestres permitidos en `institutions.settings`. La actualización de una versión de malla valida la duración contra esa lista.
+La pantalla de configuración ya no fija las opciones de duración en el código. Cada institución guarda sus propias semanas de referencia y su lista de semestres permitidos en `institutions.settings`. La actualización de una versión de malla valida la duración contra esa lista. El catálogo de referencia SENATI se activa por el valor configurable `catalog_profile`; el controlador no necesita comparar el código del tenant.
 
 ### Lo que todavía no es multi-tenant
 
