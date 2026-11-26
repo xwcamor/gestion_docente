@@ -7,22 +7,26 @@
         @php($daysLabel = $classSchedules->pluck('day_of_week')->unique()->sort()->map(fn ($day) => [1 => 'Lun', 2 => 'Mar', 3 => 'Mié', 4 => 'Jue', 5 => 'Vie', 6 => 'Sáb', 7 => 'Dom'][(int) $day] ?? '')->filter()->implode(' · '))
         @php($scheduleLabel = $classSchedules->map(fn ($item) => substr((string) $item->start_time, 0, 5).'–'.substr((string) $item->end_time, 0, 5))->unique()->implode(', '))
         @php($modalityReady = $modality->start_date && $modality->end_date && $classSchedules->isNotEmpty())
-        @php($enabledDescription = $classSchedules->isNotEmpty() ? $daysLabel.' · '.$scheduleLabel.' · '.number_format((float) $modality->total_hours, 2).' h/sem.' : 'Programación horaria')
+        @php($enabledDescription = $classSchedules->isNotEmpty() ? $daysLabel.' · '.$scheduleLabel.' · '.number_format((float) $modality->total_hours, 2).' h/sem.' : '')
         <article class="workload-tree-modality {{ $modality->active ? 'is-active' : 'is-disabled' }}"
                  data-modality-row data-modality-type="{{ $type }}" data-modality-id="{{ $modality->id }}" data-active="{{ $modality->active ? '1' : '0' }}" data-active-description="{{ $enabledDescription }}">
             <span class="tree-branch-mark"></span>
             <div class="tree-modality-copy">
-                <strong>{{ $label }} · NRC
+                <div class="tree-modality-heading">
+                    <strong>{{ $label }}</strong>
+                </div>
+                <div class="tree-modality-nrc-row">
+                    <span class="tree-modality-field-label">NRC</span>
                     @if($modality->active)
-                        <span class="tree-inline-nrc"
+                        <span class="tree-inline-nrc {{ filled($modality->nrc) ? '' : 'is-empty' }}"
                               data-inline-nrc
                               data-nrc-url="{{ route('workload-tree.modalities.nrc', $modality) }}"
                               data-nrc="{{ $modality->nrc }}" data-modality-id="{{ $modality->id }}"
-                              title="Doble clic para editar">{{ $modality->nrc ?: 'Falta' }}</span>
+                              title="Clic para editar NRC">{{ $modality->nrc ?: 'Falta' }}</span>
                     @else
-                        <span class="tree-disabled-value">{{ $modality->nrc ?: 'Falta' }}</span>
+                        <span class="tree-disabled-value tree-nrc-value {{ filled($modality->nrc) ? '' : 'is-empty' }}">{{ $modality->nrc ?: 'Falta' }}</span>
                     @endif
-                </strong>
+                </div>
                 <div class="tree-modality-dates"
                      @if($modality->active)
                          data-modality-dates
@@ -48,23 +52,23 @@
                         @endif
                     </span>
                 </div>
-                <small class="tree-modality-schedule-summary {{ !$modality->active ? 'is-disabled' : ($classSchedules->isNotEmpty() ? 'is-ready' : 'is-pending') }}"
-                       data-modality-description
-                       data-active-description="{{ $enabledDescription }}">
-                    @if(!$modality->active)
-                        Desactivada · datos conservados
-                    @elseif($classSchedules->isNotEmpty())
-                        {{ $daysLabel }} · {{ $scheduleLabel }} · {{ number_format((float) $modality->total_hours, 2) }} h/sem.
-                    @else
-                        Programación horaria
-                    @endif
-                    @if($modality->block_code)
-                        <span class="tree-modality-extra-meta">Bloque {{ $modality->block_code }}</span>
-                    @endif
-                    @if($modality->block_reference)
-                        <span class="tree-modality-extra-meta">Ref. {{ $modality->block_reference }}</span>
-                    @endif
-                </small>
+                @if(!$modality->active || $classSchedules->isNotEmpty() || filled($modality->block_code) || filled($modality->block_reference))
+                    <small class="tree-modality-schedule-summary {{ !$modality->active ? 'is-disabled' : 'is-ready' }}"
+                           data-modality-description
+                           data-active-description="{{ $enabledDescription }}">
+                        @if(!$modality->active)
+                            Desactivada · datos conservados
+                        @elseif($classSchedules->isNotEmpty())
+                            {{ $daysLabel }} · {{ $scheduleLabel }} · {{ number_format((float) $modality->total_hours, 2) }} h/sem.
+                        @endif
+                        @if($modality->block_code)
+                            <span class="tree-modality-extra-meta">Bloque {{ $modality->block_code }}</span>
+                        @endif
+                        @if($modality->block_reference)
+                            <span class="tree-modality-extra-meta">Ref. {{ $modality->block_reference }}</span>
+                        @endif
+                    </small>
+                @endif
                 @if($modality->active && $modality->documents_count > 0)
                     <small>{{ $modality->documents_count }} documentos generados</small>
                 @endif
