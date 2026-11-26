@@ -276,7 +276,6 @@
 .account-field-error{color:var(--danger)}
 @media(max-width:1180px){
  .accounts-toolbar{grid-template-columns:minmax(180px,1fr) repeat(2,minmax(110px,.6fr)) auto}
- .accounts-toolbar select[name="sort"],.accounts-toolbar select[name="per_page"]{display:none}
  .account-row{grid-template-columns:minmax(170px,1fr) minmax(100px,.5fr) auto}
  .account-profile{grid-column:1/-1;grid-row:2;grid-template-columns:repeat(3,minmax(0,1fr))}
  .account-profile>span:last-child{grid-column:auto}
@@ -288,7 +287,6 @@
  .accounts-card{padding:11px}
  .accounts-toolbar{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
  .accounts-search{grid-column:1/-1}
- .accounts-toolbar select[name="sort"],.accounts-toolbar select[name="per_page"]{display:block}
  .accounts-toolbar button,.accounts-toolbar>a{min-width:0}
  .account-row{grid-template-columns:minmax(0,1fr) auto;gap:9px;padding:11px}
  .account-person{grid-column:1;grid-row:1}
@@ -299,7 +297,6 @@
  .account-actions .btn{min-height:36px;padding:7px 10px;font-size:10px}
 }
 @media(max-width:420px){
- .accounts-overview{grid-template-columns:repeat(2,minmax(0,1fr))}
  .accounts-toolbar{grid-template-columns:minmax(0,1fr)}
  .accounts-toolbar>*{width:100%}
  .account-row{grid-template-columns:minmax(0,1fr)}
