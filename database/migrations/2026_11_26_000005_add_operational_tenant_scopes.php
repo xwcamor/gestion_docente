@@ -59,6 +59,43 @@ return new class extends Migration
                     ->update(['institution_id' => $institutionId]);
             }
         }
+
+        // Existing accounts belong to the only active tenant in this installation.
+        // This keeps legacy logins working after membership-based tenant resolution.
+        if ($institutionId !== null) {
+            $existingUsersWithoutMembership = DB::table('users as tenant_users')
+                ->selectRaw(
+                    '? as institution_id,
+                    tenant_users.id as user_id,
+                    CASE WHEN tenant_users.role = ? THEN ? ELSE ? END as role,
+                    ? as status,
+                    NULL as starts_on,
+                    NULL as ends_on,
+                    NOW() as created_at,
+                    NOW() as updated_at',
+                    [$institutionId, 'admin', 'admin', 'teacher', 'active']
+                )
+                ->whereNotExists(function ($query) use ($institutionId): void {
+                    $query->selectRaw('1')
+                        ->from('institution_memberships')
+                        ->whereColumn('institution_memberships.user_id', 'tenant_users.id')
+                        ->where('institution_memberships.institution_id', $institutionId);
+                });
+
+            DB::table('institution_memberships')->insertUsing(
+                [
+                    'institution_id',
+                    'user_id',
+                    'role',
+                    'status',
+                    'starts_on',
+                    'ends_on',
+                    'created_at',
+                    'updated_at',
+                ],
+                $existingUsersWithoutMembership
+            );
+        }
     }
 
     public function down(): void
