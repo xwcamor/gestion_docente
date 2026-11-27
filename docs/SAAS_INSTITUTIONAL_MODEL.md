@@ -145,23 +145,49 @@ Reglas de resolución:
 
 La pantalla de configuración ya no fija las opciones de duración en el código. Cada institución guarda sus propias semanas de referencia y su lista de semestres permitidos en `institutions.settings`. La actualización de una versión de malla valida la duración contra esa lista. El catálogo de referencia SENATI se activa por el valor configurable `catalog_profile`; el controlador no necesita comparar el código del tenant.
 
-### Lo que todavía no es multi-tenant
+### Fase 4: aislamiento de datos operativos y selección de institución
 
-- No se ha implementado todavía la pantalla o endpoint para seleccionar/cambiar entre varias instituciones.
-- No se ha implementado el flujo administrativo para crear instituciones y asignar membresías.
-- Las tablas operativas heredadas de ciclos, grupos, asignaciones, cursos, alumnos, horarios, feriados y documentos todavía no están aisladas por `institution_id`.
-- No se debe activar una segunda institución para dictado real ni compartir usuarios entre tenants hasta completar el aislamiento, migrar los datos históricos a SENATI y probar accesos cruzados.
+Se incorporó el primer límite transversal de tenant en las entidades operativas. La migración `2026_11_26_000005_add_operational_tenant_scopes.php` agrega `institution_id` a ciclos, cursos de catálogo, alumnos, feriados, temas de charla y auditoría. Los registros que ya existían se asignan a la única institución activa detectada (SENATI en la instalación actual), sin cambiar sus IDs ni sus relaciones.
 
-### Checklist de portabilidad inicial
+Los registros hijos heredan el tenant a través de sus relaciones:
+- Ciclo → grupos → asignaciones → modalidades → horarios y sesiones.
+- Curso → mallas → tareas → semanas → operaciones y contenidos.
+- Modalidad → matrículas → evaluaciones → calificaciones.
+- Grupo/ciclo/modalidad → importaciones y documentos generados.
+- Ciclo/grupo → charlas programadas.
+
+Los modelos Eloquent aplican un alcance global de institución en las consultas autenticadas y asignan la institución activa al crear registros raíz. El identificador recibido desde un formulario no puede cambiar el tenant de creación. Las cuentas existentes se vinculan al tenant actual durante la migración; las cuentas nuevas creadas desde el módulo o comando de administración reciben una membresía institucional.
+
+También se agregó:
+- `/instituciones/seleccionar`: selector de institución disponible para cuentas con más de una membresía activa.
+- Cambio de institución desde el menú de cuenta.
+- Validación de membresía en el middleware que protege los módulos autenticados.
+- Gestión de acceso por membresía institucional en lugar de activar/desactivar la identidad global de una persona.
+
+La selección de institución y el aislamiento por modelos están implementados, pero todavía requieren pruebas funcionales en Laragon. No se debe habilitar una segunda institución para operación real hasta terminar la administración de tenants/membresías y comprobar accesos cruzados.
+
+### Lo que todavía falta para SaaS completo
+
+- Pantalla administrativa de alta/edición/suspensión de instituciones.
+- Flujo para invitar una cuenta ya existente a otra institución y asignar su rol de miembro.
+- Administración de administradores por institución y permisos de plataforma separados.
+- Revisar los campos del perfil docente que aún son globales (escuela, carrera e identificador institucional) para permitir valores distintos por institución.
+- Revisión final de consultas SQL directas y pruebas automatizadas de separación entre dos tenants.
+- Configurar plantillas Excel, módulos habilitados y branding para cada institución.
+
+### Checklist de portabilidad
 
 - [x] Resolver la institución desde las membresías activas del usuario.
 - [x] Mantener compatibilidad temporal con la instalación actual de un solo tenant.
 - [x] Aplicar el contexto a configuración y catálogo institucional.
 - [x] Evitar mostrar las notas históricas de SENATI en catálogos de otras instituciones.
 - [x] Permitir configurar duraciones académicas sin defaults codificados para nuevos tenants.
-- [ ] Implementar selección/cambio de institución para usuarios con varias membresías.
-- [ ] Implementar administración de instituciones y membresías.
-- [ ] Incorporar `institution_id` a las entidades operativas y restringir todas las consultas y escrituras.
-- [ ] Migrar los datos operativos actuales a SENATI sin alterar sus relaciones.
-- [ ] Probar aislamiento entre dos tenants con usuarios, grupos, ciclos, horarios y documentos distintos.
+- [x] Añadir `institution_id` a las entidades operativas raíz y migrar sus registros actuales a la única institución activa.
+- [x] Aplicar alcances institucionales a modelos operativos y relaciones hijas.
+- [x] Asignar membresías a las cuentas existentes y a las nuevas cuentas.
+- [x] Añadir selector/cambio de institución para usuarios con varias membresías.
+- [ ] Implementar administración de instituciones y asignación de membresías a otras cuentas.
+- [ ] Verificar en Laragon los datos actuales y las acciones principales del sistema.
+- [ ] Crear dos tenants de prueba y demostrar que usuarios de uno no pueden consultar ni modificar los registros del otro.
+- [ ] Automatizar pruebas de autorización y aislamiento SaaS.
 
