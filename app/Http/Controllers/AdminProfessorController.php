@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\InstitutionMembership;
+use App\Models\GeneratedDocument;
+use App\Models\ImportBatch;
+use App\Support\CurrentInstitution;
 use App\Services\AuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,9 +18,16 @@ class AdminProfessorController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::query()->with([
-            'professor' => fn ($profile) => $profile->withCount(['cycles', 'groups']),
-        ]);
+        $institutionId = (int) app(CurrentInstitution::class)->get()->getKey();
+
+        $query = User::query()
+            ->whereHas('institutionMemberships', fn ($membership) => $membership
+                ->where('institution_id', $institutionId))
+            ->with([
+                'professor' => fn ($profile) => $profile->withCount(['cycles', 'groups']),
+                'institutionMemberships' => fn ($membership) => $membership
+                    ->where('institution_id', $institutionId),
+            ]);
 
         if ($request->filled('q')) {
             $term = trim($request->string('q')->toString());
@@ -31,12 +42,28 @@ class AdminProfessorController extends Controller
             });
         }
 
-        if (in_array($request->input('status'), ['active', 'inactive'], true)) {
-            $query->where('is_active', $request->input('status') === 'active');
+        if ($request->input('status') === 'active') {
+            $query->where('is_active', true)
+                ->whereHas('institutionMemberships', fn ($membership) => $membership
+                    ->where('institution_id', $institutionId)
+                    ->where('status', 'active'));
+        } elseif ($request->input('status') === 'inactive') {
+            $query->where(function ($builder) use ($institutionId) {
+                $builder->where('is_active', false)
+                    ->orWhereHas('institutionMemberships', fn ($membership) => $membership
+                        ->where('institution_id', $institutionId)
+                        ->where('status', '<>', 'active'));
+            });
         }
 
-        if (in_array($request->input('role'), ['admin', 'profesor'], true)) {
-            $query->where('role', $request->input('role'));
+        if ($request->input('role') === 'admin') {
+            $query->whereHas('institutionMemberships', fn ($membership) => $membership
+                ->where('institution_id', $institutionId)
+                ->whereIn('role', ['admin', 'owner']));
+        } elseif ($request->input('role') === 'profesor') {
+            $query->whereHas('institutionMemberships', fn ($membership) => $membership
+                ->where('institution_id', $institutionId)
+                ->whereIn('role', ['teacher', 'profesor']));
         }
 
         $sort = $request->input('sort', 'name');
@@ -88,7 +115,9 @@ class AdminProfessorController extends Controller
             'institutional_id.unique' => 'Ese ID institucional ya está registrado en otro perfil.',
         ]);
 
-        $user = DB::transaction(function () use ($data) {
+        $institutionId = (int) app(CurrentInstitution::class)->get()->getKey();
+
+        $user = DB::transaction(function () use ($data, $institutionId) {
             $user = User::create([
                 'name' => $data['full_name'],
                 'email' => $data['email'],
@@ -102,6 +131,12 @@ class AdminProfessorController extends Controller
                 'full_name' => $data['full_name'],
                 'school' => $data['school'] ?? null,
                 'career' => $data['career'] ?? null,
+            ]);
+
+            $user->institutionMemberships()->create([
+                'institution_id' => $institutionId,
+                'role' => 'teacher',
+                'status' => 'active',
             ]);
 
             return $user->load('professor');
@@ -120,7 +155,15 @@ class AdminProfessorController extends Controller
 
     public function update(Request $request, User $user, AuditLogger $audit)
     {
+        $this->authorizeInstitutionMember($user);
         abort_unless(in_array($user->role, ['profesor', 'admin'], true), 404);
+
+        $institutionId = (int) app(CurrentInstitution::class)->get()->getKey();
+        abort_if(
+            $user->institutionMemberships()->where('institution_id', '<>', $institutionId)->exists(),
+            403,
+            'Esta cuenta pertenece a más de una institución. La edición de identidad compartida debe gestionarse desde el perfil global.'
+        );
         $user->loadMissing('professor');
         $profile = $user->professor;
 
@@ -215,52 +258,75 @@ class AdminProfessorController extends Controller
 
     public function toggleStatus(Request $request, User $user, AuditLogger $audit)
     {
-        abort_if($user->id === $request->user()->id, 422, 'No puedes desactivar la cuenta con la que has iniciado sesión.');
+        $this->authorizeInstitutionMember($user);
+        abort_if($user->id === $request->user()->id, 422, 'No puedes retirar tu propio acceso a la institución.');
 
-        $result = DB::transaction(function () use ($user) {
+        $institutionId = (int) app(CurrentInstitution::class)->get()->getKey();
+
+        $result = DB::transaction(function () use ($user, $institutionId) {
             $target = User::query()->whereKey($user->id)->lockForUpdate()->firstOrFail();
+            $membership = InstitutionMembership::query()
+                ->where('user_id', $target->id)
+                ->where('institution_id', $institutionId)
+                ->lockForUpdate()
+                ->firstOrFail();
 
-            if ($target->isAdmin() && $target->is_active) {
-                $activeAdmins = User::query()
-                    ->where('role', 'admin')
-                    ->where('is_active', true)
+            $wasActive = $membership->status === 'active';
+
+            if ($wasActive && in_array($membership->role, ['admin', 'owner'], true)) {
+                $activeAdmins = InstitutionMembership::query()
+                    ->where('institution_id', $institutionId)
+                    ->whereIn('role', ['admin', 'owner'])
+                    ->where('status', 'active')
+                    ->where(fn ($query) => $query->whereNull('starts_on')->orWhereDate('starts_on', '<=', today()))
+                    ->where(fn ($query) => $query->whereNull('ends_on')->orWhereDate('ends_on', '>=', today()))
                     ->lockForUpdate()
-                    ->pluck('id');
+                    ->count();
 
-                if ($activeAdmins->count() <= 1) {
+                if ($activeAdmins <= 1) {
                     return null;
                 }
             }
 
-            $before = (bool) $target->is_active;
-            $target->is_active = !$target->is_active;
-            $target->save();
+            $membership->update(['status' => $wasActive ? 'inactive' : 'active']);
 
-            return ['before' => $before, 'user' => $target->fresh()];
+            return [
+                'before' => $wasActive ? 'active' : 'inactive',
+                'status' => $membership->fresh()->status,
+                'user' => $target->fresh(),
+                'membership' => $membership->fresh(),
+            ];
         });
 
         if ($result === null) {
-            return back()->with('error', 'No se puede desactivar al último administrador activo.');
+            return back()->with('error', 'No se puede desactivar al último administrador activo de esta institución.');
         }
 
-        $updatedUser = $result['user'];
+        $isActive = $result['status'] === 'active';
         $audit->record(
             'cuentas',
-            $updatedUser->is_active ? 'activated' : 'deactivated',
-            ($updatedUser->is_active ? 'Se activó ' : 'Se desactivó ').$updatedUser->name,
-            $updatedUser,
-            ['is_active' => $result['before']],
-            ['is_active' => (bool) $updatedUser->is_active]
+            $isActive ? 'membership_activated' : 'membership_deactivated',
+            ($isActive ? 'Se habilitó el acceso de ' : 'Se retiró el acceso de ').$result['user']->name.' en la institución actual.',
+            $result['user'],
+            ['institution_membership_status' => $result['before']],
+            ['institution_membership_status' => $result['status']]
         );
 
-        return back()->with('success', $updatedUser->is_active
-            ? 'Cuenta activada. Puede iniciar sesión.'
-            : 'Cuenta desactivada. Se conservaron sus datos académicos.');
+        return back()->with('success', $isActive
+            ? 'Acceso habilitado para esta institución.'
+            : 'Acceso retirado de esta institución. La cuenta y sus datos se conservaron.');
     }
 
     public function destroy(Request $request, User $user, AuditLogger $audit)
     {
+        $this->authorizeInstitutionMember($user);
         abort_if($user->id === $request->user()->id, 422, 'No puedes eliminar tu propia cuenta.');
+
+        $institutionId = (int) app(CurrentInstitution::class)->get()->getKey();
+
+        if ($user->institutionMemberships()->where('institution_id', '<>', $institutionId)->exists()) {
+            return back()->with('error', 'Esta cuenta también pertenece a otra institución. No se puede eliminar la identidad global desde aquí; retira únicamente su acceso institucional.');
+        }
 
         $professor = $user->professor;
         $hasAcademicData = ($professor && (
@@ -269,26 +335,35 @@ class AdminProfessorController extends Controller
             || $professor->courses()->exists()
             || $professor->holidays()->exists()
             || $professor->fiveMinuteTalkTopics()->exists()
-            || DB::table('students')->where('professor_id', $professor->id)->exists()
+            || DB::table('students')
+                ->where('professor_id', $professor->id)
+                ->where('institution_id', $institutionId)
+                ->exists()
         ))
-            || DB::table('generated_documents')->where('generated_by', $user->id)->exists()
-            || DB::table('import_batches')->where('user_id', $user->id)->exists();
+            || GeneratedDocument::query()->where('generated_by', $user->id)->exists()
+            || ImportBatch::query()->where('user_id', $user->id)->exists();
 
         if ($hasAcademicData) {
-            return back()->with('error', 'No se eliminó la cuenta porque tiene historial académico. Desactívala para retirar el acceso sin perder sus registros.');
+            return back()->with('error', 'No se eliminó la cuenta porque tiene historial académico. Desactiva su acceso institucional para conservar los registros.');
         }
 
-        $wasDeleted = DB::transaction(function () use ($user, $professor) {
+        $wasDeleted = DB::transaction(function () use ($user, $professor, $institutionId) {
             $target = User::query()->whereKey($user->id)->lockForUpdate()->firstOrFail();
+            $membership = InstitutionMembership::query()
+                ->where('user_id', $target->id)
+                ->where('institution_id', $institutionId)
+                ->lockForUpdate()
+                ->firstOrFail();
 
-            if ($target->isAdmin() && $target->is_active) {
-                $activeAdmins = User::query()
-                    ->where('role', 'admin')
-                    ->where('is_active', true)
+            if (in_array($membership->role, ['admin', 'owner'], true) && $membership->status === 'active') {
+                $activeAdmins = InstitutionMembership::query()
+                    ->where('institution_id', $institutionId)
+                    ->whereIn('role', ['admin', 'owner'])
+                    ->where('status', 'active')
                     ->lockForUpdate()
-                    ->pluck('id');
+                    ->count();
 
-                if ($activeAdmins->count() <= 1) {
+                if ($activeAdmins <= 1) {
                     return false;
                 }
             }
@@ -300,7 +375,7 @@ class AdminProfessorController extends Controller
         });
 
         if (!$wasDeleted) {
-            return back()->with('error', 'No se puede eliminar al último administrador activo.');
+            return back()->with('error', 'No se puede eliminar al último administrador activo de esta institución.');
         }
 
         $audit->record('cuentas', 'deleted', 'Se eliminó la cuenta sin historial académico: '.$user->email, $user,
@@ -308,6 +383,16 @@ class AdminProfessorController extends Controller
 
         return redirect()->route('admin.professors.index', $this->returnParams($request))
             ->with('success', 'Cuenta eliminada. No se encontraron registros académicos asociados.');
+    }
+
+    private function authorizeInstitutionMember(User $user): void
+    {
+        $institutionId = (int) app(CurrentInstitution::class)->get()->getKey();
+
+        abort_unless(
+            $user->institutionMemberships()->where('institution_id', $institutionId)->exists(),
+            404
+        );
     }
 
     private function returnParams(Request $request): array
