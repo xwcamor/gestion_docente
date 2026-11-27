@@ -59,6 +59,7 @@
         @forelse($professors as $account)
             @php($profile = $account->professor)
             @php($membership = $account->institutionMemberships->first())
+            @php($sharedIdentity = $account->institutionMemberships()->where('institution_id', '<>', $membership?->institution_id)->exists())
             @php($tenantAdmin = in_array($membership?->role, ['admin', 'owner'], true))
             @php($membershipActive = $membership?->status === 'active')
             @php($accessActive = $account->is_active && $membershipActive)
@@ -95,7 +96,9 @@
                         data-email="{{ $account->email }}"
                         data-institutional-id="{{ $profile?->institutional_id }}"
                         data-school="{{ $profile?->school }}"
-                        data-career="{{ $profile?->career }}">
+                        data-career="{{ $profile?->career }}"
+                        @disabled($sharedIdentity)
+                        title="{{ $sharedIdentity ? 'La cuenta también pertenece a otra institución; no se puede editar su identidad compartida aquí.' : 'Editar cuenta' }}">
                         <x-icon name="pencil" size="14" /> Editar
                     </button>
                     <form method="POST" action="{{ route('admin.professors.status', $account) }}"
@@ -110,7 +113,7 @@
                           data-confirm="Solo se eliminará una cuenta sin historial académico. Si tiene ciclos, cursos, feriados u otros registros, el sistema impedirá la eliminación. ¿Continuar?">
                         @csrf
                         @method('DELETE')
-                        <button class="btn btn-danger btn-sm" type="submit" @disabled($isSelf) aria-label="Eliminar cuenta">
+                        <button class="btn btn-danger btn-sm" type="submit" @disabled($isSelf || $sharedIdentity) aria-label="Eliminar cuenta" title="{{ $sharedIdentity ? 'La cuenta pertenece a más de una institución y no se puede eliminar desde aquí.' : 'Eliminar cuenta' }}">
                             <x-icon name="x" size="14" /> Eliminar
                         </button>
                     </form>
