@@ -141,9 +141,9 @@ Desde esa pantalla puedes mantener el nombre institucional, país, zona horaria,
 
 Esta pantalla no asigna todavía los NRC a salones ni cambia horarios, ciclos o grupos existentes. La cantidad de semestres se define por versión de carrera, no como un valor único de la institución. Las duraciones permitidas se configuran como una lista separada por comas (por ejemplo, `4, 5, 6, 8`).
 
-La configuración y el catálogo resuelven la institución mediante sus membresías. La compatibilidad automática solo funciona mientras exista un único tenant activo. **La separación de ciclos, grupos, alumnos, horarios y documentos por institución sigue pendiente**; consulta [docs/SAAS_INSTITUTIONAL_MODEL.md](docs/SAAS_INSTITUTIONAL_MODEL.md) antes de habilitar una segunda institución.
+La configuración, el catálogo y los modelos operativos usan la institución activa de la cuenta. Los ciclos, cursos, alumnos, feriados, auditoría y sus registros relacionados se filtran por tenant; las cuentas también tienen membresías institucionales y pueden cambiar de institución desde el menú de cuenta. La administración para crear nuevos tenants y asignar membresías a cuentas existentes, así como las pruebas de aislamiento entre dos instituciones, sigue pendiente. Consulta [docs/SAAS_INSTITUTIONAL_MODEL.md](docs/SAAS_INSTITUTIONAL_MODEL.md) antes de habilitar una segunda institución para operación real.
 
-Esta actualización incorpora una migración aditiva que identifica el catálogo de referencia de SENATI en la configuración institucional. No elimina ni convierte datos operativos. Ejecuta:
+Las migraciones institucionales son aditivas: la siguiente migración asigna los registros operativos existentes a la única institución activa, sin cambiar sus IDs ni eliminar sus relaciones. Ejecuta:
 
 ```powershell
 git switch main
@@ -177,13 +177,14 @@ No necesitas eliminar la base de datos desde phpMyAdmin ni importar un SQL. `mig
 Cuando haya cambios nuevos en GitHub:
 
 ```powershell
-git pull origin main
+git switch main
+git pull --ff-only origin main
 composer install
-php artisan migrate --seed
+php artisan migrate
 php artisan optimize:clear
 ```
 
-En este caso usa `migrate`, no `migrate:fresh`: aplica únicamente las migraciones nuevas pendientes y conserva los datos existentes.
+Para actualizaciones normales no uses `--seed`: ejecuta únicamente las migraciones pendientes y conserva los datos existentes. Ejecuta un seeder específico solo cuando la actualización lo indique. Nunca uses `migrate:fresh` en una base con información que debas conservar.
 
 ## Comandos útiles
 
