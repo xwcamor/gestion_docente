@@ -58,6 +58,10 @@
     <div class="accounts-list">
         @forelse($professors as $account)
             @php($profile = $account->professor)
+            @php($membership = $account->institutionMemberships->first())
+            @php($tenantAdmin = in_array($membership?->role, ['admin', 'owner'], true))
+            @php($membershipActive = $membership?->status === 'active')
+            @php($accessActive = $account->is_active && $membershipActive)
             @php($isSelf = (int) $account->id === (int) auth()->id())
             <article class="account-row">
                 <div class="account-person">
@@ -69,9 +73,9 @@
                     </span>
                 </div>
                 <div class="account-role-status">
-                    <span class="account-role {{ $account->role === 'admin' ? 'is-admin' : 'is-professor' }}">{{ $account->role === 'admin' ? 'Administrador' : 'Docente' }}</span>
-                    <span class="account-status {{ $account->is_active ? 'is-active' : 'is-inactive' }}">
-                        <i></i>{{ $account->is_active ? 'Activa' : 'Inactiva' }}
+                    <span class="account-role {{ $tenantAdmin ? 'is-admin' : 'is-professor' }}">{{ $tenantAdmin ? 'Administrador' : 'Docente' }}</span>
+                    <span class="account-status {{ $accessActive ? 'is-active' : 'is-inactive' }}">
+                        <i></i>{{ !$account->is_active ? 'Bloqueada globalmente' : ($membershipActive ? 'Activa en esta institución' : 'Sin acceso institucional') }}
                     </span>
                 </div>
                 <div class="account-profile">
@@ -95,11 +99,11 @@
                         <x-icon name="pencil" size="14" /> Editar
                     </button>
                     <form method="POST" action="{{ route('admin.professors.status', $account) }}"
-                          data-confirm="{{ $account->is_active ? 'Se retirará el acceso de '.$account->name.'. Sus datos y registros académicos se conservarán. ¿Continuar?' : 'Se habilitará nuevamente el ingreso de '.$account->name.'. ¿Activar la cuenta?' }}">
+                          data-confirm="{{ $membershipActive ? 'Se retirará el acceso de '.$account->name.' a esta institución. La cuenta y sus datos se conservarán. ¿Continuar?' : 'Se habilitará el acceso de '.$account->name.' a esta institución. ¿Continuar?' }}">
                         @csrf
                         @method('PATCH')
-                        <button class="btn btn-sm {{ $account->is_active ? 'btn-ghost' : 'btn-success' }}" type="submit" @disabled($isSelf)>
-                            {{ $account->is_active ? 'Desactivar' : 'Activar' }}
+                        <button class="btn btn-sm {{ $membershipActive ? 'btn-ghost' : 'btn-success' }}" type="submit" @disabled($isSelf || !$account->is_active)>
+                            {{ $membershipActive ? 'Retirar acceso' : 'Dar acceso' }}
                         </button>
                     </form>
                     <form method="POST" action="{{ route('admin.professors.destroy', $account) }}"
