@@ -24,10 +24,11 @@ trait ScopesToCurrentInstitution
         static::creating(function (Model $model) use ($modelClass): void {
             $column = $modelClass::institutionIdColumn();
 
-            if ($column === null || !auth()->check() || filled($model->getAttribute($column))) {
+            if ($column === null || !auth()->check()) {
                 return;
             }
 
+            // Never trust an institution_id supplied by a request or mass assignment.
             $model->setAttribute(
                 $column,
                 app(CurrentInstitution::class)->get()->getKey()
