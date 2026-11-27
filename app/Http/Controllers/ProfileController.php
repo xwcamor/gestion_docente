@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\CurrentInstitution;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -21,6 +22,11 @@ class ProfileController extends Controller
         $professor = $user->professor;
 
         abort_unless($professor, 403, 'La cuenta no tiene un perfil docente asociado.');
+
+        $institutionId = (int) app(CurrentInstitution::class)->get()->getKey();
+        $hasOtherMemberships = $user->institutionMemberships()
+            ->where('institution_id', '<>', $institutionId)
+            ->exists();
 
         $request->merge([
             'name' => trim((string) $request->input('name')),
@@ -49,12 +55,19 @@ class ProfileController extends Controller
         }
         $user->save();
 
-        $professor->update([
-            'full_name' => $data['name'],
-            'institutional_id' => $data['institutional_id'] ?? null,
-            'school' => $data['school'] ?? null,
-            'career' => $data['career'] ?? null,
-        ]);
+        $professorChanges = ['full_name' => $data['name']];
+
+        // School, career and institutional identifiers are stored on the shared
+        // professor profile. Do not let one tenant overwrite another tenant's data.
+        if (!$hasOtherMemberships) {
+            $professorChanges += [
+                'institutional_id' => $data['institutional_id'] ?? null,
+                'school' => $data['school'] ?? null,
+                'career' => $data['career'] ?? null,
+            ];
+        }
+
+        $professor->update($professorChanges);
 
         return redirect()->route('profile.edit')->with('success', 'Tu perfil se actualizó correctamente.');
     }
