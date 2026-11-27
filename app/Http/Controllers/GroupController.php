@@ -12,6 +12,7 @@ use App\Models\GeneratedDocument;
 use App\Models\ImportBatch;
 use App\Models\GroupFiveMinuteTalk;
 use App\Services\AuditLogger;
+use App\Support\CurrentInstitution;
 use App\Services\FiveMinuteTalkService;
 use App\Services\GroupStarterCourseService;
 use Illuminate\Support\Facades\Storage;
@@ -688,6 +689,7 @@ class GroupController extends Controller
             : null;
 
         $student = $studentById ?: $studentByUsername;
+        $institutionId = (int) app(CurrentInstitution::class)->get()->getKey();
 
         $validator = Validator::make($request->all(), [
             'institutional_id' => [
@@ -695,7 +697,9 @@ class GroupController extends Controller
                 'string',
                 'max:80',
                 Rule::unique('students', 'institutional_id')
-                    ->where(fn ($query) => $query->where('professor_id', $group->professor_id))
+                    ->where(fn ($query) => $query
+                        ->where('institution_id', $institutionId)
+                        ->where('professor_id', $group->professor_id))
                     ->ignore($student?->id),
             ],
             'username' => [
@@ -703,7 +707,9 @@ class GroupController extends Controller
                 'string',
                 'max:255',
                 Rule::unique('students', 'username')
-                    ->where(fn ($query) => $query->where('professor_id', $group->professor_id))
+                    ->where(fn ($query) => $query
+                        ->where('institution_id', $institutionId)
+                        ->where('professor_id', $group->professor_id))
                     ->ignore($student?->id),
             ],
             'surnames' => ['required', 'string', 'max:255'],
