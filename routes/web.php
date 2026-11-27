@@ -23,10 +23,16 @@ use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\WorkloadTreeController;
 use App\Http\Controllers\InstitutionCatalogController;
 use App\Http\Controllers\InstitutionConfigurationController;
+use App\Http\Controllers\InstitutionContextController;
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1')->name('login.store');
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/instituciones/seleccionar', [InstitutionContextController::class, 'select'])->name('institution.select');
+    Route::post('/instituciones/seleccionar', [InstitutionContextController::class, 'switch'])->name('institution.switch');
+});
 
 Route::middleware(['auth', 'professor'])->group(function () {
     Route::get('/perfil', [ProfileController::class, 'edit'])->name('profile.edit');
