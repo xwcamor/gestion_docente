@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\FiveMinuteTalkTopic;
 use App\Models\Holiday;
 use App\Models\TeachingGroup;
+use App\Support\CurrentInstitution;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -310,13 +311,16 @@ class FiveMinuteTalkService
             return;
         }
 
-        DB::transaction(function () use ($professorId, $catalogue) {
+        $institutionId = (int) app(CurrentInstitution::class)->get()->getKey();
+
+        DB::transaction(function () use ($professorId, $catalogue, $institutionId) {
             FiveMinuteTalkTopic::where('professor_id', $professorId)->delete();
             $now = now();
             $rows = [];
 
             foreach ($catalogue as $index => $title) {
                 $rows[] = [
+                    'institution_id' => $institutionId,
                     'professor_id' => $professorId,
                     'title' => $title,
                     'position' => $index + 1,
