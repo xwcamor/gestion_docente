@@ -9,9 +9,9 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            HolidaySeeder::class,
             SenatiCatalogSeeder::class,
             SenatiBlackboardSnapshotSeeder::class,
+            HolidaySeeder::class,
         ]);
     }
 }
