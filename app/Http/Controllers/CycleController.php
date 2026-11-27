@@ -8,6 +8,7 @@ use App\Models\ModalitySchedule;
 use App\Models\GeneratedDocument;
 use App\Models\ImportBatch;
 use App\Services\AuditLogger;
+use App\Support\CurrentInstitution;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -230,8 +231,10 @@ class CycleController extends Controller
     private function cycleValidationRules(int $professorId, Request $request, ?Cycle $cycle = null): array
     {
         $academicYear = $request->input('academic_year');
+        $institutionId = (int) app(CurrentInstitution::class)->get()->getKey();
         $uniqueCycleCode = Rule::unique('cycles', 'cycle_code')
             ->where(fn ($query) => $query
+                ->where('institution_id', $institutionId)
                 ->where('professor_id', $professorId)
                 ->where('academic_year', $academicYear));
 
