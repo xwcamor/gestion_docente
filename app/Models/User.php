@@ -6,9 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use App\Support\CurrentInstitution;
 use App\Models\Institution;
+use App\Support\CurrentInstitution;
+use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
@@ -57,7 +57,7 @@ class User extends Authenticatable
 
         try {
             $institutionId = app(CurrentInstitution::class)->get()->getKey();
-        } catch (\\Throwable) {
+        } catch (\Throwable) {
             return false;
         }
 
