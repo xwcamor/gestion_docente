@@ -6,6 +6,7 @@ use App\Models\ClassSession;
 use App\Models\CourseAssignment;
 use App\Models\CourseModality;
 use App\Models\Holiday;
+use App\Models\InstitutionMembership;
 use App\Support\CurrentInstitution;
 use Illuminate\Support\Facades\DB;
 
