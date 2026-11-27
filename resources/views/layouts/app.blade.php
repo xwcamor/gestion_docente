@@ -906,6 +906,9 @@
                 <span class="top-account-caret" aria-hidden="true">▾</span>
             </summary>
             <div class="top-account-dropdown">
+                @if(auth()->user()->institutionMemberships()->where('status', 'active')->count() > 1)
+                    <a class="top-account-item" href="{{ route('institution.select') }}"><x-icon name="building-2" size="16" /> Cambiar institución</a>
+                @endif
                 <a class="top-account-item" href="{{ route('profile.edit') }}"><x-icon name="user-round" size="16" /> Mi perfil</a>
                 <a class="top-account-item" href="{{ route('admin.settings.edit') }}"><x-icon name="settings" size="16" /> Ajustes de interfaz</a>
                 @if(auth()->user()->isAdmin())
