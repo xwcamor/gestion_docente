@@ -918,7 +918,9 @@ class GroupController extends Controller
                 'string',
                 'max:80',
                 Rule::unique('students', 'institutional_id')
-                    ->where(fn ($query) => $query->where('professor_id', $group->professor_id))
+                    ->where(fn ($query) => $query
+                        ->where('institution_id', app(CurrentInstitution::class)->get()->getKey())
+                        ->where('professor_id', $group->professor_id))
                     ->ignore($student->id),
             ],
             'username' => [
@@ -926,7 +928,9 @@ class GroupController extends Controller
                 'string',
                 'max:255',
                 Rule::unique('students', 'username')
-                    ->where(fn ($query) => $query->where('professor_id', $group->professor_id))
+                    ->where(fn ($query) => $query
+                        ->where('institution_id', app(CurrentInstitution::class)->get()->getKey())
+                        ->where('professor_id', $group->professor_id))
                     ->ignore($student->id),
             ],
             'surnames' => ['required', 'string', 'max:255'],
