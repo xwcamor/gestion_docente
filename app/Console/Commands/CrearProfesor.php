@@ -3,6 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Models\User;
+use App\Models\Institution;
+use App\Models\InstitutionMembership;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -65,9 +67,22 @@ class CrearProfesor extends Command
         }
 
         $role = $this->option('admin') ? 'admin' : 'profesor';
+        $activeInstitutions = Institution::query()
+            ->where('status', 'active')
+            ->orderBy('id')
+            ->limit(2)
+            ->get(['id']);
+
+        if ($activeInstitutions->count() !== 1) {
+            $this->components->error('No se pudo identificar una única institución activa para asignar la cuenta.');
+            $this->line('Configura primero el tenant institucional y vuelve a ejecutar este comando.');
+            return self::FAILURE;
+        }
+
+        $institutionId = (int) $activeInstitutions->first()->id;
 
         try {
-            $user = DB::transaction(function () use ($name, $email, $password, $role, $institutionalId, $school, $career) {
+            $user = DB::transaction(function () use ($name, $email, $password, $role, $institutionalId, $school, $career, $institutionId) {
                 $user = User::create([
                     'name' => $name,
                     'email' => $email,
@@ -82,6 +97,12 @@ class CrearProfesor extends Command
                     'full_name' => $name,
                     'school' => $school !== '' ? $school : null,
                     'career' => $career !== '' ? $career : null,
+                ]);
+
+                $user->institutionMemberships()->create([
+                    'institution_id' => $institutionId,
+                    'role' => $role === 'admin' ? 'admin' : 'teacher',
+                    'status' => 'active',
                 ]);
 
                 return $user;
