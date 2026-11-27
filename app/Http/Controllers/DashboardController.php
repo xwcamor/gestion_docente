@@ -81,10 +81,21 @@ class DashboardController extends Controller
 
         $adminStats = null;
         if ($user->isAdmin()) {
+            $tenantAccounts = InstitutionMembership::query()
+                ->where('institution_id', $institutionId);
+
             $adminStats = [
-                'accounts' => \App\Models\User::count(),
-                'active' => \App\Models\User::where('is_active', true)->count(),
-                'inactive' => \App\Models\User::where('is_active', false)->count(),
+                'accounts' => (clone $tenantAccounts)->count(),
+                'active' => (clone $tenantAccounts)
+                    ->where('status', 'active')
+                    ->whereHas('user', fn ($query) => $query->where('is_active', true))
+                    ->count(),
+                'inactive' => (clone $tenantAccounts)
+                    ->where(function ($query) {
+                        $query->where('status', '<>', 'active')
+                            ->orWhereHas('user', fn ($user) => $user->where('is_active', false));
+                    })
+                    ->count(),
             ];
         }
 
